@@ -8,8 +8,5 @@ Each application has its own executors.
 2. store the computation results in memory or disk or off-heap.
 3. interact with storage system.
 
-
-
 1. Threads
 2. Block manager
-

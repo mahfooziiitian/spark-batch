@@ -8,20 +8,69 @@ The runtime includes various metrics that are tremendously helpful in diagnosing
 One thing to note is that the Spark UI is available only while a Spark application is running.
 The navigation bar at the top of the Spark UI contains links to the various tabs including jobs, stages, storage, environment, executors, and SQL.
 
-## Spark Application UI: 
-    
-    http://localhost:4040/
+The Spark UI provides a web-based interface to monitor and debug Spark applications. It helps in understanding job execution, optimizing performance, and identifying bottlenecks.
 
-## Resource Manager: 
-    
+## Key Components of Spark UI
+
+1. Jobs: Shows all Spark jobs with details like status, duration, and DAG visualization.
+2. Stages: Displays different execution stages within a job, including task execution time.
+3. Tasks: Provides detailed information about individual tasks, including shuffle read/write and execution time.
+4. Storage: Displays RDDs and their partitions cached in memory or disk.
+5. Environment: Shows Spark configurations, JVM properties, and system environment variables.
+6. Executors: Lists all executors with memory usage, task status, and logs.
+7. SQL: (For Spark SQL) Displays executed queries, execution plans, and optimizations.
+
+## Spark UI Hierarchy
+
+```mermaid
+graph TD;
+    A[Apache Spark UI] -->|Shows Execution Details| B[Jobs Tab]
+    A -->|Breaks Jobs into Stages| C[Stages Tab]
+    A -->|Monitors Task Execution| D[Tasks Tab]
+    A -->|Shows Cached Data| E[Storage Tab]
+    A -->|Displays Spark Configs| F[Environment Tab]
+    A -->|Monitors Executors| G[Executors Tab]
+    A -->|Analyzes SQL Queries| H[SQL Tab]
+
+    B -->|View DAG Visualization| B1[DAG Scheduler]
+    B -->|Track Job Status| B2[Job Metrics]
+
+    C -->|Breaks Down into Tasks| C1[Task Execution]
+    C -->|Tracks Shuffle Read/Write| C2[Shuffle Metrics]
+
+    D -->|Monitors Individual Tasks| D1[Task Attempts]
+    D -->|Analyzes GC & CPU Usage| D2[Resource Metrics]
+
+    E -->|Shows Cached RDDs| E1[RDD Storage]
+    E -->|Tracks Partition Size| E2[Partition Details]
+
+    F -->|Displays JVM & System Info| F1[JVM Properties]
+    F -->|Lists Spark Conf Settings| F2[Spark Configs]
+
+    G -->|Shows Executor Performance| G1[Task Execution Time]
+    G -->|Displays Memory Usage| G2[Memory & Storage]
+    G -->|Links to Executor Logs| G3[Executor Logs]
+
+    H -->|Tracks Query Execution| H1[Query Plans]
+    H -->|Optimizations & Execution Time| H2[Performance Insights]
+```
+
+## Spark Application UI
+
+```text
+http://localhost:4040/
+```
+
+## Resource Manager
+
     http://localhost:9870
 
-## Spark JobTracker: 
-    
+## Spark JobTracker
+
     http://localhost:8088/
 
-## Node Specific Info: 
-    
+## Node Specific Info
+
     http://localhost:8042/
 
 ## Environment
