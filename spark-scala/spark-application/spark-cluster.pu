@@ -1,0 +1,20 @@
+@startuml "spark-cluster"
+
+[Driver]
+[Worker] as worker1
+rectangle Worker as worker2 {
+    rectangle Executor {
+    [core] as core1
+    [core] as core2
+    }
+}
+[Worker] as worker3
+[Worker] as worker4
+
+[Driver] <-d-> worker1
+[Driver] <-d-> worker2
+[Driver] <-d-> worker3
+[Driver] <-d-> worker4
+
+
+@enduml

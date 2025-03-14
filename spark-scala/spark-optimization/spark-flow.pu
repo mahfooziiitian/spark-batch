@@ -1,0 +1,33 @@
+@startuml "spark-flow"
+
+[Query]
+[Unresolved Logical Plan] as unresolvedLogicalPlan
+[Metadata catalog] as mCatalog
+[Logical Plan] as logicalPlan
+
+[Catalyst Catalog] as cCatalog
+[Optimized Logical Plan ] as optimizedLogicalPlan
+[Physical Plan] as physicalPlan
+[Cost Model] as costModel
+[Selected Physical Plan] as selectedPhysicalPlan
+[RDDs]
+
+Query -r-> unresolvedLogicalPlan
+
+unresolvedLogicalPlan -r-> mCatalog
+
+mCatalog -r-> logicalPlan
+
+logicalPlan -d-> cCatalog
+
+cCatalog -d-> optimizedLogicalPlan
+
+optimizedLogicalPlan -d-> physicalPlan
+
+physicalPlan -l-> costModel
+
+costModel -l-> selectedPhysicalPlan
+
+selectedPhysicalPlan -l-> [RDDs]
+
+@enduml

@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.generalliabilityline_glemodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartcoverage_glemodel" schemaLocation="GL7CovrgPartCoverage_GLEModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.clausemodel" schemaLocation="ClauseModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.gl7manuscriptform_esumodel" schemaLocation="../docprod/GL7ManuscriptForm_EsuModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartmodifier_glemodel" schemaLocation="GL7CovrgPartModifier_GLEModel.xsd"/>
+  <xs:element name="GeneralLiabilityLine_GLE" type="GeneralLiabilityLine_GLE" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.generalliabilityline_glemodel"/>
+  <xs:complexType name="GeneralLiabilityLine_GLE">
+    <xs:sequence>
+      <xs:element name="GL7CoveragePartCoverages_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="GL7CovrgPartCoverage_GLE" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartcoverage_glemodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GL7CoveragePartExclusions_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="Clause" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.clausemodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GL7ProductOfferings" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="MLExposures_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Revenue" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="CorporateAccess" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="TotEmployees" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="Class3SubTotCA" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="Class3SubTot" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="PlanAssets" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="TotRateableEmployees" type="xs:long" minOccurs="0" nillable="true"/>
+            <xs:element name="Hazard" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="RatableLawyers" type="xs:decimal" minOccurs="0" nillable="true"/>
+            <xs:element name="RepCount" type="xs:int" minOccurs="0" nillable="true"/>
+            <xs:element name="AssetsUnderManagement" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="ComissionRevenue" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="GrossWrittenPremium" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="MarketCap" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="Lawyers" type="xs:int" minOccurs="0" nillable="true" />
+            <xs:element name="Class1SubTot" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="Class2SubTot" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninFullC1" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninFullC2" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninFullC3" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninFullC3CA" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninFullTotal" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninICsC1" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninICsC2" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninICsC3" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUninICsC3CA" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUnionICsTot" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUnionPartTot" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUnionPrtC1" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUnionPrtC2" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUnionPrtC3" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="NonUnionPrtC3CA" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="UninEmpAllC1" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="UninEmpAllC2" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="UninEmpAllC3" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="UninEmpAllC3CA" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="UninEmpAllTotal" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="ForeigEmployees" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="Tot" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="RiskCountry" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NewlyAddedManuscriptForms" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="GL7ManuscriptForm_Esu" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.gl7manuscriptform_esumodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GL7CoveragePartsData_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="AOPComments_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="CoveragePartType" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="CoveragePartModifiers" minOccurs="0" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Entry" type="GL7CovrgPartModifier_GLE" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartmodifier_glemodel"/>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="EnoAvgNoYrsClaim_Ext" type="xs:int" minOccurs="0" nillable="true" />
+                  <xs:element name="EnoAvgReportDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="EnoFactor_A_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="EnoFactor_B_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="EnoFactor_C_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="ExperienceModifiers_Ext" minOccurs="0" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="ClaimNo" type="xs:int" minOccurs="0" nillable="true" />
+                              <xs:element name="IncExpense" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="IncLoss" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="IncLossExpenses" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="include" type="xs:boolean" minOccurs="0" nillable="true" />
+                              <xs:element name="ReportDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                           
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="ExpRatingFactor_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="EzExcessCovPartPremium" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="EzExcessThirdPartyPremium" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="IRMComments_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="IRMFactor_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="IRMSubtotal_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="TotalSchMod_Esu" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="RunOffCovPartPremium" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="RunOffThirdPartyPremium" type="xs:string" minOccurs="0" nillable="true" />
+                </xs:sequence>
+               
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="QuotaShare" type="xs:boolean" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

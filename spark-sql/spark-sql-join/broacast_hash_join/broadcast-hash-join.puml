@@ -1,0 +1,32 @@
+@startuml "broadcast hash join"
+
+rectangle Driver {
+    [Small DF] as smallDF
+}
+
+rectangle WorkerNode as wn1{
+
+    [Small DF Copy] as smallDFCopy1
+    [Large DF part-0] as lDFPart0
+}
+
+rectangle WorkerNode as wn2 {
+    [Small DF Copy] as smallDFCopy2
+    [Large DF part-1] as lDFPart1
+}
+
+
+rectangle WorkerNode as wn3{
+    [Small DF Copy] as smallDFCopy3
+    [Large DF part-2] as lDFPart2
+}
+
+smallDF -d-> smallDFCopy1
+smallDF -d-> smallDFCopy2
+smallDF -d-> smallDFCopy3
+
+smallDFCopy1 -d-> lDFPart0: Hash join
+smallDFCopy2 -d-> lDFPart1: Hash join
+smallDFCopy3 -d-> lDFPart2: Hash join
+
+@enduml

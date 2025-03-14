@@ -1,0 +1,22 @@
+plugins {
+    id 'scala'
+}
+
+group 'com.mahfooz.arango'
+version '1.0'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+    }
+}
+
+dependencies {
+    implementation 'org.scala-lang:scala-library:2.11.12'
+    testImplementation 'org.scalatest:scalatest_2.11:3.0.0'
+    testImplementation 'junit:junit:4.12'
+    compile group: 'com.arangodb', name: 'arangodb-spark-connector_2.11', version: '1.0.13'
+    compile group: 'org.apache.spark', name: 'spark-sql_2.11', version: '2.4.0.cloudera2'
+
+}

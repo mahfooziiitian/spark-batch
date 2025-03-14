@@ -1,0 +1,153 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "after",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "age",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "created",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "id",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "modified",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "password",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "username",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "before",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "age",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "created",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "id",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "modified",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "password",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "username",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "op",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "source",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "change_lsn",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "commit_lsn",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "connector",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "db",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "event_serial_no",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "name",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "schema",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "snapshot",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "table",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "ts_ms",
+        "type" : "long",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "version",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "ts_ms",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}

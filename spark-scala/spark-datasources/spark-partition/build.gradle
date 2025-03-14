@@ -1,0 +1,37 @@
+plugins {
+    id 'scala'
+}
+
+group 'com.mahfooz,spark2'
+version '1.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+    }
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    // Use Scala 2.13 in our library project
+    implementation 'org.scala-lang:scala-library:2.11.12'
+
+    // Use Scalatest for testing our library
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.scalatest:scalatest_2.11:3.1.0'
+    testImplementation 'org.scalatestplus:junit-4-12_2.11:3.1.0.0'
+
+    // Need scala-xml at test runtime
+    testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.11:1.2.0'
+    implementation 'org.apache.spark:spark-core_2.11:2.4.0.cloudera2'
+    implementation 'org.apache.spark:spark-sql_2.11:2.4.0.cloudera2'
+    implementation 'com.typesafe:config:1.4.0'
+    implementation 'org.postgresql:postgresql:42.2.8'
+    implementation 'com.oracle.database.jdbc:ojdbc8:12.2.0.1'
+    implementation 'org.xerial:sqlite-jdbc:3.30.1'
+    implementation 'mysql:mysql-connector-java:8.0.19'
+}

@@ -1,0 +1,27 @@
+@startuml
+
+[SQL Query] as sqlq
+[DataFrame] as df
+
+[Unresolved plan] as uplan
+[Logical plan] as lplan
+[Catalog]
+[Optimized Logical Plan] as oplan
+[Physical Plan] as pplan
+[Cost Model] as cmodel
+[Selected Physical Plan] as splan
+[RDD]
+
+sqlq -r-> uplan
+df -d-> uplan
+uplan -r-> lplan
+[Catalog] -d-> uplan
+lplan -r-> oplan
+oplan -d-> pplan
+pplan -l-> cmodel
+cmodel -l-> splan
+splan -l-> [RDD]
+
+
+
+@enduml

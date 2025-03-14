@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  cassandra:
+    image: cassandra:4.0
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    volumes:
+      - ${DATA_HOME}\\Database\\Setup\\Cassandra:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=${CLOUDERA_CLUSTER_NAME}

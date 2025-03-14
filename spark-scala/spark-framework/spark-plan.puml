@@ -1,0 +1,17 @@
+@startuml "spark-plan"
+
+[user code] as userCode
+[Unresolved Logical Plan] as unresolvedLogicalPlan
+[Catalog] as catalog
+[Resolved Logical Plan] as resolvedLogicalPlan
+[Optimized Logical Plan] as optimizedLogicalPlan
+[Analysis] as analysis
+
+userCode -u-> unresolvedLogicalPlan
+unresolvedLogicalPlan -r-> analysis
+catalog -u-> analysis
+analysis -r-> resolvedLogicalPlan
+resolvedLogicalPlan -r-> optimizedLogicalPlan : "Logical Optimization"
+
+
+@enduml

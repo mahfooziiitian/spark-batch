@@ -1,0 +1,25 @@
+@startuml
+
+rectangle {
+[jdbc]
+[console]
+[User Programs(java,scala,python] as program
+}
+
+rectangle "Spark SQL" as sql {
+[Dataframe API] as df
+[catalyst optimizer] as catalyst
+}
+
+rectangle "spark" as spark{
+[RDD]
+}
+
+[jdbc] -d-> sql
+[console] -d-> sql
+[program] -d-> sql
+
+sql -d-> spark
+[program] -d-> spark
+
+@enduml

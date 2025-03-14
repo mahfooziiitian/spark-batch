@@ -1,0 +1,52 @@
+@startuml "spark-serde-codec"
+
+skinparam roundcorner 20
+
+skinparam rectangle {
+BackgroundColor LightBlue
+BorderColor DarkSlateGray
+
+BackgroundColor<< Dataset >> YellowGreen
+
+ArrowColor Olive
+}
+
+rectangle Dataset <<Dataset>>{
+
+}
+
+
+rectangle QueryExecution {
+
+}
+
+
+rectangle Encoder {
+
+}
+
+rectangle SparkSession {
+
+}
+
+rectangle LogicalPlan {
+
+}
+
+rectangle SessionState {
+
+}
+
+rectangle SparkOptimizer {
+
+}
+
+
+Dataset .d.> QueryExecution
+Dataset .r.> Encoder
+QueryExecution .d.> SparkSession
+QueryExecution .d.-> LogicalPlan
+SparkSession .d.> SessionState
+SessionState .d.> SparkOptimizer
+
+@enduml

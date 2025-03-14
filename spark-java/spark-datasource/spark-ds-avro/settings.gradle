@@ -1,0 +1,9 @@
+rootProject.name = 'spark-ds-avro'
+
+include "spark-avro-basic"
+include "spark-avro-function"
+include "spark-avro-shell"
+include "spark-avro-config"
+include "spark-avro-schema"
+
+

@@ -1,0 +1,11 @@
+@startuml
+
+"SQL" -d-> "Parsed Plan"
+-r-> "Analyser"
+-d-> "Analyzed Plan"
+-l-> "Optimizer"
+-d-> "Optimized Plan"
+-r-> "Physical Plan"
+
+
+@enduml

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.policychangemodel" elementFormDefault="qualified" xmlns:gw="http://guidewire.com/xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policyperiodmodel" schemaLocation="../common/PolicyPeriodModel.xsd"/>
+  <xs:element name="PolicyChange" type="PolicyChange" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.policychangemodel"/>
+  <xs:complexType name="PolicyChange">
+    <xs:sequence>
+      <xs:element name="LatestPeriod" type="PolicyPeriod" minOccurs="0" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policyperiodmodel"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

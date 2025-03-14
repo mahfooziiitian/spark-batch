@@ -1,0 +1,4 @@
+rootProject.name = 'spark-function'
+
+include "spark-function-uaf"
+include "spark-function-inbuilt"

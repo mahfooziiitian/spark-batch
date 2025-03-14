@@ -1,0 +1,31 @@
+@startuml "PysparkMetastore"
+
+
+
+rectangle "PySparkMetastore" as pyms {
+    rectangle "Spark" as spark {
+        [Driver]
+        [Executors]
+    }
+
+    rectangle "Apache Hive" as hive {
+        [LLAP Daemons] as llpd
+        [Hiveserver+Tez] as hiveserver
+    }
+
+    rectangle "Metastore" as ms {
+        [Spark Metadata] as sparkmd
+        [Hive Metadata] as hivemd
+    }
+
+}
+
+[Driver] <-[hidden]u-> [Executors]
+llpd <-[hidden]d-> hiveserver
+
+Driver -d-> sparkmd
+hiveserver -d-> hivemd
+Executors <.r.> llpd
+Driver <.r.> hiveserver
+
+@enduml

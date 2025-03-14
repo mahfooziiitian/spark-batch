@@ -1,0 +1,24 @@
+plugins {
+    id 'scala'
+}
+
+group 'com.mahfooz.spark2'
+version '1.0'
+
+repositories {
+    mavenLocal()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+    }
+    jcenter()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation 'org.apache.spark:spark-mllib_2.11:2.4.0-cdh6.3.3'
+}
+
+test {
+    useJUnitPlatform()
+}

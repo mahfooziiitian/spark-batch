@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "spark-sql-py"
+version = "0.1.0"
+description = ""
+authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.2.2"
+numpy = "^2.0.0"
+matplotlib = "^3.9.1"
+pyspark = {extras = ["sql"], version = "^3.5.1"}
+scikit-learn = "^1.5.1"
+plotly = "^5.22.0"
+nbformat = "^5.10.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

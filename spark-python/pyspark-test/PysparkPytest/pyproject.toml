@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "pysparkpytest"
+version = "0.1.0"
+description = "Pyspark pytest tutorial"
+authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyspark = "^3.5.0"
+faker = "^25.8.0"
+pandas = "^2.2.2"
+pyarrow = "^16.1.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+pythonpath = [
+    "src"
+]
+testpaths = [
+    "tests",
+    "integration",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

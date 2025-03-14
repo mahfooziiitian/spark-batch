@@ -1,0 +1,14 @@
+version: "3.1"
+services:
+  mysql:
+    image: mysql:8.0.20
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_USER=mysql
+      - MYSQL_PASSWORD=MySQL_2023
+      - MYSQL_DATABASE=mysqldb
+      - MYSQL_ROOT_PASSWORD=MySQL_2023
+    volumes:
+      - ${DATA_HOME}/Database/Setup/MySQL:/var/lib/mysql

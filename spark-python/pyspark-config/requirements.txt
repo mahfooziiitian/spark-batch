@@ -1,0 +1,4 @@
+pyspark==3.5.0
+pytest==7.4.2
+findspark~=2.0.1
+jproperties~=2.1.1

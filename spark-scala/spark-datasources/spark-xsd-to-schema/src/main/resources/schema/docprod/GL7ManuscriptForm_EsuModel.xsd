@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.gl7manuscriptform_esumodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="GL7ManuscriptForm_Esu" type="GL7ManuscriptForm_Esu" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.gl7manuscriptform_esumodel"/>
+  <xs:complexType name="GL7ManuscriptForm_Esu">
+    <xs:sequence>
+      <xs:element name="ManuEndorsementNumber" type="xs:int" minOccurs="0" nillable="true"/>
+      <xs:element name="ManuFormName" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="ManuFormNumber" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

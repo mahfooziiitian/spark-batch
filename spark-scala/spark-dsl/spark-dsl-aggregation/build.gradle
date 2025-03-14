@@ -1,0 +1,23 @@
+
+plugins {
+    id 'scala'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+    }
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation 'org.scala-lang:scala-library:2.11.12'
+    testImplementation 'org.scalatest:scalatest_2.11:3.1.0'
+    testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.11:1.2.0'
+    implementation 'org.apache.spark:spark-core_2.11:2.4.0-cdh6.3.3'
+    implementation 'org.apache.spark:spark-sql_2.11:2.4.0-cdh6.3.3'
+    implementation 'com.typesafe:config:1.4.0'
+    implementation project(':spark-dsl-model')
+}
