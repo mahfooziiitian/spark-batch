@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartcoverage_glemodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.covtermmodel" schemaLocation="CovTermModel.xsd"/>
+  <xs:element name="GL7CovrgPartCoverage_GLE" type="GL7CovrgPartCoverage_GLE" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartcoverage_glemodel"/>
+  <xs:complexType name="GL7CovrgPartCoverage_GLE">
+    <xs:sequence>
+      <xs:element name="CovTerms" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="CovTerm" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.covtermmodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ExcludedCountriesScheduledItems" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="xs:string" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="GL7CoveragePart" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="CoveragePartType" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Pattern" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="CodeIdentifier" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PatternCode" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="GL7Costs" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="ActualAmount" type="xs:string" minOccurs="0" nillable="true"/>
+                </xs:sequence>
+                
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ChangeInCovCost" type="xs:decimal" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+    
+  </xs:complexType>
+</xs:schema>

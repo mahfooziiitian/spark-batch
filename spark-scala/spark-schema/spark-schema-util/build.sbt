@@ -1,0 +1,20 @@
+name := "spark-schema-util"
+
+ThisBuild / version := "1.0"
+ThisBuild / scalaVersion := "2.12.17"
+ThisBuild / organization := "com.mahfooz.spark.schema"
+
+val sparkVersion = "3.4.0"
+
+resolvers in Global += Resolver.mavenLocal
+resolvers in Global += "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
+
+resolvers ++= Seq(
+  "Typesafe" at "https://repo.typesafe.com/typesafe/releases/",
+  "Java.net Maven2 Repository" at "https://download.java.net/maven/2/",
+  "Apache Snapshot Repository" at "https://repository.apache.org/snapshots"
+)
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-sql" % sparkVersion,
+  "org.apache.spark" %% "spark-hive" % sparkVersion
+)

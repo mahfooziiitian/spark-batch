@@ -1,0 +1,8 @@
+rootProject.name = 'spark-ds-jdbc'
+
+include "spark-jdbc-config"
+include "spark-jdbc-oracle"
+include "spark-jdbc-mysql"
+include "spark-jdbc-postgres"
+include 'spark-jdbc-shell'
+

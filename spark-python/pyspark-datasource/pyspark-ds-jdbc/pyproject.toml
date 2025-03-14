@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "pyspark-ds-jdbc"
+version = "0.1.0"
+description = ""
+authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
+readme = "README.md"
+packages = [{include="*", from="src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyspark = "^3.5.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+pythonpath = [
+    "src"
+]
+testpaths = [
+    "tests",
+    "integration",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

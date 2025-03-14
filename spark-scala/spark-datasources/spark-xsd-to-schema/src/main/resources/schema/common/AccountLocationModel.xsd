@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.accountlocationmodel" elementFormDefault="qualified">
+	<xs:element xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.accountlocationmodel" name="AccountLocation" type="AccountLocation" nillable="true"/>
+	<xs:complexType name="AccountLocation">
+		<xs:sequence>
+			<xs:element name="AddressLine1" type="xs:string" minOccurs="0" nillable="true"/>
+			<xs:element name="AddressLine2" type="xs:string" minOccurs="0" nillable="true"/>
+			<xs:element name="AddressLine3" type="xs:string" minOccurs="0" nillable="true" />
+			<xs:element name="City" type="xs:string" minOccurs="0" nillable="true" />
+			<xs:element name="Country" type="xs:string" minOccurs="0" nillable="true"/>
+			<xs:element name="PostalCode" type="xs:string" minOccurs="0" nillable="true"/>
+			<xs:element name="State" type="xs:string" minOccurs="0" nillable="true"/>
+		</xs:sequence>
+		
+	</xs:complexType>
+</xs:schema>

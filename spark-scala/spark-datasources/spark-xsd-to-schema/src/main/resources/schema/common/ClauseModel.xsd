@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.clausemodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.covtermmodel" schemaLocation="CovTermModel.xsd"/>
+  <xs:element name="Clause" type="Clause" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.clausemodel"/>
+  <xs:complexType name="Clause">
+    <xs:sequence>
+      <xs:element name="CovTerms" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="CovTerm" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.covtermmodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Pattern" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="CodeIdentifier" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    
+  </xs:complexType>
+</xs:schema>

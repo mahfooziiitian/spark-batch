@@ -1,0 +1,8 @@
+rootProject.name="spark-dataset"
+
+include "spark-dataset-rdd"
+include "spark-dataset-model"
+include "spark-dataset-encoding"
+include "spark-dataset-typed"
+include "spark-dataset-untyped"
+include "spark-dataset-aggregation"

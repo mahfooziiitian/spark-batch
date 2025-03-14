@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartmodifier_glemodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="GL7CovrgPartModifier_GLE" type="GL7CovrgPartModifier_GLE" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.gl7covrgpartmodifier_glemodel"/>
+  <xs:complexType name="GL7CovrgPartModifier_GLE">
+    <xs:sequence>
+      <xs:element name="AOPDebitCredit_Ext" type="xs:decimal" minOccurs="0" nillable="true"/>
+      <xs:element name="Pattern" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RateFactorsSum" type="xs:decimal" minOccurs="0" nillable="true"/>
+      <xs:element name="RateModifier" type="xs:decimal" minOccurs="0" nillable="true"/>
+      <xs:element name="RateShiftFactor_Ext" type="xs:decimal" minOccurs="0" nillable="true"/>
+      <xs:element name="RateWithinLimits" type="xs:decimal" minOccurs="0" nillable="true"/>
+      <xs:element name="ScheduleRate" type="xs:boolean" minOccurs="0" nillable="true"/>
+      <xs:element name="ModifierCatg_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Justification" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="BaseRateSelection_Ext" type="xs:decimal" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+    
+  </xs:complexType>
+</xs:schema>

@@ -1,0 +1,9 @@
+include 'spark-rdd-operation'
+include 'spark-rdd-caching'
+include 'spark-rdd-function'
+include 'spark-rdd-closure'
+include 'spark-rdd-testing'
+include 'spark-rdd-checkpoint'
+include 'spark-rdd-persistence'
+include 'spark-rdd-shuffling'
+

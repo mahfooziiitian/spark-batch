@@ -1,0 +1,12 @@
+plugins{
+    id 'java'
+    id 'application'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+if(project.hasProperty('env') && project.getProperty('env') == 'server'){
+    apply from: rootProject.file('gradle/build-server.gradle');
+} else if (project.hasProperty('env') && project.getProperty('env') == 'local') {
+    apply from: rootProject.file('gradle/build-local.gradle');
+}

@@ -1,0 +1,13 @@
+plugins{
+    id 'java'
+}
+
+repositories{
+    mavenLocal()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+    }
+}
+dependencies {
+    implementation('org.apache.spark:spark-sql_2.11:2.4.0-cdh6.3.3')
+}

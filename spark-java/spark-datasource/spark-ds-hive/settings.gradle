@@ -1,0 +1,9 @@
+rootProject.name = 'spark-ds-hive'
+
+include "spark-hive-config"
+include "spark-hive-metastore"
+include "spark-hive-db"
+include "spark-hive-model"
+include "spark-hive-storage"
+
+

@@ -1,0 +1,33 @@
+{
+  "before": {
+    "id": 2,
+    "created": 1584294093130,
+    "modified": 1584236853130,
+    "username": "hado",
+    "password": "hado",
+    "age": 1
+  },
+  "after": {
+    "id": 2,
+    "created": 1584294093130,
+    "modified": 1584323253130,
+    "username": "hado",
+    "password": "hado",
+    "age": 1
+  },
+  "source": {
+    "version": "1.0.3.Final",
+    "connector": "sqlserver",
+    "name": "debezium",
+    "ts_ms": 1584345417750,
+    "snapshot": "false",
+    "db": "move",
+    "schema": "dbo",
+    "table": "users",
+    "change_lsn": "00000032:000074f8:0002",
+    "commit_lsn": "00000032:000074f8:0003",
+    "event_serial_no": 2
+  },
+  "op": "u",
+  "ts_ms": 1584345422306
+}

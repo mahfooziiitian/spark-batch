@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group 'com.mahfooz.spark2'
+version '1.0'
+
+dependencies {
+    testImplementation group: 'com.holdenkarau', name: 'spark-testing-base_2.11', version: '2.4.5_0.14.0'
+    implementation( "org.apache.spark:spark-sql_2.11:2.4.0-cdh6.3.3")
+}
+
+test {
+    useJUnitPlatform()
+}

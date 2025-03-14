@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.slimlinemodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.clausemodel" schemaLocation="ClauseModel.xsd"/>
+  <xs:element name="SlimLine" type="SlimLine" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.slimlinemodel"/>
+  <xs:complexType name="SlimLine">
+    <xs:sequence>
+      <xs:element name="BondType" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="CoveragePartType" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="QuotaShare" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="REPSubtype" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="SAACode" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Category" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Code" type="xs:int" minOccurs="0" nillable="true" />
+            <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="SubCategory" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SlimLineCoverages" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="Clause" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.clausemodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SlimExposure" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="CorporateAssets" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="ForeignEmployees" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="USEmployees" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="TotalEmployees" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="RatePercentage" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="RegisteredRepresentives" type="xs:long" minOccurs="0" nillable="true" />
+            <xs:element name="Revenue" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="RiskCountry" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="CountryCreditRating" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SURSubtype" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="CedingCommission" type="xs:decimal" minOccurs="0" nillable="true" />
+      <xs:element name="SlimLineCosts" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="ActualAdjRate" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="ActualAmount" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="ActualBaseRate" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="ActualTermAmount" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="Description_Esu" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="EffectiveDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="ExpirationDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="Overridable" type="xs:boolean" minOccurs="0" nillable="true" />
+                  <xs:element name="OverrideSource" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="StandardAmount" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="StandardAmountBilling" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="StandardTermAmount" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="StandardTermAmountBilling" type="xs:string" minOccurs="0" nillable="true" />
+                </xs:sequence>
+               
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

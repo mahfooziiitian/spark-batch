@@ -1,0 +1,30 @@
+{
+    "topics_arr": [
+        {
+            "tp_nm": "Topic_name1",
+            "partitions": [
+                {
+                    "id": "0",
+                    "offset": 20
+                },
+                {
+                    "id": "1",
+                    "offset": 24
+                }
+            ]
+        },
+        {
+            "tp_nm": "Topic_name2",
+            "partitions": [
+                {
+                    "id": "0",
+                    "offset": 20
+                },
+                {
+                    "id": "1",
+                    "offset": 24
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+rootProject.name = 'spark-dsl'
+
+include('spark-dsl-model')
+include('spark-dsl-aggregation')

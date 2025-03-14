@@ -1,0 +1,25 @@
+@startuml "spark-application"
+
+[Spark application] as sparkApp
+[Job] as job1
+[Job] as job2
+[Job] as job3
+
+[Stage1]
+[Stage2]
+[Task1]
+[Task2]
+
+sparkApp -r-> job1
+sparkApp -d-> job2
+sparkApp -u-> job3
+
+job2 -r-> [Stage1]
+job2 -r-> [Stage2]
+
+[Stage1] -d-> [Stage2]
+
+[Stage1] -r-> [Task1]
+[Stage1] -r-> [Task2]
+
+@enduml

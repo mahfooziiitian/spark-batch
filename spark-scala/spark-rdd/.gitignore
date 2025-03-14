@@ -1,0 +1,14 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+.classpath
+.project
+*.iml
+.metals/
+.bloop/
+
+
+# Ignore Gradle build output directory
+.vscode/
+.idea/
+target/
+build/

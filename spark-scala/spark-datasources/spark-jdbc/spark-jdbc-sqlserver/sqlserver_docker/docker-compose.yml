@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  sqlserver:
+    image: spark-jdbc-sqlserver
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "1433:1433"
+    env_file:
+      - sqlserver.env
+      - sa_password.env
+    volumes:
+      - sql_system:/var/opt/mssql/
+      - sql_data:/var/opt/sqlserver/data
+      - sql_log:/var/opt/sqlserver/log
+      - sql_backup:/var/opt/sqlserver/backup
+volumes:
+  sql_system:
+  sql_data:
+  sql_log:
+  sql_backup:

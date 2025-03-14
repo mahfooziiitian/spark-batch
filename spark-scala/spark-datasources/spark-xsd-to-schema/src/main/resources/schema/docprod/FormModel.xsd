@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.formmodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Form" type="Form" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.formmodel"/>
+  <xs:complexType name="Form">
+    <xs:sequence>
+      <xs:element name="FormNumber" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="FormPatternCode" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="FormEffDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="Pattern" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Edition" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="RefCode" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Priority" type="xs:int" minOccurs="0" nillable="true" />
+            <xs:element name="ContentAuthor_Esu" type="xs:boolean" minOccurs="0" nillable="true" />
+            <xs:element name="FormPatternPacket_Esu" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="FormDescription" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="EndorsementNumber" type="xs:int" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

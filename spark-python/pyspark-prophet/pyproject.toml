@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "pysparkprophet"
+version = "0.1.0"
+description = ""
+authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyspark = "^3.5.1"
+prophet = "^1.1.5"
+ipykernel = "^6.29.5"
+numpy = "1.26.4"
+plotly = "^5.22.0"
+nbformat = "^5.10.4"
+jupyter = "^1.0.0"
+ipywidgets = "^8.1.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

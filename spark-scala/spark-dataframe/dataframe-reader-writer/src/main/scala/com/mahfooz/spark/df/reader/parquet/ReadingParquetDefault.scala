@@ -1,0 +1,20 @@
+package com.mahfooz.spark.df.reader.parquet
+
+import org.apache.spark.sql.SparkSession
+
+object ReadingParquetDefault {
+
+  def main(args: Array[String]): Unit = {
+
+    val PREFIX_PATH="D:\\data\\flight-data\\parquet"
+
+    val spark = SparkSession.builder
+      .appName(getClass.getSimpleName)
+      .master("local")
+      .getOrCreate()
+
+    spark.read
+      .load(PREFIX_PATH+"\\2010-summary.parquet")
+      .show(5)
+  }
+}

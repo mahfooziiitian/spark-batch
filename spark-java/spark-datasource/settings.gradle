@@ -1,0 +1,8 @@
+rootProject.name = 'spark-datasource'
+
+include "spark-ds-generic"
+include "spark-ds-file"
+include "spark-ds-jdbc"
+include "spark-ds-avro"
+
+

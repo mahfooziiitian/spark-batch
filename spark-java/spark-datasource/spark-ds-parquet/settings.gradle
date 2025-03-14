@@ -1,0 +1,8 @@
+rootProject.name = 'spark-ds-parquet'
+
+include "spark-parquet-basic"
+include "spark-parquet-shell"
+include "spark-parquet-config"
+include "spark-parquet-schema"
+
+

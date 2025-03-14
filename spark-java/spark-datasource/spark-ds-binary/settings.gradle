@@ -1,0 +1,3 @@
+rootProject.name = 'spark-ds-binary'
+include 'spark-binary-basic'
+

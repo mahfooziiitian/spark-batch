@@ -1,0 +1,25 @@
+plugins {
+    id 'scala'
+}
+
+
+group 'com.mahfooz.spark'
+version '1.0'
+
+repositories {
+    mavenLocal()
+    maven {
+        url "https://repository.cloudera.com/artifactory/cloudera-repos/"
+    }
+    mavenCentral()
+
+}
+
+dependencies {
+    implementation 'org.scala-lang:scala-library:2.11.12'
+    testImplementation 'org.scalatest:scalatest_2.11:3.0.0'
+    testImplementation 'junit:junit:4.12'
+    implementation 'org.apache.spark:spark-core_2.11:2.4.0-cdh6.3.3'
+    implementation 'org.apache.spark:spark-sql_2.11:2.4.0-cdh6.3.3'
+    implementation('com.crealytics:spark-excel_2.11:0.13.1')
+}

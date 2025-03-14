@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.dwhbatch" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.issuancemodel" schemaLocation="IssuanceModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.policychangemodel" schemaLocation="PolicyChangeModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.cancellationmodel" schemaLocation="CancellationModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.submissionmodel" schemaLocation="SubmissionModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.reinstatementmodel" schemaLocation="ReinstatementModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.rewritemodel" schemaLocation="RewriteModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.renewalmodel" schemaLocation="RenewalModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.renewalsubmissionmodel" schemaLocation="RenewalSubmissionModel.xsd"/>
+  <xs:element name="DWHBatch" type="DWHBatch" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.dwhbatch"/>
+  <xs:complexType name="DWHBatch">
+    <xs:sequence>
+      <xs:element name="Header" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="BatchId" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="TotalNoOfRecords" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Records" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Issuance" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Issuance" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.issuancemodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="PolicyChange" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="PolicyChange" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.policychangemodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Cancellation" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Cancellation" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.cancellationmodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Submission" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Submission" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.submissionmodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Reinstatement" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Reinstatement" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.reinstatementmodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Rewrite" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Rewrite" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.rewritemodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Renewal" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Renewal" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.renewalmodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="RenewalSubmission" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="Renewal" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.renewalsubmissionmodel"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

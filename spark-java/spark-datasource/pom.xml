@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.mahfooz.spark</groupId>
+    <artifactId>spark-datasource</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0</version>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>spark-ds-avro</module>
+        <module>spark-ds-binary</module>
+        <module>spark-ds-delta</module>
+        <module>spark-ds-file</module>
+        <module>spark-ds-generic</module>
+        <module>spark-ds-hdfs</module>
+        <module>spark-ds-hive</module>
+        <module>spark-ds-jdbc</module>
+        <module>spark-ds-modes</module>
+        <module>spark-ds-orc</module>
+        <module>spark-ds-parquet</module>
+        <module>spark-mongodb-ds</module>
+        <module>spark-ds-protobuf</module>
+    </modules>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

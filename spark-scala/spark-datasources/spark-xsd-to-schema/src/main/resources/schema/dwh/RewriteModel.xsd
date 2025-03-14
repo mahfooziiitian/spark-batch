@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.rewritemodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policyperiodmodel" schemaLocation="../common/PolicyPeriodModel.xsd"/>
+  <xs:element name="Rewrite" type="Rewrite" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.dwh.rewritemodel"/>
+  <xs:complexType name="Rewrite">
+    <xs:sequence>
+      <xs:element name="LatestPeriod" type="PolicyPeriod" minOccurs="0" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policyperiodmodel"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

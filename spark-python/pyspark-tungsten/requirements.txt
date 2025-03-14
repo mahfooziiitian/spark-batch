@@ -1,0 +1,6 @@
+pyspark
+pytest
+black
+chispa
+pandas
+PyArrow >= 4.0.0

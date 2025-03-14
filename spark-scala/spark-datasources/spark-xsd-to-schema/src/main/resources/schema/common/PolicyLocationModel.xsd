@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policylocationmodel" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.accountlocationmodel" schemaLocation="AccountLocationModel.xsd"/>
+  <xs:element name="PolicyLocation" type="PolicyLocation" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policylocationmodel"/>
+  <xs:complexType name="PolicyLocation">
+    <xs:sequence>
+      <xs:element name="AccountLocation" type="AccountLocation" minOccurs="0" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.accountlocationmodel"/>
+    </xs:sequence>
+    
+  </xs:complexType>
+</xs:schema>

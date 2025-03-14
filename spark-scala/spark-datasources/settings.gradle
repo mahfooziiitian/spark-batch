@@ -1,0 +1,23 @@
+rootProject.name = 'spark-datasources'
+include 'spark-jdbc'
+include 'spark-hive'
+include 'spark-generic'
+include 'spark-orc'
+include 'spark-csv'
+include 'spark-parquet'
+include 'spark-json'
+include 'spark-partition'
+include 'spark-text'
+include 'spark-ds'
+include 'spark-jdbc:spark-jdbc-mysql'
+include 'spark-jdbc:spark-jdbc-postgres'
+findProject(':spark-jdbc:spark-jdbc-postgres')?.name = 'spark-jdbc-postgres'
+include 'spark-jdbc:spark-jdbc-oracle'
+findProject(':spark-jdbc:spark-jdbc-oracle')?.name = 'spark-jdbc-oracle'
+include 'spark-jdbc:spark-jdbc-sqlserver'
+findProject(':spark-jdbc:spark-jdbc-sqlserver')?.name = 'spark-jdbc-sqlserver'
+include("SparkAzureDatalake")
+include("SparkDelta")
+findProject('SparkAzureDatalake')?.name = 'SparkAzureDatalake'
+findProject('SparkDelta')?.name = 'SparkDelta'
+

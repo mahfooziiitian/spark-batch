@@ -1,0 +1,15 @@
+@startuml "catalyst"
+
+
+
+[SQL Query] -r-> [Unresolved Logical Plan]
+[DataFrame] -d-> [Unresolved Logical Plan]
+
+[Unresolved Logical Plan] -r-> [Logical Plan] : "Catalog"
+[Logical Plan] -r-> [Optimized Logical Plan] : "Logical Plan Optimization"
+[Optimized Logical Plan] -d-> [Physical Plan] : "Physical Planning"
+
+[Physical Plan] -l-> [Selected Physical Plan]: "Cost Based Model"
+[Selected Physical Plan] -l-> [RDD] : "Code generation"
+
+@enduml

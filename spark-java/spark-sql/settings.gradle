@@ -1,0 +1,5 @@
+rootProject.name="spark-sql"
+
+include "spark-sql-jdbc"
+include "spark-sql-hive"
+include "spark-sql-view"

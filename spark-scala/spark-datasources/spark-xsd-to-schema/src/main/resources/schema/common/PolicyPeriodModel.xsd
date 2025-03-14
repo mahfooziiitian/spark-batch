@@ -1,0 +1,763 @@
+<?xml version="1.0"?>
+<xs:schema targetNamespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policyperiodmodel" elementFormDefault="qualified" xmlns:gw="http://guidewire.com/xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.generalliabilityline_glemodel" schemaLocation="GeneralLiabilityLine_GLEModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policylocationmodel" schemaLocation="PolicyLocationModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.slimlinemodel" schemaLocation="SlimLineModel.xsd"/>
+  <xs:import namespace="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.formmodel" schemaLocation="../docprod/FormModel.xsd"/>
+  <xs:element name="PolicyPeriod" type="PolicyPeriod" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policyperiodmodel"/>
+  <xs:complexType name="PolicyPeriod">
+    <xs:sequence>
+      <xs:element name="PolicyNumber" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PeriodStart" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="PeriodEnd" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="BaseState" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="GeneralLiabilityLine_GLE" type="GeneralLiabilityLine_GLE" minOccurs="0" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.generalliabilityline_glemodel"/>
+      <xs:element name="WritingApproach_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PrimaryInsuredName" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PrimaryLocation" type="PolicyLocation" minOccurs="0" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.policylocationmodel"/>
+      <xs:element name="UWCompany" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ProducerCodeOfRecord" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Address" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="AddressLine1" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="City" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="PostalCode" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="State" type="xs:string" minOccurs="0" nillable="true"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Organization" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ProducingBrokerName_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="BindingBrokerName_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ESUUndrwritersACTIVEForDep_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ESUUAForDeptACTIVE_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="BranchOfficeCodeforUW_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="SICCode_Esu" type="xs:int" minOccurs="0" nillable="true" />
+      <xs:element name="TransactionCostRPT" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="Policy" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Contingencies" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Account" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Ticker_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="Watchlist_Ext" type="xs:boolean" minOccurs="0" nillable="true" />
+                  <xs:element name="AMBestRating_Ext" type="xs:string" minOccurs="0" nillable="true"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="OwnershipType_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CommissionPercent_Esu" type="xs:decimal" minOccurs="0" nillable="true" />
+      <xs:element name="offeringCode" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PrimaryorExcess_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Job" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="CloseDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="DisplayType" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="EndorsementNumber" type="xs:int" minOccurs="0" nillable="true" />
+            <xs:element name="JobNumber" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="OriginalQuoteDate_Esu" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="NonBindingIndicationDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="NonBindingPremium_Ext" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="ReleasedNonbinding_Esu" type="xs:boolean" minOccurs="0" nillable="true" />
+            <xs:element name="EscapeAccountID" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="producerContactEmail" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="BoundDate_Esu" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="EditEffectiveDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="ClearedDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="IssueDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="QuoteDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="TotalPremiumRPT" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="Offering" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="BranchName" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="BranchNumber" type="xs:int" minOccurs="0" nillable="true" />
+      <xs:element name="Selected" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="ValidQuote" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="Status" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="CreateTime" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="UpdateTime" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="BoundByUser_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Roles_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="xs:string" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ClearedByUser_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Roles_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="xs:string" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="IssuedByUser_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Roles_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="xs:string" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="QuotedByUser_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Roles_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" type="xs:string" minOccurs="0" maxOccurs="unbounded" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NumberofPayments_Ext" type="xs:int" minOccurs="0" nillable="true" />
+      <xs:element name="RunOffEffectiveDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="RunOffExpirationDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="RelatedPolicyNumber_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ProjectName_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="LegalReviewRequired_Ext" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="InsuredCreditRating" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="TargetName_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="WINSCurrency_Ext" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="TotalUSDPremium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+      <xs:element name="InternationalPremiumTax_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="IPTAmount" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="IPTPercentage" type="xs:int" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PaymentBreakdown_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="PaymentAmount" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="PaymentEffectiveDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="PaymentExpirationDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="PaymentDue" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="PaymentBreakdownIndex" type="xs:int" minOccurs="0" nillable="true" />
+                </xs:sequence>
+               
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="BindFXRate_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="FromCurrency" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="FXRateType" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Market" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="MarketTime" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="ToCurrency" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Rate" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="RetrievedAt" type="xs:dateTime" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="QuoteFXRate_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="FromCurrency" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="FXRateType" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Market" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="MarketTime" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="Rate" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="RetrievedAt" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="ToCurrency" type="xs:string" minOccurs="0" nillable="true"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SlimLine" type="SlimLine" minOccurs="0" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.common.slimlinemodel"/>
+      <xs:element name="AffiliatedEntities_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="ObligorRiskRating_Ext" minOccurs="0" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="CreditRating_Ext" minOccurs="0" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="RelationshipToPNI_Esu" minOccurs="0" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+               
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Verification_Ext" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="Justification_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PolicyChange" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="EndorsementIssuedDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+            <xs:element name="PolicyChangeType_Esu" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="InsuredType_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Division_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="AssumedorDirect_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SubmissionRenewal_Esu" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="RunOffDetails_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="RunOffPremium_Ext" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PNIContactDenorm" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="FEINOfficialID" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="EstimatedPremium" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PreferredSettlementCurrency" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="CommissionAmt_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="IndustryCode_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="TaxAndSurchargesRPT_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="UnderWritingFeesRPT_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Currency" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="Amount" type="xs:decimal" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SelectedPaymentPlan" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="WrittenDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="NewlyAddedForms" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" type="Form" minOccurs="0" maxOccurs="unbounded" nillable="true" xmlns="http://guidewire.com/pc/gx/com.everestre.integ.gx.docprod.formmodel"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="DepartmentCodes_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MarketSegment_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CloseDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+      <xs:element name="EnterpriseValue_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="EnoSubType_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ScheduleOfUnderlying" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="EverestLayer_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Limit_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Carrier" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="PolicyNumber" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="Retention" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="WritingPaper" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="Premium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="WritingCompany" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Carrier" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="CarrierCode" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="PartOf_Esu" type="xs:decimal" minOccurs="0" nillable="true" />
+                      </xs:sequence>
+                     
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="SchUnderlyingLayer_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Limit_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Premium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Carrier" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="PolicyNumber" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="Retention" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="WritingPaper" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="WritingCompany" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Carrier" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="CarrierCode" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                     
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="PrecedingLayer_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Limit_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Premium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Carrier" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="PolicyNumber" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="Retention" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="WritingPaper" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="WritingCompany" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Carrier" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="CarrierCode" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                     
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="PrimaryLayer_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="Limit_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Premium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                        <xs:element name="Carrier" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="PolicyNumber" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="Retention" type="xs:string" minOccurs="0" nillable="true" />
+                        <xs:element name="WritingPaper" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                        <xs:element name="WritingCompany" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Carrier" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="CarrierCode" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                     
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="UnderlyingLayer_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="WritingCompany" minOccurs="0" nillable="true">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="Carrier" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+                              <xs:element name="CarrierCode" type="xs:string" minOccurs="0" nillable="true" />
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                     
+                    </xs:complexType>
+                  </xs:element>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="ChangeInCostCRI" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostCYB" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostCYBThirdParty" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostDNO" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostEMP" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostENO" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostEPL" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostFID" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostKNR" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostSDA" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="ChangeInCostSIC" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="Contingencies" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Entry" minOccurs="0" maxOccurs="unbounded" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="ReceivedDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="Status" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="ApprovedDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="Description" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="ApprovedBy_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="ReceivedBy_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="DisplayName" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="CloseDate" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="AddedBy_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="AddedOn" type="xs:dateTime" minOccurs="0" nillable="true" />
+                </xs:sequence>
+               
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="RunOffPolicyIndicator" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="RateReleaseID_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="RateRequestUID_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="PremiumFinance" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="PremiumFinanceContacts" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="City" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="CompanyName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="ContactName" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="ContactPhoneNumber" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Country" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="State" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="StreetAddress1" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="StreetAddress2" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="ZipCode" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PolicyAddress" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Website_Ext" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="PriceMonitorInformation" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="AnnualizedPremiumChange" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="AnnualizedPremiumLayerChange" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="Comments" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="ExposureChange" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="LayerChange" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="PredominantCoverage" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="PredominantExposureBase" type="xs:string" minOccurs="0" nillable="true"/>
+            <xs:element name="RateChange" type="xs:decimal" minOccurs="0" nillable="true" />
+            <xs:element name="PriceMonitorExpiring_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="AccountName_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="Attachment_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="BusinessSegment_Ext" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="BaseRate_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="Commission" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="EffectiveDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="ExpirationDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="ExposureAmount_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="Limit_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="Ownership_Ext" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="PartOf_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="PolicyNumber_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="PredominantCoverage" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="PredominantExpBase" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="Premium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="MRDHBusinessSegment" type="xs:string" minOccurs="0" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="PriceMonitorRenewal_Ext" minOccurs="0" nillable="true">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="AccountName_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="Attachment_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="BaseRate_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="BusinessSegment_Ext" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="Commission" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="EffectiveDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="ExpirationDate_Ext" type="xs:dateTime" minOccurs="0" nillable="true" />
+                  <xs:element name="ExposureAmount_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="Limit_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="Ownership_Ext" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="PartOf_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                  <xs:element name="PolicyNumber_Ext" type="xs:string" minOccurs="0" nillable="true" />
+                  <xs:element name="PredominantCov" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="PredominantExpBase" type="xs:string" minOccurs="0" nillable="true"/>
+                  <xs:element name="Premium_Ext" type="xs:decimal" minOccurs="0" nillable="true" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="TermNumber" type="xs:int" minOccurs="0" nillable="true" />
+      <xs:element name="PriorPolicy_Esu" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="NonRecurringPolicy_Esu" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="MRDHIndustryCode_Ext" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="CedingCompany_Ext" type="xs:string" minOccurs="0" nillable="true" />
+      <xs:element name="IsManuscriptPolicy_Esu" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="MRDHDepartmentCode" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Code" type="xs:string" minOccurs="0" nillable="true" />
+            <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="MRDHBranchOfficeCodeforUW_Esu" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SoftBindIndicator_Ext" type="xs:boolean" minOccurs="0" nillable="true" />
+      <xs:element name="MRDHInsuredType" minOccurs="0" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Name" type="xs:string" minOccurs="0" nillable="true" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="NaicsCode" type="xs:string" minOccurs="0" nillable="true" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
