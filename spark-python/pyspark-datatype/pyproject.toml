@@ -1,0 +1,62 @@
+[project]
+name = "pyspark-datatype"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flake8-pyproject>=1.2.3",
+    "ipykernel>=6.29.5",
+    "pyspark>=3.5.5",
+    "safety>=3.3.1",
+]
+
+[dependency-groups]
+dev = [
+    "autoflake>=2.3.1",
+    "bandit>=1.8.3",
+    "black[jupyter]>=25.1.0",
+    "flake8>=7.1.2",
+    "isort>=6.0.1",
+    "pytest-cov>=6.0.0",
+    "pytest-sugar>=1.0.0",
+    "radon>=6.0.1",
+    "taskipy>=1.14.1",
+]
+
+[tool.flake8]
+extend-ignore = "E203"
+max-line-length = 128
+exclude =[
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    ".venv",
+    "build",
+    "dist"
+]
+max-complexity = 10
+
+[tool.bandit]
+# Enable recursive scanning
+targets = ["."]
+# Exclude test and migration files
+exclude_dirs = ["tests", "migrations", ".venv"]
+# Set the severity level (low, medium, high)
+severity = "medium"
+# Only report high-confidence issues
+confidence = "high"
+# Output format (json, csv, txt, xml, yaml)
+format = "json"
+
+
+[tool.taskipy.tasks]
+format = 'echo ========Running black=========; uv run black . ; echo ========Finished black========'
+fix_import = 'echo ========Running autoflake=====; uv run autoflake --remove-all-unused-imports --remove-unused-variables --in-place --recursive src; echo ========Finished autoflake===='
+sort_import = 'echo ========Running isort=========; uv run isort --profile black .; echo ========Finished isort========'
+lint = 'echo ========Running flake8========; uv run flake8 --statistics .; echo ========Finished flake8======='
+quality = 'task fix_import && task sort_import && task format  && task lint' 
+cc = "echo ========Running radon=========; uv run radon cc . -a ; echo ========Finished radon========"
+bandit = "echo ========Running bandit========; uv run bandit -c pyproject.toml . -r; echo ========Finished bandit======="
+safety = "echo ========Running safety========; uv run safety scan ; echo ========Finished safety======="
+secure = "task bandit && task safety"

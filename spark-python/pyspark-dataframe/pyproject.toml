@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 pyspark = "^3.5.1"
+ipykernel = "^6.29.5"
 
 
 [tool.poetry.group.dev.dependencies]
