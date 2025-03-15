@@ -5,9 +5,9 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
 os.environ["PYSPARK_PYTHON"] = sys.executable
-os.environ["JAVA_HOME"] = "E:\\Languages\\java\\jdk\\jdk-11"
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     spark = SparkSession.builder.appName("DynamicPivot").getOrCreate()
 
     data = [
