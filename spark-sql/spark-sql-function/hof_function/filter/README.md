@@ -26,3 +26,10 @@
     array(named_struct('name', 'Alice', 'age', 25), named_struct('name', 'Bob', 'age', 30)),
     s -> s.age > 25
     ) AS filtered_structs;
+
+## Un named struct
+
+    SELECT FILTER(
+        ARRAY(STRUCT('Alice', 25), STRUCT('Bob', 30)),
+        s -> s.col2 > 25
+    ) AS filtered_structs;
