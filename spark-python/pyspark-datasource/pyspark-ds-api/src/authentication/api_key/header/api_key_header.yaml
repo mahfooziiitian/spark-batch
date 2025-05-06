@@ -1,0 +1,24 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "https://api.openweathermap.org/data/2.5/weather"
+        options:
+          method: "GET"
+          authentication:
+            type: "apikey"
+            in: "header"
+            name: "appid"
+            value: "5e0677c66d584c9ea41746b19e86d4da"
+          headers:
+            Accept: "application/json"
+          queryParams:
+            lat: 44.34
+            lon: 10.99
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5

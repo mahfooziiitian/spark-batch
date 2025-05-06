@@ -1,0 +1,20 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "http://localhost:8081/users"
+        options:
+          method: "GET"
+          authentication:
+            type: "basic"
+            username: "admin"
+            password: "malam"
+          headers:
+            Accept: "application/json"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5
