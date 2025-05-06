@@ -1,0 +1,29 @@
+[project]
+name = "pyspark-ds-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.12",
+    "pandas>=2.2.3",
+    "pyaml>=25.1.0",
+    "pyspark>=3.5.5",
+    "requests>=2.32.3",
+    "uvicorn>=0.34.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "flake8-pyproject>=1.2.3",
+    "isort>=6.0.1",
+    "pytest-sugar>=1.0.0",
+]
+
+[tool.flake8]
+ignore = ['E231', 'E241']
+per-file-ignores = ['__init__.py:F401']
+max-line-length = 128
+count = true
+exclude = [".venv"]

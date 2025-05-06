@@ -1,0 +1,22 @@
+data_sources:
+  api_source:
+    type: "rest"
+    endpoint: "http://localhost:8000/items"
+    method: "GET"
+    authentication:
+      type: "bearer"
+      token: "abcdef123456"
+    headers:
+      Accept: "application/json"
+    queryParams:
+      skip: 0
+      limit: 50
+    responseFormat: "json"
+    pagination:
+      enabled: true
+      skip: 10
+      limit: 100
+      pageSize: 100
+    retries:
+      maxAttempts: 3
+      delaySeconds: 5

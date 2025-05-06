@@ -1,0 +1,28 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "https://api.spotify.com/v1/search"
+        options:
+          method: "GET"
+          authentication:
+            method: "POST"
+            headers:
+              Content-Type: "application/json"
+            type: "oauth2_client_credentials"
+            tokenUrl: "https://accounts.spotify.com/api/token"
+            clientId: "dose242fe0add5c2245a26a7aa67f8ee13b7"
+            clientSecret: "1e5e3928-031f-42c7-b27f-fc59ddfd1a40"
+            # scope: "read:data"
+          headers:
+            Accept: "application/json"
+          queryParams:
+            q: "daft punk"
+            type: "artist"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5

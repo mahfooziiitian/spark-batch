@@ -1,0 +1,62 @@
+data_sources:
+  api_source:
+    type: "rest"
+    endpoint: "http://localhost:8000/items"
+    method: "GET"
+    authentication:
+      type: "oauth2"
+      tokenUrl: "https://api.example.com/oauth/token"
+      clientId: "your-client-id"
+      clientSecret: "your-client-secret"
+      scope: "read:data"
+
+    headers:
+      Authorization: "Bearer YOUR_ACCESS_TOKEN"
+      Accept: "application/json"
+    queryParams:
+      skip: 0
+      limit: 50
+    responseFormat: "json" # or "csv", "xml", etc.
+    # pagination:
+    #   enabled: true
+    #   pageParam: "page"
+    #   pageSizeParam: "size"
+    #   pageSize: 100
+    pagination:
+      enabled: true
+      skip: 10
+      limit: 100
+      pageSize: 100
+    retries:
+      maxAttempts: 3
+      delaySeconds: 5
+
+  basic_api_source:
+    type: "rest"
+    endpoint: "http://localhost:8000/items"
+    method: "GET"
+    authentication:
+      type: "basic"
+      username: "user123"
+      password: "pass456"
+
+    headers:
+      Authorization: "Bearer YOUR_ACCESS_TOKEN"
+      Accept: "application/json"
+    queryParams:
+      skip: 0
+      limit: 50
+    responseFormat: "json" # or "csv", "xml", etc.
+    # pagination:
+    #   enabled: true
+    #   pageParam: "page"
+    #   pageSizeParam: "size"
+    #   pageSize: 100
+    pagination:
+      enabled: true
+      skip: 10
+      limit: 100
+      pageSize: 100
+    retries:
+      maxAttempts: 3
+      delaySeconds: 5
