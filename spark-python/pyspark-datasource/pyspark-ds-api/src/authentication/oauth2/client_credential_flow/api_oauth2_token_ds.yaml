@@ -8,6 +8,7 @@ extracts:
         location: "https://api.spotify.com/v1/search"
         options:
           method: "GET"
+          session_timeout: 30
           authentication:
             method: "POST"
             headers:

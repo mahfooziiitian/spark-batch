@@ -1,0 +1,24 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "api_tls_schema.json"
+        location: "https://localhost:8443/items"
+        options:
+          method: "GET"
+          authentication:
+            type: "mtls"
+            certFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/client.crt"
+            keyFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/client.key"
+            caFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/ca.pem"
+            # certFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.crt"
+            # keyFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.key"
+            # caFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/ca.pem"
+          headers:
+            Accept: "application/json"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5

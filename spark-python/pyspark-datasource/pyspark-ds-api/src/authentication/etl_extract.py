@@ -7,6 +7,8 @@ import yaml
 from pyspark.sql import SparkSession
 from requests.auth import HTTPBasicAuth
 
+from schema.json_schema import read_json_schema
+
 os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
@@ -42,11 +44,7 @@ def get_auth_headers(auth):
             "scope": auth.get("scope", ""),
         }
         print("Data: ", data)
-        token_resp = requests.post(
-            url=auth["tokenUrl"],
-            headers=headers,
-            data=data,
-        )
+        token_resp = requests.post(url=auth["tokenUrl"], headers=headers, data=data, timeout=60)
         token_resp.raise_for_status()
         token = token_resp.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}, None
@@ -65,6 +63,7 @@ def get_auth_headers(auth):
             headers=headers,
             auth=basic_auth,
             data=data,
+            timeout=60,
         )
         token_resp.raise_for_status()
         token = token_resp.json()["access_token"]
@@ -115,14 +114,15 @@ def read_api(spark, config):
                     auth=auth,
                     cert=cert,
                     verify=auth_cfg.get("caFile", True),
+                    timeout=60,
                 )
                 print(f"Response status code: {response.status_code}")
-                print(f"Response content: {response.content}")
                 response.raise_for_status()
                 if responseFormat == "json":
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
+                        print(f"Response content: {response.json()}")
                         return response.json()
                     else:
                         raise Exception(f"Unexpected status code: {response.status_code}")
@@ -130,21 +130,21 @@ def read_api(spark, config):
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
-                        return response.text
+                        return response.text()
                     else:
                         raise Exception(f"Unexpected status code: {response.status_code}")
                 elif responseFormat == "xml":
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
-                        return response.text
+                        return response.text()
                     else:
                         raise Exception(f"Unexpected status code: {response.status_code}")
                 elif responseFormat == "csv":
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
-                        return response.text
+                        return response.text()
                     else:
                         raise Exception(f"Unexpected status code: {response.status_code}")
                 else:
@@ -156,28 +156,42 @@ def read_api(spark, config):
     # 🔁 Paginated or Single-shot Request
     if pagination:
         print("Paginated request")
+        # default values
         current_skip = pagination.get("skip", 0)
         limit = pagination.get("limit", 100)
         page_size = pagination.get("pageSize", 100)
         while current_skip < limit:
             response_json = make_request({"skip": current_skip, "limit": page_size})
-            extracted = response_json
-            all_data.append(extracted)
+            if isinstance(response_json, list):
+                all_data.extend(response_json)
+            else:
+                extracted = response_json
+                all_data.append(extracted)
             current_skip += page_size
     else:
         # 📦 Single non-paginated request
         print("Non paginated request")
         response_json = make_request()
-        print(f"Response JSON: {response_json}")
-        extracted = response_json
-        all_data.append(extracted)
+        print(f"Type : {type(response_json)}")
+        if isinstance(response_json, list):
+            print(f"Response JSON: {response_json}")
+            all_data.extend(response_json)
+        else:
+            extracted = response_json
+            all_data.append(extracted)
     print(f"Extracted {len(all_data)} records from API.")
     print(f"Response: {all_data}")
     # 🧪 Convert to Spark DataFrame
+    schema = opts = src["options"].get("schema", None)
+    if schema is not None and schema.endsWith(".json"):
+        schema = read_json_schema(schema)
     return create_dataframe_json(spark, all_data)
 
 
-def create_dataframe_json(spark: SparkSession, all_data: list):
+def create_dataframe_json(spark: SparkSession, all_data: list, schema=None):
+    if schema:
+        print(f"Creating DataFrame with schema: {schema}")
+        return spark.createDataFrame(all_data, schema=schema)
     return spark.createDataFrame(all_data)
 
 
@@ -201,7 +215,7 @@ def main():
     spark = SparkSession.builder.appName("REST_API_Ingestion").getOrCreate()
     config_path = Path(__file__).parents[0] / "api_key_query.yaml"
     print(f"Loading config from {config_path}")
-    with open(config_path, "r") as f:
+    with open(file=config_path, mode="r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
     print(f"Config loaded: {config}")
     print("Extracting data from API...")
@@ -210,5 +224,5 @@ def main():
     print("Data extraction complete.")
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
