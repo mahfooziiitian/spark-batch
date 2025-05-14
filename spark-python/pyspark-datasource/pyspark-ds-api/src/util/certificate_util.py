@@ -35,7 +35,13 @@ def generate_assertion(public_key_path: str, private_key_path: str) -> str:
     return auth_token
 
 
+<<<<<<< HEAD
 def generate_bearer_token(public_key_path: str, private_key_path: str, base_url: str, path: str) -> str:
+=======
+def generate_bearer_token(
+    public_key_path: str, private_key_path: str, base_url: str, path: str
+) -> str:
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
     """Generates a JWT Bearer token for GPCS."""
     assertion = generate_assertion(public_key_path, private_key_path)
     try:
@@ -51,7 +57,13 @@ def generate_bearer_token(public_key_path: str, private_key_path: str, base_url:
         raise Exception("STS Authentication Error", e)
 
 
+<<<<<<< HEAD
 def get_cert_from_url(hostname: str, port: int = 443, cert_file: str = "server_cert.pem") -> None:
+=======
+def get_cert_from_url(
+    hostname: str, port: int = 443, cert_file: str = "server_cert.pem"
+) -> None:
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
     """Fetches the SSL certificate from the specified hostname and saves it in PEM format."""
     context = ssl.create_default_context()
 
@@ -70,7 +82,13 @@ def get_cert_from_url(hostname: str, port: int = 443, cert_file: str = "server_c
 
 
 def main():
+<<<<<<< HEAD
     get_cert_from_url(hostname="api.openweathermap.org", port=443, cert_file="weather.pem")
+=======
+    get_cert_from_url(
+        hostname="api.openweathermap.org", port=443, cert_file="weather.pem"
+    )
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
 
 
 if __name__ == "__main__":

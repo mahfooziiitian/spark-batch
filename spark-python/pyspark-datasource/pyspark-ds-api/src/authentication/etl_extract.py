@@ -82,28 +82,36 @@ def read_api(spark, config):
                         print(f"Response content: {response.json()}")
                         return response.json()
                     else:
-                        raise Exception(f"Unexpected status code: {response.status_code}")
+                        raise Exception(
+                            f"Unexpected status code: {response.status_code}"
+                        )
                 elif responseFormat == "text":
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
                         return response.text()
                     else:
-                        raise Exception(f"Unexpected status code: {response.status_code}")
+                        raise Exception(
+                            f"Unexpected status code: {response.status_code}"
+                        )
                 elif responseFormat == "xml":
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
                         return response.text()
                     else:
-                        raise Exception(f"Unexpected status code: {response.status_code}")
+                        raise Exception(
+                            f"Unexpected status code: {response.status_code}"
+                        )
                 elif responseFormat == "csv":
                     if response.status_code == 204:
                         return {}
                     if response.status_code == 200:
                         return response.text()
                     else:
-                        raise Exception(f"Unexpected status code: {response.status_code}")
+                        raise Exception(
+                            f"Unexpected status code: {response.status_code}"
+                        )
                 else:
                     raise Exception(f"Unsupported response format: {responseFormat}")
             except Exception as e:

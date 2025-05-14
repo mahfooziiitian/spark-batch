@@ -33,7 +33,13 @@ def get_auth_headers(auth):
             "scope": auth.get("scope", ""),
         }
         print("Data: ", data)
+<<<<<<< HEAD
         token_resp = requests.post(url=auth["tokenUrl"], headers=headers, data=data, timeout=60)
+=======
+        token_resp = requests.post(
+            url=auth["tokenUrl"], headers=headers, data=data, timeout=60
+        )
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
         token_resp.raise_for_status()
         token = token_resp.json()["access_token"]
         return {"Authorization": f"Bearer {token}"}, None

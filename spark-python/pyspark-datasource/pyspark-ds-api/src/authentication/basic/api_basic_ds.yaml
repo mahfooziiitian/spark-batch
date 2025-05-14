@@ -4,7 +4,7 @@ extracts:
     source:
       params:
         format: "api"
-        schema: "json"
+        # schema: "json"
         location: "http://localhost:8081/users"
         options:
           method: "GET"
@@ -18,3 +18,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
+          filepath: "api_basic_ds.json"
