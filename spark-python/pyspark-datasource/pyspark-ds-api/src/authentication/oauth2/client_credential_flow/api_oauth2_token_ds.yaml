@@ -12,11 +12,11 @@ extracts:
           authentication:
             method: "POST"
             headers:
-              Content-Type: "application/json"
-            type: "oauth2_client_credentials"
+              Content-Type: "application/x-www-form-urlencoded"
+            type: "oauth2_form_client_credentials"
             tokenUrl: "https://accounts.spotify.com/api/token"
-            clientId: "dose242fe0add5c2245a26a7aa67f8ee13b7"
-            clientSecret: "1e5e3928-031f-42c7-b27f-fc59ddfd1a40"
+            clientId: "936ec1a5447546f98cdce1b69c3a490f"
+            clientSecret: "818fca170bc8459e90c17024df2017bb"
             # scope: "read:data"
           headers:
             Accept: "application/json"
@@ -27,3 +27,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
+          filepath: "api_basic_ds.json"

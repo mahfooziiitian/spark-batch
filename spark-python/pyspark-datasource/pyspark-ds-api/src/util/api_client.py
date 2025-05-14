@@ -3,7 +3,21 @@ import requests
 
 
 def make_request(
+<<<<<<< HEAD
     url, opts, headers, auth, cert, queryParams, json_body, form_body, max_attempts, responseFormat, extra_params=None
+=======
+    url,
+    opts,
+    headers,
+    auth,
+    cert,
+    queryParams,
+    json_body,
+    form_body,
+    max_attempts,
+    responseFormat,
+    extra_params=None,
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
 ):
     params = queryParams.copy()
     if extra_params:
@@ -74,7 +88,13 @@ def offset_pagination(url, headers, params, limit=100, timeout=60, max_pages=Non
     return all_data
 
 
+<<<<<<< HEAD
 def page_number_pagination(url, headers, params, page_size=50, timeout=60, max_pages=None):
+=======
+def page_number_pagination(
+    url, headers, params, page_size=50, timeout=60, max_pages=None
+):
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
     all_data = []
     page = 1
 
@@ -96,7 +116,13 @@ def page_number_pagination(url, headers, params, page_size=50, timeout=60, max_p
     return all_data
 
 
+<<<<<<< HEAD
 def cursor_based_pagination(url, headers, params, cursor_param="cursor", next_key="next", timeout=60):
+=======
+def cursor_based_pagination(
+    url, headers, params, cursor_param="cursor", next_key="next", timeout=60
+):
+>>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
     all_data = []
     cursor = None
 

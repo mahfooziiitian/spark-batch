@@ -1,0 +1,35 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "http://localhost:8081/items"
+        options:
+          method: "GET"
+          # authentication:
+          #   method: "POST"
+          #   headers:
+          #     Content-Type: "application/x-www-form-urlencoded"
+          #   type: "oauth2_form_client_credentials"
+          #   tokenUrl: "https://accounts.spotify.com/api/token"
+          #   clientId: "936ec1a5447546f98cdce1b69c3a490f"
+          #   clientSecret: "818fca170bc8459e90c17024df2017bb"
+          #   # scope: "read:data"
+          pagination:
+            strategy: "cursor"
+            limit_key: "limit"
+            cursor_key: "cursor"
+            next_cursor_key: "next_cursor"
+            result_key: "data"
+          headers:
+            Accept: "application/json"
+          queryParams:
+            q: "daft punk"
+            type: "artist"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5
+          filepath: "paginated_cursor_etl.json"

@@ -16,7 +16,6 @@ def main():
     config_path = Path(__file__).parents[0] / "api_oauth2_form_token_ds.yaml"
     print(f"Loading config from {config_path}")
     with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
     print(f"Config loaded: {config}")
     print("Extracting data from API...")
     df = read_api(spark, config)
