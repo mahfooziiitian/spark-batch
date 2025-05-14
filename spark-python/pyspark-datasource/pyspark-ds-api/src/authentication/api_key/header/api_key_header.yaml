@@ -13,6 +13,7 @@ extracts:
             in: "header"
             name: "appid"
             value: "5e0677c66d584c9ea41746b19e86d4da"
+            caFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/api_key/header/zscaler_root_ca.crt"
           headers:
             Accept: "application/json"
           queryParams:

@@ -1,0 +1,23 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "api_tls_schema.json"
+        location: "https://api.openweathermap.org/data/2.5/weather"
+        options:
+          method: "GET"
+          authentication:
+            type: "certificates"
+            certFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/certificates/weather.pem"
+            caFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/certificates/zscaler_root_ca.crt"
+            # certFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.crt"
+            # keyFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.key"
+            # caFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/ca.pem"
+          headers:
+            Accept: "application/json"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5

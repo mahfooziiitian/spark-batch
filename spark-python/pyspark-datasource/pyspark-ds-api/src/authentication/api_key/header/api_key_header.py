@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+
 import yaml
 from pyspark.sql import SparkSession
 
@@ -14,7 +15,7 @@ def main():
     spark = SparkSession.builder.appName("REST_API_Ingestion").getOrCreate()
     config_path = Path(__file__).parents[0] / "api_key_header.yaml"
     print(f"Loading config from {config_path}")
-    with open(config_path, "r") as f:
+    with open(file=config_path, mode="r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
     print(f"Config loaded: {config}")
     print("Extracting data from API...")

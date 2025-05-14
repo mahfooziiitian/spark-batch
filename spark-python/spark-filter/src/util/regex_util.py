@@ -28,7 +28,7 @@ filter_mapping = {
     "expect_column_values_to_match_regex_list": "~col('{{column}}').rlike('|'.join({{regex_list}}))",
     "expect_column_values_to_not_match_regex_list": "col('{{column}}').rlike('|'.join({{regex_list}}))",
     "expect_multicolumn_sum_to_equal": "(sum(col(coll) for coll in {{column_list}})) >= lit({{sum_total}})",
-    "expect_column_value_z_scores_to_be_between": "((col('{{column}}') - mean('{{column}}')) / stddev('{{column}}')) >= '{{threshold}}'",
+    "expect_column_value_z_scores_to_be_less_than": "((col('{{column}}') - mean('{{column}}')) / stddev('{{column}}')) >= {{threshold}}",
 }
 
 
