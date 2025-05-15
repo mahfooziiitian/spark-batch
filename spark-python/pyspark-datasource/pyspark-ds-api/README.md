@@ -45,12 +45,12 @@ flowchart TD
 3. It will handle all kinds of response: json, xml, csv.
 4. List all secrets needed for rest api.
 5. v1 in yaml.
-6. Timeout
-7. format of files
+6. Timeout - Done
+7. format of files -csv, json etc
 8. Storage: temporary files and based on the success, we move the all files from temp to storage.
 
 9. Workspace for certificates
-   Path in raw bucket.
+   data Path in raw bucket.
 10. Scan task.
 11. Reconciliation
 12. Duplicate check
