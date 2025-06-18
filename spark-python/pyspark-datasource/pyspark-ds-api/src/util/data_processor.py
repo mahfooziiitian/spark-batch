@@ -20,13 +20,6 @@ def read_api(spark, config):
     max_attempts = opts.get("retries", {}).get("maxAttempts", 1)
     url = src["location"]
 
-<<<<<<< HEAD
-    headers, auth, json_body, form_body, query_params, cert = build_request_components(opts)
-
-    def make_request_fn(extra=None):
-        return make_request(
-            url, opts, headers, auth, cert, query_params, json_body, form_body, max_attempts, response_format, extra
-=======
     headers, auth, json_body, form_body, query_params, cert = build_request_components(
         opts
     )
@@ -44,7 +37,6 @@ def read_api(spark, config):
             max_attempts,
             response_format,
             extra,
->>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
         )
 
     if pagination:

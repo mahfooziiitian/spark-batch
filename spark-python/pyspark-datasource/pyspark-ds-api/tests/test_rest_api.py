@@ -17,7 +17,9 @@ def test_read_key_value_1():
     key = "meta.page"
     expected_value = 2
     actual_value = read_key_value(json_dict, key)
-    assert actual_value == expected_value, f"Expected {expected_value}, but got {actual_value}"
+    assert (
+        actual_value == expected_value
+    ), f"Expected {expected_value}, but got {actual_value}"
 
 
 def test_read_key_value_2():
@@ -36,4 +38,6 @@ def test_read_key_value_2():
     key = "links.next"
     expected_value = "/items?page=3"
     actual_value = read_key_value(json_dict, key)
-    assert actual_value == expected_value, f"Expected {expected_value}, but got {actual_value}"
+    assert (
+        actual_value == expected_value
+    ), f"Expected {expected_value}, but got {actual_value}"

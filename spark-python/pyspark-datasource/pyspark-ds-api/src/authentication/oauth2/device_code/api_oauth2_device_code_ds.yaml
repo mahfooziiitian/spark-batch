@@ -5,7 +5,7 @@ extracts:
       params:
         format: "api"
         schema: "json"
-        location: "https://api.spotify.com/v1/search"
+        location: "https://api.github.com/user"
         options:
           method: "GET"
           session_timeout: 30
@@ -13,8 +13,9 @@ extracts:
             method: "POST"
             headers:
               Content-Type: "application/x-www-form-urlencoded"
-            type: "oauth2_form_client_credentials"
-            tokenUrl: "https://accounts.spotify.com/api/token"
+            type: "oauth2_device_code"
+            device_code_url: "https://github.com/login/device/code"
+            token_url: "https://github.com/login/oauth/access_token"
             clientId: "936ec1a5447546f98cdce1b69c3a490f"
             clientSecret: "818fca170bc8459e90c17024df2017bb"
             # scope: "read:data"

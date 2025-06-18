@@ -57,13 +57,23 @@ def create_items(count: int = 100, session: Session = Depends(get_session)):
 
 # 🧩 FIXED: Pagination with proper count query
 @app.get("/items", response_model=PaginatedResponse)
-def get_items(limit: int = Query(10, gt=0, le=100), offset: int = Query(0, ge=0), session: Session = Depends(get_session)):
+def get_items(
+    limit: int = Query(10, gt=0, le=100),
+    offset: int = Query(0, ge=0),
+    session: Session = Depends(get_session),
+):
     # Proper total count using SQL function
     total = session.exec(select(func.count()).select_from(Item)).one()
     items = session.exec(select(Item).offset(offset).limit(limit)).all()
     next_offset = offset + limit if offset + limit < total else None
 
-    return {"items": items, "total_items": total, "limit": limit, "offset": offset, "next_offset": next_offset}
+    return {
+        "items": items,
+        "total_items": total,
+        "limit": limit,
+        "offset": offset,
+        "next_offset": next_offset,
+    }
 
 
 def main():

@@ -25,7 +25,13 @@ def create_db_and_seed():
     with Session(engine) as session:
         if not session.exec(select(func.count(Item.id))).one():
             for i in range(1, 201):
-                session.add(Item(name=f"Item {i}", category="A" if i % 2 == 0 else "B", created_at=200 - i))
+                session.add(
+                    Item(
+                        name=f"Item {i}",
+                        category="A" if i % 2 == 0 else "B",
+                        created_at=200 - i,
+                    )
+                )
             session.commit()
 
 
@@ -78,7 +84,9 @@ def get_items(
         if category:
             query = query.where(Item.category == category)
 
-        query = query.order_by(Item.created_at.desc() if order == "desc" else Item.created_at.asc())
+        query = query.order_by(
+            Item.created_at.desc() if order == "desc" else Item.created_at.asc()
+        )
         items = session.exec(query.offset(offset).limit(page_size + 1)).all()
 
         total = None

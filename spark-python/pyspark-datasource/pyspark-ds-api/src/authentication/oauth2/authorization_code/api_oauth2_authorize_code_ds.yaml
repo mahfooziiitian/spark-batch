@@ -1,0 +1,36 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "https://api.github.com/user"
+        options:
+          method: "GET"
+          session_timeout: 30
+          authentication:
+            type: "oauth2_authorization_code"
+            auth:
+              method: "POST"
+              headers:
+                Content-Type: "application/x-www-form-urlencoded"
+              url: "https://github.com/login/oauth/authorize"
+            token:
+              method: "POST"
+              headers:
+                Content-Type: "application/x-www-form-urlencoded"
+              url: "https://github.com/login/oauth/access_token"
+            
+            
+            
+          headers:
+            Accept: "application/json"
+          queryParams:
+            q: "daft punk"
+            type: "artist"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5
+          filepath: "api_basic_ds.json"
