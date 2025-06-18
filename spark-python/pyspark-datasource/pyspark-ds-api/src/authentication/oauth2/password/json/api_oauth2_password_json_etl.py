@@ -13,7 +13,7 @@ os.environ["PYSPARK_PYTHON"] = sys.executable
 
 def main():
     spark = SparkSession.builder.appName("REST_API_Ingestion").getOrCreate()
-    config_path = Path(__file__).parents[0] / "api_oauth2_token_ds.yaml"
+    config_path = Path(__file__).parents[0] / "api_oauth2_password_json_etl.yaml"
     print(f"Loading config from {config_path}")
     with open(file=config_path, mode="r", encoding="utf-8") as f:
         config = yaml.safe_load(f)

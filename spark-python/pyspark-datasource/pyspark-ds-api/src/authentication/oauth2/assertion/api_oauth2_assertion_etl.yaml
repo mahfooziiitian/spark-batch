@@ -1,0 +1,40 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "https://acuity-ozd.cloud.databricks.com/api/2.1/clusters/list"
+        options:
+          method: "GET"
+          session_timeout: 30
+          authentication:
+            method: "POST"
+            headers:
+              Content-Type: "application/x-www-form-urlencoded"
+            type: "oauth2_client_credentials_basic"
+            tokenUrl: "https://acuity-ozd.cloud.databricks.com/oidc/v1/token"
+            client_id_value: "1e5e3928-031f-42c7-b27f-fc59ddfd1a40"
+            client_secret_value: "dose7ecb9e6f22932e9c3e8ecdc20cf8cf27"
+            grant_type_key: "grant_type"
+            grant_type_value: "client_credentials"
+            scope_key: "scope"
+            scope_value: "all-apis"
+          pagination:
+            strategy: "cursor"
+            limit_key: "limit"
+            cursor_key: "page_token"
+            next_cursor_key: "next_page_token"
+            result_key: "clusters"
+          headers:
+            Accept: "application/json"
+          queryParams:
+            q: "daft punk"
+            type: "artist"
+          responseFormat: "json"
+          result_key: "students"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5
+          filepath: "api_oauth2_assertion_ds.json"

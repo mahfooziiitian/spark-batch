@@ -5,13 +5,13 @@ extracts:
       params:
         format: "api"
         # schema: "json"
-        location: "http://localhost:8081/users"
+        location: "http://127.0.0.1:8081/students"
         options:
           method: "GET"
           authentication:
             type: "basic"
             username: "admin"
-            password: "malam"
+            password: "secret123a"
           headers:
             Accept: "application/json"
           responseFormat: "json"

@@ -33,11 +33,15 @@ class APIClient:
         json_body, form_body = self._build_body(self.opts.get("body", {}))
         headers.update(self.opts.get("headers", {}))
         query_params = self.opts.get("queryParams", {}).copy()
-
         if auth_cfg.get("type") == "apikey" and auth_cfg.get("in") == "query":
-            query_params[auth_cfg["name"]] = auth_cfg["value"]
+            query_params[auth_cfg["api_key_name"]] = auth_cfg["api_key_value"]
 
-        cert = (auth_cfg["certFile"], auth_cfg["keyFile"]) if auth_cfg.get("type") == "mtls" else None
+        cert = (
+            (auth_cfg["certFile"], auth_cfg["keyFile"])
+            if auth_cfg.get("type") == "mtls"
+            else None
+        )
+        print(f"cert: {cert}")
         return headers, auth, json_body, form_body, query_params, cert
 
     def _generate_assertion(self, auth_config) -> str:
@@ -73,6 +77,17 @@ class APIClient:
         response.raise_for_status()
         return response.json().get("access_token")
 
+    def _basic_auth(self, auth):
+        if not auth or auth.get("type") != "basic":
+            return None
+
+        username = auth.get("username")
+        password = auth.get("password")
+        if not username or not password:
+            raise ValueError("Basic auth requires both username and password.")
+
+        return HTTPBasicAuth(username, password)
+
     def _get_auth_headers(self, auth):
         if not auth or auth.get("type") == "none":
             return {}, None
@@ -84,37 +99,143 @@ class APIClient:
             return {"Authorization": f"Bearer {auth['token']}"}, None
 
         if auth["type"] == "apikey" and auth["in"] == "header":
-            return {auth["name"]: auth["value"]}, None
+            return {auth["api_key_name"]: auth["api_key_value"]}, None
 
         if auth["type"] == "oauth2_assertion":
             token = self._generate_bearer_token(auth)
             return {"Authorization": f"Bearer {token}"}, None
 
-        if auth["type"] == "oauth2_client_credentials":
+        if auth["type"] == "oauth2_client_credentials_json":
+            client_id_key = auth.get("client_id_key", None)
+            client_secret_key = auth.get("client_secret_key", None)
+            grant_type_key = auth.get("grant_type_key", None)
+            client_id_value = auth.get("client_id_value", None)
+            client_secret_value = auth.get("client_secret_value", None)
+            grant_type_value = auth.get("grant_type_value", None)
+            scope_key = auth.get("scope_key", None)
+            scope_value = auth.get("scope_value", None)
+
+            json_data = {
+                grant_type_key: grant_type_value,
+                client_id_key: client_id_value,
+                client_secret_key: client_secret_value,
+            }
+            if scope_key and scope_value:
+                json_data[scope_key] = scope_value
+            print(f"json_data: {json_data}")
             resp = requests.post(
                 auth["tokenUrl"],
                 headers=auth.get("headers", {}),
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": auth["clientId"],
-                    "client_secret": auth["clientSecret"],
-                    "scope": auth.get("scope", ""),
-                },
+                json=json_data,
                 timeout=60,
             )
             resp.raise_for_status()
             return {"Authorization": f"Bearer {resp.json()['access_token']}"}, None
 
-        if auth["type"] == "oauth2_form_client_credentials":
+        if auth["type"] == "oauth2_client_credentials_form":
+            client_id_key = auth.get("client_id_key", None)
+            client_secret_key = auth.get("client_secret_key", None)
+            client_id_value = auth.get("client_id_value", None)
+            client_secret_value = auth.get("client_secret_value", None)
+            grant_type_key = auth.get("grant_type_key", None)
+            grant_type_value = auth.get("grant_type_value", None)
+            scope_key = auth.get("scope_key", None)
+            scope_value = auth.get("scope_value", None)
+            data = {client_id_key: client_id_value,
+                    client_secret_key: client_secret_value,
+                    grant_type_key: grant_type_value}
+            if scope_key and scope_value:
+                data[scope_key] = scope_value
             resp = requests.post(
                 auth["tokenUrl"],
                 headers=auth.get("headers", {}),
-                auth=HTTPBasicAuth(auth["clientId"], auth["clientSecret"]),
-                data={"grant_type": "client_credentials"},
+                # auth=HTTPBasicAuth(client_id_value, client_secret_value),
+                data=data,
                 timeout=60,
             )
             resp.raise_for_status()
             return {"Authorization": f"Bearer {resp.json()['access_token']}"}, None
+        
+        if auth["type"] == "oauth2_client_credentials_basic":
+            client_id_value = auth.get("client_id_value", None)
+            client_secret_value = auth.get("client_secret_value", None)
+            grant_type_key = auth.get("grant_type_key", None)
+            grant_type_value = auth.get("grant_type_value", None)
+            scope_key = auth.get("scope_key", None)
+            scope_value = auth.get("scope_value", None)
+            data = {grant_type_key: grant_type_value}
+            if scope_key and scope_value:
+                data[scope_key] = scope_value
+            resp = requests.post(
+                auth["tokenUrl"],
+                headers=auth.get("headers", {}),
+                auth=HTTPBasicAuth(client_id_value, client_secret_value),
+                data=data,
+                timeout=60,
+            )
+            resp.raise_for_status()
+            return {"Authorization": f"Bearer {resp.json()['access_token']}"}, None
+
+
+        if auth["type"] == "oauth2_password_form":
+            username_key = auth.get("username_key", None)
+            password_key = auth.get("password_key", None)
+            username_value = auth.get("username_value", None)
+            password_value = auth.get("password_value", None)
+            grant_type_key = auth.get("grant_type_key", None)
+            grant_type_value = auth.get("grant_type_value", None)
+
+            data = {
+                username_key: username_value,
+                password_key: password_value,
+                grant_type_key: grant_type_value,
+            }
+
+            response = requests.post(
+                auth["tokenUrl"],
+                headers=auth.get("headers", {}),
+                data=data,
+                timeout=60,
+            )
+
+            if response.status_code != 200:
+                raise Exception(
+                    f"Token request failed: {response.status_code} - {response.text}"
+                )
+
+            token = response.json()["access_token"]
+            response.raise_for_status()
+            return {"Authorization": f"Bearer {token}"}, None
+
+        if auth["type"] == "oauth2_password_json":
+            username_key = auth.get("username_key", None)
+            password_key = auth.get("password_key", None)
+            username_value = auth.get("username_value", None)
+            password_value = auth.get("password_value", None)
+            grant_type_key = auth.get("grant_type_key", None)
+            grant_type_value = auth.get("grant_type_value", None)
+
+            data = {
+                username_key: username_value,
+                password_key: password_value,
+                # grant_type_key: grant_type_value
+            }
+
+            response = requests.post(
+                auth["tokenUrl"],
+                headers=auth.get("headers", {}),
+                json=data,
+                timeout=60,
+            )
+
+            if response.status_code != 200:
+                raise Exception(
+                    f"Token request failed: {response.status_code} - {response.text}"
+                )
+
+            token = response.json()["access_token"]
+            response.raise_for_status()
+            return {"Authorization": f"Bearer {token}"}, None
 
         return {}, None
 
@@ -132,6 +253,7 @@ class APIClient:
         return None, None
 
     def make_request(self, extra_params=None) -> Response:
+        print(f"Going for client request for url: {self.url}")
         if self.response_format not in ("json", "text", "xml", "csv"):
             raise ValueError(f"Unsupported response format: {self.response_format}")
         params = self.query_params.copy()
@@ -139,6 +261,7 @@ class APIClient:
             params.update(extra_params)
 
         for attempt in range(self.max_attempts):
+            print(f"Going for {attempt} attempts")
             try:
                 response = requests.request(
                     method=self.opts.get("method", "GET"),
@@ -153,8 +276,10 @@ class APIClient:
                     timeout=60,
                 )
                 response.raise_for_status()
+                print("Got response")
                 return response
             except Exception as e:
+                print(f"Exception: {e}")
                 if attempt == self.max_attempts - 1:
                     raise
 
@@ -180,14 +305,20 @@ class OffsetPaginator(Paginator):
         offset_key = self.kwargs.get("offset_key")
         result_key = self.kwargs.get("result_key")
 
-        print(f"limit_key: {limit_key}, offset_key: {offset_key}, result_key: {result_key}")
+        print(
+            f"limit_key: {limit_key}, offset_key: {offset_key}, result_key: {result_key}"
+        )
 
         while True:
             params.update({limit_key: limit, offset_key: offset})
             response = self.client.make_request(extra_params=params)
             response.raise_for_status()
             response_json = response.json()
-            data = read_key_value(response_json, result_key) if result_key else response_json
+            data = (
+                read_key_value(response_json, result_key)
+                if result_key
+                else response_json
+            )
             print(f"data: {data}")
             if not data:
                 break
@@ -219,7 +350,9 @@ class OffsetPageTokenPaginator(Paginator):
         result_key = self.kwargs.get("result_key")
         page_token_value = None
 
-        print(f"limit_key: {limit_key}, page_token_key: {page_token_key}, result_key: {result_key}")
+        print(
+            f"limit_key: {limit_key}, page_token_key: {page_token_key}, result_key: {result_key}"
+        )
 
         while True:
             params.update({limit_key: limit, page_token_key: page_token_value})
@@ -227,13 +360,19 @@ class OffsetPageTokenPaginator(Paginator):
             response = self.client.make_request(extra_params=params)
             response.raise_for_status()
             json_response = response.json()
-            data = read_key_value(json_response, result_key) if result_key else json_response
+            data = (
+                read_key_value(json_response, result_key)
+                if result_key
+                else json_response
+            )
             if not data:
                 break
             all_data.extend(data)
             offset += limit
             pages_fetched += 1
-            page_token_value = json_response[next_page_token_key] if next_page_token_key else None
+            page_token_value = (
+                json_response[next_page_token_key] if next_page_token_key else None
+            )
             if page_token_value is None:
                 break
 
@@ -271,21 +410,43 @@ class PageNumberPaginator(Paginator):
                 res_has_next_key = has_next_key
                 res_total_items_key = total_items_key
             else:
-                res_total_pages_key = f"{metadata_prefix}.{total_pages_key}" if total_pages_key else None
-                res_page_size_key = f"{metadata_prefix}.{page_size_key}" if page_size_key else None
-                res_total_items_key = f"{metadata_prefix}.{total_items_key}" if total_items_key else None
-                res_has_next_key = f"{metadata_prefix}.{has_next_key}" if has_next_key else None
+                res_total_pages_key = (
+                    f"{metadata_prefix}.{total_pages_key}" if total_pages_key else None
+                )
+                res_page_size_key = (
+                    f"{metadata_prefix}.{page_size_key}" if page_size_key else None
+                )
+                res_total_items_key = (
+                    f"{metadata_prefix}.{total_items_key}" if total_items_key else None
+                )
+                res_has_next_key = (
+                    f"{metadata_prefix}.{has_next_key}" if has_next_key else None
+                )
 
             print(
                 f"res_total_pages_key: {res_total_pages_key}, res_page_size_key: {res_page_size_key}, res_total_items_key: {res_total_items_key}, res_has_next_key: {res_has_next_key}"
             )
 
             total_page_value = (
-                (read_key_value(json_response, res_total_pages_key) or total_page_value) if res_total_pages_key else None
+                (read_key_value(json_response, res_total_pages_key) or total_page_value)
+                if res_total_pages_key
+                else None
             )
-            data = read_key_value(json_response, result_key) if result_key else json_response
-            total_items_value = read_key_value(json_response, res_total_items_key) if res_total_items_key else None
-            has_next = read_key_value(json_response, res_has_next_key) if res_has_next_key else False
+            data = (
+                read_key_value(json_response, result_key)
+                if result_key
+                else json_response
+            )
+            total_items_value = (
+                read_key_value(json_response, res_total_items_key)
+                if res_total_items_key
+                else None
+            )
+            has_next = (
+                read_key_value(json_response, res_has_next_key)
+                if res_has_next_key
+                else False
+            )
             print("has_next_type:", type(has_next))
             print(
                 f"page: {page}, total_page_value: {total_page_value}, total_items_value: {total_items_value}, has_next: {has_next}"
@@ -322,21 +483,27 @@ class CursorPaginator(Paginator):
         params = self.client.query_params.copy()
         cursor = None
 
-        print(f"limit_key: {limit_key}, cursor_key: {cursor_key}, next_cursor_key: {next_cursor_key}, result_key: {result_key}")
+        print(
+            f"limit_key: {limit_key}, cursor_key: {cursor_key}, next_cursor_key: {next_cursor_key}, result_key: {result_key}"
+        )
 
         while True:
             params.update({cursor_key: cursor, limit_key: limit})
             # print(f"params: {params}")
             # response = requests.get(url, headers=headers, params=params, timeout=timeout)
             response = self.client.make_request(extra_params=params)
-            # response = requests.get(url, headers=headers, params=params, timeout=timeout)
-            response = self.client.make_request(extra_params=params)
             response.raise_for_status()
             json_reponse = response.json()
 
-            cursor = read_key_value(json_reponse, next_cursor_key) if next_cursor_key else None
+            cursor = (
+                read_key_value(json_reponse, next_cursor_key)
+                if next_cursor_key
+                else None
+            )
 
-            records = read_key_value(json_reponse, result_key) if result_key else json_reponse
+            records = (
+                read_key_value(json_reponse, result_key) if result_key else json_reponse
+            )
             if not records:
                 break
 
@@ -361,7 +528,9 @@ class LinkHeaderPaginator(Paginator):
         timeout = self.kwargs.get("timeout", 60)
 
         while url:
-            response = requests.get(url, headers=headers, params=params, timeout=timeout)
+            response = requests.get(
+                url, headers=headers, params=params, timeout=timeout
+            )
             response.raise_for_status()
             data = response.json()
             all_data.extend(data)
@@ -447,7 +616,10 @@ def read_api(spark, config):
         all_data = paginator.paginate()
     else:
         result = client.make_request()
-        all_data = result if isinstance(result, list) else [result]
+        json_response = result.json()
+        if opts.get("result_key"):
+            json_response = read_key_value(json_response, opts["result_key"])
+        all_data = json_response if isinstance(json_response, list) else [json_response]
 
     print(f"Extracted {len(all_data)} records.")
 

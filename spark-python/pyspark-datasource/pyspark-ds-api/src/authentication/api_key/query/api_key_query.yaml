@@ -11,14 +11,16 @@ extracts:
           authentication:
             type: "apikey"
             in: "query"
-            name: "appid"
-            value: "5e0677c66d584c9ea41746b19e86d4da"
-            caFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/api_key/query/zscaler_root_ca.crt"
+            api_key_name: "appid"
+            api_key_value: "5e0677c66d584c9ea41746b19e86d4da"
+            caFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/api_key/query/zscaler_root_ca.crt"
           headers:
             Accept: "application/json"
           queryParams:
-            q: "London"
+            q: "Chennai"
           responseFormat: "json"
+          result_key: "weather"
           retries:
             maxAttempts: 3
             delaySeconds: 5
+          filepath: "api_key_query.json"

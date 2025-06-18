@@ -5,14 +5,14 @@ extracts:
       params:
         format: "api"
         schema: "api_tls_schema.json"
-        location: "https://localhost:8443/items"
+        location: "https://localhost:8443/students"
         options:
           method: "GET"
           authentication:
             type: "mtls"
-            certFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/client.crt"
-            keyFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/client.key"
-            caFile: "/home/malam/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/ca.pem"
+            certFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/certs/client.pem"
+            keyFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/certs/client.key"
+            caFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/certs/ca.pem"
             # certFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.crt"
             # keyFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.key"
             # caFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/ca.pem"
@@ -22,3 +22,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
+          filepath: "api_mtls_etl.json"

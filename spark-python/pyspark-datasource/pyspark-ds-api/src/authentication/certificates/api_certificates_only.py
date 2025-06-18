@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 from pyspark.sql import SparkSession
 
-from authentication.etl_extract import read_api
+from rest_api import read_api
 
 os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
 os.environ["PYSPARK_PYTHON"] = sys.executable

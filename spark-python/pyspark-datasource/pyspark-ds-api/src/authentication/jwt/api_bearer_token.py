@@ -5,11 +5,7 @@ from pathlib import Path
 import yaml
 from pyspark.sql import SparkSession
 
-<<<<<<< HEAD
-from authentication.etl_extract import read_api
-=======
 from rest_api import read_api
->>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
 
 os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
 os.environ["PYSPARK_PYTHON"] = sys.executable
@@ -23,12 +19,7 @@ def main():
         config = yaml.safe_load(f)
     print(f"Config loaded: {config}")
     print("Extracting data from API...")
-<<<<<<< HEAD
-    df = read_api(spark, config)
-    print(f"Data extracted: {df.show(truncate=False, n=100)}")
-=======
     read_api(spark, config)
->>>>>>> 2fc7c00 (# This is a combination of 5 commits.)
     print("Data extraction complete.")
 
 

@@ -60,11 +60,17 @@ app = FastAPI()
 
 
 @app.get("/items", response_model=PaginatedTokenResponse)
-def get_items(request: Request, limit: int = Query(10, ge=1, le=100), page_token: Optional[str] = Query(None)):
+def get_items(
+    request: Request,
+    limit: int = Query(10, ge=1, le=100),
+    page_token: Optional[str] = Query(None),
+):
     offset = decode_token(page_token) if page_token else 0
 
     with Session(engine) as session:
-        items = session.exec(select(Item).order_by(Item.created_at).offset(offset).limit(limit + 1)).all()
+        items = session.exec(
+            select(Item).order_by(Item.created_at).offset(offset).limit(limit + 1)
+        ).all()
 
         has_next = len(items) > limit
         if has_next:

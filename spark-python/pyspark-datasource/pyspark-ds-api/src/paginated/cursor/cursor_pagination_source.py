@@ -10,7 +10,7 @@ import uvicorn
 class Item(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    created_at: int  # timestamp or sortable value
+    created_at: int
 
 
 # ─── DB Setup ───────────────────────────────────────────────────────────
@@ -46,7 +46,9 @@ app = FastAPI()
 
 
 @app.get("/items", response_model=CursorPage)
-def get_items(limit: int = Query(10, ge=1, le=100), cursor: Optional[int] = Query(None)):
+def get_items(
+    limit: int = Query(10, ge=1, le=100), cursor: Optional[int] = Query(None)
+):
     with Session(engine) as session:
         query = select(Item).order_by(Item.created_at)
         if cursor:
