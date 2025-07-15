@@ -1,0 +1,4 @@
+tag|attribute|attribute_type|attribute_allowed_values|data_type|allowed_values
+p_id|id|int||string|
+name||||string|
+gender||||string|male,female,other,

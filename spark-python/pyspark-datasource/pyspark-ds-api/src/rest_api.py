@@ -54,13 +54,15 @@ class APIClient:
         fingerprint = cert.fingerprint(hashes.SHA1())
         x5t = base64.urlsafe_b64encode(fingerprint).decode("utf-8")
         kid = fingerprint.hex()
+        request_branch_identifier_key = auth_config.get("request_branch_identifier_key", None)
+        request_branch_identifier_value = auth_config.get("request_branch_identifier_value", None)
 
         payload = {
             "jti": str(uuid.uuid4()),
             "iat": datetime.datetime.utcnow(),
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
             "aud": auth_config["aud"],
-            "RequestBranchIdentifier": auth_config["RequestBranchIdentifier"],
+            request_branch_identifier_key: request_branch_identifier_value,
         }
 
         headers = {"x5t": x5t, "kid": kid}
@@ -68,9 +70,12 @@ class APIClient:
 
     def _generate_bearer_token(self, auth):
         assertion = self._generate_assertion(auth)
+        grant_type_key = auth.get("grant_type_key", None)
+        grant_type_value = auth.get("grant_type_value", None)
+        token_url = auth.get("tokenUrl", None)
         response = requests.post(
-            auth["url"],
-            json={"grant_type": "jwt-bearer", "assertion": assertion},
+            token_url,
+            json={grant_type_key: grant_type_value, "assertion": assertion},
             headers=auth.get("headers", {}),
             timeout=auth.get("timeout", 60),
         )
