@@ -81,4 +81,89 @@ pom.xml.versionsBackup
 release.properties
 site/
 target/
-venv/
+.venv/
+gradle/
+.bsp/
+# SBT & Build
+/target/
+/project/target/
+/project/project/
+
+# Logs
+*.log
+
+# IntelliJ IDEA
+.idea/
+/*.iml
+*.iws
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Scala Worksheet
+*.sc
+
+# Metals (Scala language server)
+.metals/
+.bloop/
+.ammonite/
+
+# coursier
+.cache/
+.ivy2/cache/
+.coursier/
+
+# sbt bloop integration
+.bsp/
+
+# Temporary files
+*.swp
+*.bak
+*.tmp
+
+# SBT history and logs
+.history
+sbt.log
+# Java
+# Build tool wrappers
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Maven Wrapper logs
+mvnw.cmd
+mvnw
+# Gradle build output
+/build/
+/.gradle/
+
+# Gradle Wrapper files
+!gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
+
+# IDEs
+## IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+## Eclipse
+.classpath
+.project
+.settings/

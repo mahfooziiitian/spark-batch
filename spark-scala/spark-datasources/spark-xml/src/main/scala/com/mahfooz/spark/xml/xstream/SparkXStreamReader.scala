@@ -48,7 +48,7 @@ object SparkXStreamReader {
       data
     })
 
-    val file_path = sys.env.getOrElse("DATA_HOME","data")+"\\FileData\\Xml\\person.xml"
+    val file_path = sys.env.getOrElse("DATA_HOME","data")+"/file_data/xml/persons.xml"
     dsString.write.text(file_path)
 
   }

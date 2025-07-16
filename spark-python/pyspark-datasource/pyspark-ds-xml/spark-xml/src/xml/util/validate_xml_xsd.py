@@ -15,8 +15,8 @@ def validate_xml(xsd_file, xml_file):
 def main():
     # Example usage
     data_home = os.environ.get("DATA_HOME", ".")
-    xsd_file = os.path.join(data_home, "file_data", "xml", "person.xsd")
-    xml_file = os.path.join(data_home, "file_data", "xml", "person.xml")
+    xsd_file = os.path.join(data_home, "file_data", "xml", "notes.xsd")
+    xml_file = os.path.join(data_home, "file_data", "xml", "notes.xml")
     validate_xml(xsd_file, xml_file)
 
 

@@ -11,12 +11,12 @@ object SparkXml {
       .appName("spark-xml")
       .getOrCreate()
 
-    val filePath = sys.env.getOrElse("DATA_HOME","data")+"\\FileData\\Xml\\IdentUebersetzungen.xml"
+    val filePath = "" //os. Path(sys.env.getOrElse("DATA_HOME","data")) / "file_data" /"xml" /"IdentUebersetzungen.xml"
 
     val df = spark.read.format("com.databricks.spark.xml")
       .option("rowTag", "IdentUebersetzung")
       .option("rootTag", "IdentUebersetzung")
-      .option("attributePrefix","Attr_")
+      .option("attributePrefix","attr_")
       .load(filePath)
 
     df.printSchema()

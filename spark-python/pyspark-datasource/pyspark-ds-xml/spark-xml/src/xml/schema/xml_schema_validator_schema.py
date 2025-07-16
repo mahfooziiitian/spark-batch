@@ -1,4 +1,4 @@
-import os
+import os, sys
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
@@ -11,6 +11,10 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
+
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_8"]
+os.environ["PYSPARK_PYTHON"] = sys.executable
+
 if __name__ == "__main__":
     spark = (
         SparkSession.builder.master("local[*]")
@@ -21,8 +25,8 @@ if __name__ == "__main__":
 
     # data path
     dataHome = os.environ["DATA_HOME"]
-    xmlFile = dataHome + "\\FileData\\Xml\\orders.xml"
-    xmlXsd = dataHome + "\\FileData\\Xml\\orders.xsd"
+    xmlFile = dataHome + "/file_data/xml/orders.xml"
+    xmlXsd = dataHome + "/file_data/xml/orders.xsd"
 
     # adding spark context
     spark.sparkContext.addFile(xmlXsd)
