@@ -1,8 +1,9 @@
 import csv
 import os
-from pathlib import Path
 import random
 import xml.etree.ElementTree as ET
+from pathlib import Path
+
 from faker import Faker
 
 fake = Faker()
