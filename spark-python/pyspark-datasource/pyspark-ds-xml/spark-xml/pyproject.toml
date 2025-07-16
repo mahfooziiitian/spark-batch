@@ -8,12 +8,14 @@ dependencies = [
     "chardet>=5.2.0",
     "faker>=37.4.2",
     "generateds>=2.44.3",
-    "lxml>=6.0.0",
+    "ipykernel>=6.29.5",
+    # "lxml>=6.0.0",
     "pandas>=2.3.1",
     "pydantic>=2.11.7",
     "pyspark<4.0.0",
     "requests>=2.32.4",
-    "xmlschema>=4.1.0",
+    # "xmlschema>=4.1.0",
+    # "xmltoxsd>=0.1.1",
 ]
 
 [dependency-groups]

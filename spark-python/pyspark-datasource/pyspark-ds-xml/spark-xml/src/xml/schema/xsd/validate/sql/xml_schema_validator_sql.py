@@ -11,14 +11,14 @@ if __name__ == "__main__":
     )
 
     # data path
-    dataHome = os.environ["DATA_HOME"]
-    xmlFile = "file:///" + (dataHome + "\\FileData\\Xml\\orders.xml").replace("\\", "/")
-    xmlXsd = "file:///" + (dataHome + "\\FileData\\Xml\\orders.xsd").replace("\\", "/")
+    data_home = os.environ["DATA_HOME"]
+    xml_file = os.path.join(data_home, "file_data", "xml", "orders.xml")
+    xml_xsd = os.path.join(data_home, "file_data", "xml", "orders.xsd")
 
-    print(xmlFile)
+    print(xml_file)
 
     # adding spark context
-    spark.sparkContext.addFile(xmlXsd)
+    spark.sparkContext.addFile(xml_xsd)
 
     #
     rootTag = "Root"
@@ -28,8 +28,8 @@ if __name__ == "__main__":
         f"""
         create table orders
         USING xml
-            OPTIONS (path "{xmlFile}", 
-            rowTag "{rowTag}", 
+            OPTIONS (path "{xml_file}",
+            rowTag "{rowTag}",
             inferSchema "false",
             rowValidationXSDPath "orders.xsd",
             rootTag "{rootTag}")

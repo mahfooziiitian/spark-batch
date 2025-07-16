@@ -23,11 +23,11 @@ object SparkXmlReader {
     )
 
     val dataHome = sys.env.getOrElse("DATA_HOME","data")
-    val xmlFile = dataHome+"\\FileData\\Xml\\movies.xml"
+    val xmlFile = dataHome+"/file_data/xml/person.xml"
     val movies = spark.read
     .format("com.databricks.spark.xml")
-    .option("rootTag", "collection")
-    .option("rowTag", "movie")
+    .option("rootTag", "root")
+    .option("rowTag", "person")
     .load(xmlFile)
 
     println(movies.rdd.partitions.length)

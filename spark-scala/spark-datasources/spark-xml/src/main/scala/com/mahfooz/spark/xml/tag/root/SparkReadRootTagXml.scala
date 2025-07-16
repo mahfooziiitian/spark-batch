@@ -11,7 +11,7 @@ object SparkReadRootTagXml {
       .master("local[*]")
       .getOrCreate()
 
-    val filePath = sys.env.getOrElse("DATA_HOME","data")+"\\FileData\\Xml\\books.xml"
+    val filePath = sys.env.getOrElse("DATA_HOME","data")+"/file_data\\Xml\\books.xml"
 
     val df = spark.read.format("com.databricks.spark.xml")
       .option("rowTag", "catalog")

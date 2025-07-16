@@ -1,0 +1,5 @@
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
+addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.2.6")
+//addSbtPlugin("org.wartremover" %% "wartremover" % "3.2.0")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.8.1")

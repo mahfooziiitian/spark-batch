@@ -4,7 +4,7 @@ import sys
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, posexplode
 
-os.environ["JAVA_HOME"] = "C:\\Program Files\\Java\\jdk1.8.0_251"
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_8"]
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
 if __name__ == "__main__":
@@ -15,7 +15,7 @@ if __name__ == "__main__":
         .getOrCreate()
     )
     dataHome = os.environ["DATA_HOME"]
-    xmlFile = dataHome + "\\FileData\\Xml\\pos.xml"
+    xmlFile = dataHome + "/file_data/xml/pos.xml"
     books = spark.read.format("xml").option("rowTag", "foo").load(xmlFile)
 
     books = (

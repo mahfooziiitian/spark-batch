@@ -1,8 +1,13 @@
+import os, sys
 import xml.etree.ElementTree as ET
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import FloatType, StringType, StructField, StructType
+
+
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_8"]
+os.environ["PYSPARK_PYTHON"] = sys.executable
 
 
 # Function to parse XML
