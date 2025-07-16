@@ -4,6 +4,7 @@ It uses the xmltoxsd library to create the schema and saves it to a specified lo
 """
 
 import os
+
 from xmltoxsd import XSDGenerator
 
 data_home = os.environ.get("DATA_HOME", ".")
