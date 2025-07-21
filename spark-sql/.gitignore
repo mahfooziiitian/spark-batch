@@ -1,5 +1,5 @@
 lib_managed
-target
+target/
 project/boot
 project/build/target
 project/plugins/lib_managed
@@ -9,3 +9,6 @@ project/plugins/project/build.properties
 .idea/
 .metals/
 .vscode/
+.databricks
+.venv/
+databricks.yml
