@@ -1,0 +1,9 @@
+[project]
+name = "dbx-sql"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "databricks-connect>=16.1.6",
+]
