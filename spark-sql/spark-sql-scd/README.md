@@ -1,4 +1,12 @@
-# Scd2
+# Scd
+
+SCD (Slowly Changing Dimension) is a common data warehousing concept where you manage and track changes in dimension tables over time.
+
+There are different types of SCD, like:
+
+1. Type 1: Overwrite old data (no history)
+2. Type 2: Keep full history by creating new records with versioning or date ranges
+3. Type 3: Keep partial history in additional columns
 
 ## Create the source table
 
