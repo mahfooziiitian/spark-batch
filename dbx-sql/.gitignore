@@ -1,4 +1,12 @@
-
-.databricks
-
-.databricks
+.vscode/
+.databricks/
+.venv/
+.idea/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite
+*.ipynb_checkpoints
+databricks.yml

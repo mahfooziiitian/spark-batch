@@ -5,5 +5,17 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "databricks-connect>=16.1.6",
+    "databricks-connect==15.4.*",
+    "databricks-sql-connector>=4.0.5",
+    "databricks-sqlalchemy>=2.0.7",
+    "graphviz>=0.21",
+    "ipykernel>=6.30.0",
+    "sqlalchemy>=2.0.41",
+]
+
+[dependency-groups]
+dev = [
+    "black[jupyter]>=25.1.0",
+    "flake8-pyproject>=1.2.3",
+    "isort>=6.0.1",
 ]
