@@ -11,11 +11,30 @@ dependencies = [
     "graphviz>=0.21",
     "ipykernel>=6.30.0",
     "sqlalchemy>=2.0.41",
+    "myst-parser>=4.0.1",
+    "sphinxawesome-theme>=5.3.2",
+     "sphinx-test-reports>=1.2.0",
+    "sphinxcontrib-mermaid>=1.0.0",
+    "sphinx-autoapi>=3.6.0",
+    "linkify-it-py>=2.0.3",
 ]
 
 [dependency-groups]
 dev = [
-    "black[jupyter]>=25.1.0",
-    "flake8-pyproject>=1.2.3",
+    "black>=25.1.0",
+    "coverage>=7.10.0",
+    "pytest-cov>=6.2.1",
     "isort>=6.0.1",
+    "flake8-pyproject>=1.2.3",
+    "taskipy>=1.14.1"
 ]
+
+[tool.taskipy.tasks]
+test = "uv run pytest --cov=md --cov-report json:coverage.json tests"
+quick_start = "uv run sphinx-quickstart"
+clean = "rm -rf docs/build"
+html = "uv run sphinx-build -b html docs/source docs/build/html/"
+coverage = "uv run sphinx-build -b coverage docs/source docs/build/coverage"
+single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
+serve = "uv run python -m http.server -d ./docs/build/html 8080"
+html_serve = "task coverage && task html && task serve"
