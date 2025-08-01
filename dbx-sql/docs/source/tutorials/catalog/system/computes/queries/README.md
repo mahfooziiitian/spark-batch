@@ -51,3 +51,9 @@ WHERE
        AND we2.event_time > we.event_time
    )
 ```
+
+## Which warehouses haven't been used in the last 30 days?
+
+```sql
+
+```
