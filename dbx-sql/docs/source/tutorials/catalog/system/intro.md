@@ -1,4 +1,4 @@
-# System catalog
+# Introduction
 
 ## What are system tables?
 
@@ -13,3 +13,9 @@ System tables can be used for historical observability across your account.
 ## Relationship
 
 ![alt text](image.png)
+
+## storage
+
+Your account's system table data is stored in a Databricks-hosted storage account located in the same region as your metastore. The data is securely shared with you using Delta Sharing.
+
+Each table has a free data retention period. For information on extending the retention period, contact your Databricks account team.
