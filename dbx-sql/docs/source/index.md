@@ -1,9 +1,9 @@
 # Dbx SQL Queries
 
 ```{toctree}
-:maxdepth: 3
-:caption: Top of contents:
+:maxdepth: 5
+:caption::
 
-tutorials/catalog/README
-tutorials/costing/README
+tutorials/catalog
+tutorials/costing
 ```

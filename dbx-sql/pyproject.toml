@@ -26,7 +26,8 @@ dev = [
     "pytest-cov>=6.2.1",
     "isort>=6.0.1",
     "flake8-pyproject>=1.2.3",
-    "taskipy>=1.14.1"
+    "taskipy>=1.14.1",
+    "sphinx-autobuild>=2024.10.3",
 ]
 
 [tool.taskipy.tasks]
@@ -36,5 +37,6 @@ clean = "rm -rf docs/build"
 html = "uv run sphinx-build -b html docs/source docs/build/html/"
 coverage = "uv run sphinx-build -b coverage docs/source docs/build/coverage"
 single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
-serve = "uv run python -m http.server -d ./docs/build/html 8080"
-html_serve = "task coverage && task html && task serve"
+server = "uv run python -m http.server -d ./docs/build/html 8080"
+html_server = "task clean && task html && task server"
+docs-autobuild = "uv run sphinx-autobuild docs/source docs/build/html --port 8080 --watch docs/source/tutorials"
