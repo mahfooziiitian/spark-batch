@@ -1,0 +1,47 @@
+[project]
+name = "spark-sql"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "databricks-connect==15.4.*",
+    "graphviz>=0.21",
+    "ipykernel>=6.30.0",
+    "pyspark==3.5.2",
+    "pytest-sugar>=1.0.0",
+    "sqlalchemy>=2.0.41",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "coverage>=7.10.0",
+    "pytest-cov>=6.2.1",
+    "isort>=6.0.1",
+    "flake8-pyproject>=1.2.3",
+    "taskipy>=1.14.1",
+    "myst-parser>=4.0.1",
+    "sphinx-autobuild>=2024.10.3",
+    "sphinxawesome-theme>=5.3.2",
+    "sphinx-test-reports>=1.2.0",
+    "sphinxcontrib-mermaid>=1.0.0",
+    "sphinx-autoapi>=3.6.0",
+    "linkify-it-py>=2.0.3",
+    "chispa>=0.11.1",
+]
+
+[tool.taskipy.tasks]
+# testing
+test = "uv run pytest --cov=md --cov-report json:coverage.json tests"
+
+# docs
+sphinx_qs = "uv run sphinx-quickstart docs --sep --ext-todo -p 'Spark SQL' -a 'Mohammad Mahfooz Alam' -v '0.1.0' -r '0.1.0' -l 'en'"
+docs_clean = "rm -rf docs/build"
+html = "uv run sphinx-build -b html docs/source docs/build/html/"
+coverage = "uv run sphinx-build -b coverage docs/source docs/build/coverage"
+single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
+server = "uv run python -m http.server -d ./docs/build/html 8080"
+html_server = "task docs_clean && task html && task server"
+docs-autobuild = "uv run sphinx-autobuild docs/source docs/build/html --port 8080 --watch docs/source/tutorials"
