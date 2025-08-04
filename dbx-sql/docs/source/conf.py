@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 from sphinxawesome_theme.postprocess import Icons
 
 sys.path.insert(0, str(Path(__file__).parents[2]))
@@ -7,9 +8,9 @@ sys.path.insert(1, str(Path(__file__).parents[2] / "src"))
 
 
 # -- Project information -----------------------------------------------------
-project = 'dbx-sql'
-copyright = '2025, Mohammad Mahfooz Alam'
-author = 'Mohammad Mahfooz Alam'
+project = "dbx-sql"
+copyright = "2025, Mohammad Mahfooz Alam"
+author = "Mohammad Mahfooz Alam"
 
 # -- General configuration ---------------------------------------------------
 
@@ -53,5 +54,5 @@ source_suffix = {
     ".txt": "markdown",
     ".md": "markdown",
 }
-html_static_path = ['_static']
+html_static_path = ["_static"]
 html_permalinks_icon = Icons.permalinks_icon
