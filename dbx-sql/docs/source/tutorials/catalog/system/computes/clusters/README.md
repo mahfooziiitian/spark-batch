@@ -1,5 +1,20 @@
 # Clusters
 
+You can use these tables to monitor the activity and metrics of non-serverless compute in your account.
+These tables include information about clusters used for:
+
+1. all-purpose compute
+2. jobs compute
+3. Lakeflow Declarative Pipelines
+
+## Tables
+
+Table Name|Description
+---|---
+clusters|Records compute configurations in your account.
+node_types|Includes a single record for each of the currently available node types, including hardware information.
+node_timeline|Includes minute-by-minute records of your compute's utilization metrics.
+
 ## Join cluster records with the most recent billing records
 
 ```sql

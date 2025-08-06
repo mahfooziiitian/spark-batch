@@ -1,6 +1,6 @@
 -- Creating tables
 
-CREATE TABLE  IF NOT EXISTS poc.testing.employees (
+CREATE TABLE IF NOT EXISTS poc.testing.employees (
     id INT,
     name STRING,
     hire_date DATE
@@ -8,16 +8,18 @@ CREATE TABLE  IF NOT EXISTS poc.testing.employees (
 
 -- Inserting data
 -- COMMAND ----
-INSERT INTO poc.testing.employees(id, name, hire_date) VALUES (1, 'Alice', DATE('2022-01-15'));
-INSERT INTO poc.testing.employees(id, name, hire_date ) VALUES (2, 'Bob', CAST('2022-02-01' AS DATE));
+INSERT INTO poc.testing.employees (id, name, hire_date) VALUES (
+    1, 'Alice', DATE('2022-01-15')
+);
+INSERT INTO poc.testing.employees (id, name, hire_date) VALUES (
+    2, 'Bob', CAST('2022-02-01' AS DATE)
+);
 
 -- Select data
-Select * from poc.testing.employees;
+SELECT * FROM poc.testing.employees;
 
 -- current date
-Select current_date() as current_date;
+SELECT CURRENT_DATE() AS current_date;
 
 -- drop date
 DROP TABLE IF EXISTS poc.testing.employees;
-
-

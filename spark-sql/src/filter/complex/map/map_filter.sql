@@ -1,33 +1,33 @@
 -- Map filtering
-drop view if exists complex_sales;
+DROP VIEW IF EXISTS complex_sales;
 
 CREATE OR REPLACE TEMP VIEW complex_sales AS
 SELECT *
 FROM
-VALUES (
-    'Alice',
-    STRUCT('NY' as city, 'USA' as country),
-    ARRAY('gift', 'priority'),
-    MAP('product', 'A', 'price', '100')
-  ),
-  (
-    'Bob',
-    STRUCT('LA' as city, 'USA' as country),
-    ARRAY('discount'),
-    MAP('product', 'B', 'price', '200')
-  ),
-  (
-    'Charlie',
-    STRUCT('Toronto' as city, 'Canada' as country),
-    ARRAY('gift', 'exclusive'),
-    MAP('product', 'C', 'price', '300')
-  ),
-  (
-    'Dana',
-    STRUCT('Vancouver' as city, 'Canada' as country),
-    ARRAY('promo'),
-    MAP('product', 'A', 'price', '250')
-  ) AS complex_sales(name, location, tags, info);
+    VALUES (
+        'Alice',
+        STRUCT('NY' as city, 'USA' as country),
+        ARRAY('gift', 'priority'),
+        MAP('product', 'A', 'price', '100')
+    ),
+    (
+        'Bob',
+        STRUCT('LA' as city, 'USA' as country),
+        ARRAY('discount'),
+        MAP('product', 'B', 'price', '200')
+    ),
+    (
+        'Charlie',
+        STRUCT('Toronto' as city, 'Canada' as country),
+        ARRAY('gift', 'exclusive'),
+        MAP('product', 'C', 'price', '300')
+    ),
+    (
+        'Dana',
+        STRUCT('Vancouver' as city, 'Canada' as country),
+        ARRAY('promo'),
+        MAP('product', 'A', 'price', '250')
+    ) AS complex_sales (name, location, tags, info);
 
 -- Get all customers in USA
 SELECT *
@@ -37,22 +37,23 @@ WHERE location.country = 'USA';
 -- Customers whose product is 'A'
 SELECT *
 FROM complex_sales
-WHERE info ['product'] = 'A';
+WHERE info['product'] = 'A';
 -- Customers where price > 200
 SELECT *
 FROM complex_sales
-WHERE CAST(info ['price'] AS INT) > 200;
+WHERE CAST(info['price'] AS INT) > 200;
 -- Check if key exists in map
 -- Only if key contains 'discount'
 SELECT *
 FROM complex_sales
-WHERE array_join(map_keys(info), '') LIKE '%discount%';
+WHERE ARRAY_JOIN(MAP_KEYS(info), '') LIKE '%discount%';
 -- Only if 'discount' is a key
 SELECT *
 FROM complex_sales
-WHERE array_contains(map_keys(info), 'discount');
+WHERE ARRAY_CONTAINS(MAP_KEYS(info), 'discount');
 SELECT *
 FROM complex_sales
-WHERE location.country = 'Canada'
-  AND info ['product'] = 'A'
-  AND array_contains(tags, 'promo');
+WHERE
+    location.country = 'Canada'
+    AND complex_sales.info['product'] = 'A'
+    AND ARRAY_CONTAINS(complex_sales.tags, 'promo');

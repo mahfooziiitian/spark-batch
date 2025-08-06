@@ -1,12 +1,13 @@
 -- creating table
-CREATE OR REPLACE TEMPORARY VIEW flight_summary USING csv OPTIONS (
+CREATE OR REPLACE TEMPORARY VIEW flight_summary USING CSV OPTIONS (
     path 'file:/mnt/d/Data/FileData/Csv/Flights/flight-summary.csv',
     header 'true',
-    inferSchema 'true'
-  );
+    inferschema 'true'
+);
 -- Multiple aggregation per group
-select min(count) as min_count,
-  max(count) as max_count,
-  count(count) as count
-from flight_summary
-group by origin_airport
+SELECT
+    min(count) AS min_count,
+    max(count) AS max_count,
+    count(count) AS count
+FROM flight_summary
+GROUP BY origin_airport

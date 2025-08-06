@@ -1,10 +1,10 @@
 -- unpivot
 DROP TABLE IF EXISTS sales_data;
 CREATE TABLE IF NOT EXISTS sales_data (
-    Category STRING,
-    Jan_Sales STRING,
-    Feb_Sales STRING,
-    Mar_Sales STRING
+    category STRING,
+    jan_sales STRING,
+    feb_sales STRING,
+    mar_sales STRING
 );
 -- Insert data into the table
 INSERT INTO sales_data
@@ -14,17 +14,18 @@ VALUES ("B", 400, 500, 600);
 INSERT INTO sales_data
 VALUES ("C", 700, 800, 900);
 -- unpivoting
-SELECT Category,
-    Months,
-    Sales
+SELECT
+    category,
+    months,
+    sales
 FROM sales_data LATERAL VIEW stack(
-        3,
-        'Jan',
-        Jan_Sales,
-        'Feb',
-        Feb_Sales,
-        'Mar',
-        Mar_Sales
-    ) as Months,
-    Sales;
+    3,
+    "Jan",
+    jan_sales,
+    "Feb",
+    feb_sales,
+    "Mar",
+    mar_sales
+) as months,
+sales;
 DROP TABLE IF EXISTS sales_data;

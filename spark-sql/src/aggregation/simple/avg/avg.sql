@@ -1,3 +1,4 @@
-select avg(count) as avg_fun,
-    sum(count) / count(count) as avg
-from flight_summary;
+SELECT
+    avg(count) AS avg_fun,
+    sum(count) / count(count) AS avg
+FROM flight_summary;
