@@ -7,7 +7,6 @@
     FROM 
         VALUES (10), (50), (20) AS tab(col);
 
-
 ## max_by
 
     SELECT 

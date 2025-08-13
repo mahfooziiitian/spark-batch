@@ -2,7 +2,7 @@
 
 In Spark SQL, a CTE (Common Table Expression) lets you define a temporary result set that can be referenced in a SELECT, INSERT, UPDATE, or DELETE statement.
 
-It improves query clarity, modularity, and reusability—just like in standard SQL.    
+It improves query clarity, modularity, and reusability—just like in standard SQL.  
 
 ## ✅ Syntax of CTE in Spark SQL
 

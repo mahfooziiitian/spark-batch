@@ -29,6 +29,7 @@ dev = [
     "taskipy>=1.14.1",
     "sphinx-autobuild>=2024.10.3",
     "sqlfluff>=3.4.2",
+    "sphinx-design>=0.6.1",
 ]
 
 [tool.flake8]
@@ -68,6 +69,8 @@ exclude_rules = ["RF01"]
 test = "uv run pytest --cov=md --cov-report json:coverage.json tests"
 
 # quality
+sql_format = "uv run sqlfluff fix src"
+sql_lint  = "uv run sqlfluff lint src"
 format = "uv run black . && uv run isort --profile black ."
 lint = "uv run flake8 ."
 quality = "task format && task lint"

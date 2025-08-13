@@ -37,7 +37,7 @@
         VALUES (INTERVAL '0' MONTH), (INTERVAL '10' MONTH) AS tab(col);
 
 ## min
-    
+  
     SELECT 
         min(col) 
     FROM 

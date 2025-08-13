@@ -4,8 +4,8 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.{col, concat, lit, rand}
 
 /**
- * Introduce a random component into the key to distribute skewed data more evenly. This is known as salting.
- * For example, you could add a random number to the key during the pre-processing stage.
+* Introduce a random component into the key to distribute skewed data more evenly. This is known as salting.
+* For example, you could add a random number to the key during the pre-processing stage.
  */
 object SkewJoinSlating {
 

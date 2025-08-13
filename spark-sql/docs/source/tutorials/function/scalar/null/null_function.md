@@ -88,7 +88,7 @@ Returns true if expr is not null, or false otherwise.
     SELECT isnotnull(1);
 
 ## isnan
-    
+  
     SELECT isnan(null) AS expression_output;
 
 ## Builtin Aggregate Expressions

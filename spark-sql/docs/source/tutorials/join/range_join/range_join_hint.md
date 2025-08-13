@@ -17,4 +17,3 @@
 SET spark.databricks.optimizer.rangeJoin.binSize=5
 
 SELECT APPROX_PERCENTILE(CAST(end - start AS DOUBLE), ARRAY(0.5, 0.9, 0.99, 0.999, 0.9999)) FROM ranges
-

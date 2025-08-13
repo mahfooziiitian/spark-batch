@@ -73,7 +73,7 @@ SELECT string(2025)
 ## Converts to TIMESTAMP
 
 ```sql
-SELECT timestamp('2024-01-01 12:34:56')	2024-01-01 12:34:56
+SELECT timestamp('2024-01-01 12:34:56') 2024-01-01 12:34:56
 ```
 
 ## Converts to TINYINT (8-bit integer)

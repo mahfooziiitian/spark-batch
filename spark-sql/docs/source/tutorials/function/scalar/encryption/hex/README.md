@@ -1,4 +1,4 @@
-# hex 
+# hex
 
 Hex and unhex() (Encoding/Decoding).
 

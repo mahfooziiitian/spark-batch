@@ -13,7 +13,7 @@ FROM
     VALUES
     (1, array('name', 'age', 'city'), array('John', '30', 'New York')),
     (2, array('name', 'age', 'city'), array('Alice', '28', 'London'))
-AS array_map_table (id, keys, values);
+    AS array_map_table (id, keys, values);
 
 SELECT
     id,

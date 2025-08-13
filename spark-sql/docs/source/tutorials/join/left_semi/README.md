@@ -72,4 +72,3 @@ Join Type | Left Only | Right Only | Matching | Output Columns
 Inner     | ❌         | ❌          | ✅        | Left + Right
 Left Semi | ✅         | ❌          | ✅        | Left only
 Left Anti | ✅         | ❌          | ❌        | Left only (when no match)
-

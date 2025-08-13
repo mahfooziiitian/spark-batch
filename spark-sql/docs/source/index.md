@@ -6,5 +6,6 @@
 
 tutorials/join
 tutorials/scd
+tutorials/control/control
 tutorials/function/function
-```
+tutorials/view/view

@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS dim_customer_history (
 USING DELTA;
 ```
 
-###  Incoming Data (Staging)
+### Incoming Data (Staging)
 
 ```sql
 CREATE OR REPLACE TEMP VIEW staging_customer AS

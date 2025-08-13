@@ -40,4 +40,3 @@ FROM events
 WHERE event_time >= current_date() - interval 7 days
 GROUP BY user_id
 ```
-

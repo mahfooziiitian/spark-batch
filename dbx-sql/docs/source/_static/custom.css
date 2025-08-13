@@ -1,0 +1,19 @@
+/* Full‑width footer with a background image */
+.awesome-custom-footer {
+  background: url("_static/footer-bg.jpg") no-repeat center center;
+  background-size: cover;
+  color: #fff;
+}
+
+/* Content container so text stays readable */
+.awesome-custom-footer__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* Links visible on dark bg */
+.awesome-custom-footer a {
+  color: #cfe2ff;
+  text-decoration: underline;
+}

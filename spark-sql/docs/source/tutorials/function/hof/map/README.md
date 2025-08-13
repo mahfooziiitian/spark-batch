@@ -3,7 +3,7 @@
 ## map_filter
 
 ```sql
-map_filter(map<K, V>, function<K, V, boolean>)	Filters entries in a map
+map_filter(map<K, V>, function<K, V, boolean>)  Filters entries in a map
 ```
 
 ## map_with_zip

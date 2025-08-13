@@ -72,7 +72,7 @@ flowchart TD
 
 ```
 
-##  When to Use
+## When to Use
 
 Goal                        | Use GROUPING SETS
 ----------------------------|------------------

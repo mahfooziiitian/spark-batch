@@ -1,8 +1,9 @@
 DESCRIBE EXTENDED system.access.audit;
-select DISTINCT service_name
-from system.access.audit;
-select *
-from system.access.audit
-where service_name = 'clusterPolicies'
-and action_name = 'create'
-limit 100;
+SELECT DISTINCT service_name
+FROM system.access.audit;
+SELECT *
+FROM system.access.audit
+WHERE
+    service_name = 'clusterPolicies'
+    AND action_name = 'create'
+LIMIT 100;

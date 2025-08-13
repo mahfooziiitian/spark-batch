@@ -11,4 +11,3 @@
     SELECT last_value(col) FROM VALUES (10), (5), (20) AS tab(col);
     SELECT last_value(col) FROM VALUES (10), (5), (NULL) AS tab(col);
     SELECT last_value(col, true) FROM VALUES (10), (5), (NULL) AS tab(col);
-

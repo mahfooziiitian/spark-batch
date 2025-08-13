@@ -1,4 +1,4 @@
-# Builtin Aggregate Expressions 
+# Builtin Aggregate Expressions
 
 Aggregate functions compute a single result by processing a set of input rows.
 
@@ -20,7 +20,6 @@ The list of these functions is:
     ANY
     SOME
 
-
 ## `count(*)` does not skip `NULL` values.
 
     SELECT count(*) FROM person;
@@ -28,8 +27,8 @@ The list of these functions is:
 ## `NULL` values in column `age` are skipped from processing.
 
     SELECT count(age) FROM person;
-    
-## `count(*)` on an empty input set returns 0. 
+  
+## `count(*)` on an empty input set returns 0.
 
 This is unlike the other aggregate functions, such as `max`, which return `NULL`.
 

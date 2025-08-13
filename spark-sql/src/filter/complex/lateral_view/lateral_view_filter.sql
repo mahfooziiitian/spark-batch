@@ -38,9 +38,10 @@ SELECT
     name,
     key,
     value
-FROM complex_sales
-    LATERAL VIEW EXPLODE(info) as key,
-    value
+FROM
+    complex_sales
+        LATERAL VIEW EXPLODE(info) as key,
+        value
 WHERE
     key = 'price'
     AND CAST(value AS INT) > 200;

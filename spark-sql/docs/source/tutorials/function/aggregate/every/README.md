@@ -7,4 +7,4 @@
     FROM 
         VALUES (true), (true), (true) AS tab(col);
 
-## 
+##

@@ -6,4 +6,3 @@ The shuffle hash join implementation consists of two steps.
 2. Once the first step is completed, the second step combines the columns of those rows that have the same column hash value.
 
 At a high level, these two steps are similar to the steps in the MapReduce programming model.
-

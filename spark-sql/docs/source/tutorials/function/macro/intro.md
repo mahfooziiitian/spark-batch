@@ -26,4 +26,3 @@ spark.sql(query).show()
 1. ✅ Avoid quoting errors for table/column names like order, select, etc.
 2. ✅ Helps with dynamic SQL generation
 3. ✅ Prevents SQL injection if user input is used
-

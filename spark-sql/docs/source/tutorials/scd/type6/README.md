@@ -38,7 +38,7 @@ sql
 Copy
 Edit
 CREATE OR REPLACE TEMP VIEW staging_customer AS
-SELECT * FROM VALUES
+SELECT *FROM VALUES
   ("cust1", "Alice", "alice@example.com", "NY"),     -- No change
   ("cust2", "Bob", "bob@newdomain.com", "TX"),       -- Change (email)
   ("cust3", "Charlie", "charlie@example.com", "WA")  -- New
@@ -93,7 +93,7 @@ SELECT
   current_timestamp(), NULL, TRUE
 FROM staged_hashed s
 LEFT JOIN (
-  SELECT * FROM dim_customer WHERE is_current = TRUE
+  SELECT* FROM dim_customer WHERE is_current = TRUE
 ) d ON s.customer_id = d.customer_id
 WHERE d.customer_id IS NULL OR d.row_hash <> s.row_hash;
 ✅ Query Examples
@@ -101,17 +101,17 @@ Current state of customers:
 sql
 Copy
 Edit
-SELECT * FROM dim_customer WHERE is_current = TRUE;
+SELECT *FROM dim_customer WHERE is_current = TRUE;
 Full history for a customer:
 sql
 Copy
 Edit
-SELECT * FROM dim_customer WHERE customer_id = 'cust2' ORDER BY start_date;
+SELECT* FROM dim_customer WHERE customer_id = 'cust2' ORDER BY start_date;
 💡 Summary of SCD Type 6
-Feature	Handled By	In Table
-Current value updates	Type 1	Overwrite name, email, city
-Track history (all versions)	Type 2	is_current, start_date, end_date
-Track last value (e.g. city)	Type 3	prev_city column
+Feature Handled By  In Table
+Current value updates   Type 1  Overwrite name, email, city
+Track history (all versions)    Type 2  is_current, start_date, end_date
+Track last value (e.g. city)    Type 3  prev_city column
 
 🚀 Bonus Enhancements
 Add change_reason, source_system, changed_by

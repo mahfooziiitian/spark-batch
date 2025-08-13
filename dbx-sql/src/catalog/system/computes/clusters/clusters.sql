@@ -1,1 +1,1 @@
-describe formatted system.compute.clusters
+DESCRIBE formatted system.compute.clusters

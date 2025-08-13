@@ -57,4 +57,3 @@ FROM (
 ) sub
 WHERE dup_count > 1;
 ```
-

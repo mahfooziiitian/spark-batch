@@ -54,17 +54,15 @@ Shuffle Hash Join involves moving data with the same value of join key in the sa
 4. It seems to an expensive join in a way that involves both shuffling and hashing(Hash Join as explained above).
 5. Maintaining a hash table requires memory and computation.
 
-```SQL
-SELECT *
-FROM df1
-JOIN df2
-  ON df1.id = df2.id
-```
+    SELECT *
+    FROM df1
+    JOIN df2
+      ON df1.id = df2.id
 
 ## Performance Tips
 
 1. Prefer broadcast hash join when one side is < 10MB
 2. Use join hints: /*+ BROADCAST(df) */
 3. For shuffle hash joins:
-    - Ensure partitioning is balanced
-    - Use `spark.sql.autoBroadcastJoinThreshold` wisely
+   - Ensure partitioning is balanced
+   - Use `spark.sql.autoBroadcastJoinThreshold` wisely

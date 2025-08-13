@@ -14,6 +14,5 @@ optimized using catalyst optimizer and also highly performant via the Tungsten I
 
 You can think of a dataset as an efficient table of an RDD with heavily optimized binary representation of the data.
 
-The binary representation is achieved using encoders, which serializes the various objects into a binary structure for much 
+The binary representation is achieved using encoders, which serializes the various objects into a binary structure for much
 better performance than RDD representation.
- 

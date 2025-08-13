@@ -1,17 +1,17 @@
 package com.mahfooz.spark.join.implementation.skewjoin.ade
 
 /**
- * AQE is a suite of runtime optimization features which is now enabled by default from Spark 3.0.
- * One of the key feature this suite packs is the capability to automatically optimize Joins for skewed Datasets.
- * AQE performs this optimization generally for ‘Sort Merge Joins’ of a skewed dataset with a non- skewed dataset.
- * AQE operates at partitioning step of a Sort Merge Join where the two input Datasets are firstly partitioned based on corresponding Join Key.
- * After the shuffle blocks are written by the MapTasks during partitioning, Spark Execution Engine gets stats on the size of each shuffled partitions.
- * With these stats available from Spark Execution Engine, AQE can determine, in tandem with certain configurable parameters, if certain partitions are skewed or not.
- * In case certain partitions are found as skewed, AQE breaks down these partitions into smaller partitions.
- * This breakdown is controller by a set of configurable parameters.
- * The smaller partitions resulting from the breakdown of a bigger skewed partition are then joined with a copy of corresponding partition of the other non skewed input dataset.
- *
- * Following are the config parameters that affect skewed join optimization feature in AQE:
+* AQE is a suite of runtime optimization features which is now enabled by default from Spark 3.0.
+* One of the key feature this suite packs is the capability to automatically optimize Joins for skewed Datasets.
+* AQE performs this optimization generally for ‘Sort Merge Joins’ of a skewed dataset with a non- skewed dataset.
+* AQE operates at partitioning step of a Sort Merge Join where the two input Datasets are firstly partitioned based on corresponding Join Key.
+* After the shuffle blocks are written by the MapTasks during partitioning, Spark Execution Engine gets stats on the size of each shuffled partitions.
+* With these stats available from Spark Execution Engine, AQE can determine, in tandem with certain configurable parameters, if certain partitions are skewed or not.
+* In case certain partitions are found as skewed, AQE breaks down these partitions into smaller partitions.
+* This breakdown is controller by a set of configurable parameters.
+* The smaller partitions resulting from the breakdown of a bigger skewed partition are then joined with a copy of corresponding partition of the other non skewed input dataset.
+*
+* Following are the config parameters that affect skewed join optimization feature in AQE:
 
 "spark.sql.adaptive.skewJoin.enabled" : This boolean parameter controls whether skewed join optimization is turned on or off. Default value is true.
 

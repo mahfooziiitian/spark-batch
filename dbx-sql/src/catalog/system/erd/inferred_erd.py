@@ -63,6 +63,7 @@ def infer_one_way_relationships(table_columns):
                 continue
 
             tgt_colnames = {col for col, _ in tgt_cols}
+            print(tgt_colnames)
 
             for col_name, _ in src_cols:
                 if (
@@ -93,7 +94,7 @@ def visualize_erd(table_columns, relationships, output_file, cleanup=True):
     )
 
     for table, columns in table_columns.items():
-        label = f"<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>"
+        label = "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>"
         label += f"<TR><TD BGCOLOR='lightgray'><B>{table}</B></TD></TR>"
         for col, _ in columns:
             label += f"<TR><TD ALIGN='LEFT'>{col}</TD></TR>"
