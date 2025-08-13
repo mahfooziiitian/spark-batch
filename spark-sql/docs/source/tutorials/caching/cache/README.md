@@ -22,6 +22,7 @@ SELECT * FROM students WHERE age > 20;
 ```sql
 CACHE TABLE my_temp_view;
 ```
+
 You can also create and cache it inline:
 
 ```sql

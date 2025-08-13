@@ -41,4 +41,3 @@ timestampdiff(unit, startTimestamp, endTimestamp)
 ```sql
 SELECT timestampdiff(hour, TIMESTAMP '2025-07-20 12:00:00', TIMESTAMP '2025-07-21 15:30:00') AS diff_hours;
 ```
-

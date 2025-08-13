@@ -4,5 +4,5 @@ SELECT
     table_name,
     tag_name,
     tag_value
-FROM 
+FROM
     system.information_schema.table_tags;

@@ -21,5 +21,3 @@
         count_if(col IS NULL) 
     FROM 
         VALUES (NULL), (0), (1), (2), (3) AS tab(col);
-
-    

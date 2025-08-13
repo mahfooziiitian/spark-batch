@@ -3,13 +3,12 @@ from pathlib import Path
 
 from sphinxawesome_theme.postprocess import Icons
 
-sys.path.insert(0, str(Path(__file__).parents[2]))
 sys.path.insert(1, str(Path(__file__).parents[2] / "src"))
 
 
 # -- Project information -----------------------------------------------------
 project = "dbx-sql"
-copyright = "2025, Mohammad Mahfooz Alam"
+copyright = "2025, Mohammad Mahfooz Alam."
 author = "Mohammad Mahfooz Alam"
 
 # -- General configuration ---------------------------------------------------
@@ -19,14 +18,11 @@ master_doc = "index"
 extensions = [
     "sphinxcontrib.mermaid",
     "sphinx_needs",
-    "sphinxcontrib.test_reports",
-    # "sphinxcontrib.plantuml",
+    "sphinx_design",
+    "myst_parser",
     "autoapi.extension",
+    "sphinx.ext.coverage",
 ]
-
-extensions.append("myst_parser")
-extensions.append("autoapi.extension")
-extensions.append("sphinx.ext.coverage")
 
 myst_enable_extensions = [
     "amsmath",
@@ -55,4 +51,9 @@ source_suffix = {
     ".md": "markdown",
 }
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 html_permalinks_icon = Icons.permalinks_icon
+
+html_theme_options = {
+    "show_prev_next": True
+}

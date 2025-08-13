@@ -20,6 +20,7 @@ CREATE TABLE dim_customer (
 USING DELTA
 PARTITIONED BY (city);
 ```
+
 ### Insert Initial Data
 
 ```sql
@@ -56,6 +57,7 @@ SELECT * FROM VALUES
   ("cust3", "Charlie", "charlie@example.com", "WA")       -- New insert
 AS t(customer_id, name, email, city);
 ```
+
 ### SCD Type 2 Merge Logic
 
 ```sql
@@ -125,7 +127,6 @@ FROM (
 ```
 
 ## Using merge
-
 
 ```sql
 MERGE INTO dim_customer AS tgt

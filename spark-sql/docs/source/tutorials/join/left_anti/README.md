@@ -89,7 +89,7 @@ Filter unmatched rows           | "Find items not in list"
 Implement NOT IN / NOT EXISTS   | More scalable than subqueries
 Data validation / gap detection | Track orphan rows, missing links
 
-##  Optimization Tips
+## Optimization Tips
 
 Use broadcast hint if right side is small:
 

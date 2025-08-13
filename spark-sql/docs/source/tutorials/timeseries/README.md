@@ -26,13 +26,11 @@ Spark has powerful support for windowed aggregations using:
 2. Time-based grouping (e.g., group by 5-minute intervals)
 3. Sliding and tumbling windows
 
-
 ## 🔁 Concept Comparison
 
-Feature	Tumbling Window	Hopping Window	Sliding Window
-Fixed Size	✅ Yes	✅ Yes	✅ Yes
-Overlap	❌ No	✅ Yes	✅ Yes
-Event Count	1 window max	Few windows	Many windows
-Use Case	Hourly reports, batch	Near-real-time trends	Moving averages, smoothing
-Examples	10:00–11:00, 11:00–12:00	10:00–11:00, 10:30–11:30	Every 5m for last 1h
-
+Feature Tumbling Window Hopping Window  Sliding Window
+Fixed Size  ✅ Yes   ✅ Yes   ✅ Yes
+Overlap ❌ No    ✅ Yes   ✅ Yes
+Event Count 1 window max    Few windows Many windows
+Use Case    Hourly reports, batch   Near-real-time trends   Moving averages, smoothing
+Examples    10:00–11:00, 11:00–12:00    10:00–11:00, 10:30–11:30    Every 5m for last 1h

@@ -22,14 +22,14 @@ PIVOT (
 ```
 
 1. `aggregate_expression`
-    - Specifies an aggregate expression (SUM(a), COUNT(DISTINCT b), etc.).
+   - Specifies an aggregate expression (SUM(a), COUNT(DISTINCT b), etc.).
 2. `aggregate_expression_alias`
-    - Specifies an alias for the aggregate expression.
+   - Specifies an alias for the aggregate expression.
 3. `column_list`
-    - Contains columns in the FROM clause, which specifies the columns we want to replace with new columns.
-    - We can use brackets to surround the columns, such as (c1, c2).
+   - Contains columns in the FROM clause, which specifies the columns we want to replace with new columns.
+   - We can use brackets to surround the columns, such as (c1, c2).
 4. `expression_list`
-    - Specifies new columns, which are used to match values in column_list as the aggregating condition.
+   - Specifies new columns, which are used to match values in column_list as the aggregating condition.
 
 ### SQL
 

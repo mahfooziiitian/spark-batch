@@ -46,7 +46,7 @@ largePart2 --> out2[Join Output 2]
 1. Driver broadcasts the small DataFrame to all executors.
 2. Each executor performs:
 
-    - For each row in the broadcasted DataFrame:
-        - For each row in the local partition of the large DataFrame:     
-            - Evaluate the join condition (can be any expression, not just equality).
+   - For each row in the broadcasted DataFrame:
+     - For each row in the local partition of the large DataFrame:  
+       - Evaluate the join condition (can be any expression, not just equality).
 3. Matched pairs are returned as result.

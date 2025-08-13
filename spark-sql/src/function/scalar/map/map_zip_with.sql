@@ -11,3 +11,5 @@ SELECT
         map('b', 3, 'c', 4),
         (k, v1, v2) -> coalesce(v1, 0) + coalesce(v2, 0)
     ) AS result_map;
+
+-- ======================application======================

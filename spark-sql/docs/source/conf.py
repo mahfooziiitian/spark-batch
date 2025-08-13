@@ -22,8 +22,18 @@ exclude_patterns = []
 language = 'en'
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinxawesome_theme'
+html_theme = 'furo'
 html_static_path = ['_static']
+html_css_files = [
+    'custom.css',
+]
+html_theme_options = {
+    # "light_logo": "logo-light.png",  # optional
+    # "dark_logo": "logo-dark.png",    # optional
+    "sidebar_hide_name": False,
+    "navigation_with_keys": True,
+}
+html_permalinks = False
 
 # -- Options for todo extension ----------------------------------------------
 todo_include_todos = True

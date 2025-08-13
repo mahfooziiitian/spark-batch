@@ -2,14 +2,18 @@
 -- ✅ 1. Remove Exact Duplicates (All Columns Match)
 WITH students AS (
     SELECT
-        * FROM VALUES
-    (1, 'Alice', 20),
-    (2, 'Bob', 22),
-    (1, 'Alice', 20),
-    (4, 'Dave', 23),
-    (2, 'Bob', 22),
-    (6, 'Eve', 24),
-    (1, 'Alice', 20)
+        id,
+        name,
+        age
+    FROM
+        VALUES
+        (1, 'Alice', 20),
+        (2, 'Bob', 22),
+        (1, 'Alice', 20),
+        (4, 'Dave', 23),
+        (2, 'Bob', 22),
+        (6, 'Eve', 24),
+        (1, 'Alice', 20)
         AS students (id, name, age)
 )
 
@@ -18,14 +22,18 @@ FROM students;
 -- ✅ 2. Remove Duplicates Based on Key Columns (Keep First)
 WITH students AS (
     SELECT
-        * FROM VALUES
-    (1, 'Alice', 20),
-    (2, 'Bob', 22),
-    (1, 'Alice', 19),
-    (4, 'Dave', 23),
-    (2, 'Bob', 23),
-    (6, 'Eve', 24),
-    (1, 'Alice', 22)
+        id,
+        name,
+        age
+    FROM
+        VALUES
+        (1, 'Alice', 20),
+        (2, 'Bob', 22),
+        (1, 'Alice', 19),
+        (4, 'Dave', 23),
+        (2, 'Bob', 23),
+        (6, 'Eve', 24),
+        (1, 'Alice', 22)
         AS students (id, name, age)
 )
 
@@ -44,14 +52,18 @@ WHERE rn = 1;
 -- ✅ 3. Remove Duplicates Based on Key Columns (Keep Any Row)
 WITH students AS (
     SELECT
-        * FROM VALUES
-    (1, 'Alice', 20),
-    (2, 'Bob', 22),
-    (1, 'Alice', 19),
-    (4, 'Dave', 23),
-    (2, 'Bob', 23),
-    (6, 'Eve', 24),
-    (1, 'Alice', 22)
+        id,
+        name,
+        age
+    FROM
+        VALUES
+        (1, 'Alice', 20),
+        (2, 'Bob', 22),
+        (1, 'Alice', 19),
+        (4, 'Dave', 23),
+        (2, 'Bob', 23),
+        (6, 'Eve', 24),
+        (1, 'Alice', 22)
         AS students (id, name, age)
 )
 
@@ -63,14 +75,19 @@ GROUP BY id;
 -- ✅ 4. Remove Duplicates and Keep the Latest Row (by timestamp)
 WITH students AS (
     SELECT
-        * FROM VALUES
-    (1, 'Alice', 20, '2023-08-01 10:00:00'),
-    (2, 'Bob', 22, '2023-08-01 11:00:00'),
-    (1, 'Alice', 19, '2023-08-02 10:00:00'),
-    (4, 'Dave', 23, '2023-08-02 12:00:00'),
-    (2, 'Bob', 23, '2023-08-03 10:00:00'),
-    (6, 'Eve', 24, '2023-08-03 11:00:00'),
-    (1, 'Alice', 22, '2023-08-04 10:00:00')
+        id,
+        name,
+        age,
+        create_datetime
+    FROM
+        VALUES
+        (1, 'Alice', 20, '2023-08-01 10:00:00'),
+        (2, 'Bob', 22, '2023-08-01 11:00:00'),
+        (1, 'Alice', 19, '2023-08-02 10:00:00'),
+        (4, 'Dave', 23, '2023-08-02 12:00:00'),
+        (2, 'Bob', 23, '2023-08-03 10:00:00'),
+        (6, 'Eve', 24, '2023-08-03 11:00:00'),
+        (1, 'Alice', 22, '2023-08-04 10:00:00')
         AS students (id, name, age, create_datetime)
 )
 
@@ -116,7 +133,9 @@ GROUP BY id, name, some_column;
 
 -- ✅ 8. Remove Duplicates with Self-Join
 WITH b AS (
-    SELECT id, MIN(some_column) AS min_col
+    SELECT
+        id,
+        MIN(some_column) AS min_col
     FROM my_table
     GROUP BY id
 )

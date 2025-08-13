@@ -15,9 +15,7 @@ CREATE TABLE [ IF NOT EXISTS ] table_identifier
     [ AS select_statement ]
 ```
 
-
-
-### view
+## view
 
 ```sql
 CREATE OR REPLACE TEMPORARY VIEW complex_type 

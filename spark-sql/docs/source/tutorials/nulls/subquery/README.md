@@ -12,13 +12,12 @@ These two expressions are not affected by presence of NULL in the result of the 
 
 They are normally faster because they can be converted to `semijoins / anti-semijoins` without special provisions for null awareness.
 
-
-### Even if subquery produces rows with `NULL` values, the `EXISTS` expression evaluates to `TRUE` as the subquery produces 1 row.
+## Even if subquery produces rows with `NULL` values, the `EXISTS` expression evaluates to `TRUE` as the subquery produces 1 row.
 
     SELECT * FROM person WHERE EXISTS (SELECT null);
 
 ### `NOT EXISTS` expression returns `FALSE`.
-It returns `TRUE` only when subquery produces no rows. 
+It returns `TRUE` only when subquery produces no rows.
 In this case, it returns 1 row.
 
     SELECT * FROM person WHERE NOT EXISTS (SELECT null);
@@ -27,7 +26,7 @@ In this case, it returns 1 row.
 
     SELECT * FROM person WHERE NOT EXISTS (SELECT 1 WHERE 1 = 0);
 
-## IN/NOT IN Subquery 
+## IN/NOT IN Subquery
 
 In Spark, IN and NOT IN expressions are allowed inside a WHERE clause of a query. Unlike the EXISTS expression, IN expression can return a TRUE, FALSE or UNKNOWN (NULL) value. Conceptually a IN expression is semantically equivalent to a set of equality condition separated by a disjunctive operator (OR). For example, c1 IN (1, 2, 3) is semantically equivalent to (C1 = 1 OR c1 = 2 OR c1 = 3).
 
@@ -46,8 +45,8 @@ SELECT * FROM person WHERE age IN (SELECT null);
 +----+---+
 +----+---+
 
--- The subquery has `NULL` value in the result set as well as a valid 
--- value `50`. Rows with age = 50 are returned. 
+-- The subquery has `NULL` value in the result set as well as a valid
+-- value `50`. Rows with age = 50 are returned.
 SELECT * FROM person
     WHERE age IN (SELECT age FROM VALUES (50), (null) sub(age));
 +----+---+

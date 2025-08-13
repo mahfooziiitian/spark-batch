@@ -4,19 +4,21 @@ SELECT map('name', 'Alice', 'age', '30', 'city', 'Paris') AS person_map;
 
 --- 2. Create a map from column values
 CREATE OR REPLACE TEMP VIEW person_data AS
-SELECT
-    1 AS id,
-    'name' AS key1,
-    'John' AS value1,
-    'age' AS key2,
-    '30' AS value2
-UNION ALL
-SELECT
-    2,
-    'name',
-    'Alice',
-    'age',
-    '28';
+(
+    SELECT
+        1 AS id,
+        'name' AS key1,
+        'John' AS value1,
+        'age' AS key2,
+        '30' AS value2
+    UNION ALL
+    SELECT
+        2,
+        'name',
+        'Alice',
+        'age',
+        '28'
+);
 SELECT
     id,
     map(key1, value1, key2, value2) AS person_map

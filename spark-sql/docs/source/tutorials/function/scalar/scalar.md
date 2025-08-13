@@ -4,6 +4,7 @@
 :maxdepth: 2
 :caption::
 
+string/README
 acl/README
 array/README
 bitwise/README

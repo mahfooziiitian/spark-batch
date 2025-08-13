@@ -47,5 +47,3 @@ WHERE location.country = 'Canada'
   AND info['product'] = 'A'
   AND array_contains(tags, 'promo');
 ```
-
-

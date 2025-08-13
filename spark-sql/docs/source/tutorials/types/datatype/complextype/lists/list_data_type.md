@@ -4,4 +4,4 @@
     collect_set(ORIGIN_COUNTRY_NAME) as origin_set
     FROM flights
     GROUP BY DEST_COUNTRY_NAME having size(collect_list(count))>1
-            
+  

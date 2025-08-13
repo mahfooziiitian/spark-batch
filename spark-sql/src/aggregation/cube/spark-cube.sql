@@ -23,7 +23,7 @@ SELECT
     SUM(amount) AS total_sales,
     GROUPING_ID() AS grouping_id
 FROM sales_dt
-GROUP BY CUBE (date, region, product);
+GROUP BY CUBE(date, region, product);
 -- Null data handling
 -- COALESCE(date, 'All') blindly replaces both aggregated NULLs and real NULLs.
 
@@ -36,7 +36,7 @@ SELECT
     GROUPING(region) AS is_region_grouping,
     GROUPING(product) AS is_product_grouping
 FROM sales_dt
-GROUP BY CUBE (date, region, product)
+GROUP BY CUBE(date, region, product)
 ORDER BY
     date,
     region,
@@ -46,7 +46,7 @@ ORDER BY
 
 SELECT
     CASE WHEN GROUPING(date) = 1 THEN 'All' ELSE CAST(date AS STRING) END
-        AS date,
+    AS date,
     CASE WHEN GROUPING(region) = 1 THEN 'All' ELSE region END AS region,
     CASE WHEN GROUPING(product) = 1 THEN 'All' ELSE product END AS product,
     SUM(amount) AS total_sales,
@@ -54,7 +54,7 @@ SELECT
     GROUPING(region) AS is_region_grouping,
     GROUPING(product) AS is_product_grouping
 FROM sales_dt
-GROUP BY CUBE (date, region, product)
+GROUP BY CUBE(date, region, product)
 ORDER BY
     date,
     region,

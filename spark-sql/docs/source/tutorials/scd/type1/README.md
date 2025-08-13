@@ -52,7 +52,6 @@ Your job should be safe to run multiple times with the same input.
 
 Run unit/data tests post-merge to verify row counts and duplicates.
 
-
 ## Pattern
 
 ### SCD Type 1 Design Pattern

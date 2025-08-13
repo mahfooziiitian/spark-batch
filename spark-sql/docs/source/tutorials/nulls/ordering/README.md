@@ -1,4 +1,4 @@
-# Sort Operator (ORDER BY Clause) 
+# Sort Operator (ORDER BY Clause)
 
 Spark SQL supports null ordering specification in ORDER BY clause.
 
@@ -13,4 +13,3 @@ Spark processes the ORDER BY clause by placing all the NULL values at first or a
 ## Column values other than `NULL` are sorted in ascending way and `NULL` values are shown at the last.
 
     SELECT age, name FROM person ORDER BY age NULLS LAST;
-

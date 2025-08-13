@@ -33,35 +33,33 @@ Broadcast relations are shared among executors using the `BitTorrent protocol`.
 
 ## Flow
 
-```mermaid
-flowchart TB
-    subgraph Driver
-        smallDF[Small DF]
-    end
-
-    subgraph WorkerNode1
-        smallDFCopy1[Small DF Copy]
-        lDFPart0[Large DF part-0]
-    end
-
-    subgraph WorkerNode2
-        smallDFCopy2[Small DF Copy]
-        lDFPart1[Large DF part-1]
-    end
-
-    subgraph WorkerNode3
-        smallDFCopy3[Small DF Copy]
-        lDFPart2[Large DF part-2]
-    end
-
-    smallDF -->|Distribute| smallDFCopy1
-    smallDF -->|Distribute| smallDFCopy2
-    smallDF -->|Distribute| smallDFCopy3
-
-    smallDFCopy1 -->|Hash join| lDFPart0
-    smallDFCopy2 -->|Hash join| lDFPart1
-    smallDFCopy3 -->|Hash join| lDFPart2
-```
+    flowchart TB
+        subgraph Driver
+            smallDF[Small DF]
+        end
+    
+        subgraph WorkerNode1
+            smallDFCopy1[Small DF Copy]
+            lDFPart0[Large DF part-0]
+        end
+    
+        subgraph WorkerNode2
+            smallDFCopy2[Small DF Copy]
+            lDFPart1[Large DF part-1]
+        end
+    
+        subgraph WorkerNode3
+            smallDFCopy3[Small DF Copy]
+            lDFPart2[Large DF part-2]
+        end
+    
+        smallDF -->|Distribute| smallDFCopy1
+        smallDF -->|Distribute| smallDFCopy2
+        smallDF -->|Distribute| smallDFCopy3
+    
+        smallDFCopy1 -->|Hash join| lDFPart0
+        smallDFCopy2 -->|Hash join| lDFPart1
+        smallDFCopy3 -->|Hash join| lDFPart2
 
 1. The broadcast relation should fit completely into the memory of each executor as well as the driver.
 In Driver, because driver will start the data transfer.
@@ -74,13 +72,11 @@ You can't make changes to the broadcast relation, after broadcast.
 
 ## SQL
 
-```sql
-SELECT /*+ BROADCAST(small_df) */
-  *
-FROM small_df
-JOIN large_df
-  ON small_df.id = large_df.id
-```
+    SELECT /*+ BROADCAST(small_df) */
+      *
+    FROM small_df
+    JOIN large_df
+      ON small_df.id = large_df.id
 
 Spark will:
 

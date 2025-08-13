@@ -26,6 +26,7 @@ FROM (
 )
 WHERE rn = 1
 ```
+
 ### ✅ 2. Using RANK() or DENSE_RANK()
 
 Using RANK() or DENSE_RANK() (For more complex tie-breaks).
@@ -54,7 +55,6 @@ JOIN dedup_keys d
 ON t.id = d.id;
 ```
 
-
 ## ✅ 3. Remove Duplicates Based on Key Columns (Keep Any Row)
 
 If you just want any one row per key, without specifying an order.
@@ -68,7 +68,7 @@ FROM (
 WHERE rn = 1
 ```
 
-###  Using WINDOW + DELETE on Delta Tables
+### Using WINDOW + DELETE on Delta Tables
 
 ```SQL
 DELETE FROM your_table

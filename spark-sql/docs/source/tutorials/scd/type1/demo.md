@@ -1,6 +1,5 @@
 # Demo
 
-
 ```sql
 -- Step 1: Find records that changed or are new
 WITH changes AS (

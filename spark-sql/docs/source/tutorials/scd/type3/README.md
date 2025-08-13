@@ -21,7 +21,6 @@ Want to compare current vs last | ✅ Yes
 High cardinality of changes     | ❌ Use SCD Type 2
 Space/performance sensitive     | ✅ Lightweight
 
-
 ## Best Practices
 
 ### 1. Identify Which Columns Truly Need History
@@ -59,11 +58,11 @@ WHEN MATCHED AND (src.city <> tgt.current_city OR tgt.current_city IS NULL)
 ### 5. Merge Logic Pattern
 
 1. When `src.value ≠ current`, update:
-    - previous = current
-    - current = src.value
-    - timestamp = current_timestamp()
+   - previous = current
+   - current = src.value
+   - timestamp = current_timestamp()
 2. Else skip
-    - Insert if not matched
+   - Insert if not matched
 
 ### 6. Avoid Repeated Updates
 
@@ -135,4 +134,3 @@ WHEN NOT MATCHED THEN
     src.customer_id, src.name, src.city, null, current_timestamp()
   );
 ```
-

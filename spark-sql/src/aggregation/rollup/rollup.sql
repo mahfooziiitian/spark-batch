@@ -16,7 +16,7 @@ SELECT
     region,
     SUM(amount) AS total_sales
 FROM sales
-GROUP BY ROLLUP (region);
+GROUP BY ROLLUP(region);
 --- Replacing NULL with Descriptive Labels
 SELECT
     COALESCE(date, 'All Dates') AS date,
@@ -25,7 +25,7 @@ SELECT
     GROUPING(date) AS is_date_rollup,
     GROUPING(region) AS is_region_rollup
 FROM sales
-GROUP BY ROLLUP (date, region)
+GROUP BY ROLLUP(date, region)
 ORDER BY
     date,
     region;

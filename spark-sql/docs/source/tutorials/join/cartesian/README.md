@@ -54,5 +54,5 @@ flowchart TB
 2. It is not a broadcast join, both sides may be large.
 3. Can cause OutOfMemoryError if used improperly.
 4. Avoid unless:
-    - One side is small (use broadcast + explode)
-    - You're intentionally creating combinations
+   - One side is small (use broadcast + explode)
+   - You're intentionally creating combinations

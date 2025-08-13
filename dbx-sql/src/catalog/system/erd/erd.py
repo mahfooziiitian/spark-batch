@@ -90,7 +90,7 @@ def visualize_erd(table_columns, relationships, output_file, cleanup=True):
 
     # Add tables and columns
     for table, columns in table_columns.items():
-        label = f"<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>"
+        label = "<<TABLE BORDER='0' CELLBORDER='1' CELLSPACING='0'>"
         label += f"<TR><TD BGCOLOR='lightgray'><B>{table}</B></TD></TR>"
         for col, _ in columns:
             label += f"<TR><TD>{col}</TD></TR>"

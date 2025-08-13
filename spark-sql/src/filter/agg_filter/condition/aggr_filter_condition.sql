@@ -1,15 +1,21 @@
 -- Create temporary view for sales data
-CREATE OR REPLACE TEMP VIEW sales AS
-SELECT
-    * FROM VALUES
-('Alice', 'North', 'A', 100),
-('Bob', 'North', 'B', 150),
-('Alice', 'South', 'A', 200),
-('Bob', 'South', 'B', 300),
-('Charlie', 'North', 'C', 400),
-('Alice', 'North', 'B', 250),
-('Charlie', 'South', 'A', 350)
-    AS sales (name, region, product, amount);
+CREATE OR REPLACE TEMP VIEW sales AS (
+    SELECT
+        name,
+        region,
+        product,
+        amount
+    FROM
+        VALUES
+        ('Alice', 'North', 'A', 100),
+        ('Bob', 'North', 'B', 150),
+        ('Alice', 'South', 'A', 200),
+        ('Bob', 'South', 'B', 300),
+        ('Charlie', 'North', 'C', 400),
+        ('Alice', 'North', 'B', 250),
+        ('Charlie', 'South', 'A', 350)
+        AS sales (name, region, product, amount)
+);
 
 -- Aggregate sales data by region and product with conditional filtering
 -- to calculate total sales for each product in each region

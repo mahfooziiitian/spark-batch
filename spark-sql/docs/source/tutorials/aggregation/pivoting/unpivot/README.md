@@ -34,6 +34,3 @@ LATERAL VIEW STACK(3,
     'history', history
 ) AS subject, score;
 ```
-
-
-   

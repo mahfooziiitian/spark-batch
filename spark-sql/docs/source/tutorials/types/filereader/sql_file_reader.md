@@ -1,4 +1,3 @@
-# File reader 
+# File reader
 
       SELECT * FROM parquet.``
-

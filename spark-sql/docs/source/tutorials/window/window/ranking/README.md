@@ -58,7 +58,7 @@ Computes the percentage ranking of a value in a group of values.
 
 ## row_number
 
-Assigns a unique, sequential number to each row, starting with one, according to 
+Assigns a unique, sequential number to each row, starting with one, according to
 the ordering of rows within the window partition.
 
 ```sql

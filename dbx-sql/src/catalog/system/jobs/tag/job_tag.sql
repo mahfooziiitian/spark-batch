@@ -1,2 +1,2 @@
-select * from system.lakeflow.jobs
-where job_id = '190761136323134'
+SELECT * FROM system.lakeflow.jobs
+WHERE job_id = '190761136323134'

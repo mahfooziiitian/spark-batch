@@ -36,7 +36,7 @@ The persons with unknown age (`NULL`) are filtered out by the join operator.
 ## The age column from both legs of join are compared using null-safe equal
 
 which is why the persons with unknown age (`NULL`) are qualified by the join.
-    
+  
     SELECT * FROM person p1, person p2
         WHERE p1.age <=> p2.age
         AND p1.name = p2.name;

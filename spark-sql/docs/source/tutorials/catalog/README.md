@@ -58,7 +58,7 @@ USE my_delta.db1;
 SHOW TABLES;
 ```
 
-##  Catalog Commands (SQL)
+## Catalog Commands (SQL)
 
 Command                | Description
 -----------------------|-----------------------------------
@@ -69,7 +69,7 @@ DESCRIBE TABLE table   | Column info
 SHOW FUNCTIONS         | Lists functions
 SHOW VIEWS             | Lists views
 
-##  Unity Catalog (Databricks-specific)
+## Unity Catalog (Databricks-specific)
 
 In Databricks, Unity Catalog is a governance layer on top of Spark catalogs. It organizes data as:
 

@@ -24,4 +24,3 @@ FROM complex_sales
 LATERAL VIEW explode(info) AS key, value
 WHERE key = 'price' AND CAST(value AS INT) > 200;
 ```
-

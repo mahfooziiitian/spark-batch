@@ -172,7 +172,7 @@ Examples:
 
 Sorts the input array. If func is omitted, sort in ascending order.
 
-The elements of the input array must be orderable. 
+The elements of the input array must be orderable.
 
 NaN is greater than any non-NaN elements for double/float type.
 

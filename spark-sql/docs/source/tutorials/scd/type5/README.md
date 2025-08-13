@@ -120,26 +120,24 @@ WHEN NOT MATCHED THEN
     src.customer_id, src.name, src.email, src.city, src.hist_key, src.updated_at
   );
 ✅ Final Output
-Table	Purpose
-dim_customer	Fast queryable table with current values
-dim_customer_history	Full history of all attribute changes (linked by hist_key)
+Table   Purpose
+dim_customer    Fast queryable table with current values
+dim_customer_history    Full history of all attribute changes (linked by hist_key)
 
 🧪 Queries
 All current customers
 sql
 Copy
 Edit
-SELECT * FROM dim_customer;
+SELECT *FROM dim_customer;
 Full history for a customer
 sql
 Copy
 Edit
-SELECT * FROM dim_customer_history WHERE customer_id = 'cust2' ORDER BY valid_from;
+SELECT* FROM dim_customer_history WHERE customer_id = 'cust2' ORDER BY valid_from;
 💡 When to Use SCD Type 5?
 When current values must be overwritten (e.g. BI dashboards)
 
 But auditability or change tracking is also required
 
 This avoids complexity of querying is_current flags (like in SCD2)
-
-

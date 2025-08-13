@@ -11,7 +11,6 @@ spark.sql.autoBroadcastJoinThreshold         | Can interact with caching for joi
 spark.sql.cache.level                        | Set default cache storage level (since Spark 3.3+)                   | MEMORY_AND_DISK
 spark.sql.defaultSizeInBytes                 | Default size used when no stats are available                        | 1GB
 
-
 ## ✅ How to Set Caching Configs in SQL
 
 You can set these directly in a SQL notebook or script:

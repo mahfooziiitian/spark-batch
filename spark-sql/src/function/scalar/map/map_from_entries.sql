@@ -1,17 +1,19 @@
 --  Create key-value rows table
 
 CREATE OR REPLACE TEMP VIEW key_value_table AS
-SELECT
-    'name' AS key,
-    'John' AS value
-UNION ALL
-SELECT
-    'age',
-    '30'
-UNION ALL
-SELECT
-    'city',
-    'Boston';
+(
+    SELECT
+        'name' AS key,
+        'John' AS value
+    UNION ALL
+    SELECT
+        'age',
+        '30'
+    UNION ALL
+    SELECT
+        'city',
+        'Boston'
+);
 
 SELECT
     map_from_entries(
