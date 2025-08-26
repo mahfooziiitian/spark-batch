@@ -34,16 +34,12 @@ SELECT
 FROM attribute_data;
 
 -- Drop null / empty values
-SELECT map_filter(properties, (k, v) -> v IS NOT NULL AND v != '') AS cleaned
-FROM
-    VALUES (map('a', 'x', 'b', NULL, 'c', '')) AS t (properties);
-
-WITH dataset AS (
-    SELECT array('env','version','owner') AS keys,
-           array('prod','1.2','teamA') AS values
+WITH properties AS (
+    SELECT map('a', 'x', 'b', NULL, 'c', '') AS props
 )
-SELECT map_zip_with(keys, values, (k, v) -> v) AS attributes
-FROM dataset;
+
+SELECT map_filter(props, (k, v) -> v IS NOT NULL AND v != '') AS cleaned
+FROM properties;
 
 --transform_keys
 

@@ -10,4 +10,5 @@ exists/README
 filter/README
 transform/README
 map/index
+array/index
 ```
