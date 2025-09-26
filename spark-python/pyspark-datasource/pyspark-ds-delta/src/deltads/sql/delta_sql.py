@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pyspark
 from delta import configure_spark_with_delta_pip
@@ -13,32 +14,34 @@ if __name__ == "__main__":
         )
     )
     table_path = (
-        "file:///"
-        + (os.environ["DATA_HOME"].replace("\\", "/"))
-        + "/FileData/Delta/delta-table-sql"
+        Path(os.environ["DATA_HOME"]) / "file_data" / "delta" / "delta_table_sql"
     )
+    table_path.mkdir(parents=True, exist_ok=True)
+    table_path_str = table_path.as_posix()
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
     # Drop table
-    # spark.sql(f"DROP TABLE delta.`{table_path}`")
+    spark.sql(f"DROP TABLE IF EXISTS delta.`{table_path}`")
 
     # Write data
-    # spark.sql(f"CREATE TABLE delta.`{table_path}` USING DELTA AS SELECT col1 as id FROM VALUES 0,1,2,3,4")
+    spark.sql(
+        f"CREATE TABLE IF NOT EXISTS delta.`{table_path}` USING DELTA AS SELECT col1 as id FROM VALUES 0,1,2,3,4"
+    )
 
     # Read data
-    spark.sql(f"""SELECT * FROM delta.`{table_path}`""").show(truncate=False)
+    spark.sql(f"""SELECT * FROM delta.`{table_path_str}`""").show(truncate=False)
 
     # Update table data
 
     # Overwrite
     spark.sql(
-        f"""INSERT OVERWRITE delta.`{table_path}` SELECT col1 as id FROM VALUES 5,6,7,8,9"""
+        f"""INSERT OVERWRITE delta.`{table_path_str}` SELECT col1 as id FROM VALUES 5,6,7,8,9"""
     )
 
     # Conditional update without overwrite
     # Update every even value by adding 100 to it
     spark.sql(
-        f"""UPDATE delta.`{table_path}` 
+        f"""UPDATE delta.`{table_path_str}`
             SET id = id + 100
             WHERE
             id % 2 == 0;
@@ -46,12 +49,12 @@ if __name__ == "__main__":
     )
 
     # Delete very even value
-    spark.sql(f"""DELETE FROM delta.`{table_path}` WHERE id % 2 == 0""")
+    spark.sql(f"""DELETE FROM delta.`{table_path_str}` WHERE id % 2 == 0""")
 
     # Upsert(merge) new data
 
     spark.sql(
-        f"""CREATE TEMP VIEW newData
+        """CREATE TEMP VIEW newData
         AS
             SELECT
                 col1 AS id
@@ -61,7 +64,7 @@ if __name__ == "__main__":
 
     spark.sql(
         f"""
-        MERGE INTO delta.`{table_path}` AS oldData
+        MERGE INTO delta.`{table_path_str}` AS oldData
         USING newData
         ON
             oldData.id = newData.id
@@ -73,4 +76,4 @@ if __name__ == "__main__":
                 INSERT(id) VALUES(newData.id)"""
     )
 
-    spark.sql(f"""SELECT * FROM delta.`{table_path}`""").show(truncate=False)
+    spark.sql(f"""SELECT * FROM delta.`{table_path_str}`""").show(truncate=False)

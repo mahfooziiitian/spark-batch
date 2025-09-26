@@ -5,6 +5,7 @@ SCD 6 maintains a complete history of changes within an update interval.
 Combination of Type 2 and Type 3.
 
 """
+
 import os
 
 import pyspark

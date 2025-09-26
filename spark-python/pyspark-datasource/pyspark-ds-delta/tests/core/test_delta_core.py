@@ -33,7 +33,8 @@ def spark():
 
 
 def test_create_delta_table(spark):
-    (DeltaTable.createIfNotExists(spark)
+    (
+        DeltaTable.createIfNotExists(spark)
         .tableName("default.people10m")
         .addColumn("id", "INT")
         .addColumn("firstName", "STRING")
@@ -43,4 +44,5 @@ def test_create_delta_table(spark):
         .addColumn("birthDate", "TIMESTAMP")
         .addColumn("ssn", "STRING")
         .addColumn("salary", "INT")
-        .execute())
+        .execute()
+    )

@@ -1,13 +1,13 @@
 import os
 import sys
 
+from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
-from delta import configure_spark_with_delta_pip, DeltaTable
 
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["JAVA_HOME"] = "E:\\Languages\\java\\jdk\\jdk-11"
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     data_home = os.environ["DATA_HOME"]
@@ -27,16 +27,12 @@ if __name__ == '__main__':
 
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
-    DeltaTable.create(spark) \
-        .tableName("default.delta_table_builder_partition_p") \
-        .addColumn("id", "INT") \
-        .addColumn("firstName", "STRING") \
-        .addColumn("middleName", "STRING") \
-        .addColumn("lastName", "STRING", comment="surname") \
-        .addColumn("gender", "STRING") \
-        .addColumn("birthDate", "TIMESTAMP") \
-        .addColumn("ssn", "STRING") \
-        .addColumn("salary", "INT") \
-        .partitionedBy("gender") \
-        .execute()
-
+    DeltaTable.create(spark).tableName(
+        "default.delta_table_builder_partition_p"
+    ).addColumn("id", "INT").addColumn("firstName", "STRING").addColumn(
+        "middleName", "STRING"
+    ).addColumn("lastName", "STRING", comment="surname").addColumn(
+        "gender", "STRING"
+    ).addColumn("birthDate", "TIMESTAMP").addColumn("ssn", "STRING").addColumn(
+        "salary", "INT"
+    ).partitionedBy("gender").execute()

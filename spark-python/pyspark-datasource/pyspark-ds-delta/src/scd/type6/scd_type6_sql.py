@@ -1,11 +1,14 @@
 """
 main_dimension_table representing the current state of the dimension and staging_dimension_table containing the new updates.
-The end_date column is set to '9999-12-31' by default in the main dimension table to indicate the current state of the dimension.
+The end_date column is set to '9999-12-31' by default in the main dimension table to indicate the current state of the
+dimension.
 The staging table contains the updated rows, and we use the MERGE statement to apply SCD Type 6 logic.
-The MERGE statement checks whether there is a match between the primary key id in the main_dimension_table and the staging_dimension_table
+The MERGE statement checks whether there is a match between the primary key id in the main_dimension_table and the
+staging_dimension_table
 If a match is found and the status has changed, it updates the end_date of the current row to the current date.
 If there is no match (new records), they are inserted into the main dimension table with the default '9999-12-31' end_date.
 """
+
 import os
 
 from delta import configure_spark_with_delta_pip

@@ -3,12 +3,13 @@
 History will be added as a new column.
 
 """
+
 import os
 
 import pyspark
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
-from pyspark.sql.types import *
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 
 def scd_type3_init(spark: SparkSession, src_table: str, staging_table: str):
@@ -16,12 +17,12 @@ def scd_type3_init(spark: SparkSession, src_table: str, staging_table: str):
     spark.sql(
         f"""
         CREATE TABLE scd.scdType3 USING delta AS
-            SELECT 
-                employee_id, 
-                first_name, 
-                last_name, 
-                gender, 
-                address_country 
+            SELECT
+                employee_id,
+                first_name,
+                last_name,
+                gender,
+                address_country
             FROM {src_table}
             ORDER BY employee_id
         """

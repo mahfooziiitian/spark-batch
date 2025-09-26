@@ -19,12 +19,13 @@ Changed the data or log file retention periods using the following table propert
     before being a candidate for VACUUM. The default is interval 7 days.
 
 """
+
 import os
 
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     data_home = os.environ["DATA_HOME"]

@@ -15,5 +15,6 @@ RESTORE reports the following metrics as a single row DataFrame once the operati
 6. restored_files_size: Total size in bytes of the files that are restored.
 
 """
-if __name__ == '__main__':
-    print('Hello World!')
+
+if __name__ == "__main__":
+    print("Hello World!")

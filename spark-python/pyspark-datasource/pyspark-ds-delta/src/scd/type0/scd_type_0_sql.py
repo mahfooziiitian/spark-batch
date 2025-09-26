@@ -3,14 +3,15 @@ scd type 0
 Ignore any changes and audit the changes.
 
 """
+
 import json
 import os
 
 import requests
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
-from pyspark.sql.types import *
+from pyspark.sql.functions import col, lit
+from pyspark.sql.types import DateType, LongType, StringType, StructField, StructType
 
 
 def get_sample(spark: SparkSession, url: str, sample_view: str):

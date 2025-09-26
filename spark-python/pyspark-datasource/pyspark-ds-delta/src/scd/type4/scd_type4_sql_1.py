@@ -3,6 +3,7 @@ Slowly Changing Dimensions (SCD), SCD Type 4 is an approach that maintains a sep
 changes for dimension records while keeping the main dimension table free from any historical data.
 This method uses surrogate keys and start/end date columns to track changes over time.
 """
+
 import os
 
 from delta import configure_spark_with_delta_pip
@@ -87,15 +88,15 @@ if __name__ == "__main__":
         f"""
         MERGE INTO {dimension_table} AS target
         USING (
-            SELECT 
-                *, ROW_NUMBER() OVER (PARTITION BY natural_key ORDER BY start_date DESC) AS rn 
+            SELECT
+                *, ROW_NUMBER() OVER (PARTITION BY natural_key ORDER BY start_date DESC) AS rn
             FROM {dimension_table}
             ) AS source
         ON target.dim_id = source.dim_id
         WHEN MATCHED AND source.rn = 1 THEN
           UPDATE SET target.end_date = source.start_date - 1, target.is_current = false
         WHEN NOT MATCHED THEN
-          INSERT (dim_id, natural_key, attribute, start_date, end_date, is_current) 
+          INSERT (dim_id, natural_key, attribute, start_date, end_date, is_current)
           VALUES (source.dim_id, source.natural_key, source.attribute, source.start_date, '9999-12-31', true);
     """
     )
@@ -106,13 +107,13 @@ if __name__ == "__main__":
         f"""
         MERGE INTO {historical_dimension_table} AS target
         USING (
-            SELECT *, ROW_NUMBER() OVER (PARTITION BY natural_key ORDER BY start_date DESC) AS rn 
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY natural_key ORDER BY start_date DESC) AS rn
             FROM {dimension_table}
         ) AS source
         ON target.dim_id = source.dim_id AND source.rn = 1
         WHEN NOT MATCHED THEN
           -- Insert new historical changes from the source table into the historical changes table
-          INSERT (dim_id, natural_key, attribute, start_date, end_date, is_current) 
+          INSERT (dim_id, natural_key, attribute, start_date, end_date, is_current)
           VALUES (source.dim_id, source.natural_key, source.attribute, source.start_date, source.end_date, source.is_current)
     """
     )

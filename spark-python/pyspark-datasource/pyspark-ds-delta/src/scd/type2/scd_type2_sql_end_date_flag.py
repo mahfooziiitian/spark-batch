@@ -3,12 +3,13 @@
 History will be added as a new row.
 
 """
+
 import os
 
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
 
@@ -85,5 +86,3 @@ if __name__ == '__main__':
 
     spark.sql(f"SELECT * FROM {dimension_table}").show(truncate=False)
     spark.stop()
-
-

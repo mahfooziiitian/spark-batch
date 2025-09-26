@@ -1,9 +1,9 @@
 import os
 
 import pyspark
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import configure_spark_with_delta_pip
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     builder = (
@@ -16,7 +16,7 @@ if __name__ == '__main__':
         .enableHiveSupport()
         .config("spark.sql.warehouse.dir", warehouse_location)
         .config("spark.driver.extraJavaOptions", f"-Dderby.system.home='{derby_home}'")
-        .config("spark.databricks.delta.allowArbitraryProperties.enabled","true")
+        .config("spark.databricks.delta.allowArbitraryProperties.enabled", "true")
     )
 
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
@@ -28,5 +28,7 @@ if __name__ == '__main__':
     spark.sql(f"DESCRIBE EXTENDED  {tableName}").show(truncate=False)
 
     # Replace the original table with the optimized one
-    spark.sql(f"ALTER TABLE {tableName} SET TBLPROPERTIES ('delta.optimize.optimizeWrite' = 'true', "
-              f"'delta.autoOptimize.autoCompact'='true')")
+    spark.sql(
+        f"ALTER TABLE {tableName} SET TBLPROPERTIES ('delta.optimize.optimizeWrite' = 'true', "
+        f"'delta.autoOptimize.autoCompact'='true')"
+    )

@@ -1,12 +1,12 @@
 import os
 
 import pyspark
-from delta import configure_spark_with_delta_pip, DeltaTable
-from pyspark.sql.types import *
+from delta import configure_spark_with_delta_pip
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from scd.type1.scd_type_1 import init_scd_type_1
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     builder = (

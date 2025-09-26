@@ -6,12 +6,13 @@ and the previous data is lost.
 This strategy doesn't maintain any history of changes.
 It overwrites the changes.
 """
+
 import os
 
-from delta import DeltaTable, configure_spark_with_delta_pip
 import pyspark
-from pyspark.sql.types import *
+from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 
 def init_scd_type_1(spark: SparkSession, source_table: str, stage_table: str):
@@ -19,19 +20,19 @@ def init_scd_type_1(spark: SparkSession, source_table: str, stage_table: str):
     spark.sql(
         f"""
         CREATE TABLE {stage_table}
-            USING delta 
+            USING delta
         AS
-        SELECT 
-            employee_id, 
-            first_name, 
-            last_name, 
-            gender, 
-            address_street, 
-            address_city, 
-            address_country, 
-            email, 
-            job_title 
-        FROM 
+        SELECT
+            employee_id,
+            first_name,
+            last_name,
+            gender,
+            address_street,
+            address_city,
+            address_country,
+            email,
+            job_title
+        FROM
             {source_table}
     """
     )

@@ -1,8 +1,7 @@
 import os
-from delta import configure_spark_with_delta_pip
 
-from delta.tables import *
 import pyspark
+from delta import configure_spark_with_delta_pip
 
 if __name__ == "__main__":
     builder = (

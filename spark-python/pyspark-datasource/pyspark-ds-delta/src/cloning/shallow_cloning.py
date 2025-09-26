@@ -36,5 +36,6 @@ CREATE OR REPLACE TABLE <target_table_name> SHALLOW CLONE parquet.`/path/to/data
 CREATE OR REPLACE TABLE <target_table_name> SHALLOW CLONE iceberg.`/path/to/data`;
 
 """
-if __name__ == '__main__':
-    print('Hello World!')
+
+if __name__ == "__main__":
+    print("Hello World!")
