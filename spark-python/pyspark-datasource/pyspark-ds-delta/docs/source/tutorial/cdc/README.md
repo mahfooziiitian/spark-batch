@@ -1,2 +1,0 @@
-## cdc using delta table
-
