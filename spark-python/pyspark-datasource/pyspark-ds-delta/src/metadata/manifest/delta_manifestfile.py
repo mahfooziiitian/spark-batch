@@ -1,20 +1,23 @@
 import os
 import sys
 
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
 
 os.environ["JAVA_HOME"] = "E:\\Languages\\java\\jdk\\jdk-11"
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     data_home = os.environ["DATA_HOME"]
     builder = (
         SparkSession.builder.appName("versioning")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
-        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        .config(
+            "spark.sql.catalog.spark_catalog",
+            "org.apache.spark.sql.delta.catalog.DeltaCatalog",
+        )
         .config("spark.local.dir", f"{data_home}/Processing/Batch/Spark/temp")
         .enableHiveSupport()
         .config("spark.sql.warehouse.dir", warehouse_location)
@@ -29,8 +32,12 @@ if __name__ == '__main__':
 
     # Read the manifest file using the DeltaTable API
     delta_table = DeltaTable.forPath(spark, delta_table_path)
-    manifest_details = delta_table.history().select("version", "timestamp", "operation", "operationParameters") \
-        .filter("operation = 'WRITE'").collect()
+    manifest_details = (
+        delta_table.history()
+        .select("version", "timestamp", "operation", "operationParameters")
+        .filter("operation = 'WRITE'")
+        .collect()
+    )
 
     # Print details of the manifest file for each write operation
     for entry in manifest_details:
@@ -38,4 +45,6 @@ if __name__ == '__main__':
         timestamp = entry.timestamp
         operation = entry.operation
         parameters = entry.operationParameters
-        print(f"Version: {version}, Timestamp: {timestamp}, Operation: {operation}, Parameters: {parameters}")
+        print(
+            f"Version: {version}, Timestamp: {timestamp}, Operation: {operation}, Parameters: {parameters}"
+        )

@@ -1,8 +1,11 @@
-from delta import configure_spark_with_delta_pip
+import os
 
-if __name__ == '__main__':
+from delta import configure_spark_with_delta_pip
+from pyspark.sql import SparkSession
+
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
-    derby_home = os.environ["derby.system.home"]
+    derby_home = os.environ["DERBY_HOME"]
     data_home = os.environ["DATA_HOME"]
     builder = (
         SparkSession.builder.appName("versioning")
@@ -22,7 +25,6 @@ if __name__ == '__main__':
 
     df = spark.range(0, 1000000)
 
-    df.write.format("delta") \
-        .mode("append") \
-        .option("maxRecordsPerFile", "10000") \
-        .save("/tmp/delta/people10m")
+    df.write.format("delta").mode("append").option("maxRecordsPerFile", "10000").save(
+        "/tmp/delta/people10m"
+    )

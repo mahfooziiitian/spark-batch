@@ -1,9 +1,9 @@
 import os
 
 import pyspark
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import DeltaTable, configure_spark_with_delta_pip
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     builder = (
@@ -23,13 +23,8 @@ if __name__ == '__main__':
     table_name = "compaction.file_compaction"
 
     df = spark.range(0, 100)
-    df.repartition(5)\
-        .write\
-        .format("delta")\
-        .mode("Overwrite")\
-        .saveAsTable(table_name)
+    df.repartition(5).write.format("delta").mode("Overwrite").saveAsTable(table_name)
 
     delta_table = DeltaTable.forName(spark, table_name)
 
     delta_table.optimize().executeCompaction()
-    

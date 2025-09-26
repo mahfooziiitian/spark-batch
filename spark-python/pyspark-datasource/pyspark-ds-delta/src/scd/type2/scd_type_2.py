@@ -10,32 +10,32 @@ Active records:
 
 SELECT * FROM type2Table WHERE end_date IS NULL
 
-SELECT 
-        null AS id, 
-        employee_id, 
-        first_name, 
-        last_name, 
-        gender, 
-        address_street, 
-        address_city, 
-        address_country, 
-        email, 
-        job_title, 
-        current_date AS start_date, 
+SELECT
+        null AS id,
+        employee_id,
+        first_name,
+        last_name,
+        gender,
+        address_street,
+        address_city,
+        address_country,
+        email,
+        job_title,
+        current_date AS start_date,
         null AS end_date
     FROM scdType2NEW
 UNION ALL
     SELECT
-        id, 
-        employee_id, 
-        first_name, 
-        last_name, gender, 
-        address_street, 
-        address_city, 
-        address_country, 
-        email, 
-        job_title, 
-        start_date, 
+        id,
+        employee_id,
+        first_name,
+        last_name, gender,
+        address_street,
+        address_city,
+        address_country,
+        email,
+        job_title,
+        start_date,
         end_date
 FROM scdType2
 WHERE employee_id IN (SELECT employee_id FROM scdType2NEW)
@@ -44,7 +44,7 @@ WHERE employee_id IN (SELECT employee_id FROM scdType2NEW)
 -- Merge scdType2NEW dataset into existing
 MERGE INTO scdType2
 USING
- 
+
 -- Update table with rows to match (new and old referenced as seen in example above)
 ( SELECT
 null AS id, employee_id, first_name, last_name, gender, address_street, address_city, address_country, email, job_title, current_date AS start_date, null AS end_date
@@ -56,32 +56,33 @@ FROM scdType2
 WHERE employee_id IN
 (SELECT employee_id FROM scdType2NEW)
 ) scdChangeRows
- 
+
 -- based on the following column(s)
 ON scdType2.id = scdChangeRows.id
- 
+
 -- if there is a match do this…
 WHEN MATCHED THEN
 UPDATE SET scdType2.end_date = current_date()
- 
+
 -- if there is no match insert new row
 WHEN NOT MATCHED THEN INSERT *
 
 -- Order nulls in DF to the end and recreate row numbers (as delta does not currently support auto incrementals)
 INSERT OVERWRITE scdType2
-SELECT ROW_NUMBER() OVER (ORDER BY id NULLS LAST) - 1 AS id, 
-employee_id, first_name, last_name, gender, address_street, 
+SELECT ROW_NUMBER() OVER (ORDER BY id NULLS LAST) - 1 AS id,
+employee_id, first_name, last_name, gender, address_street,
 address_city, address_country, email, job_title, start_date, end_date
 FROM scdType2
 
 """
+
 import os
 
 import pyspark
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import DeltaTable, configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import collect_list, col, current_date
-from pyspark.sql.types import *
+from pyspark.sql.functions import col, collect_list, current_date
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 
 def scd_type2_init(spark: SparkSession, src_table: str, staging_table: str):

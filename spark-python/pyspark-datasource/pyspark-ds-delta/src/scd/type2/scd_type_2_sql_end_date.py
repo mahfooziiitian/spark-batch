@@ -9,16 +9,17 @@ Each record from the new data set is evaluated and assigned an Indicator Field i
 
 Step 2: Finalizing the Dimension Changes
 """
+
 import os
 
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
-from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import types as T
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
-    derby_home = os.environ["derby.system.home"]
+    derby_home = os.environ["DERBY_HOME"]
 
     builder = (
         SparkSession.builder.appName("versioning")
@@ -86,29 +87,30 @@ if __name__ == '__main__':
     ]
 
     # Create Schema structure
-    schema = StructType(
+    schema = T.StructType(
         [
-            StructField("id", IntegerType(), True),
-            StructField("employee_id", IntegerType(), True),
-            StructField("first_name", StringType(), True),
-            StructField("last_name", StringType(), True),
-            StructField("gender", StringType(), True),
-            StructField("address_street", StringType(), True),
-            StructField("address_city", StringType(), True),
-            StructField("address_country", StringType(), True),
-            StructField("email", StringType(), True),
-            StructField("job_title", StringType(), True),
+            T.StructField("id", T.IntegerType(), True),
+            T.StructField("employee_id", T.IntegerType(), True),
+            T.StructField("first_name", T.StringType(), True),
+            T.StructField("last_name", T.StringType(), True),
+            T.StructField("gender", T.StringType(), True),
+            T.StructField("address_street", T.StringType(), True),
+            T.StructField("address_city", T.StringType(), True),
+            T.StructField("address_country", T.StringType(), True),
+            T.StructField("email", T.StringType(), True),
+            T.StructField("job_title", T.StringType(), True),
         ]
     )
 
     # Create as Dataframe
     scd2Temp = spark.createDataFrame(dataForDF, schema)
-    scd2Temp.withColumn("start_date", current_date()) \
-        .withColumn("end_date", lit(None)) \
-        .createOrReplaceTempView("scd_type2_staging")
+    scd2Temp.withColumn("start_date", F.current_date()).withColumn(
+        "end_date", F.lit(None)
+    ).createOrReplaceTempView("scd_type2_staging")
 
     # Union the change data
-    spark.sql(f"""
+    spark.sql(
+        f"""
         MERGE INTO {dimension_table} as src
         USING (
                 SELECT * FROM scd_type2_staging
@@ -118,9 +120,11 @@ if __name__ == '__main__':
             ON src.id = stg.id
         WHEN MATCHED THEN UPDATE SET src.end_date = current_date()
         WHEN NOT MATCHED THEN INSERT *
-    """)
+    """
+    )
 
-    spark.sql(f"""
+    spark.sql(
+        f"""
         INSERT OVERWRITE {dimension_table}
         SELECT ROW_NUMBER() OVER (ORDER BY id NULLS LAST) - 1 AS id, 
             employee_id, 
@@ -135,8 +139,9 @@ if __name__ == '__main__':
             start_date, 
             end_date
         FROM {dimension_table}
-    """)
-
-    spark.sql(f"SELECT * FROM {dimension_table} WHERE employee_id = 6 OR employee_id = 21").show(
-        truncate=False
+    """
     )
+
+    spark.sql(
+        f"SELECT * FROM {dimension_table} WHERE employee_id = 6 OR employee_id = 21"
+    ).show(truncate=False)

@@ -1,14 +1,15 @@
 import os
 import sys
+from pathlib import Path
 
 import pyspark
 from delta import configure_spark_with_delta_pip
 
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
-    derby_home = os.environ["derby.system.home"]
+    derby_home = os.environ["DERBY_HOME"]
     builder = (
         pyspark.sql.SparkSession.builder.appName("schema_merge")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
@@ -24,12 +25,26 @@ if __name__ == '__main__':
 
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
-    yesterday = spark.sql("SELECT CAST(date_sub(current_date(), 1) AS STRING)").collect()[0][0]
-    df = spark.read.format("delta").option("timestampAsOf", yesterday).load("/tmp/delta/events")
+    time_travel_data = Path(os.environ["DATA_HOME"]) / "data" / "delta" / "time_travel"
+    time_travel_data.mkdir(parents=True, exist_ok=True)
+    table_path = str(time_travel_data / "events")
+
+    # Create a Delta table
+
+    yesterday = spark.sql(
+        "SELECT CAST(date_sub(current_date(), 1) AS STRING)"
+    ).collect()[0][0]
+
+    df = (
+        spark.read.format("delta")
+        .option("timestampAsOf", yesterday)
+        .load(f"{table_path}")
+    )
+
     df.createOrReplaceTempView("my_table_yesterday")
-    spark.sql('''
-    MERGE INTO delta.`/tmp/delta/events` target
+    spark.sql(f"""
+    MERGE INTO delta.`{table_path}` target
       USING my_table_yesterday source
       ON source.userId = target.userId
       WHEN MATCHED THEN UPDATE SET *
-    ''')
+    """)

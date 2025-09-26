@@ -1,9 +1,9 @@
 import os
 
 import pyspark
-from delta import configure_spark_with_delta_pip, DeltaTable
+from delta import DeltaTable, configure_spark_with_delta_pip
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     builder = (
@@ -27,4 +27,3 @@ if __name__ == '__main__':
     num_data_files = delta_table.detail()
 
     print(f"Number of data files in {tableName}: {num_data_files.count()}")
-

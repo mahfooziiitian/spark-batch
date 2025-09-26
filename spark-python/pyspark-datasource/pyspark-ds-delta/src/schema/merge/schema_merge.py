@@ -1,15 +1,15 @@
 import os
 import sys
+from pathlib import Path
 
 import pyspark
-from delta import DeltaTable
-from delta import configure_spark_with_delta_pip
+from delta import DeltaTable, configure_spark_with_delta_pip
 
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
-    derby_home = os.environ["derby.system.home"]
+    derby_home = os.environ["DERBY_HOME"]
     builder = (
         pyspark.sql.SparkSession.builder.appName("schema_merge")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
@@ -23,6 +23,15 @@ if __name__ == '__main__':
         .config("spark.driver.extraJavaOptions", f"-Dderby.system.home='{derby_home}'")
     )
 
+    data_path = (
+        Path(os.environ["DATA_HOME"])
+        / "file_data"
+        / "delta"
+        / "schema"
+        / "schema_merge"
+    )
+    data_path.mkdir(parents=True, exist_ok=True)
+
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
     # Example DataFrame with initial schema
@@ -33,7 +42,7 @@ if __name__ == '__main__':
     # Write the initial data to a Delta table
     data_home = os.environ["DATA_HOME"]
 
-    initial_df.write.format("delta").mode("overwrite").save(f"{data_home}/FileData/Delta/schema/schema_merge")
+    initial_df.write.format("delta").mode("overwrite").save(data_path.as_posix())
 
     # Simulate new data with an additional column
     new_data = [("Bob", 28, "Male"), ("Eve", 35, "Female")]
@@ -41,14 +50,13 @@ if __name__ == '__main__':
     new_df = spark.createDataFrame(new_data, new_columns)
 
     # Append the new data to the existing Delta table
-    delta_table = DeltaTable.forPath(spark, f"{data_home}/FileData/Delta/schema/schema_merge")
+    delta_table = DeltaTable.forPath(spark, data_path.as_posix())
     delta_table.alias("old_data").merge(
-        new_df.alias("new_data"),
-        "old_data.name = new_data.name"
+        new_df.alias("new_data"), "old_data.name = new_data.name"
     ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
 
     # Read the merged Delta table
-    merged_df = spark.read.format("delta").load(f"{data_home}/FileData/Delta/schema/schema_merge")
+    merged_df = spark.read.format("delta").load(data_path.as_posix())
     merged_df.show()
 
     delta_table.history().show()

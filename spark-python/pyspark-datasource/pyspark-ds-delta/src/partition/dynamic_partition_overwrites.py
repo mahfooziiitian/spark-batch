@@ -7,7 +7,7 @@ from pyspark.sql import SparkSession
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["JAVA_HOME"] = "E:\\Languages\\java\\jdk\\jdk-11"
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     data_home = os.environ["DATA_HOME"]
@@ -29,8 +29,6 @@ if __name__ == '__main__':
 
     df = spark.range(10, 20000).toDF("id")
 
-    df.write \
-        .format("delta") \
-        .mode("overwrite") \
-        .option("partitionOverwriteMode", "dynamic") \
-        .saveAsTable("partition.dynamic_partition")
+    df.write.format("delta").mode("overwrite").option(
+        "partitionOverwriteMode", "dynamic"
+    ).saveAsTable("partition.dynamic_partition")

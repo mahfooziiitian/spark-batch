@@ -3,10 +3,11 @@ import sys
 
 import pyspark
 from delta import configure_spark_with_delta_pip
+
 os.environ["JAVA_HOME"] = "E:\\Languages\\java\\jdk\\jdk-11"
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     builder = (

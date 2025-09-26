@@ -3,7 +3,7 @@ import os
 import pyspark
 from delta import configure_spark_with_delta_pip
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
     builder = (
@@ -21,4 +21,6 @@ if __name__ == '__main__':
 
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
     tableName = "compaction.file_compaction"
-    spark.sql(f"""GENERATE symlink_format_manifest FOR TABLE {tableName}""").show(truncate=False)
+    spark.sql(f"""GENERATE symlink_format_manifest FOR TABLE {tableName}""").show(
+        truncate=False
+    )

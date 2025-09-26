@@ -1,6 +1,7 @@
 """
 A new dimension will be added
 """
+
 import os
 
 from delta import configure_spark_with_delta_pip
@@ -12,9 +13,9 @@ def scd_typ4_init(spark: SparkSession, src_table: str, staging_table: str):
     spark.sql(
         f"""
         CREATE TABLE {staging_table} USING delta AS
-        SELECT employee_id, first_name, 
-        last_name, gender, address_street, 
-        address_city, address_country, email, 
+        SELECT employee_id, first_name,
+        last_name, gender, address_street,
+        address_city, address_country, email,
         job_title FROM {src_table}
         ORDER BY employee_id
         LIMIT 5
@@ -51,11 +52,21 @@ if __name__ == "__main__":
     # Create View to merge
 
     spark.sql(
-        f"""CREATE VIEW scdType4NEW AS SELECT col1 AS employee_id, col2 AS first_name, col3 AS last_name, 
-    col4 AS gender, col5 AS address_street, col6 AS address_city, col7 AS address_country, col8 AS email, 
-    col9 AS job_title FROM VALUES(1, 'Rae', 'Maith', 'Male', '6877 Roth Hill', 'Sioux City', 'United States', 
-    'rmaith0@wisc.org','VP Quality Control'), (2, 'Stuart', 'Sand', 'Male', '83570 Fairview Way', 'Chicago', 
-    'United States', 'ssand1@imdb.com', 'Paralegal') """
+        """CREATE VIEW scdType4NEW AS
+            SELECT
+                col1 AS employee_id,
+                col2 AS first_name,
+                col3 AS last_name,
+                col4 AS gender,
+                col5 AS address_street,
+                col6 AS address_city,
+                col7 AS address_country,
+                col8 AS email,
+                col9 AS job_title
+            FROM
+                VALUES(1, 'Rae', 'Maith', 'Male', '6877 Roth Hill', 'Sioux City', 'United States', 'rmaith0@wisc.org',
+                'VP Quality Control'),
+                (2, 'Stuart', 'Sand', 'Male', '83570 Fairview Way', 'Chicago', 'United States', 'ssand1@imdb.com', 'Paralegal') """
     )
 
     # Preview results
@@ -79,7 +90,7 @@ if __name__ == "__main__":
 
     # View current and previous versions
     spark.sql(
-        f"""SELECT 0 AS version, *  FROM {destination_table} 
+        f"""SELECT 0 AS version, *  FROM {destination_table}
         VERSION AS OF 0
         WHERE employee_id = 1 OR employee_id = 2
         UNION ALL

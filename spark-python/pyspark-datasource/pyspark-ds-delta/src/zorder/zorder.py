@@ -5,12 +5,13 @@ It can significantly improve query performance when the data is frequently acces
 To use Z-Ordering, you can specify the columns you want to optimize the table on when writing data.
 
 """
+
 import os
 
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     warehouse_location = os.environ["SPARK_WAREHOUSE"]
     derby_home = os.environ["derby.system.home"]
 
@@ -28,10 +29,7 @@ if __name__ == '__main__':
 
     spark = configure_spark_with_delta_pip(builder).getOrCreate()
     data_file = os.environ["DATA_HOME"] + "\\FileData\\Csv\\departuredelays.csv"
-    df = spark.read \
-        .option("header", "true") \
-        .option("sep", ",") \
-        .csv(data_file)
+    df = spark.read.option("header", "true").option("sep", ",").csv(data_file)
 
     spark.sql("create database if not exists z_order")
 
@@ -39,7 +37,6 @@ if __name__ == '__main__':
 
     print(df.rdd.getNumPartitions())
 
-    df.write.format("delta") \
-        .mode("Overwrite")\
-        .option("zOrderBy", "origin") \
-        .saveAsTable("z_order.z_order")
+    df.write.format("delta").mode("Overwrite").option("zOrderBy", "origin").saveAsTable(
+        "z_order.z_order"
+    )
