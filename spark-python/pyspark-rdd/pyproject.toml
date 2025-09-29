@@ -1,0 +1,83 @@
+[project]
+name = "pyspark-rdd"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["pyspark<4.0.0"]
+
+[dependency-groups]
+dev = [
+    "black[jupyter]>=25.9.0",
+    "chispa>=0.11.1",
+    "pytest-mock>=3.15.1",
+    "pytest-sugar>=1.1.1",
+    "black[jupyter]>=25.9.0",
+    "coverage>=7.10.7",
+    "pytest-cov>=7.0.0",
+    "isort>=6.0.1",
+    "flake8-pyproject>=1.2.3",
+    "taskipy>=1.14.1",
+    "sphinx-autobuild>=2025.8.25",
+    "sqlfluff>=3.4.2",
+    "sphinx-design>=0.6.1",
+    "sphinxcontrib-mermaid>=1.0.0",
+    "sphinxawesome-theme>=5.3.2",
+    "myst-parser>=4.0.1",
+    "sphinx-needs>=6.0.0",
+    "sphinx-autoapi>=3.6.0",
+    "linkify-it-py>=2.0.3",
+    "furo>=2025.9.25",
+]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = [
+    "E203", # whitespace before ':'
+    "E501", # line too long
+    "W503", # line break before binary operator
+]
+exclude = [".venv", "build", "dist", "docs", "tests"]
+
+[tool.sqlfluff.core]
+dialect = "databricks"
+templater = "jinja"
+sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+
+[tool.sqlfluff.indentation]
+indented_joins = false
+indented_using_on = true
+template_blocks_indent = false
+
+[tool.sqlfluff.templater]
+unwrap_wrapped_queries = true
+
+[tool.sqlfluff.templater.jinja]
+apply_dbt_builtins = true
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
+
+[tool.sqlfluff.linter]
+exclude_rules = ["RF01"]
+
+
+[tool.taskipy.tasks]
+# tests
+test = "uv run pytest --cov=md --cov-report json:coverage.json tests"
+
+# quality
+sql_format = "uv run sqlfluff fix src"
+sql_lint = "uv run sqlfluff lint src"
+format = "uv run black . && uv run isort --profile black ."
+lint = "uv run flake8 ."
+quality = "task format && task lint"
+
+# docs
+sphinx_qs = "uv run sphinx-quickstart docs"
+clean = "rm -rf docs/build"
+html = "uv run sphinx-build -b html docs/source docs/build/html/"
+single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
+server = "uv run python -m http.server -d ./docs/build/html 8080"
+html_server = "task clean && task html && task server"
+docs_autobuild = "uv run sphinx-autobuild docs/source docs/build/html --port 8080 --watch docs/source/tutorials"

@@ -3,32 +3,46 @@ import sys
 
 from pyspark.sql import SparkSession
 
+# Set environment variables for PySpark and Java
 os.environ["PYSPARK_PYTHON"] = sys.executable
-os.environ["JAVA_HOME"] = "E:\\Languages\\java\\jdk\\jdk-11"
+os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_11", "")
 
-if __name__ == '__main__':
 
-    spark = SparkSession.builder.master("local[*]").appName("RDDPartition").getOrCreate()
+def print_partition_info(rdd):
+    """
+    Prints the number of partitions and the elements in each partition.
+    """
+    num_partitions = rdd.getNumPartitions()
+    print(f"Number of Partitions: {num_partitions}")
 
-    # Create a Spark context
+    partition_data = rdd.glom().collect()
+    for i, partition in enumerate(partition_data):
+        print(f"Partition {i}: {partition}")
+
+
+if __name__ == "__main__":
+    spark = (
+        SparkSession.builder.master("local[*]").appName("RDDPartition").getOrCreate()
+    )
+
     sc = spark.sparkContext
 
     # Sample data
     data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-    # Create an RDD
-    rdd = sc.parallelize(data)  # numSlices specifies the number of partitions
+    # Create RDDs with different partition counts
+    default_rdd = sc.parallelize(data)
+    custom_rdd = sc.parallelize(data, numSlices=4)
 
-    # Get the number of partitions
-    num_partitions = rdd.getNumPartitions()
+    print("Default Partitioning:")
+    print_partition_info(default_rdd)
 
-    # Print the number of partitions
-    print(f"Number of Partitions: {num_partitions}")
+    print("\nCustom Partitioning (4 partitions):")
+    print_partition_info(custom_rdd)
 
-    # Collect and print the elements in each partition
-    result = rdd.glom().collect()
-    for i, partition in enumerate(result):
-        print(f"Partition {i}: {partition}")
+    # Show repartitioning
+    repartitioned_rdd = default_rdd.repartition(2)
+    print("\nAfter Repartitioning to 2 partitions:")
+    print_partition_info(repartitioned_rdd)
 
-    # Stop the Spark context
     sc.stop()

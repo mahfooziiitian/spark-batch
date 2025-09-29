@@ -1,0 +1,154 @@
+[project]
+name = "spark-general"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    # Code quality
+    "black[jupyter]>=25.1.0",
+    "isort>=6.0.1",
+    "mypy>=1.17.1",
+    "ruff>=0.12.8",
+    "flake8-pyproject>=1.2.3",
+    "radon>=6.0.1",
+    # Testing
+    "pytest-sugar>=1.0.0",
+    "pytest-cov>=6.2.1",
+    "pytest-mock>=3.14.1",
+    "pytest==8.4.1",
+    # Security
+    "bandit>=1.8.6",
+    "safety>=3.6.0",
+    # Tasks
+    "taskipy>=1.14.1",
+    # Docs
+    "sphinxcontrib-mermaid>=1.0.0",
+    "myst-parser>=4.0.1",
+    "sphinxawesome-theme>=5.3.2",
+    "furo>=2025.7.19",
+    "linkify-it-py>=2.0.3",
+    "pymarkdownlnt>=0.9.31",
+    "ipytest>=0.14.2",
+    "pytest-datadir>=1.8.0",
+    "sphinxcontrib-plantuml>=0.30",
+]
+
+[tool.sqlfluff.core]
+dialect = "databricks"
+templater = "jinja"
+sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+
+[tool.sqlfluff.indentation]
+indented_joins = false
+indented_using_on = true
+template_blocks_indent = false
+
+[tool.sqlfluff.templater]
+unwrap_wrapped_queries = true
+
+[tool.sqlfluff.templater.jinja]
+apply_dbt_builtins = true
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+pythonpath = ["src"]
+testpaths = ["tests", "integration"]
+markers = [
+    "login: mark test as login related",
+    "signup: mark test as signup related",
+    "smoke: mark test as smoke test",
+    "ui: mark test as UI related",
+    "slow: mark test as slow",
+    "integration: mark test as integration",
+    "unit: mark test as unit",
+    "network: mark test that requires network access",
+    "db: mark test that requires database access",
+    "performance: mark test for performance testing",
+    "regression: mark test for regression testing",
+]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+ignore_errors = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.flake8]
+extend-ignore = "E203"
+max-line-length = 128
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    ".venv",
+    "build",
+    "dist",
+]
+max-complexity = 15
+
+[tool.bandit]
+targets = ["."]
+exclude_dirs = ["tests", "migrations", ".venv"]
+severity = "medium"
+confidence = "high"
+format = "json"
+
+[tool.taskipy.tasks]
+# test
+test = "uv run pytest -vv tests"
+
+# quality
+import = "uv run isort --profile black src tests"
+lint = "uv run flake8 -v src tests"
+type_check = "uv run mypy src tests"
+format = "uv run ruff format src tests"
+format_check = "uv run ruff check src tests"
+quality = "task import && task format && task format_check && task lint && task type_check"
+sql_format = "uv run sqlfluff fix src"
+sql_lint = "uv run sqlfluff lint src"
+sql = "task sql_format && task sql_lint"
+
+# Security
+bandit = "uv run bandit -c pyproject.toml -r src"
+safety = "uv run safety check --policy-file .safety-policy.yml"
+secure = "task bandit && task safety"
+
+# Build
+build = "uv build"
+
+# Reporting
+report_html = "uv run pytest --html=reports/reports.html --self-contained-html"
+report_xml = "uv run pytest --junitxml=reports/report.xml"
+report_json = "uv run pytest --json-report  --json-report-file=reports/report.json --cov-report=term-missing"
+report_json2 = "uv run pytest --cov-report=json:reports/report.json --cov-report=term-missing"
+report_cov_html = "uv run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing"
+report_cov_xml = "uv run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing"
+report_cov_annotate = "uv run pytest --cov=. --cov-report=annotate --cov-config=.coveragerc --cov-report=term-missing"
+
+# clean up
+remove_cache = "if test -e __pycache__;then rm -rf __pycache__;fi"
+remove_pytest_cache = "if test -e .pytest_cache; then rm -rf .pytest_cache pycache__;fi"
+remove_html_build = "if test -e docs/build; then rm -rf docs/build;fi"
+clean = "task remove_cache && task remove_pytest_cache && task remove_html_build"
+
+# Documentation
+lint_md = "uv run pymarkdownlnt fix -r docs README.md"
+sphinx_qs = "uv run sphinx-quickstart docs"
+html = "uv run sphinx-build -b html docs/source docs/build/html/"
+single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
+server = "uv run python -m http.server -d ./docs/build/html 8080"
+html_server = "task clean && task html && task server"

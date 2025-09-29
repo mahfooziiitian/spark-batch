@@ -1,0 +1,457 @@
+{
+  "clean_rooms_notebook_output": {
+    "clean_room_job_run_state": {
+      "life_cycle_state": "RUN_LIFE_CYCLE_STATE_UNSPECIFIED",
+      "result_state": "RUN_RESULT_STATE_UNSPECIFIED"
+    },
+    "notebook_output": {
+      "result": "An arbitrary string passed by calling dbutils.notebook.exit(...)",
+      "truncated": false
+    },
+    "output_schema_info": {
+      "catalog_name": "string",
+      "expiration_time": 0,
+      "schema_name": "string"
+    }
+  },
+  "dashboard_output": {
+    "page_snapshots": [
+      {
+        "page_display_name": "Page 1",
+        "widget_error_details": [
+          {
+            "message": "You do not have permission to use the SQL Warehouse."
+          }
+        ]
+      }
+    ]
+  },
+  "dbt_output": {
+    "artifacts_headers": {
+      "property1": "string",
+      "property2": "string"
+    },
+    "artifacts_link": "string"
+  },
+  "error": "ZeroDivisionError: integer division or modulo by zero",
+  "error_trace": "string",
+  "info": "string",
+  "logs": "Hello World!",
+  "logs_truncated": true,
+  "metadata": {
+    "attempt_number": 0,
+    "cleanup_duration": 0,
+    "cluster_instance": {
+      "cluster_id": "0923-164208-meows279",
+      "spark_context_id": "string"
+    },
+    "cluster_spec": {
+      "existing_cluster_id": "0923-164208-meows279",
+      "job_cluster_key": "string",
+      "libraries": [
+        {
+          "cran": {
+            "package": "string",
+            "repo": "string"
+          },
+          "egg": "string",
+          "jar": "string",
+          "maven": {
+            "coordinates": "string",
+            "exclusions": [
+              "string"
+            ],
+            "repo": "string"
+          },
+          "pypi": {
+            "package": "string",
+            "repo": "string"
+          },
+          "requirements": "string",
+          "whl": "string"
+        }
+      ],
+      "new_cluster": {
+        "apply_policy_default_values": false,
+        "autoscale": {
+          "max_workers": 0,
+          "min_workers": 0
+        },
+        "autotermination_minutes": 0,
+        "aws_attributes": {
+          "availability": "SPOT",
+          "ebs_volume_count": 0,
+          "ebs_volume_iops": 0,
+          "ebs_volume_size": 0,
+          "ebs_volume_throughput": 0,
+          "ebs_volume_type": "GENERAL_PURPOSE_SSD",
+          "first_on_demand": 0,
+          "instance_profile_arn": "string",
+          "spot_bid_price_percent": 100,
+          "zone_id": "string"
+        },
+        "cluster_log_conf": {
+          "dbfs": {
+            "destination": "string"
+          },
+          "s3": {
+            "canned_acl": "string",
+            "destination": "string",
+            "enable_encryption": true,
+            "encryption_type": "string",
+            "endpoint": "string",
+            "kms_key": "string",
+            "region": "string"
+          },
+          "volumes": {
+            "destination": "string"
+          }
+        },
+        "cluster_name": "string",
+        "custom_tags": {
+          "property1": "string",
+          "property2": "string"
+        },
+        "data_security_mode": "NONE",
+        "docker_image": {
+          "basic_auth": {
+            "password": "string",
+            "username": "string"
+          },
+          "url": "string"
+        },
+        "driver_instance_pool_id": "string",
+        "driver_node_type_id": "string",
+        "enable_elastic_disk": true,
+        "enable_local_disk_encryption": true,
+        "init_scripts": [
+          {
+            "abfss": {
+              "destination": "string"
+            },
+            "dbfs": {
+              "destination": "string"
+            },
+            "file": {
+              "destination": "string"
+            },
+            "gcs": {
+              "destination": "string"
+            },
+            "s3": {
+              "canned_acl": "string",
+              "destination": "string",
+              "enable_encryption": true,
+              "encryption_type": "string",
+              "endpoint": "string",
+              "kms_key": "string",
+              "region": "string"
+            },
+            "volumes": {
+              "destination": "string"
+            },
+            "workspace": {
+              "destination": "string"
+            }
+          }
+        ],
+        "instance_pool_id": "string",
+        "is_single_node": true,
+        "kind": "CLASSIC_PREVIEW",
+        "node_type_id": "string",
+        "num_workers": 0,
+        "policy_id": "string",
+        "runtime_engine": "NULL",
+        "single_user_name": "string",
+        "spark_conf": {
+          "property1": "string",
+          "property2": "string"
+        },
+        "spark_env_vars": {
+          "property1": "string",
+          "property2": "string"
+        },
+        "spark_version": "string",
+        "ssh_public_keys": [
+          "string"
+        ],
+        "use_ml_runtime": true,
+        "workload_type": {
+          "clients": {
+            "jobs": true,
+            "notebooks": true
+          }
+        }
+      }
+    },
+    "creator_user_name": "user.name@databricks.com",
+    "description": "string",
+    "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+    "end_time": 1625060863413,
+    "execution_duration": 0,
+    "git_source": {
+      "git_branch": "main",
+      "git_provider": "gitHub",
+      "git_url": "https://github.com/databricks/databricks-cli"
+    },
+    "has_more": true,
+    "job_clusters": [
+      {
+        "job_cluster_key": "auto_scaling_cluster",
+        "new_cluster": {
+          "autoscale": {
+            "max_workers": 16,
+            "min_workers": 2
+          },
+          "node_type_id": null,
+          "spark_conf": {
+            "spark.speculation": true
+          },
+          "spark_version": "7.3.x-scala2.12"
+        }
+      }
+    ],
+    "job_id": 11223344,
+    "job_parameters": [
+      {
+        "default": "users",
+        "name": "table",
+        "value": "customers"
+      }
+    ],
+    "job_run_id": 0,
+    "next_page_token": "CAAos-uriYcxMN7_rt_v7B4=",
+    "number_in_job": 455644833,
+    "original_attempt_run_id": 455644833,
+    "overriding_parameters": {
+      "pipeline_params": {
+        "full_refresh": false
+      }
+    },
+    "queue_duration": 1625060863413,
+    "repair_history": [
+      {
+        "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+        "end_time": 1625060863413,
+        "id": 734650698524280,
+        "start_time": 1625060460483,
+        "state": {
+          "life_cycle_state": "PENDING",
+          "queue_reason": "Queued due to reaching maximum concurrent runs of 1.",
+          "result_state": "SUCCESS",
+          "state_message": "string",
+          "user_cancelled_or_timedout": false
+        },
+        "status": {
+          "queue_details": {
+            "code": "ACTIVE_RUNS_LIMIT_REACHED",
+            "message": "string"
+          },
+          "state": "BLOCKED",
+          "termination_details": {
+            "code": "SUCCESS",
+            "message": "string",
+            "type": "SUCCESS"
+          }
+        },
+        "task_run_ids": [
+          1106460542112844,
+          988297789683452
+        ],
+        "type": "ORIGINAL"
+      }
+    ],
+    "run_duration": 110183,
+    "run_id": 455644833,
+    "run_name": "A multitask job run",
+    "run_page_url": "https://my-workspace.cloud.databricks.com/#job/11223344/run/123",
+    "run_type": "JOB_RUN",
+    "schedule": {
+      "pause_status": "UNPAUSED",
+      "quartz_cron_expression": "20 30 * * * ?",
+      "timezone_id": "Europe/London"
+    },
+    "setup_duration": 0,
+    "start_time": 1625060460483,
+    "state": {
+      "life_cycle_state": "PENDING",
+      "queue_reason": "Queued due to reaching maximum concurrent runs of 1.",
+      "result_state": "SUCCESS",
+      "state_message": "string",
+      "user_cancelled_or_timedout": false
+    },
+    "status": {
+      "queue_details": {
+        "code": "ACTIVE_RUNS_LIMIT_REACHED",
+        "message": "string"
+      },
+      "state": "BLOCKED",
+      "termination_details": {
+        "code": "SUCCESS",
+        "message": "string",
+        "type": "SUCCESS"
+      }
+    },
+    "tasks": [
+      {
+        "attempt_number": 0,
+        "cleanup_duration": 0,
+        "cluster_instance": {
+          "cluster_id": "0923-164208-meows279",
+          "spark_context_id": "4348585301701786933"
+        },
+        "description": "Ingests order data",
+        "end_time": 1629989930171,
+        "execution_duration": 0,
+        "job_cluster_key": "auto_scaling_cluster",
+        "libraries": [
+          {
+            "jar": "dbfs:/mnt/databricks/OrderIngest.jar"
+          }
+        ],
+        "run_id": 2112892,
+        "run_if": "ALL_SUCCESS",
+        "run_page_url": "https://my-workspace.cloud.databricks.com/#job/39832/run/20",
+        "setup_duration": 0,
+        "spark_jar_task": {
+          "main_class_name": "com.databricks.OrdersIngest"
+        },
+        "start_time": 1629989929660,
+        "state": {
+          "life_cycle_state": "INTERNAL_ERROR",
+          "result_state": "FAILED",
+          "state_message": "Library installation failed for library due to user error. Error messages:\n'Manage' permissions are required to install libraries on a cluster",
+          "user_cancelled_or_timedout": false
+        },
+        "task_key": "Orders_Ingest"
+      },
+      {
+        "attempt_number": 0,
+        "cleanup_duration": 0,
+        "cluster_instance": {
+          "cluster_id": "0923-164208-meows279"
+        },
+        "depends_on": [
+          {
+            "task_key": "Orders_Ingest"
+          },
+          {
+            "task_key": "Sessionize"
+          }
+        ],
+        "description": "Matches orders with user sessions",
+        "end_time": 1629989930238,
+        "execution_duration": 0,
+        "new_cluster": {
+          "autoscale": {
+            "max_workers": 16,
+            "min_workers": 2
+          },
+          "node_type_id": null,
+          "spark_conf": {
+            "spark.speculation": true
+          },
+          "spark_version": "7.3.x-scala2.12"
+        },
+        "notebook_task": {
+          "notebook_path": "/Users/user.name@databricks.com/Match",
+          "source": "WORKSPACE"
+        },
+        "run_id": 2112897,
+        "run_if": "ALL_SUCCESS",
+        "run_page_url": "https://my-workspace.cloud.databricks.com/#job/39832/run/21",
+        "setup_duration": 0,
+        "start_time": 0,
+        "state": {
+          "life_cycle_state": "SKIPPED",
+          "state_message": "An upstream task failed.",
+          "user_cancelled_or_timedout": false
+        },
+        "task_key": "Match"
+      },
+      {
+        "attempt_number": 0,
+        "cleanup_duration": 0,
+        "cluster_instance": {
+          "cluster_id": "0923-164208-meows279",
+          "spark_context_id": "4348585301701786933"
+        },
+        "description": "Extracts session data from events",
+        "end_time": 1629989930144,
+        "execution_duration": 0,
+        "existing_cluster_id": "0923-164208-meows279",
+        "libraries": [
+          {
+            "jar": "dbfs:/mnt/databricks/Sessionize.jar"
+          }
+        ],
+        "run_id": 2112902,
+        "run_if": "ALL_SUCCESS",
+        "run_page_url": "https://my-workspace.cloud.databricks.com/#job/39832/run/22",
+        "setup_duration": 0,
+        "spark_jar_task": {
+          "main_class_name": "com.databricks.Sessionize"
+        },
+        "start_time": 1629989929668,
+        "state": {
+          "life_cycle_state": "INTERNAL_ERROR",
+          "result_state": "FAILED",
+          "state_message": "Library installation failed for library due to user error. Error messages:\n'Manage' permissions are required to install libraries on a cluster",
+          "user_cancelled_or_timedout": false
+        },
+        "task_key": "Sessionize"
+      }
+    ],
+    "trigger": "PERIODIC",
+    "trigger_info": {
+      "run_id": 0
+    }
+  },
+  "notebook_output": {
+    "result": "An arbitrary string passed by calling dbutils.notebook.exit(...)",
+    "truncated": false
+  },
+  "run_job_output": {
+    "run_id": 0
+  },
+  "sql_output": {
+    "alert_output": {
+      "alert_state": "UNKNOWN",
+      "output_link": "string",
+      "query_text": "string",
+      "sql_statements": [
+        {
+          "lookup_key": "string"
+        }
+      ],
+      "warehouse_id": "string"
+    },
+    "dashboard_output": {
+      "warehouse_id": "string",
+      "widgets": [
+        {
+          "end_time": 0,
+          "error": {
+            "message": "string"
+          },
+          "output_link": "string",
+          "start_time": 0,
+          "status": "PENDING",
+          "widget_id": "string",
+          "widget_title": "string"
+        }
+      ]
+    },
+    "query_output": {
+      "endpoint_id": "string",
+      "output_link": "string",
+      "query_text": "string",
+      "sql_statements": [
+        {
+          "lookup_key": "string"
+        }
+      ],
+      "warehouse_id": "string"
+    }
+  }
+}
