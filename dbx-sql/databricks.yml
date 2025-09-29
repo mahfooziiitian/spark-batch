@@ -11,6 +11,7 @@ targets:
     default: true
     workspace:
       host: https://acuity-mgmt-stage-ue1.cloud.databricks.com
+      cluster_id: 1216-115214-wxcy5azy
 
   ## Optionally, there could be 'staging' or 'prod' targets here.
   #

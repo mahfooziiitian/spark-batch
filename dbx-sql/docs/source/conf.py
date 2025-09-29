@@ -54,6 +54,4 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 html_permalinks_icon = Icons.permalinks_icon
 
-html_theme_options = {
-    "show_prev_next": True
-}
+html_theme_options = {"show_prev_next": True}

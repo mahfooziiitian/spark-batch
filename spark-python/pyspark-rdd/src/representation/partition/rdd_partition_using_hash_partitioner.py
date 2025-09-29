@@ -1,10 +1,11 @@
-from pyspark.sql import SparkSession
 from pyspark.rdd import HashPartitioner
+from pyspark.sql import SparkSession
 
+if __name__ == "__main__":
 
-if __name__ == '__main__':
-
-    spark = SparkSession.builder.master("local[*]").appName("RDDPartition").getOrCreate()
+    spark = (
+        SparkSession.builder.master("local[*]").appName("RDDPartition").getOrCreate()
+    )
 
     sc = spark.sparkContext
 
