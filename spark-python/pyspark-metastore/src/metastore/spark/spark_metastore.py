@@ -5,7 +5,7 @@ from pyspark.sql import SparkSession
 from metastore.catalog_metadata import print_catalog_metadata
 
 # Set JAVA_HOME environment variable
-os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_17", "")
+os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_11", "")
 
 # Initialize SparkSession with Hive support and custom configurations
 spark = (
@@ -40,7 +40,7 @@ def show_tables(spark, database=""):
 
 def main():
     show_catalogs(spark)
-    default_catalog = spark.conf.get("spark.sql.defaultCatalog", "spark_catalog")
+    default_catalog = spark.conf.get("spark.sql.defaultCatalog")
     show_databases(spark, default_catalog)
     show_tables(spark)
     print("Catalog metadata:")

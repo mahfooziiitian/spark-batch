@@ -49,5 +49,8 @@ def print_catalog_metadata(spark: SparkSession):
     catalog_details = {}
     catalog_details["defaultCatalog"] = spark.conf.get("spark.sql.defaultCatalog")
     catalog_details["currentCatalog"] = spark.catalog.currentCatalog()
-    catalog_details['catalogImplementation'] = spark.conf.get("spark.sql.catalogImplementation")
+    catalog_details["catalogImplementation"] = spark.conf.get(
+        "spark.sql.catalogImplementation"
+    )
+    catalog_details["spark_catalog"] = spark.conf.get("spark.sql.catalog.spark_catalog")
     return catalog_details
