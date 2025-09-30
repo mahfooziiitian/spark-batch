@@ -1,4 +1,4 @@
-if __name__ == '__main__':
+if __name__ == "__main__":
     from pyspark.sql import SparkSession
 
     spark_session = SparkSession.builder.getOrCreate()
