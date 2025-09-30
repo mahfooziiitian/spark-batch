@@ -167,8 +167,7 @@ out/
 .classpath
 .project
 .settings/
-
-## Databricks
-Workspace/
-DBFS/
+d
+databricks/
 databricks.yml
+

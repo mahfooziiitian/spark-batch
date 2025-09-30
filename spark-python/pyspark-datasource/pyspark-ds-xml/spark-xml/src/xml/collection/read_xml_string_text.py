@@ -6,7 +6,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.column import Column, _to_java_column
 from pyspark.sql.types import _parse_datatype_json_string
 
-os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_8"]
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_17"]
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
 
@@ -38,10 +38,7 @@ def ext_schema_of_xml_df(spark, df, options=None):
 if __name__ == "__main__":
     # Create a Spark session
     spark = (
-        SparkSession.builder.master("local[*]")
-        .config("spark.jars.packages", "com.databricks:spark-xml_2.12:0.18.0")
-        .appName("spark-db-xml")
-        .getOrCreate()
+        SparkSession.builder.master("local[*]").appName("spark-db-xml").getOrCreate()
     )
 
     # Sample list of strings

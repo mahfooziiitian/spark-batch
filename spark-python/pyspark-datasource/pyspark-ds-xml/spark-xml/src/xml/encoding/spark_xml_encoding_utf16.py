@@ -1,5 +1,6 @@
 import codecs
 import os
+import sys
 
 import chardet
 from pyspark.sql import SparkSession
@@ -9,6 +10,9 @@ def write_utf_16_xml(filename: str, content):
     with codecs.open(filename=filename, mode="w", encoding="utf-16") as file:
         file.write(content)
 
+
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_17"]
+os.environ["PYSPARK_PYTHON"] = sys.executable
 
 if __name__ == "__main__":
     xml_content = """<?xml version="1.0" encoding="utf-16"?>
@@ -33,7 +37,6 @@ if __name__ == "__main__":
 
     spark = (
         SparkSession.builder.master("local[*]")
-        .config("spark.jars.packages", "com.databricks:spark-xml_2.12:0.18.0")
         .appName("XML Encoding UTF-16")
         .getOrCreate()
     )
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     df = (
         spark.read.format("xml")
         .option("rowTag", "book")
-        .option("charset", "UTF-8")
+        .option("charset", "UTF-16")
         .option("multiLine", True)
         .load(f"{data_file}_output")
     )

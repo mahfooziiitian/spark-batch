@@ -1,6 +1,7 @@
 import os
-import xmlschema
 import xml.etree.ElementTree as ET
+
+import xmlschema
 
 data_home = os.environ.get("DATA_HOME", ".")
 xml_file = os.path.join(data_home, "file_data", "xml", "orders.xml")

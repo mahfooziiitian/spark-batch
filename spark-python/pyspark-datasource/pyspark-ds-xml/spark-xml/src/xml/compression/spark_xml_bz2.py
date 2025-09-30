@@ -3,18 +3,15 @@ import sys
 
 from pyspark.sql import SparkSession
 
-os.environ["JAVA_HOME"] = "C:\\Program Files\\Java\\jdk1.8.0_251"
+os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_17"]
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
 if __name__ == "__main__":
     spark = (
-        SparkSession.builder.master("local[*]")
-        .config("spark.jars.packages", "com.databricks:spark-xml_2.12:0.18.0")
-        .appName("spark-db-xml")
-        .getOrCreate()
+        SparkSession.builder.master("local[*]").appName("spark-db-xml").getOrCreate()
     )
     dataHome = os.environ["DATA_HOME"]
-    xmlFile = dataHome + "\\FileData\\Xml\\people.xml.bz2"
+    xmlFile = dataHome + "/file_data/xml/people.xml.bz2"
 
     # Example DataFrame
     data = [("John", 28), ("Anna", 23), ("Peter", 34)]
