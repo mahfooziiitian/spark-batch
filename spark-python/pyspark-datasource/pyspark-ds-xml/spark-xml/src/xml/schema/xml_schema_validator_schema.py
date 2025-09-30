@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
@@ -10,7 +11,6 @@ from pyspark.sql.types import (
     StructType,
     TimestampType,
 )
-
 
 os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_8"]
 os.environ["PYSPARK_PYTHON"] = sys.executable
