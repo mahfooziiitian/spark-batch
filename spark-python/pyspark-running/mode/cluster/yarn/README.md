@@ -1,10 +1,10 @@
 # Spark submit yarn
 
 ```bash
-./bin/spark-submit \
+spark-submit \
    --master yarn \
    --deploy-mode cluster \
-   wordByExample.py
+   your_pyspark_script.py
 ```
 
 ## Using multiple files
