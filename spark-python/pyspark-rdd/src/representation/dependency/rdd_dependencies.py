@@ -1,22 +1,24 @@
 import os
 import sys
 
-from pyspark import SparkContext
+from pyspark.sql import SparkSession
 
 # Set environment variables for PySpark and Java
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_11", "")
 
 
-def print_rdd_dependencies(rdd, rdd_name):
+def print_rdd_dependencies(rdd, rdd_name: str) -> None:
     print(f"\nDependencies of {rdd_name}:")
     for dep in rdd.dependencies:
+        print(f"  - {type(dep).__name__}: {dep}")
         print(f"  - {dep}")
 
 
 if __name__ == "__main__":
     # Initialize Spark context
-    sc = SparkContext("local[*]", "RDDDependencies")
+    spark = SparkSession.builder.master("local[*]").appName("RDDDependencies").getOrCreate()
+    sc = spark.sparkContext
 
     # Sample data
     data = [1, 2, 3, 4, 5]
