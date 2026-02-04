@@ -4,7 +4,7 @@
 set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
 # Configuration
-SPARK_HOME=${SPARK_HOME:-"/opt/spark"}
+SPARK_HOME=${SPARK_HOME:-"/usr/local/spark"}
 LOG_LEVEL=${LOG_LEVEL:-"INFO"}
 LOG_DIR=${LOG_DIR:-"/tmp/spark-logs"}
 DRIVER_MEMORY=${DRIVER_MEMORY:-"2g"}
