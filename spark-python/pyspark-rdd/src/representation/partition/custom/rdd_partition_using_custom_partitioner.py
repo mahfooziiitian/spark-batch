@@ -8,11 +8,11 @@ class CustomPartitioner(Partitioner):
     Falls back to hash-based partitioning if no function is provided.
     """
 
-    def __init__(self, numPartitions, partitionFunc=None):
-        if not isinstance(numPartitions, int) or numPartitions <= 0:
+    def __init__(self, num_partitions, partition_func=None):
+        if not isinstance(num_partitions, int) or num_partitions <= 0:
             raise ValueError("numPartitions must be a positive integer")
-        self._numPartitions = numPartitions
-        self.partitionFunc = partitionFunc
+        self._numPartitions = num_partitions
+        self.partitionFunc = partition_func
 
     def numPartitions(self):
         return self._numPartitions
@@ -23,24 +23,41 @@ class CustomPartitioner(Partitioner):
         return hash(key) % self._numPartitions
 
 
-def print_partitioning(rdd):
+def print_partitioning(rdd, title="Partitioning"):
     """
-    Utility function to print the elements in each partition of an RDD.
+    Utility function to print the elements in each partition of an RDD,
+    and show partition size statistics.
     """
     result = rdd.glom().collect()
+    print(f"\n{title}:")
     for i, partition in enumerate(result):
-        print(f"Partition {i}: {partition}")
+        print(f"  Partition {i}: {partition} (size={len(partition)})")
+    sizes = [len(p) for p in result]
+    print(f"  Partition sizes: {sizes}")
 
 
 def animal_partition_func(key):
+    """
+    Custom partition function for animal keys.
+    """
     if key in ("cat", "dog"):
         return 0
     else:
         return 1
 
 
-if __name__ == "__main__":
+def print_key_partition_mapping(rdd, partitionFunc, numPartitions):
+    """
+    Prints the partition assignment for each key using the custom partition function.
+    """
+    keys = rdd.keys().distinct().collect()
+    print("\nCustom partition mapping for keys:")
+    for key in keys:
+        partition = partitionFunc(key) % numPartitions
+        print(f"  Key '{key}' -> Partition {partition}")
 
+
+if __name__ == "__main__":
     sc = SparkContext("local[*]", "CustomPartitionerExample")
 
     data = [
@@ -55,14 +72,18 @@ if __name__ == "__main__":
 
     pair_rdd = sc.parallelize(data)
 
-    # Use custom partition function
-    custom_partitioner = CustomPartitioner(2, partitionFunc=animal_partition_func)
+    # Default partitioning
+    default_partitioned_rdd = pair_rdd.partitionBy(2)
+    print_partitioning(default_partitioned_rdd, "Default Partitioning")
 
+    # Custom partitioning
+    custom_partitioner = CustomPartitioner(2, partition_func=animal_partition_func)
     partitioned_rdd = pair_rdd.partitionBy(
         custom_partitioner.numPartitions(), custom_partitioner.partitionFunc
     )
+    print_partitioning(partitioned_rdd, "Custom Partitioning")
 
-    print(f"Number of Partitions: {partitioned_rdd.getNumPartitions()}")
-    print_partitioning(partitioned_rdd)
+    # Show custom partition mapping
+    print_key_partition_mapping(pair_rdd, animal_partition_func, 2)
 
     sc.stop()

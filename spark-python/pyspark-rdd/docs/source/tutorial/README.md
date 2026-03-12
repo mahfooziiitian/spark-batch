@@ -22,4 +22,3 @@ This tutorial offers a hands-on introduction to working with RDDs in PySpark. Yo
 - **Debug and handle errors** to build robust and reliable PySpark applications.
 
 By following this guide, you'll gain practical experience with essential RDD concepts and techniques, empowering you to build scalable data processing solutions with Spark.
-

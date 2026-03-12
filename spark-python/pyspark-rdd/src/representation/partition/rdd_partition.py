@@ -4,7 +4,7 @@ import sys
 from pyspark.sql import SparkSession
 
 os.environ["PYSPARK_PYTHON"] = sys.executable
-os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
+os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_11", "")
 
 if __name__ == "__main__":
 
