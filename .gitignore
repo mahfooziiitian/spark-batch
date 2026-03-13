@@ -1,102 +1,154 @@
 
-!gradle-wrapper.jar
+# ==============================================================================
+# Python
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 *$py.class
-*.DS_Store
-*.class
-*.db
+
+# Virtual environments
+.venv/
+env/
+.env/
+venv/
+
+# Distribution / packaging
+dist/
+build/
 *.egg-info/
+*.egg
+pip-wheel-metadata/
+wheels/
+*.whl
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checking & linting
+.mypy_cache/
+.dmypy.json
+.pyright/
+.ruff_cache/
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+
+# MkDocs documentation
+site/
+
+# uv
+uv.lock.bak
+
+# ==============================================================================
+# Java
+# ==============================================================================
+
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+*.nar
+
+# Build output
+target/
+bin/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Maven wrapper
+mvnw
+mvnw.cmd
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
+
+# Gradle wrapper
+gradlew
+gradlew.bat
+
+# ==============================================================================
+# Scala / SBT
+# ==============================================================================
+
+# SBT build output
+target/
+project/target/
+project/project/
+lib_managed/
+
+# SBT history and logs
+.history
+sbt.log
+
+# Scala worksheet
+*.sc
+
+# Metals (Scala language server)
+.metals/
+.metals.sbt/
+.bloop/
+.bsp/
+.ammonite/
+
+# Coursier cache
+.cache/
+.ivy2/cache/
+.coursier/
+
+# ==============================================================================
+# Docker
+# ==============================================================================
+
+# Docker Compose overrides (local dev only)
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Docker environment files
 *.env
+!.env.example
+!.env.template
+
+# Docker volumes / data
+docker-data/
+.docker/
+
+# ==============================================================================
+# IDEs & Editors
+# ==============================================================================
+
+# IntelliJ IDEA / JetBrains
+.idea/
 *.iml
 *.ipr
 *.iws
-*.key
-*.lo
-*.log
-*.o
-*.obj
-*.pem
-*.py[cod]
-*.sqlite3
-*.sublime-project
-*.sublime-workspace
-*.swo
-*.swp
-*.tmp
-.DS_Store
-.aws/
-.classpath
-.coverage
-.dmypy.json
-.env
-.env/
-.gradle/
-.idea/
-.ipynb_checkpoints/
-.metadata/
-.mvn/
-.mypy_cache/
-.nox/
-.project
-.pyright/
-.pytest_cache/
-.settings/
-.tox/
-.venv/
-.vscode/
-/*.gradle
-/.bloop/
-/.idea_modules/
-/.metadata/
-/.metals.sbt/
-/.metals/
-/.nb-gradle/
-/bin/
-/build/
-/dist/
-/lib_managed/
-/nbbuild/
-/nbdist/
-/nbproject/private/
-/out/
-/project/project/
-/project/target/
-/target/
-MANIFEST.MF
-Thumbs.db
-__pycache__/
-build/
-config.yaml
-dist/
-docker-compose.override.yml
-env/
-gradle-app.setting
-htmlcov/
-logs/
-modules/
-pip-wheel-metadata/
-pom.xml.next
-pom.xml.releaseBackup
-pom.xml.tag
-pom.xml.versionsBackup
-release.properties
-site/
-target/
-.venv/
-gradle/
-.bsp/
-# SBT & Build
-/target/
-/project/target/
-/project/project/
-
-# Logs
-*.log
-
-# IntelliJ IDEA
-.idea/
-/*.iml
-*.iws
 out/
+.idea_modules/
 
 # VS Code
 .vscode/
@@ -105,69 +157,77 @@ out/
 .classpath
 .project
 .settings/
+.metadata/
 
-# Mac
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# NetBeans
+nbbuild/
+nbdist/
+nbproject/private/
+nb-configuration.xml
+
+# ==============================================================================
+# Operating System
+# ==============================================================================
+
+# macOS
 .DS_Store
+*.DS_Store
 
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Scala Worksheet
-*.sc
+# Linux
+*~
 
-# Metals (Scala language server)
-.metals/
-.bloop/
-.ammonite/
+# ==============================================================================
+# Logs & Temporary Files
+# ==============================================================================
 
-# coursier
-.cache/
-.ivy2/cache/
-.coursier/
-
-# sbt bloop integration
-.bsp/
-
-# Temporary files
-*.swp
-*.bak
+*.log
 *.tmp
+*.bak
+*.swp
+*.swo
+logs/
 
-# SBT history and logs
-.history
-sbt.log
-# Java
-# Build tool wrappers
-.mvn/
-!/.mvn/wrapper/maven-wrapper.jar
+# ==============================================================================
+# Secrets & Credentials (never commit these)
+# ==============================================================================
 
-# Maven Wrapper logs
-mvnw.cmd
-mvnw
-# Gradle build output
-/build/
-/.gradle/
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+.aws/
+credentials
+secrets.yml
+secrets.yaml
 
-# Gradle Wrapper files
-!gradle/wrapper/gradle-wrapper.jar
-gradle/wrapper/gradle-wrapper.properties
-gradlew
-gradlew.bat
+# ==============================================================================
+# Databases
+# ==============================================================================
 
-# IDEs
-## IntelliJ IDEA
-.idea/
-*.iml
-*.iws
-out/
+*.db
+*.sqlite3
 
-## Eclipse
-.classpath
-.project
-.settings/
-d
+# ==============================================================================
+# Miscellaneous
+# ==============================================================================
+
+MANIFEST.MF
+*.o
+*.obj
+*.lo
+modules/
+
+# Databricks
 databricks/
 databricks.yml
 

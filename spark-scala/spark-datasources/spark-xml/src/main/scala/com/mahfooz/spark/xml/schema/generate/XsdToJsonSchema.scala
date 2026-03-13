@@ -22,7 +22,8 @@ class SparkSchemaToJsonFile {
 
 object XsdToJsonSchema {
   def main(args: Array[String]): Unit = {
-    val xsdFile = sys.env.getOrElse("DATA_HOME",".") +"/file_data/xml/orders.xsd"
+    //val xsdFile = sys.env.getOrElse("DATA_HOME",".") +"/file_data/xml/orders.xsd"
+    val xsdFile = "src/main/resources/orders.xsd"
     val rowTagExpression = "Orders.Order"
     val spark = SparkSession.builder().master("local[*]").appName("xsd-to-json-schema").getOrCreate()
 

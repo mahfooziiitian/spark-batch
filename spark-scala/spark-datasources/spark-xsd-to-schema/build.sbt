@@ -8,9 +8,9 @@ lazy val root = (project in file("."))
   )
 
 val sparkVersion = "3.3.1"
-val sparkXmlVersion = "0.16.0"
+val sparkXmlVersion = "0.18.0"
 
-scalacOptions += "-target:jvm-1.8"
+scalacOptions += "-target:jvm-11"
 resolvers in Global += Resolver.mavenLocal
 
 resolvers ++= Seq(

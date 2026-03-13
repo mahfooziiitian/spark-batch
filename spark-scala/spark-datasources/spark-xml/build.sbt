@@ -10,7 +10,6 @@ val sparkXmlVersion = "0.18.0"
 
 scalacOptions += "-target:jvm-11"
 resolvers in Global += Resolver.mavenLocal
-//resolvers in Global += "Cloudera" at "https://repository.cloudera.com/artifactory/cloudera-repos/"
 
 resolvers ++= Seq(
   "Typesafe" at "https://repo.typesafe.com/typesafe/releases/",
