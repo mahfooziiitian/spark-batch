@@ -1,0 +1,19 @@
+[project]
+name = "pyspark-setup"
+version = "0.1.0"
+description = "PySpark installation and environment setup guides"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark<4.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4",
+    "ipykernel>=7.2.0",
+]
+docs = [
+    "mkdocs-include-markdown-plugin>=6.0",
+    "mkdocs-material>=9.5",
+]

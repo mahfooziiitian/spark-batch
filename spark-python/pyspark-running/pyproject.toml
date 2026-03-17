@@ -1,0 +1,18 @@
+[project]
+name = "pyspark-running"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark<4.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.2.0",
+]
+docs = [
+    "mkdocs-include-markdown-plugin>=6.0",
+    "mkdocs-material>=9.5",
+]

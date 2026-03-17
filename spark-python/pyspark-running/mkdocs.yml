@@ -1,0 +1,76 @@
+site_name: PySpark Running
+site_description: Run PySpark on any environment — local, shell, spark-submit, notebook, YARN, Kubernetes, and AWS
+site_author: Data Engineering
+
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Home: index.md
+  - Environments:
+    - Local: environments/local.md
+    - Shell: environments/shell.md
+    - spark-submit: environments/spark-submit.md
+    - Notebook: environments/notebook.md
+  - Cluster:
+    - YARN: cluster/yarn.md
+    - Kubernetes: cluster/kubernetes.md
+  - AWS:
+    - EMR on EC2: aws/emr.md
+    - EMR Serverless: aws/emr-serverless.md
+    - AWS Glue: aws/glue.md
+  - Examples:
+    - Word Count: examples/word_count.md
+    - Sales ETL Pipeline: examples/sales_analysis.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - include-markdown

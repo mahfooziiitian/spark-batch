@@ -1,0 +1,150 @@
+# PySpark Standalone Cluster — Docker Compose
+#
+# Services:
+#   spark-master      — Standalone master  (UI: http://localhost:8080)
+#   spark-worker      — Workers (scaled)   (default: 2 replicas)
+#   spark-history     — History server     (UI: http://localhost:18080)
+#   notebook          — JupyterLab         (http://localhost:8888  token: spark)
+#   spark-submit      — Job runner profile (docker compose run --rm spark-submit)
+#
+# Quick start:
+#   docker compose up -d
+#   docker compose --profile submit run --rm spark-submit
+
+services:
+
+  # ── Volume init (fixes /opt/spark/events ownership for the spark user) ─────
+  spark-events-init:
+    image: apache/spark:3.5.0-python3
+    user: root
+    command: ["chown", "-R", "185:185", "/opt/spark/events"]
+    volumes:
+      - spark-events:/opt/spark/events
+
+  # ── Standalone Master ──────────────────────────────────────────────────────
+  spark-master:
+    image: apache/spark:3.5.0-python3
+    container_name: spark-master
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.master.Master
+    ports:
+      - "${SPARK_MASTER_PORT:-7077}:7077"
+      - "${SPARK_MASTER_UI_PORT:-8080}:8080"
+    environment:
+      SPARK_LOCAL_IP: spark-master
+      SPARK_MASTER_HOST: spark-master
+      SPARK_NO_DAEMONIZE: "true"
+    depends_on:
+      spark-events-init:
+        condition: service_completed_successfully
+    volumes:
+      - spark-events:/opt/spark/events
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://spark-master:8080 || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - spark-net
+
+  # ── Workers (scale with SPARK_WORKER_REPLICAS or docker compose up --scale) ──
+  spark-worker:
+    image: apache/spark:3.5.0-python3
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.worker.Worker
+      - spark://spark-master:7077
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    environment:
+      SPARK_WORKER_MEMORY: "${SPARK_WORKER_MEMORY:-2g}"
+      SPARK_WORKER_CORES: "${SPARK_WORKER_CORES:-2}"
+      SPARK_NO_DAEMONIZE: "true"
+    volumes:
+      - spark-events:/opt/spark/events
+      - ./conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+    deploy:
+      replicas: ${SPARK_WORKER_REPLICAS:-2}
+    networks:
+      - spark-net
+
+  # ── History Server ──────────────────────────────────────────────────────────
+  spark-history:
+    image: apache/spark:3.5.0-python3
+    container_name: spark-history
+    command:
+      - /opt/spark/bin/spark-class
+      - org.apache.spark.deploy.history.HistoryServer
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    ports:
+      - "${SPARK_HISTORY_PORT:-18080}:18080"
+    environment:
+      SPARK_HISTORY_OPTS: >-
+        -Dspark.history.fs.logDirectory=/opt/spark/events
+        -Dspark.history.ui.port=18080
+    volumes:
+      - spark-events:/opt/spark/events
+    networks:
+      - spark-net
+
+  # ── JupyterLab Notebook ─────────────────────────────────────────────────────
+  notebook:
+    build:
+      context: .
+      dockerfile: Dockerfile.notebook
+    container_name: spark-notebook
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    environment:
+      SPARK_MASTER: "spark://spark-master:7077"
+      JUPYTER_TOKEN: "${JUPYTER_TOKEN:-spark}"
+    volumes:
+      - ./notebooks:/notebooks
+    networks:
+      - spark-net
+
+  # ── spark-submit runner (profile: submit) ───────────────────────────────────
+  # Usage:
+  #   docker compose --profile submit run --rm spark-submit
+  #   JOB_FILE=jobs/etl_job.py docker compose --profile submit run --rm spark-submit
+  spark-submit:
+    image: apache/spark:3.5.0-python3
+    profiles:
+      - submit
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    environment:
+      PYTHONPATH: "/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip"
+    volumes:
+      - ./jobs:/opt/spark/work-dir
+      - spark-events:/opt/spark/events
+    command:
+      - /opt/spark/bin/spark-submit
+      - --master
+      - spark://spark-master:7077
+      - --conf
+      - spark.eventLog.enabled=true
+      - --conf
+      - spark.eventLog.dir=/opt/spark/events
+      - /opt/spark/work-dir/${JOB_FILE:-etl_job.py}
+    networks:
+      - spark-net
+
+# ── Volumes ────────────────────────────────────────────────────────────────────
+volumes:
+  spark-events:       # shared event log for history server
+
+# ── Network ────────────────────────────────────────────────────────────────────
+networks:
+  spark-net:
+    driver: bridge

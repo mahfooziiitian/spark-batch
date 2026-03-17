@@ -1,0 +1,76 @@
+site_name: PySpark Setup
+site_description: Install and configure PySpark on every environment — local, Docker, YARN, Kubernetes, AWS EMR, Glue, and CI/CD
+site_author: Data Engineering
+
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Home: index.md
+  - Environments:
+    - Local / venv: environments/local.md
+    - Conda: environments/conda.md
+    - Docker: environments/docker.md
+  - Cluster:
+    - YARN: cluster/yarn.md
+    - Kubernetes: cluster/kubernetes.md
+  - AWS:
+    - EMR on EC2: aws/emr.md
+    - AWS Glue: aws/glue.md
+  - CI/CD: ci.md
+  - Reference:
+    - Environment Variables: reference/env-vars.md
+    - Dependencies: reference/dependencies.md
+    - Troubleshooting: reference/troubleshooting.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - include-markdown
