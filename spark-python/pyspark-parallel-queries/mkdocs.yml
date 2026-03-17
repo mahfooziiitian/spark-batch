@@ -1,0 +1,73 @@
+site_name: PySpark Parallel Queries
+site_description: Every idiomatic way to run multiple Spark jobs concurrently inside a single SparkSession
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Core Concepts: concepts.md
+  - Patterns:
+      - Overview: patterns/index.md
+      - threading.Thread: patterns/threading.md
+      - ThreadPool: patterns/threadpool.md
+      - Futures: patterns/futures.md
+      - Queue Worker Pool: patterns/queue.md
+      - InheritableThread: patterns/inheritable-thread.md
+      - Horizontal Parallelism: patterns/horizontal-parallelism.md
+  - Scheduling:
+      - FAIR Scheduler: scheduling/fair-scheduler.md
+      - Pool Configuration: scheduling/pool-config.md
+  - Testing Guide: testing.md

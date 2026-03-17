@@ -1,0 +1,27 @@
+[project]
+name = "pyspark-schema"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark<4.0.0",
+]
+
+
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.4",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.5",
+    "pytest-sugar>=1.1.1",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.15.6",
+    "safety>=3.7.0",
+]
+
+[tool.pytest.ini_options]
+testpaths   = ["tests"]
+pythonpath  = ["src"]
+addopts     = "-v --tb=short"

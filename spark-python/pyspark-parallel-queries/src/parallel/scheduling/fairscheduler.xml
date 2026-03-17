@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<allocations>
+  <!--
+    production pool: higher weight and minShare to prioritise live workloads.
+    FAIR mode distributes tasks evenly across concurrent jobs in this pool.
+  -->
+  <pool name="production">
+    <schedulingMode>FAIR</schedulingMode>
+    <weight>2</weight>
+    <minShare>3</minShare>
+  </pool>
+
+  <!--
+    test pool: lower weight so it yields to production under contention.
+    FIFO within the pool is fine for test/batch jobs that run sequentially.
+  -->
+  <pool name="test">
+    <schedulingMode>FIFO</schedulingMode>
+    <weight>1</weight>
+    <minShare>1</minShare>
+  </pool>
+</allocations>

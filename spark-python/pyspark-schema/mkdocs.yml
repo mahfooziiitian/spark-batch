@@ -1,0 +1,84 @@
+site_name: PySpark Schema
+site_description: Schema definition, complex types, validation, evolution, and introspection in PySpark 3.5
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Core Concepts: concepts.md
+  - Schema Definition:
+      - Overview: definition/index.md
+      - StructField List: definition/struct-field-list.md
+      - Builder Pattern: definition/builder.md
+      - DDL & MapType: definition/ddl-map-type.md
+      - From JSON: definition/from-json.md
+      - Decimal Type: definition/decimal-type.md
+  - Complex Types:
+      - Overview: complex-types/index.md
+      - Arrays: complex-types/arrays.md
+      - Nested Structs: complex-types/nested-structs.md
+  - Introspection:
+      - Overview: introspection/index.md
+      - Print Schema: introspection/print-schema.md
+      - Column Existence: introspection/column-existence.md
+  - Validation & Comparison: validation.md
+  - Schema Evolution:
+      - Merge Schema: evolution/merge-schema.md
+      - Backward Compatibility: evolution/backward-compat.md
+  - Flattening: schema-flattening.md
+  - Dates & Timestamps: schema-dates.md
+  - Metadata & PII: schema-metadata.md
+  - Testing Guide: testing.md
