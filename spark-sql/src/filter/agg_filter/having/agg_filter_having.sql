@@ -13,7 +13,7 @@ CREATE OR REPLACE TEMP VIEW sales AS (
         ('Charlie', 'North', 'C', 400),
         ('Alice', 'North', 'B', 250),
         ('Charlie', 'South', 'A', 350)
-        AS sales (name, region, product, amount)
+            AS sales (name, region, product, amount)
 );
 SELECT
     region,

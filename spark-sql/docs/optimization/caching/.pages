@@ -1,0 +1,6 @@
+title: Caching
+nav:
+  - index.md
+  - Cache: cache.md
+  - Config: config.md
+  - Manager: manager.md

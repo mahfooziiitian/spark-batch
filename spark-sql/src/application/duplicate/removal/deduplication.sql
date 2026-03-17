@@ -14,7 +14,7 @@ WITH students AS (
         (2, 'Bob', 22),
         (6, 'Eve', 24),
         (1, 'Alice', 20)
-        AS students (id, name, age)
+            AS students (id, name, age)
 )
 
 SELECT DISTINCT *
@@ -34,7 +34,7 @@ WITH students AS (
         (2, 'Bob', 23),
         (6, 'Eve', 24),
         (1, 'Alice', 22)
-        AS students (id, name, age)
+            AS students (id, name, age)
 )
 
 SELECT *
@@ -64,7 +64,7 @@ WITH students AS (
         (2, 'Bob', 23),
         (6, 'Eve', 24),
         (1, 'Alice', 22)
-        AS students (id, name, age)
+            AS students (id, name, age)
 )
 
 SELECT
@@ -88,7 +88,7 @@ WITH students AS (
         (2, 'Bob', 23, '2023-08-03 10:00:00'),
         (6, 'Eve', 24, '2023-08-03 11:00:00'),
         (1, 'Alice', 22, '2023-08-04 10:00:00')
-        AS students (id, name, age, create_datetime)
+            AS students (id, name, age, create_datetime)
 )
 
 SELECT *

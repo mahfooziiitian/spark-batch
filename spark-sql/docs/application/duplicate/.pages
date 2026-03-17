@@ -1,0 +1,3 @@
+nav:
+  - Find Duplicates: finding.md
+  - Deduplication: removal.md

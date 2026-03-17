@@ -4,25 +4,25 @@ SELECT *
 FROM
     VALUES (
         'Alice',
-        STRUCT('NY' as city, 'USA' as country),
+        STRUCT('NY' AS city, 'USA' AS country),
         ARRAY('gift', 'priority'),
         MAP('product', 'A', 'price', '100')
     ),
     (
         'Bob',
-        STRUCT('LA' as city, 'USA' as country),
+        STRUCT('LA' AS city, 'USA' AS country),
         ARRAY('discount'),
         MAP('product', 'B', 'price', '200')
     ),
     (
         'Charlie',
-        STRUCT('Toronto' as city, 'Canada' as country),
+        STRUCT('Toronto' AS city, 'Canada' AS country),
         ARRAY('gift', 'exclusive'),
         MAP('product', 'C', 'price', '300')
     ),
     (
         'Dana',
-        STRUCT('Vancouver' as city, 'Canada' as country),
+        STRUCT('Vancouver' AS city, 'Canada' AS country),
         ARRAY('promo'),
         MAP('product', 'A', 'price', '250')
     ) AS complex_sales (name, location, tags, info);
@@ -30,7 +30,7 @@ FROM
 SELECT
     name,
     tag
-FROM complex_sales LATERAL VIEW EXPLODE(c.tags) as tag
+FROM complex_sales LATERAL VIEW EXPLODE(c.tags) AS tag
 WHERE tag = 'gift';
 -- Others
 -- Explode map to filter price directly
@@ -40,8 +40,8 @@ SELECT
     value
 FROM
     complex_sales
-        LATERAL VIEW EXPLODE(info) as key,
-        value
+    LATERAL VIEW EXPLODE(info) AS key,
+    value
 WHERE
     key = 'price'
     AND CAST(value AS INT) > 200;

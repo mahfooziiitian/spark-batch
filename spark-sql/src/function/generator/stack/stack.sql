@@ -9,7 +9,7 @@ FROM
     VALUES
     (1, 85, 90, 78),
     (2, 88, 76, 92)
-    AS scores (student_id, math, science, history);
+        AS scores (student_id, math, science, history);
 SELECT
     student_id,
     subject,
@@ -20,7 +20,7 @@ FROM scores
         'math', math,
         'science', science,
         'history', history
-    ) as subject, score;
+    ) AS subject, score;
 
 -- 2. Generate Static Rows
 
@@ -31,7 +31,7 @@ FROM (SELECT 1) AS d
         'A', 100,
         'B', 200,
         'C', 300
-    ) as label, value;
+    ) AS label, value;
 
 -- 3. Use with Constants and Variables
 
@@ -51,7 +51,7 @@ FROM features
         'feature_a', feature_a,
         'feature_b', feature_b,
         'feature_c', feature_c
-    ) as feature_name, is_enabled;
+    ) AS feature_name, is_enabled;
 
 
 -- 4. Create Pivot-Like Summary with Labels
@@ -70,7 +70,7 @@ FROM summary
         2,
         'sales', sales,
         'profit', profit
-    ) as metric, value;
+    ) AS metric, value;
 
 -- 5. Use Without a Table (Manual Data Creation)
 
@@ -80,4 +80,4 @@ FROM (SELECT 1) AS d
         2,
         'apple', 50,
         'banana', 30
-    ) as fruit, quantity;
+    ) AS fruit, quantity;

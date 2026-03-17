@@ -1,0 +1,10 @@
+title: Strategy
+nav:
+  - index.md
+  - Broadcast Hash: bhj.md
+  - Sort Merge: smj.md
+  - Shuffled Hash: shj.md
+  - Hash: hj.md
+  - Broadcast Nested Loop: bnlj.md
+  - Sort-Shuffle Merge: ssmj.md
+  - Sort-Range Nested Loop: srnlp.md

@@ -30,9 +30,9 @@ SELECT
 FROM employee
 GROUP BY
     GROUPING SETS (
-            (dept, role),
-            (dept),
-            ()
+        (dept, role),
+        (dept),
+        ()
     )
 ORDER BY dept, role;
 

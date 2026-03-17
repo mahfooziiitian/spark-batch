@@ -7,7 +7,7 @@ FROM
     VALUES
     ('D001', array(22.5, 85.0, 19.0, 5.0)),
     ('D002', array(45.0, 12.0, 90.0, 33.0))
-    AS sensor_data (device_id, temperature_readings);
+        AS sensor_data (device_id, temperature_readings);
 SELECT
     device_id,
     filter(temperature_readings, x -> x >= 10 AND x <= 80) AS valid_readings
@@ -23,7 +23,7 @@ FROM
     VALUES
     ('user01', array(5000, 12000, 8000, 15000)),
     ('user02', array(3000, 20000, 7000, 11000))
-    AS user_purchases (user_id, transactions);
+        AS user_purchases (user_id, transactions);
 SELECT
     user_id,
     filter(transactions, x -> x > 10000) AS high_value_txns
@@ -46,7 +46,7 @@ FROM
         named_struct('duration', 10, 'status', 'completed'),
         named_struct('duration', 0, 'status', 'dropped')
     ))
-    AS telecom_data (customer_id, call_logs);
+        AS telecom_data (customer_id, call_logs);
 SELECT
     telecom_data.customer_id,
     filter(
@@ -72,7 +72,7 @@ FROM
         named_struct('timestamp', '22:00', 'location', 'Dubai'),
         named_struct('timestamp', '10:00', 'location', 'Chennai')
     ))
-    AS bank_txn_data (account_id, transactions);
+        AS bank_txn_data (account_id, transactions);
 
 SELECT
     bank_txn_data.account_id,
@@ -100,7 +100,7 @@ FROM
         named_struct('heart_rate', 125, 'bp_systolic', 160),
         named_struct('heart_rate', 70, 'bp_systolic', 110)
     ))
-    AS patient_monitoring (patient_id, vitals);
+        AS patient_monitoring (patient_id, vitals);
 
 SELECT
     patient_monitoring.patient_id,

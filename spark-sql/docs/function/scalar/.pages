@@ -1,0 +1,16 @@
+title: Scalar
+nav:
+  - index.md
+  - String: string.md
+  - Math: math.md
+  - DateTime: datetime
+  - Predicate: predicate.md
+  - Control: control.md
+  - Conversion: conversion.md
+  - Count: count.md
+  - Bitwise: bitwise.md
+  - ACL: acl.md
+  - "NULL": "null.md"
+  - Regex: regex
+  - Encryption: encryption
+  - Web: web.md

@@ -6,11 +6,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 dependencies = [
-    "databricks-connect==15.4.*",
     "graphviz>=0.21",
     "ipykernel>=6.30.0",
-    "pyspark==3.5.2",
-    "pytest-sugar>=1.0.0",
+    "pyspark<4.0.0,>=3.4.0",
     "sqlalchemy>=2.0.43",
 ]
 
@@ -23,10 +21,13 @@ dev = [
     "ruff>=0.12.8",
     "flake8-pyproject>=1.2.3",
     "radon>=6.0.1",
+    "sqlfluff>=4.0.4",
     # Testing
     "pytest-sugar>=1.0.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
+    "ipytest>=0.14.2",
+    "pytest-datadir>=1.8.0",
     "pytest==8.4.1",
     "chispa>=0.11.1",
     # Security
@@ -35,20 +36,19 @@ dev = [
     # Tasks
     "taskipy>=1.14.1",
     # Docs
-    "sphinxcontrib-mermaid>=1.0.0",
-    "myst-parser>=4.0.1",
-    "sphinxawesome-theme>=5.3.2",
-    "furo>=2025.7.19",
-    "linkify-it-py>=2.0.3",
-    "pymarkdownlnt>=0.9.31",
-    "ipytest>=0.14.2",
-    "pytest-datadir>=1.8.0",
+    "mkdocs>=1.6.0,<2",
+    "mkdocs-material>=9.7.4,<10",
+    "mkdocs-awesome-pages-plugin>=2.10.1",
+    "pymarkdownlnt>=0.9.36",
+    "mkdocs-mermaid2-plugin>=1.2.3",
+    "pytest-xdist>=3.8.0",
 ]
 
 [tool.sqlfluff.core]
-dialect = "databricks"
+dialect = "sparksql"
 templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+line_length = 128
 
 [tool.sqlfluff.indentation]
 indented_joins = false
@@ -98,14 +98,7 @@ ignore_missing_imports = true
 [tool.flake8]
 extend-ignore = "E203"
 max-line-length = 128
-exclude = [
-    ".git",
-    "__pycache__",
-    "docs/source/conf.py",
-    ".venv",
-    "build",
-    "dist",
-]
+exclude = [".git", "__pycache__", "docs/conf.py", ".venv", "build", "dist"]
 max-complexity = 10
 
 [tool.bandit]
@@ -150,13 +143,11 @@ report_cov_annotate = "uv run pytest --cov=. --cov-report=annotate --cov-config=
 # clean up
 remove_cache = "if test -e __pycache__;then rm -rf __pycache__;fi"
 remove_pytest_cache = "if test -e .pytest_cache; then rm -rf .pytest_cache pycache__;fi"
-remove_html_build = "if test -e docs/build; then rm -rf docs/build;fi"
+remove_html_build = "if test -e site; then rm -rf site;fi"
 clean = "task remove_cache && task remove_pytest_cache && task remove_html_build"
 
 # Documentation
 lint_md = "uv run pymarkdownlnt fix -r docs README.md"
-sphinx_qs = "uv run sphinx-quickstart docs"
-html = "uv run sphinx-build -b html docs/source docs/build/html/"
-single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
-server = "uv run python -m http.server -d ./docs/build/html 8080"
-html_server = "task clean && task html && task server"
+docs_build = "uv run mkdocs build"
+docs_serve = "uv run mkdocs serve -a 0.0.0.0:8080"
+docs = "task clean && task docs_build && task docs_serve"

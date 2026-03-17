@@ -1,0 +1,6 @@
+title: Outer
+nav:
+  - index.md
+  - Left: left.md
+  - Right: right.md
+  - Full: full.md

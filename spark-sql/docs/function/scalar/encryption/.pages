@@ -1,0 +1,9 @@
+title: Encryption
+nav:
+  - index.md
+  - Intro: intro.md
+  - CRC32: crc32.md
+  - HEX: hex.md
+  - MASK: mask.md
+  - MD5: md5.md
+  - SHA: sha.md

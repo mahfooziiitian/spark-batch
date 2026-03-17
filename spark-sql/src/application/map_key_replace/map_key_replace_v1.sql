@@ -14,10 +14,7 @@ WITH exploded AS (
 replaced AS (
     SELECT
         value,
-        CASE
-            WHEN key_map[orig_key] IS NOT NULL THEN key_map[orig_key]
-            ELSE orig_key
-        END AS new_key
+        coalesce(key_map[orig_key], orig_key) AS new_key
     FROM exploded
 ),
 

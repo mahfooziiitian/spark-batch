@@ -16,7 +16,7 @@ CREATE OR REPLACE TEMP VIEW sales_data AS (
         ('Charlie', 'North', 'C', 400, 5, ARRAY('priority', 'exclusive')),
         ('Alice', 'North', NULL, 250, NULL, NULL),
         ('Charlie', 'South', 'A', 350, 4, ARRAY('gift'))
-        AS sales (name, region, product, amount, quantity, tags)
+            AS sales (name, region, product, amount, quantity, tags)
 );
 
 -- Filter with CASE WHEN

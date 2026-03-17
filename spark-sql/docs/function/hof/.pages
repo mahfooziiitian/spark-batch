@@ -1,0 +1,9 @@
+title: Higher-Order
+nav:
+  - index.md
+  - Aggregate: aggregate.md
+  - ZIP_WITH & FORALL: array.md
+  - Exists: exists.md
+  - Filter: filter.md
+  - Map HOFs: map.md
+  - Transform: transform.md

@@ -1,0 +1,11 @@
+title: Regex
+nav:
+  - index.md
+  - Regexp Functions: regexp_function.md
+  - REGEXP_COUNT: regex_count.md
+  - REGEXP_EXTRACT: regex_extract.md
+  - REGEXP_INSTR: regex_instr.md
+  - REGEXP_LIKE: regex_like.md
+  - REGEXP_REPLACE: regexp_replace_function.md
+  - REGEXP_SUBSTR: regexp_substr_function.md
+  - RLIKE/ILIKE: rlike_ilike_function.md

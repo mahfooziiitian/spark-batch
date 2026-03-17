@@ -1,0 +1,6 @@
+title: Structure
+nav:
+  - index.md
+  - CSV: csv.md
+  - JSON: json.md
+  - XML: xml.md

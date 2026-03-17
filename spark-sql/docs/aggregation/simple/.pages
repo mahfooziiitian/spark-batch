@@ -1,0 +1,7 @@
+title: Simple
+nav:
+  - index.md
+  - AVG: avg
+  - COUNT: count
+  - MIN/MAX: minmax
+  - SUM: sum

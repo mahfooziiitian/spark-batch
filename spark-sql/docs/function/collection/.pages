@@ -1,0 +1,8 @@
+title: Collection
+nav:
+  - index.md
+  - Array: array.md
+  - List: list.md
+  - Map: map.md
+  - Set: set.md
+  - Struct: struct.md

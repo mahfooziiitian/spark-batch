@@ -1,0 +1,7 @@
+title: Catalyst
+nav:
+  - index.md
+  - AST: ast
+  - Logical Plan: logical.md
+  - Physical Plan: physical.md
+  - Code Generation: code-generation.md

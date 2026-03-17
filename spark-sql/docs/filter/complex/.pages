@@ -1,0 +1,6 @@
+title: Complex Types
+nav:
+  - Array: array.md
+  - Map: map.md
+  - Struct: struct.md
+  - Lateral View: lateral_view.md

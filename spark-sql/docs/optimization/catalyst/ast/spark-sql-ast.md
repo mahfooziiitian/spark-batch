@@ -1,0 +1,29 @@
+# Spark SQL AST
+
+The Abstract Syntax Tree (AST) represents the parsed structure of a SQL query
+before it becomes a logical plan.
+
+---
+
+## 📌 Why It Matters
+
+1. The parser produces an AST from the SQL string.
+2. The AST is converted into a logical plan for optimization.
+3. Understanding ASTs helps debug parser or analysis issues.
+
+---
+
+## 🧪 Example
+
+```sql
+EXPLAIN PARSED SELECT * FROM orders WHERE amount > 100;
+```
+
+---
+
+## 🧠 When to Use
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Parser errors | Inspect the parsed plan |
+| SQL debugging | Use `EXPLAIN PARSED` |

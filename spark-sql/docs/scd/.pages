@@ -1,0 +1,9 @@
+nav:
+  - index.md
+  - Introduction: intro.md
+  - Type 1: type1
+  - Type 2: type2
+  - Type 3: type3
+  - Type 4: type4.md
+  - Type 5: type5.md
+  - Type 6: type6.md

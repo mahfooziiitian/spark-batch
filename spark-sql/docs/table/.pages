@@ -1,0 +1,4 @@
+nav:
+  - index.md
+  - Metadata: metadata
+  - Partitioned Tables: partition

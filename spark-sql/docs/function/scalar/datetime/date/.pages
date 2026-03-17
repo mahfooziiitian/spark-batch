@@ -1,0 +1,7 @@
+title: Date
+nav:
+  - index.md
+  - Add/Subtract: add_subtract.md
+  - Difference: difference.md
+  - Parts: parts.md
+  - Truncate: truncate.md

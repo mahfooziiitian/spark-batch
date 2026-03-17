@@ -1,0 +1,11 @@
+nav:
+  - index.md
+  - Aggregate: aggregate
+  - Scalar: scalar
+  - Collection: collection
+  - Generator: generator
+  - Higher-Order: hof
+  - Structure: structure
+  - Lambda: lambda.md
+  - Macro: macro
+  - UDF: udf

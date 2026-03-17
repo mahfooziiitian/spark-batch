@@ -1,0 +1,6 @@
+nav:
+  - index.md
+  - Time: time.md
+  - Tumbling: tumbling.md
+  - Hopping: hopping.md
+  - Sliding: sliding.md

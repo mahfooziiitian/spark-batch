@@ -5,10 +5,10 @@ SELECT
     * FROM VALUES
 (1, ARRAY('Alice', 'Bob')),
 (2, ARRAY('Charlie', 'Diana'))
-AS people (id, names);
+    AS people (id, names);
 SELECT id, name
 FROM people
-    LATERAL VIEW EXPLODE(names) as name;
+    LATERAL VIEW EXPLODE(names) AS name;
 
 -- 2. Exploding a Map
 
@@ -17,10 +17,10 @@ SELECT
     * FROM VALUES
 (1, MAP('apple', 2, 'banana', 3)),
 (2, MAP('orange', 1, 'grape', 5))
-AS sales (id, items);
+    AS sales (id, items);
 SELECT id, fruit, quantity
 FROM sales
-    LATERAL VIEW EXPLODE(items) as fruit, quantity;
+    LATERAL VIEW EXPLODE(items) AS fruit, quantity;
 
 -- 3. Exploding an Array of Structs
 
@@ -35,10 +35,10 @@ SELECT
     NAMED_STRUCT('product', 'notebook', 'qty', 1),
     NAMED_STRUCT('product', 'eraser', 'qty', 3)
 ))
-AS orders (order_id, products);
-SELECT orders.order_id, item.product AS product, item.qty AS quantity
+    AS orders (order_id, products);
+SELECT orders.order_id, item.product, item.qty AS quantity
 FROM orders
-    LATERAL VIEW EXPLODE(products) as item;
+    LATERAL VIEW EXPLODE(products) AS item;
 
 -- 4. Explode with SEQUENCE() to Create Date Ranges
 

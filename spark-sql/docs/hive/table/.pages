@@ -1,0 +1,8 @@
+title: Tables
+nav:
+  - Bucket: bucket.md
+  - Data Source: datasource.md
+  - External: external.md
+  - Loading: loading.md
+  - Managed: managed.md
+  - Partitioning: partition

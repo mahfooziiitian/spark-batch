@@ -1,0 +1,9 @@
+title: Generator
+nav:
+  - index.md
+  - Explode: explode.md
+  - Explode Outer: explode_outer.md
+  - Inline: inline.md
+  - PosExplode: posexplode.md
+  - PosExplode Outer: posexplode_outer.md
+  - Stack: stack.md

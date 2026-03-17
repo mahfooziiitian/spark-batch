@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - Data Types: datatype
+  - Validation: validation.md
+  - File Reader: filereader
+  - Query Planner: planner
+  - Sorting: sorting

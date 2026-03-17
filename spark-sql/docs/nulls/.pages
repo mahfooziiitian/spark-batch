@@ -1,0 +1,12 @@
+nav:
+  - index.md
+  - Aggregate: aggregate.md
+  - Check: check.md
+  - Comparison: comparison.md
+  - Expression: expression.md
+  - Filter: filter.md
+  - Logical: logical.md
+  - Operator: operator.md
+  - Ordering: ordering.md
+  - Sets: sets.md
+  - Subquery: subquery.md

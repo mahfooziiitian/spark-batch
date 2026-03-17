@@ -1,0 +1,6 @@
+nav:
+  - INSERT: insert.md
+  - UPDATE: update.md
+  - DELETE: delete.md
+  - MERGE: merge.md
+  - COPY INTO: copy_into.md

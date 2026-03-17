@@ -43,9 +43,9 @@ SELECT
     percentile_disc(0.9), --WITHIN GROUP (ORDER BY sales) AS p90_sales,
     --quantile(0.25) WITHIN GROUP (ORDER BY sales) AS q1_sales,
     percentile(sales, 0.5) --- WITHIN GROUP (ORDER BY sales) 
-    AS q1_sales,
+        AS q1_sales,
     --quantile(0.75) WITHIN GROUP (ORDER BY sales) AS q3_sales
     percentile(sales, 0.75)
     --WITHIN GROUP (ORDER BY sales) 
-    AS q3_sales
+        AS q3_sales
 FROM sales_dt;

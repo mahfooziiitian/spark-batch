@@ -1,0 +1,9 @@
+title: Join Types
+nav:
+  - index.md
+  - Inner: inner_join.md
+  - Outer: outer
+  - Left Semi: left_semi.md
+  - Left Anti: left_anti.md
+  - Cartesian: cartesian.md
+  - Non-Equi Join: non_equi_join

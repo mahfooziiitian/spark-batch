@@ -1,0 +1,15 @@
+title: Aggregate
+nav:
+  - index.md
+  - Simple: simple.md
+  - Count: count.md
+  - First: first.md
+  - Last: last.md
+  - Every: every.md
+  - Array: array.md
+  - List: list.md
+  - Map: map.md
+  - Set: set.md
+  - Group: group.md
+  - Stats: stats.md
+  - Strings: strings.md

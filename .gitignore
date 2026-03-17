@@ -13,6 +13,7 @@ __pycache__/
 env/
 .env/
 venv/
+ENV/
 
 # Distribution / packaging
 dist/
@@ -22,6 +23,7 @@ build/
 pip-wheel-metadata/
 wheels/
 *.whl
+MANIFEST
 
 # Installer logs
 pip-log.txt
@@ -34,6 +36,9 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .nox/
+coverage.xml
+nosetests.xml
+test-results/
 
 # Type checking & linting
 .mypy_cache/
@@ -43,12 +48,36 @@ htmlcov/
 
 # Jupyter / IPython
 .ipynb_checkpoints/
+*.ipynb_checkpoints
+profile_default/
+ipython_config.py
 
 # MkDocs documentation
 site/
+docs/_build/
 
 # uv
 uv.lock.bak
+.uv/
+
+# Pipenv
+Pipfile.lock
+
+# pyenv
+.python-version
+
+# Serialised models & data artefacts
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.parquet
+*.csv.gz
+*.json.gz
+
+# Prophet / Stan compiled models
+prophet_cache/
+cmdstan/
 
 # ==============================================================================
 # Java
@@ -84,7 +113,6 @@ mvnw.cmd
 
 # Gradle
 .gradle/
-build/
 !gradle/wrapper/gradle-wrapper.jar
 gradle-app.setting
 
@@ -97,7 +125,6 @@ gradlew.bat
 # ==============================================================================
 
 # SBT build output
-target/
 project/target/
 project/project/
 lib_managed/
@@ -228,8 +255,134 @@ MANIFEST.MF
 modules/
 
 # Databricks
-databricks/
-databricks.yml
+.databricks/
+databricks.env
+bundle.lock
 
-# spark
-spark-warehouse
+# ==============================================================================
+# Apache Spark
+# ==============================================================================
+
+# Local Spark warehouse (created automatically on getOrCreate())
+spark-warehouse/
+
+# Derby metastore database (Spark local mode Hive metastore)
+metastore_db/
+derby.log
+
+# Spark event logs
+spark-events/
+event-logs/
+
+# Spark streaming / Structured Streaming checkpoints
+_checkpoints/
+checkpoint/
+checkpoints/
+
+# Spark history server
+history-server/
+
+# Spark shuffle & scratch files
+.spark-staging/
+spark_local_dir/
+
+# ==============================================================================
+# Delta Lake
+# ==============================================================================
+
+_delta_log/
+*.delta/
+
+# ==============================================================================
+# Pipeline output data (local runs)
+# ==============================================================================
+
+# Medallion layer output written to /tmp in notebooks/scripts
+# (only relevant if output paths are inside the repo)
+bronze/
+silver/
+gold/
+quarantine/
+
+# MkDocs documentation
+# (already listed above — kept here for Databricks section proximity)
+
+# ==============================================================================
+# R  (spark-r project)
+# ==============================================================================
+
+# R session data & history
+.RData
+.Rhistory
+.Rapp.history
+
+# RStudio project files
+*.Rproj.user/
+.Rproj.user/
+
+# R package output
+*.Rcheck/
+*.tar.gz
+
+# R output files
+Rplots.pdf
+
+# Packrat dependency management
+packrat/lib*/
+packrat/src/
+
+# renv
+renv/library/
+renv/.cache/
+renv/python/
+renv/staging/
+
+# ==============================================================================
+# Notebooks — execution artefacts
+# ==============================================================================
+
+# Large notebook output files (use nbstripout to strip outputs before committing)
+# Uncomment the line below to ignore ALL executed notebook outputs:
+# *.ipynb
+
+# Notebook profiling output
+*.prof
+*.lprof
+
+# ==============================================================================
+# Secrets & Credentials — extended
+# ==============================================================================
+
+# Environment variable files (allow templates/examples)
+.env
+.env.*
+!.env.sample
+
+# Cloud provider credentials
+.gcp/
+.azure/
+service-account*.json
+*-credentials.json
+*-keyfile.json
+
+# Terraform state (if used for infra)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# ==============================================================================
+# Logs & Temporary Files — extended
+# ==============================================================================
+
+*.log.*
+*.temp
+log/
+tmp/
+temp/
+
+# ==============================================================================
+# Databases — extended
+# ==============================================================================
+
+*.sqlite
+*.duckdb

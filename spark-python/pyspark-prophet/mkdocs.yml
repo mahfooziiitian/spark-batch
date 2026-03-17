@@ -1,0 +1,113 @@
+site_name: PySpark + Prophet — Distributed Time-Series Forecasting
+site_description: Reference implementations for distributed forecasting with Meta Prophet and Apache PySpark 3.x
+site_author: mahfooz_iiitian
+site_url: https://github.com/mahfooz_iiitian/pyspark-prophet
+repo_url: https://github.com/mahfooz_iiitian/pyspark-prophet
+repo_name: pyspark-prophet
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.footer
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/mahfooz_iiitian/pyspark-prophet
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+  - Prophet:
+      - Overview: prophet/overview.md
+      - Growth Models: prophet/growth-models.md
+      - Seasonality: prophet/seasonality.md
+      - Holidays & Regressors: prophet/holidays-regressors.md
+      - Changepoints: prophet/changepoints.md
+      - Cross-Validation: prophet/cross-validation.md
+      - Deep Concepts: prophet/deep-concepts.md
+  - PySpark:
+      - Distributed Forecasting: pyspark/distributed-forecasting.md
+      - Time-Series Features: pyspark/timeseries-features.md
+      - Spark SQL Analytics: pyspark/spark-sql.md
+  - Pipeline:
+      - End-to-End Pipeline: pipeline/e2e-pipeline.md
+      - Medallion Architecture: pipeline/medallion.md
+      - Incremental Processing: pipeline/incremental.md
+  - Reference:
+      - API Cheat Sheet: reference/cheatsheet.md
+      - Prophet Parameters: reference/prophet-parameters.md
+      - Data Model: reference/data-model.md
+      - Common Pitfalls: reference/pitfalls.md

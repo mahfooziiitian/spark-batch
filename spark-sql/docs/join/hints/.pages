@@ -1,0 +1,6 @@
+title: Hints
+nav:
+  - index.md
+  - Operator: operator.md
+  - Range Join Hint: range_join_hint.md
+  - Resolver: resolver.md

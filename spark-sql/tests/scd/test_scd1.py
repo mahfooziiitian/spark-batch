@@ -3,7 +3,7 @@ from pyspark.sql.functions import concat_ws, md5
 
 
 def test_scd1():
-    spark = SparkSession.builder.getOrCreate()
+    spark = SparkSession.builder.appName("SCD1Test").getOrCreate()
 
     # Existing data (target)
     target_df = spark.createDataFrame(
