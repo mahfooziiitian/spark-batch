@@ -1,0 +1,73 @@
+site_name: PySpark Chispa
+site_description: PySpark testing reference with chispa and pytest
+repo_url: https://github.com/example/pyspark-chispa
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Project Structure: getting-started/project-structure.md
+  - API Reference:
+      - Column Functions: api/columns.md
+      - Arithmetic Functions: api/functions.md
+      - DataFrame Equality: api/equality.md
+      - Transformations: api/transformations.md
+      - Schema Utilities: api/schema.md
+      - String Helpers: api/helpers.md
+  - Testing with Chispa:
+      - Overview: testing/overview.md
+      - Column Assertions: testing/column-assertions.md
+      - DataFrame Assertions: testing/dataframe-assertions.md
+      - Schema Assertions: testing/schema-assertions.md
