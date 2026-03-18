@@ -1,0 +1,40 @@
+services:
+  iceberg-rest:
+    image: tabulario/iceberg-rest:1.5.0
+    container_name: rest-catalog
+    environment:
+      CATALOG_WAREHOUSE: /tmp/warehouse
+      CATALOG_IO__IMPL: org.apache.iceberg.io.ResolvingFileIO
+    ports:
+      - "${REST_CATALOG_PORT:-8181}:8181"
+    volumes:
+      - rest-warehouse:/tmp/warehouse
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8181/v1/config"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  spark:
+    build:
+      context: ../..
+      dockerfile: infra/common/Dockerfile
+    container_name: spark-rest
+    environment:
+      SPARK_MASTER: "local[*]"
+      PYSPARK_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: python3
+      SPARK_LOCAL_IP: "127.0.0.1"
+      REST_CATALOG_URI: http://iceberg-rest:8181
+      REST_CATALOG_WAREHOUSE: /tmp/warehouse
+    volumes:
+      - ../../src:/workspace/src
+      - ../../tests:/workspace/tests
+      - rest-warehouse:/tmp/warehouse
+    depends_on:
+      iceberg-rest:
+        condition: service_healthy
+    command: ["sleep", "infinity"]
+
+volumes:
+  rest-warehouse:

@@ -1,0 +1,79 @@
+site_name: PySpark Metastore
+site_description: A comprehensive reference for configuring and using catalog and metastore backends with Apache Spark.
+site_url: ""
+
+repo_name: spark-batch/pyspark-metastore
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Catalog Types:
+      - metastore/README.md
+      - In-Memory: metastore/memory/README.md
+      - Spark Built-in: metastore/spark/README.md
+      - Hive Metastore: metastore/hive/README.md
+      - AWS Glue: metastore/glue/README.md
+      - Apache Iceberg: metastore/iceberg/README.md
+      - Delta Lake: metastore/delta_lake/README.md
+      - External RDBMS: metastore/external/README.md
+      - JDBC Catalog: metastore/jdbc/README.md
+      - REST Catalog: metastore/rest/README.md
+      - Hadoop Catalog: metastore/hadoop/README.md
+      - Multi-Catalog: metastore/multi_catalog/README.md
+      - Custom Catalog: metastore/custom/README.md
+      - Unity Catalog: metastore/unity_catalog/README.md
+  - Namespace Resolution: catalog/namespace/README.md
+  - Warehouse: warehouse/README.md

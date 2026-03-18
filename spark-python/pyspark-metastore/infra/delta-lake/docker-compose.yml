@@ -1,0 +1,20 @@
+services:
+  spark:
+    build:
+      context: ../..
+      dockerfile: infra/common/Dockerfile
+    container_name: spark-delta
+    environment:
+      SPARK_MASTER: "local[*]"
+      SPARK_WAREHOUSE: /tmp/delta-warehouse
+      PYSPARK_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: python3
+      SPARK_LOCAL_IP: "127.0.0.1"
+    volumes:
+      - ../../src:/workspace/src
+      - ../../tests:/workspace/tests
+      - delta-warehouse:/tmp/delta-warehouse
+    command: ["sleep", "infinity"]
+
+volumes:
+  delta-warehouse:

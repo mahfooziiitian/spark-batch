@@ -1,15 +1,10 @@
+from typing import Optional
+
 from pyspark.sql import SparkSession
 
 
-def print_catalog_details(spark: SparkSession, catalog_name: str):
-    """
-    Print the details of the specified catalog.
-
-    Args:
-        catalog_name (str): The name of the catalog to print details for.
-    """
+def print_catalog_details(spark: SparkSession, catalog_name: str) -> None:
     try:
-        # List all catalogs
         catalogs = spark.catalog.listCatalogs()
         catalog_names = [catalog.name for catalog in catalogs]
 
@@ -19,16 +14,13 @@ def print_catalog_details(spark: SparkSession, catalog_name: str):
             )
             return
 
-        # Set the current catalog
         spark.sql(f"USE CATALOG {catalog_name}")
 
-        # List all databases in the specified catalog
         databases = spark.catalog.listDatabases()
         print(f"Databases in catalog '{catalog_name}':")
         for db in databases:
             print(f" - {db.name}")
 
-            # List all tables in each database
             tables = spark.catalog.listTables(db.name)
             print(f"   Tables in database '{db.name}':")
             for table in tables:
@@ -38,19 +30,78 @@ def print_catalog_details(spark: SparkSession, catalog_name: str):
         print(f"An error occurred: {e}")
 
 
-def print_catalog_metadata(spark: SparkSession):
-    """
-    Print the metadata of the specified catalog.
-
-    Args:
-        spark (SparkSession): The Spark session.
-        catalog_name (str): The name of the catalog to print metadata for.
-    """
-    catalog_details = {}
+def print_catalog_metadata(spark: SparkSession) -> dict[str, str]:
+    catalog_details: dict[str, str] = {}
     catalog_details["defaultCatalog"] = spark.conf.get("spark.sql.defaultCatalog")
     catalog_details["currentCatalog"] = spark.catalog.currentCatalog()
     catalog_details["catalogImplementation"] = spark.conf.get(
         "spark.sql.catalogImplementation"
     )
-    catalog_details["spark_catalog"] = spark.conf.get("spark.sql.catalog.spark_catalog")
+    catalog_details["spark_catalog"] = spark.conf.get(
+        "spark.sql.catalog.spark_catalog", "N/A"
+    )
     return catalog_details
+
+
+def get_catalog_summary(spark: SparkSession) -> dict:
+    summary: dict = {}
+
+    catalogs = spark.catalog.listCatalogs()
+    summary["catalog_names"] = [c.name for c in catalogs]
+    summary["current_catalog"] = spark.catalog.currentCatalog()
+    summary["default_catalog"] = spark.conf.get(
+        "spark.sql.defaultCatalog", "spark_catalog"
+    )
+    summary["catalog_implementation"] = spark.conf.get(
+        "spark.sql.catalogImplementation", "in-memory"
+    )
+
+    databases_per_catalog: dict[str, list[str]] = {}
+    tables_per_database: dict[str, int] = {}
+
+    original_catalog = spark.catalog.currentCatalog()
+    for catalog in summary["catalog_names"]:
+        spark.sql(f"USE CATALOG {catalog}")
+        dbs = spark.catalog.listDatabases()
+        db_names = [db.name for db in dbs]
+        databases_per_catalog[catalog] = db_names
+
+        for db_name in db_names:
+            key = f"{catalog}.{db_name}"
+            tables = spark.catalog.listTables(db_name)
+            tables_per_database[key] = len(tables)
+
+    # Restore original catalog context
+    spark.sql(f"USE CATALOG {original_catalog}")
+
+    summary["databases_per_catalog"] = databases_per_catalog
+    summary["tables_per_database"] = tables_per_database
+    return summary
+
+
+def list_all_tables(
+    spark: SparkSession, catalog: Optional[str] = None
+) -> list[dict[str, str]]:
+    all_tables: list[dict[str, str]] = []
+    original_catalog = spark.catalog.currentCatalog()
+
+    catalogs_to_scan = (
+        [catalog] if catalog else [c.name for c in spark.catalog.listCatalogs()]
+    )
+
+    for cat in catalogs_to_scan:
+        spark.sql(f"USE CATALOG {cat}")
+        for db in spark.catalog.listDatabases():
+            for table in spark.catalog.listTables(db.name):
+                all_tables.append(
+                    {
+                        "catalog": cat,
+                        "database": db.name,
+                        "table": table.name,
+                        "type": table.tableType,
+                        "isTemporary": str(table.isTemporary),
+                    }
+                )
+
+    spark.sql(f"USE CATALOG {original_catalog}")
+    return all_tables

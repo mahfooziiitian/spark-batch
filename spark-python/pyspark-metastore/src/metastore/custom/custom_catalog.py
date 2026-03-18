@@ -1,7 +1,14 @@
+import os
+
 from pyspark.sql import SparkSession
 from pyspark.sql.connector import Identifier, Table, TableCatalog
 from pyspark.sql.connector.catalog import SupportsNamespaces
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+
+CUSTOM_CATALOG_CLASS = os.environ.get(
+    "CUSTOM_CATALOG_CLASS", "metastore.custom.custom_catalog.MyCustomCatalog"
+)
+CUSTOM_CATALOG_PARAM = os.environ.get("CUSTOM_CATALOG_PARAM", "value")
 
 
 class MyCustomTable(Table):
@@ -16,7 +23,6 @@ class MyCustomTable(Table):
         return self._schema
 
     def capabilities(self):
-        # Example: support batch read
         return {"BATCH_READ"}
 
 
@@ -56,14 +62,30 @@ class MyCustomCatalog(TableCatalog, SupportsNamespaces):
         key = ".".join(ident.namespace) + "." + ident.name
         if key in self.tables:
             return self.tables[key]
-        else:
+        raise Exception(f"Table {key} not found.")
+
+    def createTable(self, ident, schema, partitions=None, properties=None):
+        key = ".".join(ident.namespace) + "." + ident.name
+        if key in self.tables:
+            raise Exception(f"Table {key} already exists.")
+        ns = ".".join(ident.namespace)
+        if ns not in self.namespaces:
+            raise Exception(f"Namespace {ns} does not exist.")
+        table = MyCustomTable(ident.name, schema)
+        self.tables[key] = table
+        return table
+
+    def dropTable(self, ident):
+        key = ".".join(ident.namespace) + "." + ident.name
+        if key not in self.tables:
             raise Exception(f"Table {key} not found.")
+        del self.tables[key]
+        return True
 
     def name(self):
         return "custom"
 
     def listNamespaces(self):
-        # Return all namespaces
         return [[ns] for ns in self.namespaces]
 
     def namespaceExists(self, namespace):
@@ -78,11 +100,63 @@ class MyCustomCatalog(TableCatalog, SupportsNamespaces):
         self.namespaces.discard(ns)
 
 
-# Register custom catalog
-spark = (
-    SparkSession.builder.config(
-        "spark.sql.catalog.custom", "metastore.custom.custom_catalog.MyCustomCatalog"
+def create_spark_session():
+    return (
+        SparkSession.builder.appName("CustomCatalog")
+        .config("spark.sql.catalog.custom", CUSTOM_CATALOG_CLASS)
+        .config("spark.sql.catalog.custom.myparam", CUSTOM_CATALOG_PARAM)
+        .getOrCreate()
     )
-    .config("spark.sql.catalog.custom.myparam", "value")
-    .getOrCreate()
-)
+
+
+def demonstrate_custom_catalog(spark):
+    print("=== Custom Catalog Operations ===")
+
+    print("\n-- Namespaces in custom catalog --")
+    spark.sql("SHOW NAMESPACES IN custom").show(truncate=False)
+
+    print("\n-- Tables in custom.default --")
+    spark.sql("SHOW TABLES IN custom.default").show(truncate=False)
+
+    print("\n-- Describe custom.default.sample_table --")
+    spark.sql("DESCRIBE TABLE custom.default.sample_table").show(truncate=False)
+
+    print("\n-- Describe custom.default.another_table --")
+    spark.sql("DESCRIBE TABLE custom.default.another_table").show(truncate=False)
+
+    print("\n-- Create a new namespace --")
+    spark.sql("CREATE NAMESPACE IF NOT EXISTS custom.analytics")
+    spark.sql("SHOW NAMESPACES IN custom").show(truncate=False)
+
+    print("\n-- Drop the new namespace --")
+    spark.sql("DROP NAMESPACE IF EXISTS custom.analytics")
+    spark.sql("SHOW NAMESPACES IN custom").show(truncate=False)
+
+
+def demonstrate_catalog_registration(spark):
+    print("=== Custom Catalog Registration ===")
+
+    print("\n-- How the custom catalog is registered --")
+    print(f"  spark.sql.catalog.custom = {CUSTOM_CATALOG_CLASS}")
+    print(f"  spark.sql.catalog.custom.myparam = {CUSTOM_CATALOG_PARAM}")
+
+    print("\n-- Active Spark config for custom catalog --")
+    all_conf = spark.sparkContext.getConf().getAll()
+    for key, val in sorted(all_conf):
+        if "catalog.custom" in key:
+            print(f"  {key} = {val}")
+
+
+def main():
+    spark = create_spark_session()
+    spark.sparkContext.setLogLevel("WARN")
+
+    try:
+        demonstrate_catalog_registration(spark)
+        demonstrate_custom_catalog(spark)
+    finally:
+        spark.stop()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: jdbc-postgres
+    environment:
+      POSTGRES_DB: ${JDBC_DB_NAME:-appdb}
+      POSTGRES_USER: ${JDBC_USER:-appuser}
+      POSTGRES_PASSWORD: ${JDBC_PASSWORD:-apppassword}
+    ports:
+      - "${JDBC_PORT:-5432}:5432"
+    volumes:
+      - jdbc-data:/var/lib/postgresql/data
+      - ./init-sample-data.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${JDBC_USER:-appuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  spark:
+    build:
+      context: ../..
+      dockerfile: infra/common/Dockerfile
+    container_name: spark-jdbc
+    environment:
+      SPARK_MASTER: "local[*]"
+      PYSPARK_PYTHON: python3
+      PYSPARK_DRIVER_PYTHON: python3
+      SPARK_LOCAL_IP: "127.0.0.1"
+      JDBC_URL: jdbc:postgresql://postgres:5432/${JDBC_DB_NAME:-appdb}
+      JDBC_DRIVER: org.postgresql.Driver
+      JDBC_USER: ${JDBC_USER:-appuser}
+      JDBC_PASSWORD: ${JDBC_PASSWORD:-apppassword}
+    volumes:
+      - ../../src:/workspace/src
+      - ../../tests:/workspace/tests
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["sleep", "infinity"]
+
+volumes:
+  jdbc-data:
