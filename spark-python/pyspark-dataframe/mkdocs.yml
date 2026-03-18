@@ -1,0 +1,123 @@
+site_name: PySpark DataFrame API
+site_description: Complete reference for the PySpark 3.5 DataFrame API — creation, columns, joins, window functions, aggregations, transformations, and optimization.
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - include-markdown
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - DataFrame Basics:
+      - Creation: creation.md
+      - Columns: columns.md
+      - Schema: schema.md
+      - Rows:
+          - Overview: rows/index.md
+          - Creation: rows/creation.md
+          - Access: rows/access.md
+          - Conversion: rows/conversion.md
+          - Nested: rows/nested.md
+          - Mutation: rows/mutation.md
+          - RDD Map: rows/rdd_map.md
+          - UDF: rows/udf.md
+  - Exploration: exploration.md
+  - Joins:
+      - Overview: joins/index.md
+      - Inner: joins/inner.md
+      - Outer: joins/outer.md
+      - Cross: joins/cross.md
+      - Broadcast: joins/broadcast.md
+      - Self: joins/self.md
+      - Natural: joins/natural.md
+      - Semi & Anti: joins/semi_anti.md
+  - Aggregations & Analytics:
+      - Aggregations: aggregations.md
+      - Pivoting: pivoting.md
+      - OLAP:
+          - Overview: olap/index.md
+          - Rollup: olap/rollup.md
+          - Cube: olap/cube.md
+          - Grouping Sets: olap/grouping_sets.md
+          - Grouping ID: olap/grouping_id.md
+      - Window Functions:
+          - Overview: window/index.md
+          - Specification: window/specification.md
+          - Ranking: window/ranking.md
+          - Analytical: window/analytical.md
+          - Aggregation: window/aggregation.md
+          - Null Options: window/null_options.md
+  - Transformations:
+      - Filter: transformations/filter.md
+      - Sort: transformations/sort.md
+      - Dedup: transformations/dedup.md
+      - Union: transformations/union.md
+      - Sampling: transformations/sampling.md
+      - Null Handling: null_handling.md
+      - Date & Time: datetime.md
+      - String Functions: string_functions.md
+  - Actions:
+      - Overview: actions/index.md
+      - show: actions/show.md
+      - collect: actions/collect.md
+      - count: actions/count.md
+      - describe: actions/describe.md
+      - explain: actions/explain.md
+      - foreach: actions/foreach.md
+      - iterate: actions/iterate.md
+      - reduce: actions/reduce.md
+  - Optimization & ETL:
+      - Caching: optimization/caching.md
+      - Skew Data: optimization/skew.md
+      - ETL Pipeline: etl.md
