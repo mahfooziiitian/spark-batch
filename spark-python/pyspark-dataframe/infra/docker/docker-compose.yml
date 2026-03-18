@@ -1,0 +1,147 @@
+# ── PySpark DataFrame — Docker Compose ────────────────────────────────────────
+# All tunables live in .env (same directory). Override per-machine by copying
+# .env → .env.local and editing values.
+#
+# Quick start:
+#   make up         — full stack (master + worker + mysql + app + jupyter)
+#   make run S=...  — run a single script inside the app container
+#   make test       — run pytest inside the app container
+# ──────────────────────────────────────────────────────────────────────────────
+
+x-spark-env: &spark-env
+  PYSPARK_PYTHON: python3
+  PYSPARK_DRIVER_PYTHON: python3
+  SPARK_LOCAL_IP: 127.0.0.1
+
+x-build-args: &build-args
+  SPARK_VERSION: ${SPARK_VERSION:-3.5.0}
+  PY4J_VERSION: ${PY4J_VERSION:-0.10.9.7}
+
+networks:
+  spark-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  jupyter-state:
+
+services:
+
+  # ── Spark Master ─────────────────────────────────────────────────────────────
+  spark-master:
+    image: apache/spark:${SPARK_VERSION:-3.5.0}-python3
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      <<: *spark-env
+    ports:
+      - "${SPARK_MASTER_PORT:-7077}:7077"
+      - "${SPARK_MASTER_WEBUI_PORT:-8080}:8080"
+    networks: [spark-net]
+    command: >
+      /opt/spark/bin/spark-class
+      org.apache.spark.deploy.master.Master
+      --host spark-master
+      --port 7077
+      --webui-port 8080
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ── Spark Worker (scale: docker compose up --scale spark-worker=N) ──────────
+  spark-worker:
+    image: apache/spark:${SPARK_VERSION:-3.5.0}-python3
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    environment:
+      <<: *spark-env
+      SPARK_WORKER_CORES: ${SPARK_WORKER_CORES:-2}
+      SPARK_WORKER_MEMORY: ${SPARK_WORKER_MEMORY:-2g}
+    networks: [spark-net]
+    command: >
+      /opt/spark/bin/spark-class
+      org.apache.spark.deploy.worker.Worker
+      --cores ${SPARK_WORKER_CORES:-2}
+      --memory ${SPARK_WORKER_MEMORY:-2g}
+      spark://spark-master:7077
+
+  # ── MySQL ────────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    hostname: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_2024}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-datascience}
+      MYSQL_USER: ${MYSQL_USER:-spark_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Spark_2024}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-sql:/docker-entrypoint-initdb.d:ro
+    networks: [spark-net]
+    healthcheck:
+      # First-time init can take 10-15 min on slow storage; subsequent starts ~2s.
+      # start_period covers the init window — failures during it don't count as retries.
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 900s
+
+  # ── PySpark App ──────────────────────────────────────────────────────────────
+  pyspark-app:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: app
+      args:
+        <<: *build-args
+    container_name: pyspark-app
+    depends_on:
+      mysql:
+        condition: service_started
+    environment:
+      <<: *spark-env
+      CONFIG_PROFILE: ${CONFIG_PROFILE:-dev}
+      SPARK_MASTER: ${SPARK_MASTER:-local[*]}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-datascience}
+      MYSQL_USER: ${MYSQL_USER:-spark_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-Spark_2024}
+      INPUT_PATH: ${INPUT_PATH:-/workspace/data}
+      OUTPUT_PATH: ${OUTPUT_PATH:-/workspace/data/output}
+    volumes:
+      - ../../data:/workspace/data
+    networks: [spark-net]
+    command: ["run", "src/data_frame/etl/etl.py"]
+
+  # ── JupyterLab ──────────────────────────────────────────────────────────────
+  jupyter:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile
+      target: jupyter
+      args:
+        <<: *build-args
+    container_name: jupyter
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    environment:
+      <<: *spark-env
+      SPARK_MASTER: ${SPARK_MASTER:-local[*]}
+      CONFIG_PROFILE: ${CONFIG_PROFILE:-dev}
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-}
+    volumes:
+      - ../../notebooks:/workspace/notebooks
+      - ../../src:/workspace/src
+      - ../../data:/workspace/data
+      - ../../configs:/workspace/configs
+      - jupyter-state:/home/spark/.jupyter
+    networks: [spark-net]

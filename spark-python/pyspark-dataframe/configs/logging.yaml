@@ -1,0 +1,105 @@
+# =============================================================================
+# pyspark-dataframe — Python logging configuration
+#
+# Loaded via logging.config.dictConfig() from config_loader.setup_logging().
+# Controls Python-side logging only — Spark/JVM log level is set separately
+# via spark.sparkContext.setLogLevel() in spark_utils.py.
+# =============================================================================
+
+version: 1
+disable_existing_loggers: false
+
+# =============================================================================
+# Formatters
+# =============================================================================
+formatters:
+
+  standard:
+    format: "%(asctime)s [%(levelname)-8s] %(name)s — %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+  brief:
+    # Compact single-line format for console in dev
+    format: "[%(levelname)s] %(name)s: %(message)s"
+
+  json:
+    # Structured format — useful for log aggregation (Splunk, ELK)
+    format: >-
+      {"time":"%(asctime)s","level":"%(levelname)s",
+       "logger":"%(name)s","message":"%(message)s"}
+    datefmt: "%Y-%m-%dT%H:%M:%S"
+
+# =============================================================================
+# Handlers
+# =============================================================================
+handlers:
+
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: brief
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: standard
+    filename: /tmp/pyspark_df/logs/app.log   # overridden at runtime by setup_logging()
+    maxBytes: 10485760                         # 10 MB per file
+    backupCount: 3
+    encoding: utf-8
+    delay: true                                # don't create file until first write
+
+  error_file:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: standard
+    filename: /tmp/pyspark_df/logs/error.log
+    maxBytes: 5242880                          # 5 MB per file
+    backupCount: 5
+    encoding: utf-8
+    delay: true
+
+# =============================================================================
+# Logger hierarchy
+# =============================================================================
+loggers:
+
+  # Application code
+  data_frame:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: false
+
+  # Silence noisy third-party loggers
+  py4j:
+    level: ERROR
+    handlers: [console]
+    propagate: false
+
+  pyspark:
+    level: ERROR
+    handlers: [console]
+    propagate: false
+
+  urllib3:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+  boto3:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+  botocore:
+    level: WARNING
+    handlers: [console]
+    propagate: false
+
+# =============================================================================
+# Root logger — catches everything not matched above
+# =============================================================================
+root:
+  level: INFO
+  handlers: [console, file]

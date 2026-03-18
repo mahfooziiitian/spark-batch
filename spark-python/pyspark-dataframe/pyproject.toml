@@ -1,31 +1,58 @@
 [tool.poetry]
-name = "pysparkdataframe"
+name = "pyspark-dataframe"
 version = "0.1.0"
 description = ""
 authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
 readme = "README.md"
+packages = [{ include = "data_frame", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 pyspark = "^3.5.1"
 ipykernel = "^6.29.5"
+pyyaml = "^6.0.3"
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
-black = "^24.4.2"
+black = {extras = ["jupyter"], version = "^26.3.1"}
 chispa = "^0.10.0"
+mkdocs-include-markdown-plugin = "^7.2.1"
+pymdown-extensions = "^10.21"
+mkdocs-material = "^9.7.5"
+taskipy = "^1.14.1"
+isort = "^8.0.1"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-pythonpath = [
-    "src"
-]
-testpaths = [
-    "tests",
-    "integration",
-]
+pythonpath = ["src"]
+testpaths = ["tests", "integration"]
+
+[tool.taskipy.tasks]
+# --- Formatting ---
+format       = "task isort && task lint"
+isort        = "isort --profile black src tests"
+lint         = "black src tests"
+
+# --- Format checking (read-only, CI-safe) ---
+format-check = "black --check src tests && isort --profile black --check-only src tests"
+
+# --- Testing ---
+test         = "pytest"
+test-v       = "pytest -v --tb=short"
+test-unit    = "pytest tests/data_frame -v --tb=short"
+test-lf      = "pytest --lf -v --tb=short"
+
+# --- Documentation ---
+docs-serve   = "mkdocs serve --livereload --strict"
+docs-build   = "mkdocs build --strict"
+
+# --- CI pipeline ---
+ci           = "task format-check && task test"
+
+# --- Housekeeping ---
+clean        = "find . -type d -name __pycache__ -exec rm -rf {} + && find . -type d -name .pytest_cache -exec rm -rf {} +"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,0 +1,23 @@
+# .dockerignore — must live at the build-context root (project root).
+# A symlink from infra/docker/.dockerignore → ../../.dockerignore works too.
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+site/
+notebooks/
+infra/k8s/
+infra/local/
+data/output/
+*.log
+.env
+.env.*
+poetry.lock

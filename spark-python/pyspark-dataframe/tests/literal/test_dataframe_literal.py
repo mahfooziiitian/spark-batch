@@ -5,17 +5,20 @@ from pyspark.sql.functions import lit
 
 @pytest.fixture(scope="session")
 def spark_session():
-    spark = SparkSession.builder \
-        .appName("pytest_spark_test") \
-        .config("spark.sql.shuffle.partitions", "4") \
+    spark = (
+        SparkSession.builder.appName("pytest_spark_test")
+        .config("spark.sql.shuffle.partitions", "4")
         .getOrCreate()
+    )
     yield spark
     spark.stop()
 
 
 def test_dataframe_literal(spark_session):
     # Use the spark_session fixture to create DataFrames
-    df = spark_session.createDataFrame([(1, "apple"), (2, "banana"), (3, "orange")], ["id", "fruit"])
+    df = spark_session.createDataFrame(
+        [(1, "apple"), (2, "banana"), (3, "orange")], ["id", "fruit"]
+    )
 
     assert df.count() == 3
     assert df.columns == ["id", "fruit"]

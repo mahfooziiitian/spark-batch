@@ -1,0 +1,57 @@
+# =============================================================================
+# pyspark-dataframe — Development configuration
+#
+# Used when CONFIG_PROFILE=dev (the default).
+# Everything runs locally; no cluster required.
+# =============================================================================
+
+spark:
+  master: "local[*]"          # override with SPARK_MASTER env var
+  log_level: WARN
+
+  configs:
+    # ── Core ──────────────────────────────────────────────────────────────────
+    spark.sql.shuffle.partitions: "4"         # keep small for local datasets
+    spark.ui.enabled: "false"                 # skip Web UI for scripts/tests
+
+    # ── Adaptive Query Execution ──────────────────────────────────────────────
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+
+    # ── Memory ────────────────────────────────────────────────────────────────
+    spark.driver.memory: "2g"
+    spark.executor.memory: "2g"
+
+    # ── Joins ─────────────────────────────────────────────────────────────────
+    spark.sql.autoBroadcastJoinThreshold: "10485760"   # 10 MB
+
+    # ── I/O ───────────────────────────────────────────────────────────────────
+    spark.sql.files.maxPartitionBytes: "67108864"      # 64 MB (smaller for local)
+
+# =============================================================================
+# Application paths  (override any with the matching env var)
+# =============================================================================
+paths:
+  input:      "/tmp/pyspark_df/input"
+  output:     "/tmp/pyspark_df/output"
+  checkpoint: "/tmp/pyspark_df/checkpoint"
+  logs:       "/tmp/pyspark_df/logs"
+
+# =============================================================================
+# Application-level tunables
+# =============================================================================
+app:
+  # Skew-join salting
+  salt_buckets: 10
+
+  # Distribution analysis
+  histogram_buckets: 5
+  quantile_rel_error: 0.01        # approxQuantile relative error (0 = exact)
+
+  # Sampling
+  sample_fraction: 0.1
+  sample_seed: 42
+
+  # ETL
+  deduplicate_on_load: true
+  null_strategy: "drop"           # drop | fill | flag

@@ -1,0 +1,88 @@
+# =============================================================================
+# pyspark-dataframe — Production configuration
+#
+# Used when CONFIG_PROFILE=prod.
+# Target: YARN / Kubernetes / EMR cluster.
+# Always override spark.master with the SPARK_MASTER environment variable
+# when submitting via spark-submit.
+#
+# Path values support ${ENV_VAR} substitution — set them in your CI/CD
+# secrets or shell environment before running.
+# =============================================================================
+
+spark:
+  master: "yarn"                  # override with SPARK_MASTER env var
+  log_level: WARN
+
+  configs:
+    # ── Core ──────────────────────────────────────────────────────────────────
+    spark.sql.shuffle.partitions: "200"
+    spark.ui.enabled: "true"
+
+    # ── Adaptive Query Execution ──────────────────────────────────────────────
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.minPartitionSize: "64m"
+
+    # ── Skew join detection ───────────────────────────────────────────────────
+    spark.sql.adaptive.skewJoin.enabled: "true"
+    spark.sql.adaptive.skewJoin.skewedPartitionFactor: "5"
+    spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes: "256m"
+
+    # ── Memory ────────────────────────────────────────────────────────────────
+    spark.driver.memory: "8g"
+    spark.driver.maxResultSize: "4g"
+    spark.executor.memory: "4g"
+    spark.executor.memoryOverhead: "1g"
+    spark.executor.cores: "4"
+
+    # ── Dynamic allocation ────────────────────────────────────────────────────
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.minExecutors: "2"
+    spark.dynamicAllocation.maxExecutors: "20"
+    spark.dynamicAllocation.initialExecutors: "4"
+    spark.shuffle.service.enabled: "true"
+
+    # ── Joins ─────────────────────────────────────────────────────────────────
+    spark.sql.autoBroadcastJoinThreshold: "20971520"   # 20 MB
+
+    # ── I/O ───────────────────────────────────────────────────────────────────
+    spark.sql.files.maxPartitionBytes: "134217728"     # 128 MB
+    spark.sql.files.openCostInBytes: "4194304"         # 4 MB
+
+    # ── S3 / EMRFS reliability ────────────────────────────────────────────────
+    spark.speculation: "false"
+    spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version: "2"
+
+    # ── Serialization ─────────────────────────────────────────────────────────
+    spark.serializer: "org.apache.spark.serializer.KryoSerializer"
+    spark.kryo.registrationRequired: "false"
+
+# =============================================================================
+# Application paths  — resolved from environment variables at runtime.
+# The config loader expands ${VAR} references using os.path.expandvars().
+# =============================================================================
+paths:
+  input:      "${INPUT_PATH}"
+  output:     "${OUTPUT_PATH}"
+  checkpoint: "${CHECKPOINT_PATH}"
+  logs:       "${LOG_PATH}"
+
+# =============================================================================
+# Application-level tunables
+# =============================================================================
+app:
+  # Skew-join salting
+  salt_buckets: 10
+
+  # Distribution analysis
+  histogram_buckets: 5
+  quantile_rel_error: 0.01
+
+  # Sampling
+  sample_fraction: 0.01           # smaller sample in prod
+  sample_seed: 42
+
+  # ETL
+  deduplicate_on_load: true
+  null_strategy: "drop"           # drop | fill | flag

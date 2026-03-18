@@ -1,16 +1,18 @@
 """
 Spark maintains the state of the cluster in the driver.
 """
+
 import pytest
 from pyspark.sql import SparkSession
 
 
 @pytest.fixture(scope="session")
 def spark_session():
-    spark = SparkSession.builder \
-        .appName("pytest_spark_test") \
-        .config("spark.sql.shuffle.partitions", "4") \
+    spark = (
+        SparkSession.builder.appName("pytest_spark_test")
+        .config("spark.sql.shuffle.partitions", "4")
         .getOrCreate()
+    )
     yield spark
     spark.stop()
 
