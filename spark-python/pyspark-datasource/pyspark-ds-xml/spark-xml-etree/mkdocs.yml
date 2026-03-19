@@ -1,0 +1,73 @@
+site_name: PySpark XML ElementTree
+site_description: Parse and build XML inside PySpark DataFrames with Python's xml.etree.ElementTree
+repo_url: https://github.com/example/spark-xml-etree
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+      - guide/index.md
+      - Single-Field Extraction: guide/single-field.md
+      - Multi-Field Extraction: guide/multi-field.md
+      - Attributes & Explode: guide/attributes-explode.md
+      - Namespace Handling: guide/namespaces.md
+      - Nested Flattening: guide/nested-flattening.md
+      - Error Handling: guide/error-handling.md
+      - Building XML: guide/building-xml.md
+  - Utility Reference: api-reference.md
+  - Testing: testing.md

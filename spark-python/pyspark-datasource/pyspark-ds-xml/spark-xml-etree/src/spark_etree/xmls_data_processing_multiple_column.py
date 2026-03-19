@@ -1,55 +1,104 @@
-import xml.etree.ElementTree as Et
+"""Parse XML elements with ElementTree and extract multiple fields via a struct UDF."""
 
-import requests
-from pyspark.sql import *
+import os
+import xml.etree.ElementTree as ET
+
+from pyspark.sql import Row, SparkSession
 from pyspark.sql.functions import udf
-from pyspark.sql.types import StructType, StringType, StructField
+from pyspark.sql.types import StringType, StructField, StructType
+
+SAMPLE_XML = """\
+<CATALOG>
+  <CD>
+    <TITLE>Empire Burlesque</TITLE>
+    <ARTIST>Bob Dylan</ARTIST>
+    <COUNTRY>USA</COUNTRY>
+    <PRICE>10.90</PRICE>
+    <YEAR>1985</YEAR>
+  </CD>
+  <CD>
+    <TITLE>Hide your heart</TITLE>
+    <ARTIST>Bonnie Tyler</ARTIST>
+    <COUNTRY>UK</COUNTRY>
+    <PRICE>9.90</PRICE>
+    <YEAR>1988</YEAR>
+  </CD>
+  <CD>
+    <TITLE>Greatest Hits</TITLE>
+    <ARTIST>Dolly Parton</ARTIST>
+    <COUNTRY>USA</COUNTRY>
+    <PRICE>9.90</PRICE>
+    <YEAR>1982</YEAR>
+  </CD>
+  <CD>
+    <TITLE>Still got the blues</TITLE>
+    <ARTIST>Gary Moore</ARTIST>
+    <COUNTRY>UK</COUNTRY>
+    <PRICE>10.20</PRICE>
+    <YEAR>1990</YEAR>
+  </CD>
+  <CD>
+    <TITLE>Eros</TITLE>
+    <ARTIST>Eros Ramazzotti</ARTIST>
+    <COUNTRY>EU</COUNTRY>
+    <PRICE>9.90</PRICE>
+    <YEAR>1997</YEAR>
+  </CD>
+</CATALOG>
+"""
 
 
-def select_text(xml_doc, xpath):
-    nodes = [e.text for e in xml_doc.findall(xpath) if isinstance(e, Et.Element)]
+def select_text(xml_doc: ET.Element, xpath: str) -> str | None:
+    """Return text of the first matching element, or None."""
+    nodes = [e.text for e in xml_doc.findall(xpath) if isinstance(e, ET.Element)]
     return next(iter(nodes), None)
 
 
-def extract_cd_info(payload):
-    xml_doc = Et.fromstring(payload)
+def extract_cd_info(payload: str) -> dict[str, str | None]:
+    """Extract title, artist, country, and year from a single CD XML element."""
+    doc = ET.fromstring(payload)
     return {
-        'title': select_text(xml_doc, 'TITLE'),
-        'artist': select_text(xml_doc, 'ARTIST')
+        "title": select_text(doc, "TITLE"),
+        "artist": select_text(doc, "ARTIST"),
+        "country": select_text(doc, "COUNTRY"),
+        "year": select_text(doc, "YEAR"),
     }
 
 
-if __name__ == '__main__':
-    spark = SparkSession.builder.master("local[*]").appName("xml_data").getOrCreate()
+CD_INFO_SCHEMA = StructType(
+    [
+        StructField("title", StringType(), True),
+        StructField("artist", StringType(), True),
+        StructField("country", StringType(), True),
+        StructField("year", StringType(), True),
+    ]
+)
 
-    cds_url = 'https://www.w3schools.com/xml/cd_catalog.xml'
 
-    # download data
-    cds_txt = requests.get(cds_url).text
-    print(cds_txt)
+if __name__ == "__main__":
+    spark = (
+        SparkSession.builder.appName("xml-etree-multi-field")
+        .master(os.environ.get("SPARK_MASTER", "local[*]"))
+        .config("spark.sql.shuffle.partitions", "4")
+        .config("spark.ui.enabled", "false")
+        .getOrCreate()
+    )
+    spark.sparkContext.setLogLevel("WARN")
 
-    # convert to XML
-    doc = Et.fromstring(cds_txt)
+    catalog = ET.fromstring(SAMPLE_XML)
+    cd_strings = [ET.tostring(cd, encoding="unicode").strip() for cd in catalog.findall("CD")]
 
-    # extract CD XML
-    utf8 = 'utf-8'
-    cds = [Et.tostring(x, encoding=utf8) for x in doc.findall('CD')]
-
-    # create dataframe
-    normalizedCds = [str(cd, utf8).strip() for cd in cds]
-    rows = [Row(index=index, cd=cd) for index, cd in enumerate(normalizedCds)]
+    rows = [Row(index=i, cd=xml) for i, xml in enumerate(cd_strings)]
     cd_df = spark.createDataFrame(rows)
 
     cd_df.show(truncate=False)
 
-    extract_cd_info_schema = StructType([
-        StructField("title", StringType(), True),
-        StructField("artist", StringType(), True)
-    ])
+    extract_cd_info_udf = udf(extract_cd_info, CD_INFO_SCHEMA)
 
-    extract_cd_info_udf = udf(extract_cd_info, extract_cd_info_schema)
+    (
+        cd_df.withColumn("info", extract_cd_info_udf("cd"))
+        .select("index", "info.title", "info.artist", "info.country", "info.year")
+        .show(truncate=False)
+    )
 
-    (cd_df
-     .withColumn("info", extract_cd_info_udf('cd'))
-     .select('index', 'info.artist', 'info.title')
-     .show(10, False))
+    spark.stop()

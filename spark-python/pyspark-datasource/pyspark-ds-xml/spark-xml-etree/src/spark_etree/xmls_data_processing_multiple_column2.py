@@ -1,64 +1,75 @@
-import xml.etree.ElementTree as Et
+"""Extract XML attributes and nested records, then explode arrays into rows."""
 
-from pyspark.sql import *
-from pyspark.sql.functions import udf, explode
-from pyspark.sql.types import ArrayType, IntegerType
+import os
+import xml.etree.ElementTree as ET
 
-
-@udf
-def extract_ab(xml):
-    xml_doc = Et.fromstring(xml)
-    return [xml_doc.attrib['a'], xml_doc.attrib['b']]
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
+from pyspark.sql.functions import udf
+from pyspark.sql.types import ArrayType, IntegerType, StringType
 
 
-def extract_rid(xml):
-    doc = Et.fromstring(xml)
-    records = doc.findall('records/record')
-    ids = []
-    for r in records:
-        ids.append(int(r.attrib["id"]))
-    return ids
+@udf(returnType=ArrayType(StringType()))
+def extract_attributes(xml: str) -> list[str]:
+    """Return the 'a' and 'b' attributes from the root element."""
+    doc = ET.fromstring(xml)
+    return [doc.attrib["a"], doc.attrib["b"]]
 
 
-if __name__ == '__main__':
-    appName = "xml_data_processing_multiple_column"
-    master = "local[*]"
+def extract_record_ids(xml: str) -> list[int]:
+    """Return all record/@id values as integers."""
+    doc = ET.fromstring(xml)
+    return [int(r.attrib["id"]) for r in doc.findall("records/record")]
 
-    # Create Spark session
-    spark = SparkSession.builder \
-        .appName(appName) \
-        .master(master) \
+
+SAMPLE_DATA = [
+    {
+        "id": 1,
+        "data": '<test a="100" b="200">  <records>    <record id="101" />    <record id="201" />  </records></test>',
+    },
+    {
+        "id": 2,
+        "data": '<test a="200" b="400">  <records>    <record id="202" />    <record id="402" />  </records></test>',
+    },
+    {
+        "id": 3,
+        "data": '<test a="300" b="600">'
+        "  <records>"
+        '    <record id="303" />'
+        '    <record id="603" />'
+        '    <record id="903" />'
+        "  </records>"
+        "</test>",
+    },
+]
+
+
+if __name__ == "__main__":
+    spark = (
+        SparkSession.builder.appName("xml-etree-attributes-explode")
+        .master(os.environ.get("SPARK_MASTER", "local[*]"))
+        .config("spark.sql.shuffle.partitions", "4")
+        .config("spark.ui.enabled", "false")
         .getOrCreate()
+    )
+    spark.sparkContext.setLogLevel("WARN")
 
-    spark.sparkContext.setLogLevel('WARN')
+    df = spark.createDataFrame(SAMPLE_DATA)
+    df.printSchema()
+    df.show(truncate=False)
 
-    data = [
-        {'id': 1, 'data': """<test a="100" b="200">
-            <records>
-                <record id="101" />
-                <record id="201" />
-            </records>
-        </test>
-    """},
-        {'id': 2, 'data': """<test a="200" b="400">
-            <records>
-                <record id="202" />
-                <record id="402" />
-            </records>
-        </test>
-    """}]
+    # Extract root-level attributes
+    df_attrs = df.withColumn("attrs", extract_attributes(F.col("data")))
+    df_attrs.show(truncate=False)
 
-    df = spark.createDataFrame(data)
-    print(df.schema)
-    df.show()
+    # Extract nested record IDs and explode into individual rows
+    extract_record_ids_udf = udf(extract_record_ids, ArrayType(IntegerType()))
 
-    schema = ArrayType(IntegerType())
-    udf_extract_rid = udf(extract_rid, schema)
+    df_exploded = (
+        df.withColumn("record_ids", extract_record_ids_udf(F.col("data")))
+        .withColumn("record_id", F.explode("record_ids"))
+        .select("id", "record_id")
+    )
+    df_exploded.show(truncate=False)
 
-    df = df.withColumn('rids', udf_extract_rid(df["data"]))
-    print(df.schema)
-    df.show()
-
-    # Explode array column
-    df.withColumn('rid', explode(df['rids'])).show()
-
+    spark.stop()
