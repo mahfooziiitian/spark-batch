@@ -8,9 +8,7 @@ REST_CATALOG_URI = os.environ.get("REST_CATALOG_URI", "http://localhost:8181")
 REST_CATALOG_WAREHOUSE = os.environ.get("REST_CATALOG_WAREHOUSE", "s3://warehouse/")
 S3_ENDPOINT = os.environ.get("S3_ENDPOINT", "http://localhost:9000")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
-os.environ["SPARK_LOCAL_IP"] = "127.0.0.1"
-if os.environ.get("JAVA_HOME_11"):
-    os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
+
 
 def create_spark_session(app_name="IcebergCatalog"):
     ICEBERG_VERSION = "1.5.0"
@@ -64,9 +62,8 @@ def demonstrate_iceberg_table_lifecycle(spark):
     print("\n=== Iceberg Table Lifecycle ===")
 
     spark.sql("CREATE NAMESPACE IF NOT EXISTS demo")
-    spark.sql("DROP TABLE IF EXISTS demo.employees PURGE")
     spark.sql("""
-        CREATE TABLE demo.employees (
+        CREATE TABLE IF NOT EXISTS demo.employees (
             id INT,
             name STRING,
             department STRING,
@@ -104,9 +101,8 @@ def demonstrate_time_travel(spark):
     print("\n=== Iceberg Time Travel ===")
 
     spark.sql("CREATE NAMESPACE IF NOT EXISTS demo")
-    spark.sql("DROP TABLE IF EXISTS demo.events PURGE")
     spark.sql("""
-        CREATE TABLE demo.events (
+        CREATE TABLE IF NOT EXISTS demo.events (
             id INT,
             event_type STRING,
             ts TIMESTAMP
@@ -144,9 +140,8 @@ def demonstrate_schema_evolution(spark):
     print("\n=== Iceberg Schema Evolution ===")
 
     spark.sql("CREATE NAMESPACE IF NOT EXISTS demo")
-    spark.sql("DROP TABLE IF EXISTS demo.products")
     spark.sql("""
-        CREATE TABLE demo.products (
+        CREATE TABLE IF NOT EXISTS demo.products (
             id INT,
             name STRING,
             price DOUBLE
@@ -176,9 +171,8 @@ def demonstrate_partition_evolution(spark):
     print("\n=== Iceberg Partition Evolution ===")
 
     spark.sql("CREATE NAMESPACE IF NOT EXISTS demo")
-    spark.sql("DROP TABLE IF EXISTS demo.logs PURGE")
     spark.sql("""
-        CREATE TABLE demo.logs (
+        CREATE TABLE IF NOT EXISTS demo.logs (
             id INT,
             event_date DATE,
             level STRING,
@@ -219,9 +213,8 @@ def demonstrate_maintenance(spark):
     print("\n=== Iceberg Table Maintenance ===")
 
     spark.sql("CREATE NAMESPACE IF NOT EXISTS demo")
-    spark.sql("DROP TABLE IF EXISTS demo.metrics PURGE")
     spark.sql("""
-        CREATE TABLE demo.metrics (
+        CREATE TABLE IF NOT EXISTS demo.metrics (
             id INT,
             value DOUBLE
         ) USING iceberg
@@ -256,12 +249,15 @@ def demonstrate_maintenance(spark):
     except Exception as e:
         print(f"remove_orphan_files skipped (expected in some local environments): {e.__class__.__name__}: {e}")  # noqa: E501
 
-    spark.sql("""
-        CALL my_iceberg.system.rewrite_data_files(
-            table => 'demo.metrics'
-        )
-    """)
-    print("Data files compacted.")
+    try:
+        spark.sql("""
+            CALL my_iceberg.system.rewrite_data_files(
+                table => 'demo.metrics'
+            )
+        """)
+        print("Data files compacted.")
+    except Exception as e:
+        print(f"rewrite_data_files skipped: {e.__class__.__name__}")
 
 
 def main():
@@ -287,6 +283,17 @@ def main():
             try:
                 spark.sql(f"DROP TABLE IF EXISTS demo.{table} PURGE")
             except Exception:
+                pass
+        try:
+            spark.sql("DROP NAMESPACE IF EXISTS demo")
+        except Exception:
+            pass
+        spark.stop()
+
+
+if __name__ == "__main__":
+    main()
+  except Exception:
                 pass
         try:
             spark.sql("DROP NAMESPACE IF EXISTS demo")
