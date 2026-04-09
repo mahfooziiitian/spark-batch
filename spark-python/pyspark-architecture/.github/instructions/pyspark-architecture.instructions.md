@@ -4,7 +4,7 @@ applyTo: "src/**/*.py"
 
 # PySpark Architecture — Source Code Instructions
 
-## SparkSession (`src/spark_session.py`)
+## SparkSession (`src/architecture/spark_session.py`)
 
 Always use the standard env-var-driven pattern so scripts run locally without
 modification and on a cluster without code changes:
@@ -47,7 +47,7 @@ assert spark1 is spark2   # same object
 
 ---
 
-## SparkContext (`src/spark_driver.py` or standalone scripts)
+## SparkContext (`src/architecture/spark_driver.py` or standalone scripts)
 
 Use `SparkContext` only when demonstrating RDD-level APIs or low-level
 architecture behaviour:
@@ -78,7 +78,7 @@ sc = SparkContext.getOrCreate(conf)
 
 ---
 
-## Driver Patterns (`src/spark_driver.py`)
+## Driver Patterns (`src/architecture/spark_driver.py`)
 
 The Driver is where the Spark application `main()` runs. Document driver
 responsibilities clearly:
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
 ---
 
-## Executor Patterns (`src/spark_executor.py`)
+## Executor Patterns (`src/architecture/spark_executor.py`)
 
 Use executor examples to illustrate partitioning, task locality, caching,
 and shuffle behaviour:

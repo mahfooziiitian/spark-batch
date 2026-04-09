@@ -1,15 +1,7 @@
-[tool.poetry]
+[project]
 name = "pyspark-kafka"
 version = "0.1.0"
-description = ""
-authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
+description = "Add your description here"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-pyspark = "^3.5.1"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.11"
+dependencies = []

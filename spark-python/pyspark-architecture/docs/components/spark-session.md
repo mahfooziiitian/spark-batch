@@ -120,11 +120,11 @@ session_a.catalog.tableExists("v")   # False — different catalog
 ## Full Example
 
 ```python title="src/spark_session.py"
---8<-- "src/spark_session.py"
+--8<-- "src/architecture/spark_session.py"
 ```
 
 ## Run
 
 ```bash
-SPARK_MASTER=local[*] python src/spark_session.py
+SPARK_MASTER=local[*] python src/architecture/spark_session.py
 ```

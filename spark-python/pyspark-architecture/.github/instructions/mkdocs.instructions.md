@@ -182,8 +182,8 @@ graph LR
 ### Snippet include (preferred — keeps docs in sync with source)
 
 ````markdown
-```python title="src/spark_session.py"
---8<-- "src/spark_session.py"
+```python title="src/architecture/spark_session.py"
+--8<-- "src/architecture/spark_session.py"
 ```
 ````
 
@@ -281,14 +281,14 @@ graph LR
 
 ## Code Example
 
-```python title="src/<component>.py"
---8<-- "src/<component>.py"
+```python title="src/architecture/<component>.py"
+--8<-- "src/architecture/<component>.py"
 ```
 
 ## Run
 
 ```bash
-SPARK_MASTER=local[*] python src/<component>.py
+SPARK_MASTER=local[*] python src/architecture/<component>.py
 ```
 
 ## When to Use / Avoid

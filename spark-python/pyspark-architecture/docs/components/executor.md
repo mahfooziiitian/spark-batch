@@ -116,6 +116,9 @@ df.unpersist() # (2)!
 
 ## Executor Memory Configuration
 
+For a detailed deep-dive into Executor memory layout, sizing formulas, dynamic
+allocation, GC tuning, and PySpark overhead, see **[Executor Memory](executor-memory.md)**.
+
 ```mermaid
 graph LR
     EM["spark.executor.memory\n(JVM heap)"]
@@ -156,11 +159,11 @@ graph LR
 ## Full Example
 
 ```python title="src/spark_executor.py"
---8<-- "src/spark_executor.py"
+--8<-- "src/architecture/spark_executor.py"
 ```
 
 ## Run
 
 ```bash
-SPARK_MASTER=local[*] python src/spark_executor.py
+SPARK_MASTER=local[*] python src/architecture/spark_executor.py
 ```

@@ -4,20 +4,22 @@ from pyspark.sql import SparkSession
 
 @pytest.fixture(scope="session")
 def spark_session_default():
-    spark = (SparkSession.builder
-             .appName("pytest_spark_test_default")
-             .config("spark.sql.shuffle.partitions", "4")
-             .getOrCreate())
+    spark = (
+        SparkSession.builder.appName("pytest_spark_test_default")
+        .config("spark.sql.shuffle.partitions", "4")
+        .getOrCreate()
+    )
     yield spark
     spark.stop()
 
 
 @pytest.fixture(scope="session")
 def spark_session_custom():
-    spark = (SparkSession.builder
-             .appName("pytest_spark_test_custom")
-             .config("spark.sql.shuffle.partitions", "8")
-             .getOrCreate())
+    spark = (
+        SparkSession.builder.appName("pytest_spark_test_custom")
+        .config("spark.sql.shuffle.partitions", "8")
+        .getOrCreate()
+    )
     yield spark
     spark.stop()
 

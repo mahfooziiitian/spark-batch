@@ -17,7 +17,6 @@ Environment variables
 SPARK_MASTER   Spark master URL.  Default: local[*]
 """
 
-import os
 import time
 from concurrent.futures import ThreadPoolExecutor, Future, as_completed
 

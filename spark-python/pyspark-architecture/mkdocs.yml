@@ -23,6 +23,7 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.footer
     - navigation.indexes
     - search.highlight
     - search.suggest
@@ -61,7 +62,13 @@ nav:
       - SparkSession: components/spark-session.md
       - SparkContext: components/spark-context.md
       - Driver: components/driver.md
+      - Driver Memory: components/driver-memory.md
       - Executor: components/executor.md
+      - Executor Memory: components/executor-memory.md
+      - Catalyst Optimizer: components/catalyst.md
+      - Query Plans: components/query-plans.md
+      - Shuffle: components/shuffle.md
+      - Memory Management: components/memory.md
   - Cluster Managers:
       - Local: cluster-managers/local.md
       - YARN: cluster-managers/yarn.md

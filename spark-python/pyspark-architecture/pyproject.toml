@@ -12,4 +12,62 @@ dependencies = [
 dev = [
     "pytest-sugar>=1.1.1",
     "pytest-xdist>=3.8.0",
+    "ruff>=0.11.0",
+    "mypy>=1.15.0",
+    "bandit>=1.9.0",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/architecture"]
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "S",     # flake8-bandit
+    "T20",   # flake8-print
+    "SIM",   # flake8-simplify
+    "RUF",   # ruff-specific
+]
+ignore = [
+    "T201",  # allow print() in example scripts
+    "S101",  # allow assert in tests
+    "S603",  # allow subprocess without shell=True check
+    "S607",  # allow partial executable path
+    "N812",  # allow import functions as F (project convention)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S311"]
+"src/**/*.py" = ["T201"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+check_untyped_defs = true
+files = ["src/architecture/", "tests/"]
+exclude = ["^src/spark_"]
+
+[tool.bandit]
+targets = ["src/"]
+exclude_dirs = ["tests/", ".venv/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

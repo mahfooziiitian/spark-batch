@@ -44,7 +44,8 @@ def _long_job(spark: SparkSession, label: str, results: list) -> None:
     sc.setJobDescription(label)
     try:
         df = spark.createDataFrame(_BIG_DATA, _SCHEMA)
-        val = df.agg(F.sum("value")).first()[0]
+        row = df.agg(F.sum("value")).first()
+        val = row[0] if row is not None else 0
         results.append({"thread": t, "label": label, "result": val, "cancelled": False})
         print(f"  [{t}] {label} → {val:,.0f}")
     except Exception as exc:

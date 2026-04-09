@@ -40,17 +40,17 @@ pyspark-architecture/
 │       ├── pyspark-architecture.instructions.md  # source-code conventions
 │       └── testing.instructions.md         # test conventions
 ├── src/
-│   ├── spark_session.py    # SparkSession creation & configuration patterns
-│   ├── spark_driver.py     # Driver-side logic — DAG, plan, actions
-│   └── spark_executor.py   # Executor-side patterns — tasks, partitions, cache
+│   ├── src/architecture/spark_session.py    # SparkSession creation & configuration patterns
+│   ├── src/architecture/spark_driver.py     # Driver-side logic — DAG, plan, actions
+│   └── src/architecture/spark_executor.py   # Executor-side patterns — tasks, partitions, cache
 ├── tests/
-│   ├── test_sparksession.py          # SparkSession lifecycle tests
-│   ├── test_spark_context.py         # SparkContext & RDD tests
-│   └── test_spark_cluster_manager.py # YARN & Kubernetes cluster-manager tests
+│   ├── tests/test_sparksession.py          # SparkSession lifecycle tests
+│   ├── tests/test_spark_context.py         # SparkContext & RDD tests
+│   └── tests/test_spark_cluster_manager.py # YARN & Kubernetes cluster-manager tests
 ├── docs/                   # MkDocs documentation source
 ├── mkdocs.yml              # MkDocs Material config
 ├── pyproject.toml
-└── requirements.txt
+└── README.md
 ```
 
 ---

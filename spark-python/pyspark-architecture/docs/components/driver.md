@@ -128,6 +128,9 @@ print(f"Processed {counter.value} records")  # read on Driver → 100
 
 ## Driver Memory Configuration
 
+For a detailed deep-dive into Driver memory layout, sizing, OOM patterns, and
+PySpark-specific considerations, see **[Driver Memory](driver-memory.md)**.
+
 | Config key | Default | Description |
 | ---------- | ------- | ----------- |
 | `spark.driver.memory` | `1g` | JVM heap for the Driver process |
@@ -155,11 +158,11 @@ print(f"Processed {counter.value} records")  # read on Driver → 100
 ## Full Example
 
 ```python title="src/spark_driver.py"
---8<-- "src/spark_driver.py"
+--8<-- "src/architecture/spark_driver.py"
 ```
 
 ## Run
 
 ```bash
-SPARK_MASTER=local[*] python src/spark_driver.py
+SPARK_MASTER=local[*] python src/architecture/spark_driver.py
 ```

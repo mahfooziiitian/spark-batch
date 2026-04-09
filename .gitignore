@@ -24,6 +24,7 @@ pip-wheel-metadata/
 wheels/
 *.whl
 MANIFEST
+sdist/
 
 # Installer logs
 pip-log.txt
@@ -39,12 +40,15 @@ htmlcov/
 coverage.xml
 nosetests.xml
 test-results/
+.hypothesis/
+.benchmarks/
 
 # Type checking & linting
 .mypy_cache/
 .dmypy.json
 .pyright/
 .ruff_cache/
+.pylint.d/
 
 # Jupyter / IPython
 .ipynb_checkpoints/
@@ -63,17 +67,27 @@ uv.lock.bak
 # Pipenv
 Pipfile.lock
 
+# Poetry (keep pyproject.toml, ignore lock in monorepo sub-projects)
+# poetry.lock  — uncomment if locks are regenerated in CI
+
 # pyenv
 .python-version
+
+# Cython / C extensions
+*.so
+*.pyd
 
 # Serialised models & data artefacts
 *.pkl
 *.pickle
 *.joblib
 *.h5
+*.hdf5
 *.parquet
 *.csv.gz
 *.json.gz
+*.avro
+*.orc
 
 # Prophet / Stan compiled models
 prophet_cache/
@@ -179,6 +193,7 @@ out/
 
 # VS Code
 .vscode/
+*.code-workspace
 
 # Eclipse
 .classpath
@@ -196,6 +211,16 @@ nbdist/
 nbproject/private/
 nb-configuration.xml
 
+# Vim
+*.swn
+Session.vim
+.netrwhist
+tags
+
+# Emacs
+\#*\#
+.#*
+
 # ==============================================================================
 # Operating System
 # ==============================================================================
@@ -203,11 +228,17 @@ nb-configuration.xml
 # macOS
 .DS_Store
 *.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
 
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+$RECYCLE.BIN/
 
 # Linux
 *~
@@ -286,6 +317,13 @@ history-server/
 .spark-staging/
 spark_local_dir/
 
+# Spark worker & executor logs
+work/
+worker/
+
+# Spark local ivy cache (spark-submit --packages downloads)
+ivy2/
+
 # ==============================================================================
 # Delta Lake
 # ==============================================================================
@@ -298,14 +336,10 @@ _delta_log/
 # ==============================================================================
 
 # Medallion layer output written to /tmp in notebooks/scripts
-# (only relevant if output paths are inside the repo)
 bronze/
 silver/
 gold/
 quarantine/
-
-# MkDocs documentation
-# (already listed above — kept here for Databricks section proximity)
 
 # ==============================================================================
 # R  (spark-r project)
@@ -357,10 +391,12 @@ renv/staging/
 .env
 .env.*
 !.env.sample
+!.env.example
 
 # Cloud provider credentials
 .gcp/
 .azure/
+.aws/
 service-account*.json
 *-credentials.json
 *-keyfile.json
@@ -369,6 +405,7 @@ service-account*.json
 *.tfstate
 *.tfstate.backup
 .terraform/
+.terraform.lock.hcl
 
 # ==============================================================================
 # Logs & Temporary Files — extended
@@ -379,6 +416,8 @@ service-account*.json
 log/
 tmp/
 temp/
+*.pid
+*.seed
 
 # ==============================================================================
 # Databases — extended
@@ -386,3 +425,18 @@ temp/
 
 *.sqlite
 *.duckdb
+
+# ==============================================================================
+# AI / Copilot — session & agent artefacts
+# ==============================================================================
+
+.copilot/
+.aider*
+.continue/
+.cursor/
+
+# ==============================================================================
+# Pre-commit
+# ==============================================================================
+
+.pre-commit-cache/

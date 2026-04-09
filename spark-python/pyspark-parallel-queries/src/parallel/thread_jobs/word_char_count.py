@@ -81,7 +81,9 @@ def word_count(df: DataFrame, output_path: str, results: dict, lock: Lock) -> No
             "secs": elapsed,
             "thread": name,
         }
-    print(f"[{name}] word_count done in {elapsed:.2f}s — top word: {wc.first()['word']!r}")
+    first_row = wc.first()
+    top_word = first_row["word"] if first_row else "N/A"
+    print(f"[{name}] word_count done in {elapsed:.2f}s — top word: {top_word!r}")
 
 
 def char_count(df: DataFrame, output_path: str, results: dict, lock: Lock) -> None:
@@ -108,7 +110,9 @@ def char_count(df: DataFrame, output_path: str, results: dict, lock: Lock) -> No
             "secs": elapsed,
             "thread": name,
         }
-    print(f"[{name}] char_count done in {elapsed:.2f}s — top char: {cc.first()['char']!r}")
+    first_row = cc.first()
+    top_char = first_row["char"] if first_row else "N/A"
+    print(f"[{name}] char_count done in {elapsed:.2f}s — top char: {top_char!r}")
 
 
 def run_serial(df: DataFrame) -> tuple[dict, float]:
@@ -145,7 +149,7 @@ def run_parallel(df: DataFrame) -> tuple[dict, float]:
 
 
 if __name__ == "__main__":
-    from utils.spark_session import get_spark
+    from parallel.utils.spark_session import get_spark
 
     spark = get_spark("thread-word-char-count")
     try:

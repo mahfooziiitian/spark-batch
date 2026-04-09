@@ -1,0 +1,25 @@
+[project]
+name = "pyspark-ds-pdf"
+version = "0.1.0"
+description = "Read PDF files into Spark DataFrames using the spark-pdf data source."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark==3.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.uv.sources]
+
+[dependency-groups]
+dev = [
+    "fpdf2>=2.8.7",
+]

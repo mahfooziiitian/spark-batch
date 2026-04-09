@@ -4,10 +4,9 @@ from pyspark import SparkConf, SparkContext
 
 @pytest.fixture(scope="session")
 def spark_context():
-    conf = SparkConf().setAppName("pytest_spark_test")
-    sc = SparkContext(conf=conf)
+    conf = SparkConf().setAppName("pytest_spark_test").setMaster("local[2]")
+    sc = SparkContext.getOrCreate(conf)
     yield sc
-    sc.stop()
 
 
 def test_my_spark_function(spark_context):
@@ -17,13 +16,10 @@ def test_my_spark_function(spark_context):
     assert result == 15
 
 
-"""
-Multiple SparkContexts per JVM is technically possible but at the same time it's considered as a bad practice.
-Apache Spark provides a factory method getOrCreate() to prevent against creating multiple SparkContext.
-"""
-
-
 def test_multiple_spark_context():
+    """Multiple SparkContexts per JVM is not allowed.
+    Apache Spark provides getOrCreate() to safely reuse the existing SparkContext.
+    """
     spark_context1 = SparkContext.getOrCreate(SparkConf().setAppName("SparkContext#1").setMaster("local[*]"))
     spark_context2 = SparkContext.getOrCreate(SparkConf().setAppName("SparkContext#2").setMaster("local[*]"))
 

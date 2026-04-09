@@ -4,14 +4,15 @@ from pyspark.sql import SparkSession
 
 
 def create_default_session() -> SparkSession:
-    return (SparkSession.builder
-            .appName("architecture-demo")
-            .master(os.environ.get("SPARK_MASTER", "local[*]"))
-            .config("spark.sql.shuffle.partitions", "4")
-            .config("spark.sql.adaptive.enabled", "true")
-            .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
-            .config("spark.ui.enabled", "false")
-            .getOrCreate())
+    return (
+        SparkSession.builder.appName("architecture-demo")
+        .master(os.environ.get("SPARK_MASTER", "local[*]"))
+        .config("spark.sql.shuffle.partitions", "4")
+        .config("spark.sql.adaptive.enabled", "true")
+        .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
+        .config("spark.ui.enabled", "false")
+        .getOrCreate()
+    )
 
 
 def demo_singleton() -> None:
@@ -26,7 +27,7 @@ def demo_new_session(spark: SparkSession) -> None:
     """newSession() creates an isolated SQL namespace sharing the same SparkContext."""
     session_b = spark.newSession()
     print(f"Shared SparkContext: {spark.sparkContext is session_b.sparkContext}")  # True
-    print(f"Different sessions:  {spark is not session_b}")                         # True
+    print(f"Different sessions:  {spark is not session_b}")  # True
 
 
 if __name__ == "__main__":

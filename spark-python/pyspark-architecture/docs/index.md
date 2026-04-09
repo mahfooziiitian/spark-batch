@@ -45,6 +45,10 @@ graph TD
 | [SparkContext](components/spark-context.md) | Driver | Connects to the cluster; manages RDDs and task scheduling |
 | [Driver](components/driver.md) | Driver host | Runs `main()`; builds the DAG; sends tasks to executors |
 | [Executor](components/executor.md) | Worker nodes | Runs tasks; stores cached partition data |
+| [Catalyst Optimizer](components/catalyst.md) | Driver | Rewrites and optimizes query plans before execution |
+| [Query Plans](components/query-plans.md) | Driver | Parsed → analyzed → optimized → physical plan pipeline |
+| [Shuffle](components/shuffle.md) | Executors | Redistributes data across partitions for wide transformations |
+| [Memory Management](components/memory.md) | Executors | Manages execution and storage memory pools, caching, and spill |
 
 ---
 
@@ -111,9 +115,13 @@ parallelism (up to the number of available CPU cores across all executors).
 ### Run an example
 
 ```bash
-SPARK_MASTER=local[*] python src/spark_session.py
-SPARK_MASTER=local[*] python src/spark_driver.py
-SPARK_MASTER=local[*] python src/spark_executor.py
+SPARK_MASTER=local[*] python src/architecture/spark_session.py
+SPARK_MASTER=local[*] python src/architecture/spark_driver.py
+SPARK_MASTER=local[*] python src/architecture/spark_executor.py
+SPARK_MASTER=local[*] python src/architecture/spark_catalyst.py
+SPARK_MASTER=local[*] python src/architecture/spark_shuffle.py
+SPARK_MASTER=local[*] python src/architecture/spark_memory.py
+SPARK_MASTER=local[*] python src/architecture/spark_query_plans.py
 ```
 
 ### Run the tests
