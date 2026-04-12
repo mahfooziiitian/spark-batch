@@ -1,4 +1,4 @@
-# :material-sort: Sort Merge Join
+# :material-cog-transfer: Sort Merge Join
 
 Sort Merge Join (SMJ) is the default join strategy used by Apache Spark when joining DataFrames, especially for large datasets where broadcast joins are not feasible.
 

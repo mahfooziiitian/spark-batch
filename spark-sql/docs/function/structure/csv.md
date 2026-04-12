@@ -1,4 +1,4 @@
-# :material-file-delimited: CSV Functions
+# :material-file-code: CSV Functions
 
 Spark SQL provides functions to **parse CSV strings into structs** and **serialize structs back
 to CSV** — enabling inline CSV processing without file I/O.

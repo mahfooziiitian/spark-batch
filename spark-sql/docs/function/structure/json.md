@@ -1,4 +1,4 @@
-# :material-code-json: JSON Functions
+# :material-file-code: JSON Functions
 
 Spark SQL provides functions to **parse**, **generate**, **extract from**, and **inspect**
 JSON data — enabling full JSON processing within SQL expressions.

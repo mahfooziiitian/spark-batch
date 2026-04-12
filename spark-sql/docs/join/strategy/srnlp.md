@@ -1,4 +1,4 @@
-# :material-format-list-numbered: Shuffle-and-Replicate Nested Loop Join
+# :material-cog-transfer: Shuffle-and-Replicate Nested Loop Join
 
 > **Use Case:**  
 > Efficient for *cross joins* (Cartesian product) when no join condition exists.

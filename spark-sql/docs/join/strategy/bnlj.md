@@ -1,4 +1,4 @@
-# :material-loop: Broadcast Nested Loop Join (BNLJ)?
+# :material-cog-transfer: Broadcast Nested Loop Join (BNLJ)?
 
 This join type:
 

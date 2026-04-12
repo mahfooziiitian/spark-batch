@@ -1,4 +1,4 @@
-# :material-table-search: Hash Join in Spark
+# :material-cog-transfer: Hash Join in Spark
 
 A **hash join** is a highly efficient join strategy in Spark, especially for large datasets. It works by building a hash table from one side of the join (typically the smaller DataFrame) and then streaming the other side to find matching rows.
 
