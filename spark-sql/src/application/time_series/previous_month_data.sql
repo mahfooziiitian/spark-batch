@@ -1,93 +1,124 @@
--- Isolates rows belonging to the previous calendar month.
--- Works at any point in time: the filter re-evaluates on each run so
--- "previous month" always means the month before the current date.
+-- Isolates stock purchased in the previous calendar month, summarised by make.
 --
--- Technique: truncate today to the first of the current month,
---   then step back one month to get the first of the previous month.
---   The upper bound is the first of the current month (exclusive ≡ inclusive
---   of the last second via < boundary).
+-- Date boundary technique (BETWEEN is inclusive on both ends):
+--   Lower : TRUNC(CURDATE(), 'MONTH') - INTERVAL 1 MONTH
+--             → first day of the previous month  (e.g. 2026-03-01)
+--   Upper : LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
+--             → last  day of the previous month  (e.g. 2026-03-31)
+--
+-- Note: LAST_DAY(CURDATE()) - INTERVAL 1 MONTH is subtly wrong for months
+--       with unequal lengths (Apr 30 → Mar 30, skipping Mar 31).
+--       Always compute LAST_DAY *after* shifting the date, not before.
 
--- Sample data: daily order transactions spanning three months
-WITH orders AS (
+-- Sample data: make / model / stock across three months
+WITH make AS (
     SELECT
-        1001 AS order_id,
-        CAST('2026-02-03' AS DATE) AS order_date,
-        'Alice' AS customer,
-        450.00 AS amount
+        1 AS makeid,
+        'Toyota' AS makename
     UNION ALL
     SELECT
-        1002 AS order_id,
-        CAST('2026-02-14' AS DATE) AS order_date,
-        'Bob' AS customer,
-        320.00 AS amount
+        2 AS makeid,
+        'Honda' AS makename
     UNION ALL
     SELECT
-        1003 AS order_id,
-        CAST('2026-02-28' AS DATE) AS order_date,
-        'Alice' AS customer,
-        780.00 AS amount
+        3 AS makeid,
+        'Ford' AS makename
+),
+
+model AS (
+    SELECT
+        101 AS modelid,
+        1 AS makeid,
+        'Camry' AS modelname
     UNION ALL
     SELECT
-        1004 AS order_id,
-        CAST('2026-03-01' AS DATE) AS order_date,
-        'Carol' AS customer,
-        210.00 AS amount
+        102 AS modelid,
+        1 AS makeid,
+        'RAV4' AS modelname
     UNION ALL
     SELECT
-        1005 AS order_id,
-        CAST('2026-03-07' AS DATE) AS order_date,
-        'Bob' AS customer,
-        540.00 AS amount
+        201 AS modelid,
+        2 AS makeid,
+        'Civic' AS modelname
     UNION ALL
     SELECT
-        1006 AS order_id,
-        CAST('2026-03-15' AS DATE) AS order_date,
-        'Alice' AS customer,
-        930.00 AS amount
+        301 AS modelid,
+        3 AS makeid,
+        'F-150' AS modelname
+),
+
+stock AS (
+    -- Previous month (March 2026) — included
+    SELECT
+        1 AS stockid,
+        101 AS modelid,
+        CAST('2026-03-05' AS DATE) AS datebought,
+        28000.00 AS cost
     UNION ALL
     SELECT
-        1007 AS order_id,
-        CAST('2026-03-22' AS DATE) AS order_date,
-        'Carol' AS customer,
-        125.00 AS amount
+        2 AS stockid,
+        102 AS modelid,
+        CAST('2026-03-12' AS DATE) AS datebought,
+        34500.00 AS cost
     UNION ALL
     SELECT
-        1008 AS order_id,
-        CAST('2026-03-31' AS DATE) AS order_date,
-        'Bob' AS customer,
-        670.00 AS amount
-    UNION ALL
-    -- Current month rows — excluded by the filter
-    SELECT
-        1009 AS order_id,
-        CAST('2026-04-01' AS DATE) AS order_date,
-        'Alice' AS customer,
-        300.00 AS amount
+        3 AS stockid,
+        201 AS modelid,
+        CAST('2026-03-18' AS DATE) AS datebought,
+        22000.00 AS cost
     UNION ALL
     SELECT
-        1010 AS order_id,
-        CAST('2026-04-10' AS DATE) AS order_date,
-        'Carol' AS customer,
-        880.00 AS amount
+        4 AS stockid,
+        301 AS modelid,
+        CAST('2026-03-25' AS DATE) AS datebought,
+        41000.00 AS cost
+    UNION ALL
+    SELECT
+        5 AS stockid,
+        101 AS modelid,
+        CAST('2026-03-31' AS DATE) AS datebought,
+        29500.00 AS cost
+    UNION ALL
+    -- Current month (April 2026) — excluded
+    SELECT
+        6 AS stockid,
+        102 AS modelid,
+        CAST('2026-04-02' AS DATE) AS datebought,
+        36000.00 AS cost
+    UNION ALL
+    SELECT
+        7 AS stockid,
+        201 AS modelid,
+        CAST('2026-04-10' AS DATE) AS datebought,
+        25000.00 AS cost
+    UNION ALL
+    -- Two months ago (February 2026) — excluded
+    SELECT
+        8 AS stockid,
+        301 AS modelid,
+        CAST('2026-02-14' AS DATE) AS datebought,
+        39000.00 AS cost
 )
 
 SELECT
-    order_id,
-    order_date,
-    customer,
-    amount
-FROM orders
+    mk.makename,
+    SUM(st.cost) AS totalcost
+FROM make AS mk
+INNER JOIN model AS md
+    ON mk.makeid = md.makeid
+INNER JOIN stock AS st
+    ON md.modelid = st.modelid
 WHERE
-    order_date >= ADD_MONTHS(DATE_TRUNC('MONTH', CURDATE()), -1)
-    AND order_date <  DATE_TRUNC('MONTH', CURDATE())
-ORDER BY order_date;
+    st.datebought BETWEEN
+        TRUNC(CURDATE(), 'MONTH') - INTERVAL 1 MONTH
+        AND LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
+GROUP BY mk.makename
+ORDER BY mk.makename;
 
 /* Expected output (run on 2026-04-12 — previous month = March 2026):
-   order_id | order_date | customer | amount
-   ---------+------------+----------+-------
-       1004 | 2026-03-01 | Carol    | 210.00
-       1005 | 2026-03-07 | Bob      | 540.00
-       1006 | 2026-03-15 | Alice    | 930.00
-       1007 | 2026-03-22 | Carol    | 125.00
-       1008 | 2026-03-31 | Bob      | 670.00
+   makename | totalcost
+   ---------+----------
+   Ford     |  41000.00
+   Honda    |  22000.00
+   Toyota   |  92000.00   (28000 + 34500 + 29500)
 */
