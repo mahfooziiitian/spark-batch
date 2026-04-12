@@ -1,10 +1,21 @@
-# Broadcast Nested Loop Join (BNLJ)?
+# :material-loop: Broadcast Nested Loop Join (BNLJ)?
 
 This join type:
 
 1. Is used when no join keys are present or when Spark cannot use hash/sort joins.
 2. Broadcasts the smaller DataFrame (typically the left one) to all worker nodes.
 3. Each executor scans the larger DataFrame (right side) and applies the join logic for every row of the broadcasted small table — hence, a nested loop.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    D[Driver] -->|broadcast| E1[Executor 1]
+    D -->|broadcast| E2[Executor 2]
+    E1 -->|nested loop| L1[Large DF Part 1]
+    E2 -->|nested loop| L2[Large DF Part 2]
+```
 
 ## ⚙️ When Spark Uses BNLJ
 

@@ -1,4 +1,4 @@
-# Introduction
+# :material-not-equal: Introduction
 
 A **non-equi join** is a join where the condition is *not* based solely on equality (`=`). Instead, it uses operators such as:
 
@@ -6,6 +6,17 @@ A **non-equi join** is a join where the condition is *not* based solely on equal
 - `!=`, `BETWEEN`, or even complex expressions
 
 > ⚠️ **Note:** Non-equi joins are not hashable. Spark cannot use efficient broadcast/hash joins for them, so it must fall back to more expensive join strategies (like sort-merge or nested loop joins).
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table] --> J{Non-equi condition}
+    R[Right Table] --> J
+    J --> NL[Nested Loop / Sort-Merge Join]
+    NL --> O[Result]
+```
 
 ---
 
@@ -65,4 +76,3 @@ flowchart TB
 ---
 
 > 💡 **Tip:** If possible, rewrite your logic to use equi joins for better performance, or pre-filter data to minimize the join workload.
-

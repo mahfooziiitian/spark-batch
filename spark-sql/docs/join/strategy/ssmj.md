@@ -1,6 +1,17 @@
-# Shuffle Sort-Merge Join
+# :material-sort-bool-ascending: Shuffle Sort-Merge Join
 
 The **Shuffle Sort-Merge Join** is a distributed join strategy in Apache Spark that efficiently joins large datasets by leveraging data shuffling and sorting.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[DataFrame A] -->|Shuffle + Sort| P[Same Partition]
+    B[DataFrame B] -->|Shuffle + Sort| P
+    P --> M[Merge on key]
+    M --> O[Result]
+```
 
 ---
 

@@ -1,6 +1,19 @@
-# Skew Join Using Bucketing
+# :material-scale-unbalanced: Skew Join Using Bucketing
 
 When dealing with skewed data in join operations, performance can degrade due to uneven data distribution. Bucketing is an effective technique to mitigate this issue.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    D[Data] -->|hash on join key| B1[Bucket 1]
+    D --> B2[Bucket 2]
+    D --> B3[Bucket N]
+    B1 --> J[Join within bucket]
+    B2 --> J
+    B3 --> J
+```
 
 ## What is Bucketing?
 

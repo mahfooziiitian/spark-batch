@@ -1,6 +1,19 @@
-# Outer Joins
+# :material-set-all: Outer Joins
 
 Outer joins return all rows from one or both sides of a join, filling NULLs for columns from the side that had no matching row.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    O[Outer Joins] --> L[Left Outer]
+    O --> R[Right Outer]
+    O --> F[Full Outer]
+    L --> LN[All left rows + NULLs for right]
+    R --> RN[All right rows + NULLs for left]
+    F --> FN[All rows from both + NULLs where no match]
+```
 
 ---
 

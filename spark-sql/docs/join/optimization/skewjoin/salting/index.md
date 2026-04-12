@@ -1,6 +1,20 @@
-# Handling Skewed Joins in Spark SQL: Salting Techniques
+# :material-scale-unbalanced: Handling Skewed Joins in Spark SQL: Salting Techniques
 
 Learn how to fix skewed joins in Spark SQL using various salting strategies, complete with practical, end-to-end examples.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    SK[Skewed key] -->|add salt suffix| S1[key_0]
+    SK --> S2[key_1]
+    SK --> S3[key_N]
+    S1 --> J[Distributed join]
+    S2 --> J
+    S3 --> J
+    J --> O[Balanced result]
+```
 
 ---
 

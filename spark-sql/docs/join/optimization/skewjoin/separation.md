@@ -1,4 +1,4 @@
-# Skewed Data?
+# :material-scale-unbalanced: Skewed Data?
 
 Data skew happens when a few keys in your join/groupBy/aggregation have disproportionately more rows than others.
 
@@ -78,3 +78,15 @@ Bucketing / Repartitioning	ETL pipelines with known skew	Preprocessing heavy but
 
 ✅ Summary:
 In Spark SQL, skewed data can be handled using salting, skew hints, broadcast joins, AQE adaptive handling, or bucketing. Best approach is AQE + hints, but if skew is extreme → add salting.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    D[Dataset] -->|detect skew| SK[Skewed keys]
+    D -->|detect normal| NS[Normal keys]
+    SK -->|separate join| J1[Skew join path]
+    NS -->|separate join| J2[Normal join path]
+    J1 --> U[Union results]
+    J2 --> U
+```

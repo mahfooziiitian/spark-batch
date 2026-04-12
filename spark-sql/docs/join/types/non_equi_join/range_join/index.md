@@ -1,6 +1,16 @@
-# Introduction
+# :material-not-equal: Introduction
 
 A **range join** occurs when two relations are joined using a *point-in-interval* or *interval-overlap* condition. Range join optimization in Databricks Runtime can deliver orders-of-magnitude performance improvements, but requires careful manual tuning.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    P[Points table] --> J{point BETWEEN range.start AND range.end}
+    R[Ranges table] --> J
+    J --> O[Matched point-interval pairs]
+```
 
 ---
 

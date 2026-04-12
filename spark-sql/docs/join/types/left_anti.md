@@ -1,7 +1,17 @@
-# Left Anti
+# :material-set-left: Left Anti
 
 A **left anti join** returns **only the rows from the left table** that have **no matching rows in the right table**.  
 It's perfect for finding records in one dataset that **do not exist** in another.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table] --> J{EXISTS in Right?}
+    J -->|No match| O[Keep row]
+    J -->|Match found| X[Discard row]
+```
 
 ---
 

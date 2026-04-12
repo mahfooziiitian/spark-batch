@@ -1,6 +1,16 @@
-# Point-in-Interval
+# :material-not-equal: Point-in-Interval
 
 Learn how to map continuous values to intervals using a **range join** (also called a *point-in-interval* join) in Spark SQL. In this tutorial, we'll assign letter grades to students based on their scores.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    S[Students: score] --> J{score BETWEEN min_score AND max_score}
+    G[Grade ranges] --> J
+    J --> O[Student + Grade pairs]
+```
 
 ---
 

@@ -1,4 +1,16 @@
-# Introduction
+# :material-cog-transfer: Introduction
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    SJ[Join Strategies] --> BHJ[Broadcast Hash Join]
+    SJ --> SMJ[Sort-Merge Join]
+    SJ --> SHJ[Shuffle Hash Join]
+    SJ --> BNLJ[Broadcast Nested Loop]
+    SJ --> SRNLP[Shuffle Replicate NL]
+```
 
 ## How spark selects join strategy?
 

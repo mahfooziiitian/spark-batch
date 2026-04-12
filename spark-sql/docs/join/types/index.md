@@ -1,6 +1,20 @@
-# Join Types
+# :material-set-all: Join Types
 
 Spark SQL supports multiple join types for different matching behavior.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    T[":material-set-all: Join Types"] --> I[Inner]
+    T --> L[Left Outer]
+    T --> R[Right Outer]
+    T --> F[Full Outer]
+    T --> LS[Left Semi]
+    T --> LA[Left Anti]
+    T --> C[Cross]
+```
 
 ---
 

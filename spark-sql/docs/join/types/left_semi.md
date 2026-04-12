@@ -1,8 +1,19 @@
-# Left Semi
+# :material-set-left: Left Semi
 
 A **left semi join** returns rows from the left DataFrame that have at least one matching row in the right DataFrame—**but it never returns columns from the right DataFrame**.
 
 > _“Give me all rows from A that exist in B, based on the join condition.”_
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table] --> J{Match in Right?}
+    R[Right Table] --> J
+    J -->|Yes| O[Keep row - left cols only]
+    J -->|No| X[Discard row]
+```
 
 ---
 

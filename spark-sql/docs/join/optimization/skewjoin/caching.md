@@ -1,7 +1,19 @@
-# Caching for Skewed Joins
+# :material-scale-unbalanced: Caching for Skewed Joins
 
 Caching can help when the same skewed dataset is reused in multiple joins or
 transformations.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    SK[Skewed DF] -->|cache| C[Cached in memory]
+    C --> J1[Join 1]
+    C --> J2[Join 2]
+    J1 --> O[No re-read or re-shuffle]
+    J2 --> O
+```
 
 ---
 

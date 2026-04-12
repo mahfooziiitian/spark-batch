@@ -1,6 +1,16 @@
-# Range Join Hint in Spark SQL
+# :material-lightbulb-on: Range Join Hint in Spark SQL
 
 Leverage **range join hints** in Spark SQL to optimize join operations involving range conditions. This feature can significantly improve query performance for range-based joins.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    Q["SELECT /*+ RANGE_JOIN(t, bin) */ ..."] --> P[Planner]
+    P --> RJ[Range Join with bin partitioning]
+    RJ --> O[Optimized result]
+```
 
 ---
 

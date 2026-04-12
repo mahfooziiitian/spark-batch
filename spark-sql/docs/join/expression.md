@@ -1,6 +1,17 @@
-# Join Expressions in Spark SQL
+# :material-code-equal: Join Expressions in Spark SQL
 
 A **join expression** defines how Spark matches rows between two datasets. The `ON` clause specifies the logic for joining tables, enabling powerful data combinations.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table] --> ON{ON clause}
+    R[Right Table] --> ON
+    ON -->|equality| HJ[Hash / Sort-Merge Join]
+    ON -->|range or non-equi| NL[Nested Loop Join]
+```
 
 ---
 

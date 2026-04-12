@@ -1,6 +1,18 @@
-# Skewed Data Handling with Salted Sort Merge Join
+# :material-scale-unbalanced: Skewed Data Handling with Salted Sort Merge Join
 
 The **Sort Merge Join (SMJ)** is a robust approach for handling joins, especially under resource constraints. However, when dealing with **skewed datasets**—where one side of the join has highly imbalanced key distribution—standard join strategies can lead to performance bottlenecks. The **Salted Sort Merge Join** technique addresses this challenge effectively.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Large skewed DF] -->|salt key| SL[Salted partitions]
+    R[Small DF] -->|replicate with salt| SR[Replicated partitions]
+    SL --> SMJ[Sort-Merge Join]
+    SR --> SMJ
+    SMJ --> O[Balanced result]
+```
 
 ## Why Use Salted Sort Merge Join?
 
@@ -43,4 +55,3 @@ The **Sort Merge Join (SMJ)** is a robust approach for handling joins, especiall
 
 **Summary:**  
 Salted Sort Merge Join is a powerful technique for handling skewed joins in Spark, especially when broadcast joins are not suitable. By introducing a salt key and partitioning the join workload, it helps distribute data more evenly and improves performance for large, imbalanced datasets.
-

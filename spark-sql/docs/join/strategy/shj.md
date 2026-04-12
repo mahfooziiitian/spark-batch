@@ -1,6 +1,17 @@
-# Shuffle Hash Join in Spark
+# :material-shuffle: Shuffle Hash Join in Spark
 
 A **Shuffle Hash Join (SHJ)** is a fundamental join strategy in Apache Spark, used when both datasets are large and cannot be broadcasted. It is specifically designed for equi-joins (joins using the `=` operator).
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Large DF A] -->|Shuffle on key| P[Same Partition]
+    B[Large DF B] -->|Shuffle on key| P
+    P -->|Build hash from smaller side| HT[Hash Table]
+    HT --> O[Join Result]
+```
 
 ---
 

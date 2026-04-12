@@ -1,10 +1,22 @@
-# 🌐 Full Outer Join
+# :material-set-all: 🌐 Full Outer Join
 
 A **Full Outer Join** returns **all rows** from both tables:
 
 - All rows from the **left** table
 - All rows from the **right** table
 - Matches where possible, and `NULL`s where there is no match
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table: ALL rows] --> J{ON condition}
+    R[Right Table: ALL rows] --> J
+    J -->|match| M[Joined row]
+    J -->|left only| NR[Left row + NULLs for right]
+    J -->|right only| NL[NULLs for left + Right row]
+```
 
 ---
 

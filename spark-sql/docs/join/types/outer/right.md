@@ -1,4 +1,4 @@
-# 🌟 Right Outer Join in Spark SQL
+# :material-set-all: 🌟 Right Outer Join in Spark SQL
 
 A **Right Outer Join** returns:
 
@@ -9,6 +9,17 @@ A **Right Outer Join** returns:
 > **Tip:** It’s the mirror image of a Left Outer Join.  
 > **Question it answers:**  
 > _“Give me everything from the right side, and add left-side info if it exists.”_
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table] --> J{ON condition}
+    R[Right Table: ALL rows] --> J
+    J -->|match| M[Joined row]
+    J -->|no match| N[NULLs for left + Right row]
+```
 
 ---
 

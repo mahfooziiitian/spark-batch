@@ -1,7 +1,22 @@
-# Join Overview
+# :material-link: Join Overview
 
 Joins combine rows from two datasets based on a matching condition.
 Spark supports multiple join **types**, **strategies**, and **hints**.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-link: Join"] --> B["Inner :material-set-center:"]
+    A --> C["Left Outer"]
+    A --> D["Right Outer"]
+    A --> E["Full Outer :material-set-all:"]
+    A --> F["Left Semi"]
+    A --> G["Left Anti"]
+    A --> H["Cross :material-grid:"]
+    A --> I["Non-equi :material-not-equal:"]
+```
 
 ---
 

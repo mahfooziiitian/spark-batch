@@ -1,7 +1,18 @@
-# Hint Resolver
+# :material-lightbulb-on: Hint Resolver
 
 Welcome to the **Hint Resolver** tutorial!  
 This guide explains how Spark SQL processes and resolves join hints to optimize query execution.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    SQL[SQL Query] -->|parse| H[Hint detected]
+    H --> LA[Logical Plan Analysis]
+    LA --> PP[Physical Plan]
+    PP --> O[Optimized Execution]
+```
 
 ---
 

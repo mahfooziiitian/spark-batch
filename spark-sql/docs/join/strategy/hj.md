@@ -1,6 +1,16 @@
-# Hash Join in Spark
+# :material-table-search: Hash Join in Spark
 
 A **hash join** is a highly efficient join strategy in Spark, especially for large datasets. It works by building a hash table from one side of the join (typically the smaller DataFrame) and then streaming the other side to find matching rows.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    S[Small DF] -->|Build| HT[Hash Table]
+    L[Large DF] -->|Probe| HT
+    HT --> O[Joined Result]
+```
 
 ---
 
@@ -83,4 +93,3 @@ probe2 --> out2[Join Output 2]
 
 > 💡 **Tip:**  
 > Use Broadcast Hash Join when one DataFrame is small enough to fit in memory. For larger datasets, Spark automatically chooses Shuffle Hash Join or other strategies.
-

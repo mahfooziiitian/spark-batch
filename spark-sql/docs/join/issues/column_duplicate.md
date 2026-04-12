@@ -1,7 +1,18 @@
-# Duplicate Columns in Joins
+# :material-alert-circle: Duplicate Columns in Joins
 
 When two joined tables contain columns with the same name, Spark can throw
 **ambiguous column** errors or silently overwrite one column.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    J[JOIN with duplicate col names] -->|AnalysisException| E[Ambiguous reference]
+    E -->|fix 1| AL[Use table aliases]
+    E -->|fix 2| ES[Explicit column select]
+    E -->|fix 3| RN[Rename in CTE]
+```
 
 ---
 

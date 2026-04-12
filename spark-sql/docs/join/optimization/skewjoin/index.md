@@ -1,4 +1,4 @@
-# Skew Join in Spark SQL
+# :material-scale-unbalanced: Skew Join in Spark SQL
 
 Skew join hints are **not required** in most cases.
 
@@ -7,6 +7,15 @@ Skew join hints are **not required** in most cases.
 > - `Adaptive Query Execution (AQE)`  
 > - `spark.sql.adaptive.skewJoin.enabled`  
 > are enabled.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    S[Skewed Partition] -->|AQE detects skew| SP[Split sub-partitions]
+    SP --> B[Balanced executors]
+```
 
 ---
 

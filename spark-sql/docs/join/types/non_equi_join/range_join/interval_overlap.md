@@ -1,6 +1,16 @@
-# Interval Overlap
+# :material-not-equal: Interval Overlap
 
 This guide demonstrates how to perform a **range join** (also known as an **interval overlap join**) in Spark SQL. This is useful when you want to find overlapping time intervals between two tables.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    E[Events: start/end] --> J{Overlap condition}
+    A[Availability: start/end] --> J
+    J --> O[Overlapping pairs]
+```
 
 ## Scenario
 

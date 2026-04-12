@@ -1,7 +1,20 @@
-# Join Issues
+# :material-alert-circle: Join Issues
 
 Join problems often show up as slow performance or incorrect results.
 This guide lists common pitfalls and quick fixes.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    I[Join Issues] --> DC[Duplicate Columns]
+    I --> SK[Skewed Keys]
+    I --> EX[Data Explosion]
+    DC -->|fix| AL[Use aliases]
+    SK -->|fix| AQE[AQE / salting]
+    EX -->|fix| CC[Check join condition]
+```
 
 ---
 

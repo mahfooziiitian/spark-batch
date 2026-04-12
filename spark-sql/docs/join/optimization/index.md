@@ -1,7 +1,20 @@
-# Join Optimization
+# :material-speedometer: Join Optimization
 
 Join performance depends on data size, key distribution, and the selected
 physical strategy. This guide highlights practical tuning tips.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    O[Join Optimization] --> B[Broadcast small tables]
+    O --> R[Repartition on join keys]
+    O --> F[Filter early]
+    O --> S[Handle skew]
+    B --> NL[No shuffle needed]
+    S --> AQE[AQE / Salting]
+```
 
 ---
 

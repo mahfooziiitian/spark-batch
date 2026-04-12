@@ -1,4 +1,4 @@
-# Spark SQL Join Hint Operators
+# :material-lightbulb-on: Spark SQL Join Hint Operators
 
 Spark SQL provides several **join strategy hints** to influence the physical execution plan of joins. These hints allow you to guide Spark in choosing the most efficient join strategy for your data and workload.
 
@@ -10,6 +10,21 @@ Supported join hints include:
 - `SHUFFLE_REPLICATE_NL`
 
 Each hint instructs Spark to use the specified strategy for the hinted relation when performing a join.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    H[Join Hints] --> B[BROADCAST]
+    H --> M[MERGE]
+    H --> SH[SHUFFLE_HASH]
+    H --> SN[SHUFFLE_REPLICATE_NL]
+    B -->|priority 1| P[Planner]
+    M -->|priority 2| P
+    SH -->|priority 3| P
+    SN -->|priority 4| P
+```
 
 ---
 

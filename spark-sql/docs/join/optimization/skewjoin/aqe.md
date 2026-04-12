@@ -1,6 +1,16 @@
-# Adaptive Query Execution (AQE) in Spark
+# :material-scale-unbalanced: Adaptive Query Execution (AQE) in Spark
 
 Adaptive Query Execution (AQE) is a powerful suite of runtime optimization features introduced in Spark 3.0 and enabled by default. One of its key capabilities is the automatic optimization of joins involving skewed datasets.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    SK[Skewed partition detected] -->|AQE runtime| SP[Split sub-partitions]
+    SP --> B[Balanced executors]
+    B --> O[Faster join]
+```
 
 ## How AQE Handles Skewed Joins
 

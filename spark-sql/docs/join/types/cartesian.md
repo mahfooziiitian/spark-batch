@@ -1,8 +1,18 @@
-# Cartesian
+# :material-grid: Cartesian
 
 A **Cartesian join** (also called a **cross join**) is the simplest join type in Spark SQL. It **does not require a join expression**—instead, it pairs **every row** from the left DataFrame with **every row** from the right DataFrame.
 
 > ⚠️ **Warning:** Cartesian joins can be extremely expensive and may cause performance or memory issues if used carelessly.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L["Left: N rows"] --> C[CROSS JOIN]
+    R["Right: M rows"] --> C
+    C --> O["Result: N x M rows"]
+```
 
 ---
 

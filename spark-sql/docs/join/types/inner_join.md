@@ -1,6 +1,16 @@
-# Inner Join
+# :material-set-center: Inner Join
 
 An **inner join** returns only the rows where the join condition matches in *both* tables. It's the default and most widely used join type in SQL and Spark.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Left Table] --> J{ON condition}
+    R[Right Table] --> J
+    J -->|match| O[Result: matching rows only]
+```
 
 ---
 
@@ -67,4 +77,3 @@ flowchart TD
 
 > **Pro Tip:**  
 > Always analyze your data distribution and table sizes before joining. Use `EXPLAIN` to see Spark's chosen strategy!
-

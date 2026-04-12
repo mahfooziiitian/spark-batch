@@ -1,6 +1,17 @@
-# Broadcast Hash Join
+# :material-broadcast: Broadcast Hash Join
 
 Broadcast Hash Join is a Spark join strategy optimized for scenarios where **one of the datasets is small enough to fit into memory**. It avoids the costly shuffle operation required by Shuffle Hash Join by broadcasting the smaller dataset to all worker nodes, enabling efficient, parallel joins.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    D[Driver] -->|broadcast small table| E1[Executor 1]
+    D -->|broadcast small table| E2[Executor 2]
+    E1 --> H[Hash Join in Memory]
+    E2 --> H
+```
 
 ---
 

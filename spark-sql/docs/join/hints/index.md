@@ -1,8 +1,17 @@
-# Join Hints
+# :material-lightbulb-on: Join Hints
 
 Join hints let you influence the physical join strategy (e.g., broadcast).
 They are useful for performance tuning when the optimizer makes suboptimal
 choices.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    Q["SELECT /*+ BROADCAST(t) */ ..."] --> P[Planner]
+    P --> J[Forced Broadcast Join]
+```
 
 ---
 

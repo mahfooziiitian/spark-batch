@@ -1,6 +1,19 @@
-# Iterative Broadcast Technique
+# :material-scale-unbalanced: Iterative Broadcast Technique
 
 The **Iterative Broadcast** technique is an adaptation of the `Broadcast Hash Join` designed to efficiently handle large, skewed datasets that cannot be broadcasted in their entirety due to executor memory constraints.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    L[Large Skewed DF] -->|split chunks| C1[Chunk 1]
+    L --> C2[Chunk 2]
+    S[Small DF] -->|broadcast chunk| C1
+    S -->|broadcast chunk| C2
+    C1 --> O[Partial result]
+    C2 --> O
+```
 
 ## When to Use
 

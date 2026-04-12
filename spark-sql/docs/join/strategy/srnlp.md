@@ -1,7 +1,20 @@
-# Shuffle-and-Replicate Nested Loop Join
+# :material-format-list-numbered: Shuffle-and-Replicate Nested Loop Join
 
 > **Use Case:**  
 > Efficient for *cross joins* (Cartesian product) when no join condition exists.
+
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    S[Small Table] -->|replicate| P1[Partition 1]
+    S -->|replicate| P2[Partition 2]
+    L[Large Table] -->|shuffle| P1
+    L -->|shuffle| P2
+    P1 --> O[Cross Product]
+    P2 --> O
+```
 
 ---
 
