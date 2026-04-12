@@ -12,3 +12,18 @@ project/plugins/project/build.properties
 .databricks
 .venv/
 databricks.yml
+
+# Python build artefacts
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# MkDocs generated site
+site/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
