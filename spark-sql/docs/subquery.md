@@ -1,6 +1,17 @@
-# Subqueries
+# :material-file-tree: Subqueries
 
 Subqueries are queries nested inside another query, used to filter rows, compute values, or supply inline tables to the outer query.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[Outer Query] --> B{Subquery Type}
+    B --> C["Scalar: returns one value"]
+    B --> D["IN / NOT IN"]
+    B --> E["EXISTS / NOT EXISTS"]
+    B --> F["Lateral: correlated"]
+```
 
 ---
 

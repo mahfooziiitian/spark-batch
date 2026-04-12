@@ -83,12 +83,14 @@ def test_greatest_least_row_level(spark: SparkSession) -> None:
     # createDataFrame infers integer literals as LongType — match that here
     expected = spark.createDataFrame(
         [(3, 1, 2, 3, 1), (7, 9, 5, 9, 5), (4, 4, 4, 4, 4)],
-        StructType([
-            StructField("a", LongType()),
-            StructField("b", LongType()),
-            StructField("c", LongType()),
-            StructField("greatest_val", LongType()),
-            StructField("least_val", LongType()),
-        ]),
+        StructType(
+            [
+                StructField("a", LongType()),
+                StructField("b", LongType()),
+                StructField("c", LongType()),
+                StructField("greatest_val", LongType()),
+                StructField("least_val", LongType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)

@@ -1,4 +1,4 @@
-# Array Filtering
+# :material-code-array: Array Filtering
 
 Arrays require specialized functions to check for membership or conditions.
 Spark SQL provides `array_contains`, higher-order functions, and indexing

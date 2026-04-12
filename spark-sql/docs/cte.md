@@ -1,6 +1,14 @@
-# Common Table Expressions (CTEs)
+# :material-recycle: Common Table Expressions (CTEs)
 
 CTEs define named temporary result sets that can be referenced multiple times within a single query statement.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["WITH cte1 AS (...)"] --> B["WITH cte2 AS (... cte1 ...)"]
+    B --> C["SELECT ... FROM cte2"]
+```
 
 ---
 
@@ -187,7 +195,7 @@ SELECT n FROM numbers;
 
 ---
 
-## CTE vs Subquery
+## :material-recycle: CTE vs Subquery
 
 | Aspect | CTE | Subquery |
 |--------|-----|----------|

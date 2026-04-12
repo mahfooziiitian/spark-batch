@@ -1,4 +1,4 @@
-# Control Structure
+# :material-code-braces: Control Structure
 
 `control structures` typically refer to conditional logic and flow control functions you can use inside SQL queries, views, and expressions.
 

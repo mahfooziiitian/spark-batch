@@ -1,7 +1,15 @@
-# Struct Functions
+# :material-cube-outline: Struct Functions
 
 A **struct** (also called a named struct) groups multiple named fields into a single composite
 value. Structs are the Spark SQL equivalent of a row or record within a column.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Named Fields] --> B[Struct Functions]
+    B --> C[Struct Type]
+```
 
 ## 📌 Creating Structs
 

@@ -1,4 +1,4 @@
-# Table Metadata
+# :material-information-outline: Table Metadata
 
 Table metadata includes schema, partition columns, storage format, and table
 properties. Spark exposes metadata via `DESCRIBE` and `SHOW` commands.

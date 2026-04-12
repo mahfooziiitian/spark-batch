@@ -1,4 +1,4 @@
-# UPDATE
+# :material-table-edit: UPDATE
 
 `UPDATE` modifies existing rows in a Delta Lake table. It is **not** supported
 on Hive, Parquet, or CSV tables — only Delta (and Iceberg/Hudi with their

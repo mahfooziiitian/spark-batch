@@ -1,4 +1,4 @@
-# Data Types
+# :material-database-outline: Data Types
 
 Spark SQL has a rich type system covering primitives, datetime types, and complex
 (nested) types. Every column in a DataFrame has a data type that determines how

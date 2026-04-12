@@ -1,4 +1,4 @@
-# NULL Handling in Filters
+# :material-null: NULL Handling in Filters
 
 Spark SQL uses **three-valued logic**: `TRUE`, `FALSE`, and `NULL`.
 That means comparisons involving NULL often return NULL (which behaves like

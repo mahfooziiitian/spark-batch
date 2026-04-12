@@ -1,6 +1,16 @@
-# Builtin Aggregate Expressions
+# :material-null: Builtin Aggregate Expressions
 
 Aggregate functions compute a single result by processing a set of input rows.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Aggregate Input] --> B{Is NULL?}
+    B -->|Yes| C[Skip]
+    B -->|No| D[Include in Result]
+    D --> E["COUNT / SUM / AVG / MAX / MIN"]
+```
 
 Below are the rules of how NULL values are handled by aggregate functions.
 

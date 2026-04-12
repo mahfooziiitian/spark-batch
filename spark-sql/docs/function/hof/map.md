@@ -1,9 +1,17 @@
-# Map HOFs
+# :material-lambda: Map HOFs
 
 Higher-order functions that operate on `MAP` types — filter entries, merge two maps,
 and transform keys or values using lambda expressions.
 
-## MAP_FILTER
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
+
+## :material-code-braces: MAP_FILTER
 
 ### 📌 Syntax
 
@@ -37,7 +45,7 @@ SELECT MAP_FILTER(MAP('a', 1, 'b', 2, 'c', 3), (k, v) -> v % 2 = 0);
 
 ---
 
-## MAP_ZIP_WITH
+## :material-code-braces: MAP_ZIP_WITH
 
 ### 📌 Syntax
 
@@ -81,7 +89,7 @@ SELECT MAP_ZIP_WITH(
 
 ---
 
-## TRANSFORM_KEYS
+## :material-code-braces: TRANSFORM_KEYS
 
 ### 📌 Syntax
 
@@ -109,7 +117,7 @@ SELECT TRANSFORM_KEYS(MAP('name', 'Alice', 'city', 'NYC'), (k, v) -> UPPER(k));
 
 ---
 
-## TRANSFORM_VALUES
+## :material-code-braces: TRANSFORM_VALUES
 
 ### 📌 Syntax
 

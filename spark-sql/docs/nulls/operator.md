@@ -1,6 +1,15 @@
-# Aggregate Operator (GROUP BY, DISTINCT)
+# :material-null: Aggregate Operator (GROUP BY, DISTINCT)
 
 Two NULL values are not equal.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["GROUP BY NULL values"] --> B["Single Bucket"]
+    C["DISTINCT NULL values"] --> D["One Distinct NULL"]
+    E["ORDER BY NULL"] --> F["NULLS FIRST (ASC) / NULLS LAST (DESC)"]
+```
 
 However, for the purpose of grouping and distinct processing, the two or more values with NULL data are grouped together into the same bucket.
 

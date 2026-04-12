@@ -1,7 +1,17 @@
-# SCD Type 2
+# :material-clock-plus: SCD Type 2
 
 Type 2 preserves history by inserting a new row for each change and marking
 previous rows as no longer current.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Change Detected] --> B[Close Old Row]
+    B --> C["Set effective_to = today, is_current = false"]
+    C --> D[Insert New Row]
+    D --> E["Set effective_from = today, is_current = true"]
+```
 
 ---
 

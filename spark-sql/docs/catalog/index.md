@@ -1,4 +1,4 @@
-# Spark catalog
+# :material-book-open-page-variant: Spark catalog
 
 In Apache Spark, a catalog is a logical namespace or system that stores metadata about databases, tables, views, functions, and columns. It's like a directory of all available data objects in your Spark environment.
 
@@ -9,6 +9,17 @@ databases, tables, functions, and views.
 
 The catalog is available in the `org.apache.spark.sql.catalog.Catalog` package and contains a number of helpful functions
 for doing things like listing tables, databases, and functions.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-book-open-page-variant: Catalog"] --> B["Hive Metastore :material-bee:"]
+    A --> C["Unity Catalog :material-unity:"]
+    A --> D["In-Memory Session :material-clock-time-four:"]
+    B --> E["External :material-database-export:"]
+    C --> F["3-level namespace: catalog.schema.table"]
+```
 
 ## Types of Catalogs in Spark
 

@@ -1,7 +1,19 @@
-# Data Types Overview
+# :material-format-text: Data Types Overview
 
 Spark SQL supports primitive, datetime, and complex data types. Understanding
 types helps avoid casting errors and improves query performance.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-format-text: Data Types"] --> B["Primitive :material-numeric:"]
+    A --> C["Complex :material-code-braces:"]
+    A --> D["DateTime :material-calendar-clock:"]
+    B --> E["INT, BIGINT, DOUBLE, STRING, BOOLEAN"]
+    C --> F["ARRAY, MAP, STRUCT"]
+    D --> G["DATE, TIMESTAMP, INTERVAL"]
+```
 
 ---
 

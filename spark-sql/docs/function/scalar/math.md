@@ -1,11 +1,19 @@
-# Math Functions
+# :material-calculator: Math Functions
 
 Spark SQL provides a rich set of scalar math functions for numeric
 calculations.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Numeric Input] --> B[Math Function]
+    B --> C[Numeric Result]
+```
+
 ---
 
-## 📌 Common Functions
+## 📌 :material-calculator: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -20,7 +28,7 @@ calculations.
 
 ---
 
-## 🧪 Examples
+## 🧪 :material-calculator: Examples
 
 ```sql
 SELECT ABS(-10) AS abs_val,
@@ -30,7 +38,7 @@ SELECT ABS(-10) AS abs_val,
 
 ---
 
-## 🧠 When to Use
+## 🧠 :material-calculator: When to Use
 
 | Scenario | Function |
 |----------|----------|

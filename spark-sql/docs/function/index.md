@@ -1,8 +1,20 @@
-# Functions
+# :material-function: Functions
 
 Spark SQL provides a rich set of built-in functions for data transformation and analysis.
 This section covers aggregate, scalar, collection, generator, higher-order, structure,
 lambda, macro, and user-defined functions.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-function: Spark SQL Functions"] --> B["Scalar :material-function:"]
+    A --> C["Aggregate :material-sigma:"]
+    A --> D["Window :material-window-shutter:"]
+    A --> E["Generator :material-expand-all:"]
+    A --> F["HOF :material-lambda:"]
+    A --> G["UDF :material-code-braces-box:"]
+```
 
 ## 📌 Function Categories
 

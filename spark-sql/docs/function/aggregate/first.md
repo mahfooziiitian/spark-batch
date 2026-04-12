@@ -1,7 +1,16 @@
-# first / first_value
+# :material-sigma: first / first_value
 
 `first` returns the first value encountered in a group. When used with `ORDER BY`
 in window functions, it returns the first value in the ordered frame.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[FIRST / FIRST_VALUE]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

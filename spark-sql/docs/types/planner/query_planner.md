@@ -1,4 +1,4 @@
-# Query Planner
+# :material-map-legend: Query Planner
 
 The physical planner converts an optimized logical plan into an executable physical plan
 by selecting concrete algorithms for each operation.

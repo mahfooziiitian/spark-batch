@@ -1,4 +1,4 @@
-# Pattern Matching Conditions
+# :material-regex: Pattern Matching Conditions
 
 Pattern predicates filter strings based on partial matches or regular
 expressions.

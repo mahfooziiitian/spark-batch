@@ -1,4 +1,4 @@
-# Hopping Windows
+# :material-skip-next: Hopping Windows
 
 A hopping window has a fixed time length, and it moves forward or `hops` at a time interval smaller than the window's length.
 
@@ -33,7 +33,7 @@ gantt
     Window3      :w3, 11:00, 1h
 ```
 
-## Hopping window queries (spark <3.4)
+## :material-skip-next: Hopping window queries (spark <3.4)
 
 ```sql
 CREATE OR REPLACE TEMP VIEW events AS
@@ -56,7 +56,7 @@ GROUP BY window
 ORDER BY window_start;
 ```
 
-## Hop operator
+## :material-skip-next: Hop operator
 
 ```sql
 CREATE OR REPLACE TEMP VIEW events AS

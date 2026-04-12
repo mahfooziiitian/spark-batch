@@ -1,7 +1,16 @@
-# Struct Data Type
+# :material-code-braces: Struct Data Type
 
 A `STRUCT` groups multiple named fields into a single composite column — like a row within
 a row. Each field has a name and a type.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["STRUCT(name STRING, age INT)"] --> B["col.name"]
+    A --> C["col.age"]
+    A --> D["struct() function"]
+```
 
 ## 📌 Syntax
 

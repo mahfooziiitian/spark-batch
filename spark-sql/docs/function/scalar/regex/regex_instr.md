@@ -1,9 +1,19 @@
-# regexp_instr
+# :material-regex: regexp_instr
 
 `regexp_instr` searches a string for a regular expression pattern and returns the
 **1-based position** of the first match.
 
-## 📌 Syntax
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
+## 📌 :material-regex: Syntax
 
 ```sql
 regexp_instr(str, regexp)
@@ -13,13 +23,13 @@ regexp_instr(str, regexp)
 - `regexp`: Java-style regular expression pattern
 - Returns: `INT` — 1-based position of the match, or `0` if no match
 
-## 🔍 Behavior
+## 🔍 :material-regex: Behavior
 
 1. Positions are **1-based** (not 0-based).
 2. Returns `0` if no match is found.
 3. Returns the position of the **first** occurrence.
 
-## 🧪 Practical Examples
+## 🧪 :material-regex: Practical Examples
 
 ### Find Position of Pattern
 
@@ -50,7 +60,7 @@ SELECT SUBSTRING('item-456-detail', regexp_instr('item-456-detail', '\\d'));
 -- Result: '456-detail'
 ```
 
-## 🧠 When to Use
+## 🧠 :material-regex: When to Use
 
 | Scenario | Function |
 |----------|----------|

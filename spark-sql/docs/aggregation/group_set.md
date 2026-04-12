@@ -1,4 +1,4 @@
-# GROUPING SETS
+# :material-layers-triple: GROUPING SETS
 
 `GROUPING SETS` lets you compute aggregates for multiple, explicitly listed grouping combinations in a single query — without writing multiple `UNION ALL` branches.
 

@@ -1,4 +1,4 @@
-# Date & Time Formatting
+# :material-calendar-clock: Date & Time Formatting
 
 Spark SQL uses Java's `SimpleDateFormat` pattern letters for parsing and formatting
 dates and timestamps.

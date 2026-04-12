@@ -1,7 +1,19 @@
-# CSV Data Source
+# :material-file-delimited: CSV Data Source
 
 Spark SQL can read and write CSV files using the built-in CSV data source.
 Provide an explicit schema for best performance.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[CSV File] --> B["spark.read.csv(path)"]
+    B --> C{Schema?}
+    C -->|inferSchema| D[Scan file to detect types]
+    C -->|explicit| E[Use provided schema]
+    D --> F[DataFrame]
+    E --> F
+```
 
 ---
 

@@ -1,7 +1,16 @@
-# Hive Configuration
+# :material-bee: Hive Configuration
 
 Hive-related Spark settings control metastore connectivity, warehouse paths,
 partition behavior, and compatibility.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

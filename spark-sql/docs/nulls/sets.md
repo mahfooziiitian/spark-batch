@@ -1,6 +1,16 @@
-# Null handling in set
+# :material-null: Null handling in set
 
 ## Set Operators (UNION, INTERSECT, EXCEPT)
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Set Operation"] --> B["Null-Safe Comparison"]
+    B --> C["UNION: all rows combined"]
+    B --> D["INTERSECT: common rows"]
+    B --> E["EXCEPT: rows in left only"]
+```
 
 `NULL` values are compared in a `null-safe manner` for equality in the context of set operations.
 That means when comparing rows, two NULL values are considered equal unlike the regular `EqualTo(=)` operator.

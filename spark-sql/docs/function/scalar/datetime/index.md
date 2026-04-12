@@ -1,9 +1,17 @@
-# DateTime Functions
+# :material-calendar-clock: DateTime Functions
 
 Spark SQL provides comprehensive functions for working with dates, timestamps, intervals,
 and time zones.
 
-## 📌 Categories
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## 📌 :material-calendar-clock: Categories
 
 | Category | Description | Key Functions |
 |----------|-------------|---------------|
@@ -12,7 +20,7 @@ and time zones.
 | **Interval** | Add or subtract time durations | `INTERVAL '1' DAY`, `INTERVAL '2' HOUR`, `MAKE_INTERVAL` |
 | **Timezone** | Convert between time zones | `FROM_UTC_TIMESTAMP`, `TO_UTC_TIMESTAMP`, `CONVERT_TIMEZONE` |
 
-## 🧪 Quick Examples
+## 🧪 :material-calendar-clock: Quick Examples
 
 ```sql
 -- Date arithmetic
@@ -32,7 +40,7 @@ SELECT CURRENT_TIMESTAMP() + INTERVAL '2' HOUR AS two_hours_later;
 SELECT FROM_UTC_TIMESTAMP(CURRENT_TIMESTAMP(), 'America/New_York') AS eastern_time;
 ```
 
-## 🧠 Type Overview
+## 🧠 :material-calendar-clock: Type Overview
 
 | Type | Storage | Example | Precision |
 |------|---------|---------|-----------|

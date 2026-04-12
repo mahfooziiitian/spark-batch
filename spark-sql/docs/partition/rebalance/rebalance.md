@@ -1,4 +1,4 @@
-# Rebalance
+# :material-scale-balance: Rebalance
 
 `REBALANCE` evenly redistributes data across partitions to reduce skew and
 improve parallelism.

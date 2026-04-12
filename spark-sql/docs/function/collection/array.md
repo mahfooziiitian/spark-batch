@@ -1,6 +1,14 @@
-# Array Functions
+# :material-format-list-bulleted: Array Functions
 
 Comprehensive reference for Spark SQL functions that **create, query, and transform arrays**.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input] --> B[Array Functions]
+    B --> C[Transformed Array]
+```
 
 ## 📌 Creating Arrays
 

@@ -1,4 +1,4 @@
-# Partitioned Managed Tables
+# :material-table-split-cell: Partitioned Managed Tables
 
 Partitioned managed tables store data in the warehouse directory and are
 physically organized by partition columns.

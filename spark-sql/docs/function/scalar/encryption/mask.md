@@ -1,10 +1,18 @@
-# MASK
+# :material-shield-lock: MASK
 
 `MASK` obfuscates sensitive values by replacing characters with defaults.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Plain Text] --> B[Hash Function]
+    B --> C[Hash Output]
+```
+
 ---
 
-## 📌 Syntax
+## 📌 :material-shield-lock: Syntax
 
 ```sql
 MASK(str)
@@ -13,14 +21,14 @@ MASK(str, upper, lower, digit, other)
 
 ---
 
-## 🔍 Behavior Notes
+## 🔍 :material-shield-lock: Behavior Notes
 
 1. Letters and digits are replaced by default mask characters.
 2. You can customize replacement characters for upper, lower, digits, and other.
 
 ---
 
-## 🧪 Examples
+## 🧪 :material-shield-lock: Examples
 
 ```sql
 SELECT MASK('John.Doe@example.com') AS masked;
@@ -32,7 +40,7 @@ SELECT MASK('ABC123', 'X', 'x', '0', '*') AS masked;
 
 ---
 
-## 🧠 When to Use
+## 🧠 :material-shield-lock: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -1,7 +1,17 @@
-# Explode Outer
+# :material-expand-all: Explode Outer
 
 `EXPLODE_OUTER()` works identically to `EXPLODE()` but **preserves rows** where the array or map
 is `NULL` or empty — filling the generated columns with `NULL` instead of dropping the row.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Row with ARRAY[a,b,c]"] --> B[EXPLODE_OUTER]
+    B --> C[Row: a]
+    B --> D[Row: b]
+    B --> E[Row: c]
+```
 
 ## 📌 Syntax
 

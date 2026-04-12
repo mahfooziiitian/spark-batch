@@ -1,7 +1,16 @@
-# Managed Hive Tables
+# :material-bee: Managed Hive Tables
 
 Managed tables are stored in the Spark/Hive warehouse directory and are fully
 managed by the catalog.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

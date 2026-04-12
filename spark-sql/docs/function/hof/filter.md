@@ -1,7 +1,15 @@
-# Filter
+# :material-lambda: Filter
 
 The `FILTER()` higher-order function returns a new array containing only the elements
 that satisfy a given condition — the array equivalent of a SQL `WHERE` clause.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
 
 ## 📌 Syntax
 

@@ -1,7 +1,22 @@
-# Spark SQL Documentation
+# :material-database: Spark SQL Documentation
 
 Welcome to the Spark SQL knowledge base. This site is organized by topic areas
 so you can quickly find syntax, examples, and optimization guidance.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-database: Spark SQL"] --> B["Table :material-table:"]
+    A --> C["DML :material-table-edit:"]
+    A --> D["Filter :material-filter:"]
+    A --> E["Join :material-link:"]
+    A --> F["Aggregation :material-sigma:"]
+    A --> G["Window :material-window-shutter:"]
+    A --> H["Optimization :material-speedometer:"]
+    A --> I["Functions :material-function:"]
+    A --> J["Types :material-format-text:"]
+```
 
 ---
 

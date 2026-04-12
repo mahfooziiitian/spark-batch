@@ -6,6 +6,7 @@ The pattern mirrors MERGE INTO semantics:
   - WHEN NOT MATCHED THEN INSERT → new source rows are added
   - Unmatched target rows are preserved unchanged
 """
+
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import DataFrame, SparkSession
@@ -31,7 +32,7 @@ def test_upsert_updates_matched(spark: SparkSession) -> None:
         ["customer_id", "name", "city"],
     )
     source = spark.createDataFrame(
-        [("c1", "Alice", "LA")],   # c1 moves from NY → LA
+        [("c1", "Alice", "LA")],  # c1 moves from NY → LA
         ["customer_id", "name", "city"],
     )
     result = _upsert(target, source, "customer_id")
@@ -46,7 +47,7 @@ def test_upsert_inserts_unmatched(spark: SparkSession) -> None:
         ["customer_id", "name", "city"],
     )
     source = spark.createDataFrame(
-        [("c2", "Bob", "CA")],   # brand new customer
+        [("c2", "Bob", "CA")],  # brand new customer
         ["customer_id", "name", "city"],
     )
     result = _upsert(target, source, "customer_id")
@@ -62,7 +63,7 @@ def test_upsert_leaves_unmatched_target(spark: SparkSession) -> None:
         ["customer_id", "name", "city"],
     )
     source = spark.createDataFrame(
-        [("c1", "Alice", "LA")],   # only c1 in source
+        [("c1", "Alice", "LA")],  # only c1 in source
         ["customer_id", "name", "city"],
     )
     result = _upsert(target, source, "customer_id")
@@ -96,14 +97,14 @@ def test_conditional_update_only_when_changed(spark: SparkSession) -> None:
     joined = target_prep.join(source_prep, on="customer_id", how="left")
     result = joined.withColumn(
         "city",
-        F.when(F.col("target_city") != F.col("source_city"), F.col("source_city")).otherwise(
-            F.col("target_city")
-        ),
+        F.when(
+            F.col("target_city") != F.col("source_city"), F.col("source_city")
+        ).otherwise(F.col("target_city")),
     ).select("customer_id", "name", "city")
 
     rows = {r["customer_id"]: r["city"] for r in result.collect()}
-    assert rows["c1"] == "TX"   # changed
-    assert rows["c2"] == "CA"   # unchanged — source and target were identical
+    assert rows["c1"] == "TX"  # changed
+    assert rows["c2"] == "CA"  # unchanged — source and target were identical
 
 
 @pytest.mark.unit

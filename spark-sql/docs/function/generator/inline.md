@@ -1,7 +1,17 @@
-# Inline
+# :material-expand-all: Inline
 
 `INLINE()` flattens an **array of structs** into multiple rows **and** multiple columns —
 each struct field becomes a separate output column. It is the struct-aware alternative to `EXPLODE`.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Single Row] --> B[INLINE]
+    B --> C[Row 1]
+    B --> D[Row 2]
+    B --> E[Row N]
+```
 
 ## 📌 Syntax
 

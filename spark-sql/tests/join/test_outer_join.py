@@ -14,17 +14,21 @@ ORDERS_COLS = ["order_id", "customer_id", "amount", "status"]
 CUSTOMERS = [(101, "Alice", "US"), (102, "Bob", "CA"), (103, "Charlie", "US")]
 CUSTOMERS_COLS = ["customer_id", "name", "country"]
 
-_ORDER_CUSTOMER_NAME_SCHEMA = StructType([
-    StructField("order_id", LongType(), True),
-    StructField("customer_id", LongType(), True),
-    StructField("name", StringType(), True),
-])
+_ORDER_CUSTOMER_NAME_SCHEMA = StructType(
+    [
+        StructField("order_id", LongType(), True),
+        StructField("customer_id", LongType(), True),
+        StructField("name", StringType(), True),
+    ]
+)
 
 
 @pytest.mark.unit
 def test_left_join_preserves_all_left_rows(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT o.order_id, o.customer_id, c.name
@@ -40,7 +44,9 @@ def test_left_join_preserves_all_left_rows(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_left_join_null_for_unmatched(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT o.order_id, o.customer_id, c.name
@@ -58,7 +64,9 @@ def test_left_join_null_for_unmatched(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_right_join_preserves_all_right_rows(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT o.order_id, c.customer_id, c.name
@@ -80,7 +88,9 @@ def test_right_join_preserves_all_right_rows(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_full_outer_join_row_count(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT
@@ -102,7 +112,9 @@ def test_full_outer_join_row_count(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_coalesce_after_outer_join(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT o.order_id, COALESCE(c.name, 'Unknown') AS name
@@ -121,7 +133,9 @@ def test_coalesce_after_outer_join(spark: SparkSession) -> None:
 def test_anti_join_pattern(spark: SparkSession) -> None:
     """LEFT JOIN + WHERE right key IS NULL replicates an anti-join."""
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT o.order_id, o.customer_id

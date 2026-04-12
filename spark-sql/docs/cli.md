@@ -1,8 +1,8 @@
-# Spark sql cli
+# :material-console: Spark sql cli
 
 Spark SQL CLI is a command-line interface that allows you to run Spark SQL queries interactively or execute SQL scripts against a Spark cluster.
 
-## What is Spark SQL CLI?
+## :material-console: What is Spark SQL CLI?
 
 A shell environment where you can type SQL queries directly.
 
@@ -10,7 +10,7 @@ It connects to a Spark session and executes SQL on your data.
 
 Useful for quick ad-hoc queries, testing, or scripting without writing full Spark applications.
 
-## How to start Spark SQL CLI
+## :material-console: How to start Spark SQL CLI
 
 From your terminal, run:
 
@@ -24,17 +24,17 @@ This opens an interactive prompt:
 Spark SQL>
 ```
 
-## Binary path
+## :material-console: Binary path
 
 /bin/spark-sql
 
-## Showing query output header
+## :material-console: Showing query output header
 
 ```bash
 spark-sql  --conf "spark.hadoop.hive.cli.print.header=true"
 ```
 
-## Common features
+## :material-console: Common features
 
 1. Run SQL queries against Hive, Parquet, JSON, CSV, or Delta tables.
 2. Support for Spark SQL syntax including DDL, DML, CTEs, joins, window functions, etc.
@@ -42,7 +42,7 @@ spark-sql  --conf "spark.hadoop.hive.cli.print.header=true"
 4. Query tables registered in the Spark catalog.
 5. Use CLI options to run SQL scripts or connect to a specific Hive metastore.
 
-## Running SQL scripts
+## :material-console: Running SQL scripts
 
 You can run a .sql file non-interactively:
 
@@ -50,7 +50,7 @@ You can run a .sql file non-interactively:
 spark-sql -f /path/to/script.sql
 ```
 
-## CLI options highlights
+## :material-console: CLI options highlights
 
 1. --master <url>: Specify Spark master (e.g., local, yarn, mesos)
 2. --conf <key>=<value>: Set Spark configs
@@ -62,7 +62,7 @@ Example:
 spark-sql -e "SHOW TABLES"
 ```
 
-## Notes
+## :material-console: Notes
 
 1. spark-sql uses your Spark environment; make sure Spark is installed and environment variables are set.
 2. CLI reads configs from $SPARK_HOME/conf and your Hadoop/Hive configs if available.

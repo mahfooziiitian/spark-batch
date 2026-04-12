@@ -1,7 +1,19 @@
-# Window Functions
+# :material-window-shutter: Window Functions
 
 Window functions compute values across related rows while preserving row-level
 output.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-window-shutter: Window Function"] --> B["PARTITION BY"]
+    B --> C["ORDER BY"]
+    C --> D["Frame (ROWS/RANGE)"]
+    D --> E["Ranking: ROW_NUMBER, RANK"]
+    D --> F["Aggregate: SUM, AVG OVER"]
+    D --> G["Navigation: LAG, LEAD"]
+```
 
 ---
 

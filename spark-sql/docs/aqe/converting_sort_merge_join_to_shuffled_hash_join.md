@@ -1,4 +1,4 @@
-# AQE: Sort-Merge to Shuffled Hash Join
+# :material-auto-fix: AQE: Sort-Merge to Shuffled Hash Join
 
 AQE can replace a sort-merge join (SMJ) with a shuffled hash join (SHJ)
 when runtime statistics show it will be faster.

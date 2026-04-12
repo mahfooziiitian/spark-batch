@@ -1,13 +1,21 @@
-# 🧠 date Function in Spark SQL
+# 🧠 :material-calendar-clock: date Function in Spark SQL
 
 The date function in Spark SQL is used to cast a value to a DATE type or extract the date part from a timestamp or string.
 
-## Purpose
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## :material-calendar-clock: Purpose
 
 1. Convert a string or timestamp to a date (year-month-day).
 2. Extract only the date part (without time) from a timestamp.
 
-## Current date
+## :material-calendar-clock: Current date
 
 ```sql
 
@@ -35,7 +43,7 @@ SELECT current_date();
 SELECT current_date;
 ```
 
-## date
+## :material-calendar-clock: date
 
 ### Syntax
 
@@ -59,7 +67,7 @@ Examples:
 SELECT date_diff('2009-07-31', '2009-07-30'), date_diff('2009-07-30', '2009-07-31');
 ```
 
-## Formatting the date
+## :material-calendar-clock: Formatting the date
 
 ### date_format
 
@@ -78,7 +86,7 @@ Arguments:
 SELECT date_format('2016-04-08', 'y');
 ```
 
-## date_from_unix_date
+## :material-calendar-clock: date_from_unix_date
 
 ```sql
 date_from_unix_date(days)
@@ -90,7 +98,7 @@ It creates date from the number of days since 1970-01-01.
 SELECT date_from_unix_date(1);
 ```
 
-## Parts of date
+## :material-calendar-clock: Parts of date
 
 ### date_part
 

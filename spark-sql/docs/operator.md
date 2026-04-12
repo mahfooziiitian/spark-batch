@@ -1,4 +1,4 @@
-# SQL Operators
+# :material-math-integral: SQL Operators
 
 Operators combine values and expressions. Spark SQL supports arithmetic,
 comparison, logical, and string operators.

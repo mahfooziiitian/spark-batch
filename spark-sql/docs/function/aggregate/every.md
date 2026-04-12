@@ -1,6 +1,15 @@
-# every / bool_and
+# :material-sigma: every / bool_and
 
 `every` (also known as `bool_and`) returns `true` if **all** values in the group evaluate to true.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[EVERY / BOOL_AND]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

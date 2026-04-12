@@ -1,4 +1,4 @@
-# Pivoting
+# :material-table-pivot: Pivoting
 
 It is a great way of transforming the table to create a different view, more suitable to doing many
 summarizations and aggregations.
@@ -10,6 +10,14 @@ The `PIVOT` clause is used for data perspective.
 We can get the aggregated values based on specific column values, which will be turned to multiple columns used in SELECT clause.
 
 The PIVOT clause can be specified after the table name or subquery.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Rows: region, year, sales"] --> B["PIVOT on year"]
+    B --> C["Columns: 2022_sales, 2023_sales, 2024_sales"]
+```
 
 ## Syntax
 

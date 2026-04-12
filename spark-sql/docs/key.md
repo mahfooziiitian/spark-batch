@@ -1,4 +1,4 @@
-# Keys
+# :material-key: Keys
 
 Keys uniquely identify rows and define relationships between tables.
 

@@ -1,4 +1,4 @@
-# Tables
+# :material-table: Tables
 
 Tables are the core storage abstraction in Spark SQL. They can be managed or
 external and use formats like Parquet, ORC, or Delta.

@@ -1,17 +1,25 @@
-# 🧠 INTERVAL in Spark SQL
+# 🧠 :material-calendar-clock: INTERVAL in Spark SQL
 
 In Spark SQL, the INTERVAL keyword is used to add or subtract fixed amounts of time (like days, months, years, etc.) to/from dates or timestamps.
 
 It allows for time arithmetic in a natural SQL-like syntax.
 
-## ✅ Basic Syntax
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## ✅ :material-calendar-clock: Basic Syntax
 
 ```sql
 <date_or_timestamp> + INTERVAL <quantity> <unit>
 <date_or_timestamp> - INTERVAL <quantity> <unit>
 ```
 
-## 📌 Supported Units
+## 📌 :material-calendar-clock: Supported Units
 
 Unit| Description
 ---|---
@@ -24,7 +32,7 @@ MINUTE| 60-second minutes
 SECOND| Seconds (can be fractional)
 MILLISECOND| Milliseconds (as of Spark 3.4+)
 
-## 🧪 Examples
+## 🧪 :material-calendar-clock: Examples
 
 ### 1. Add Days to a Timestamp
 

@@ -132,7 +132,9 @@ def test_top_n_per_group(spark: SparkSession, sales_view: str):
     rows = result.collect()
     # One row per (region, rep) partition
     partitions = [(row.region, row.rep) for row in rows]
-    assert len(partitions) == len(set(partitions)), "More than one top row per partition"
+    assert len(partitions) == len(set(partitions)), (
+        "More than one top row per partition"
+    )
 
     expected = spark.createDataFrame(
         [
@@ -153,9 +155,9 @@ def test_deduplication_with_row_number(spark: SparkSession):
         ("cust1", "2024-01-05", 100),  # exact duplicate
         ("cust2", "2024-01-03", 200),
     ]
-    spark.createDataFrame(dup_data, ["customer_id", "txn_date", "amount"]).createOrReplaceTempView(
-        "dup_txns"
-    )
+    spark.createDataFrame(
+        dup_data, ["customer_id", "txn_date", "amount"]
+    ).createOrReplaceTempView("dup_txns")
     result = spark.sql(
         """
         SELECT customer_id, txn_date, amount

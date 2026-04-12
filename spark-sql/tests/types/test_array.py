@@ -1,4 +1,5 @@
 """Tests for Spark SQL ARRAY type operations."""
+
 import pytest
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -53,7 +54,9 @@ def test_array_union(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_array_intersect(spark: SparkSession) -> None:
-    result = spark.sql("SELECT ARRAY_INTERSECT(ARRAY(1, 2, 3), ARRAY(2, 3, 4)) AS common")
+    result = spark.sql(
+        "SELECT ARRAY_INTERSECT(ARRAY(1, 2, 3), ARRAY(2, 3, 4)) AS common"
+    )
     assert sorted(result.first()["common"]) == [2, 3]
 
 
@@ -81,5 +84,5 @@ def test_collect_list_aggregation(spark: SparkSession) -> None:
     )
     rows = result.collect()
     assert len(rows) == 2
-    assert sorted(rows[0]["tags"]) == ["x", "y"]   # group A
-    assert rows[1]["tags"] == ["z"]                 # group B
+    assert sorted(rows[0]["tags"]) == ["x", "y"]  # group A
+    assert rows[1]["tags"] == ["z"]  # group B

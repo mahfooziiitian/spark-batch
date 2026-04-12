@@ -26,6 +26,6 @@ FROM sales_data LATERAL VIEW stack(
     feb_sales,
     "Mar",
     mar_sales
-) AS months,
+) as months,
 sales;
 DROP TABLE IF EXISTS sales_data;

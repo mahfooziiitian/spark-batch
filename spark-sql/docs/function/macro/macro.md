@@ -1,8 +1,16 @@
-# SQL Macros
+# :material-code-json: SQL Macros
 
 SQL macros define **reusable SQL expressions** that are expanded inline at query compilation time.
 Unlike UDFs which execute row-by-row at runtime, macros are substituted directly into the query
 plan and fully optimized by Catalyst.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["CREATE TEMPORARY MACRO name(x) expr"] --> B[Reusable Expression]
+    B --> C["SELECT name(col) FROM table"]
+```
 
 ## 📌 Syntax
 

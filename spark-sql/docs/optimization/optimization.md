@@ -1,8 +1,18 @@
-# Optimization Overview
+# :material-speedometer: Optimization Overview
 
 Spark SQL optimization focuses on reducing I/O, shuffles, and skew.
 The Catalyst optimizer and AQE automatically apply many improvements, but
 manual tuning is sometimes required.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Query] --> B[Catalyst Optimizer]
+    B --> C[Physical Planning]
+    C --> D[Code Generation]
+    D --> E[Execution]
+```
 
 ---
 

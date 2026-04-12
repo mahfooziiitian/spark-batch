@@ -1,4 +1,4 @@
-# Repartition Hint
+# :material-shuffle-variant: Repartition Hint
 
 `REPARTITION` hints force a shuffle to increase or decrease the number of
 partitions and improve distribution.

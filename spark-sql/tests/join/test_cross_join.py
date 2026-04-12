@@ -37,9 +37,15 @@ def test_cross_join_all_combinations_present(spark: SparkSession) -> None:
 
     expected = spark.createDataFrame(
         [
-            ("S", "Red"), ("S", "Green"), ("S", "Blue"),
-            ("M", "Red"), ("M", "Green"), ("M", "Blue"),
-            ("L", "Red"), ("L", "Green"), ("L", "Blue"),
+            ("S", "Red"),
+            ("S", "Green"),
+            ("S", "Blue"),
+            ("M", "Red"),
+            ("M", "Green"),
+            ("M", "Blue"),
+            ("L", "Red"),
+            ("L", "Green"),
+            ("L", "Blue"),
         ],
         ["size", "color"],
     )

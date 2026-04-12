@@ -1,10 +1,21 @@
-# DML — Data Manipulation Language
+# :material-table-edit: DML — Data Manipulation Language
 
 DML statements modify the contents of tables without changing their schema.
 In Spark SQL, write support depends on the table format — Delta Lake enables
 the full set of operations, while Hive/Parquet tables support only `INSERT`.
 
-## DML Statements
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-table-edit: DML Operations"] --> B["INSERT :material-table-arrow-down:"]
+    A --> C["UPDATE :material-table-edit:"]
+    A --> D["DELETE :material-table-minus:"]
+    A --> E["MERGE :material-merge:"]
+    A --> F["COPY INTO :material-content-copy:"]
+```
+
+## :material-table-edit: DML Statements
 
 | Statement | Description | Requires Delta? |
 |-----------|-------------|:---------------:|

@@ -1,4 +1,4 @@
-# Navigation Functions
+# :material-arrow-left-right: Navigation Functions
 
 Navigation functions access values from other rows relative to the current row within a window partition.
 

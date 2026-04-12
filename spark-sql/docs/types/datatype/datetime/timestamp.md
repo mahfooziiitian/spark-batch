@@ -1,4 +1,4 @@
-# Timestamp
+# :material-calendar-clock: Timestamp
 
 The `TIMESTAMP` type stores a date and time with microsecond precision. Spark SQL provides
 two variants: timezone-aware (`TIMESTAMP`) and timezone-free (`TIMESTAMP_NTZ`).

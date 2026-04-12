@@ -1,7 +1,15 @@
-# Set Functions
+# :material-set-all: Set Functions
 
 Set functions work with **distinct collections** — aggregating unique values and searching
 within delimited strings.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input] --> B[COLLECT_SET]
+    B --> C[Distinct Array]
+```
 
 ## 📌 COLLECT_SET
 

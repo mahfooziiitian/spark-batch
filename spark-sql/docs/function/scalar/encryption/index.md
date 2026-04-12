@@ -1,9 +1,17 @@
-# Encryption & Hashing
+# :material-shield-lock: Encryption & Hashing
 
 Spark SQL provides functions for **hashing**, **encoding**, and **masking** data. These are
 commonly used for data integrity checks, anonymization, and security compliance.
 
-## 📌 Functions Overview
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Plain Text] --> B[Hash Function]
+    B --> C[Hash Output]
+```
+
+## 📌 :material-shield-lock: Functions Overview
 
 | Function | Type | Output | Use Case |
 |----------|------|--------|----------|
@@ -14,7 +22,7 @@ commonly used for data integrity checks, anonymization, and security compliance.
 | `SHA2(expr, bits)` | Hash | Variable-length hex | Secure hashing (224/256/384/512-bit) |
 | `MASK(expr)` | Masking | Masked string | PII anonymization |
 
-## 🧪 Quick Comparison
+## 🧪 :material-shield-lock: Quick Comparison
 
 ```sql
 SELECT
@@ -26,7 +34,7 @@ SELECT
   MASK('555-12-3456')     AS masked;
 ```
 
-## 🧠 Choosing the Right Function
+## 🧠 :material-shield-lock: Choosing the Right Function
 
 | Need | Recommended |
 |------|-------------|

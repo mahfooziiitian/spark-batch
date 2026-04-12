@@ -1,4 +1,5 @@
 """Tests for tumbling (fixed-size, non-overlapping) time window aggregations."""
+
 import pytest
 from pyspark.sql import SparkSession
 
@@ -24,8 +25,8 @@ def test_daily_tumbling_window(spark: SparkSession) -> None:
     )
     rows = result.collect()
     assert len(rows) == 2
-    assert rows[0]["cnt"] == 2   # 2024-01-01: two events
-    assert rows[1]["cnt"] == 1   # 2024-01-02: one event
+    assert rows[0]["cnt"] == 2  # 2024-01-01: two events
+    assert rows[1]["cnt"] == 1  # 2024-01-02: one event
 
 
 @pytest.mark.unit
@@ -50,8 +51,8 @@ def test_hourly_tumbling_window(spark: SparkSession) -> None:
     )
     rows = result.collect()
     assert len(rows) == 2
-    assert rows[0]["cnt"] == 2   # 08:xx bucket
-    assert rows[1]["cnt"] == 1   # 09:xx bucket
+    assert rows[0]["cnt"] == 2  # 08:xx bucket
+    assert rows[1]["cnt"] == 1  # 09:xx bucket
 
 
 @pytest.mark.unit
@@ -76,8 +77,8 @@ def test_15min_bucket(spark: SparkSession) -> None:
     )
     rows = result.collect()
     assert len(rows) == 2
-    assert rows[0]["cnt"] == 2   # A and B share the first 15-min bucket
-    assert rows[1]["cnt"] == 1   # C is in the next bucket
+    assert rows[0]["cnt"] == 2  # A and B share the first 15-min bucket
+    assert rows[1]["cnt"] == 1  # C is in the next bucket
 
 
 @pytest.mark.unit
@@ -103,6 +104,6 @@ def test_tumbling_count_per_bucket(spark: SparkSession) -> None:
         """
     )
     rows = result.collect()
-    assert rows[0]["cnt"] == 3   # 2024-01-01
-    assert rows[1]["cnt"] == 2   # 2024-01-02
-    assert rows[2]["cnt"] == 1   # 2024-01-03
+    assert rows[0]["cnt"] == 3  # 2024-01-01
+    assert rows[1]["cnt"] == 2  # 2024-01-02
+    assert rows[2]["cnt"] == 1  # 2024-01-03

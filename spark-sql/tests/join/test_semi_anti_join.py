@@ -23,7 +23,9 @@ _MATCHED_ORDERS = [
 @pytest.mark.unit
 def test_left_semi_join_returns_only_left_columns(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT *
@@ -39,7 +41,9 @@ def test_left_semi_join_returns_only_left_columns(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_left_semi_join_existence_filter(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT *
@@ -57,7 +61,9 @@ def test_left_semi_join_existence_filter(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_left_anti_join_returns_unmatched(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     actual = spark.sql("""
         SELECT *
@@ -76,7 +82,9 @@ def test_left_anti_join_returns_unmatched(spark: SparkSession) -> None:
 def test_semi_vs_exists_equivalence(spark: SparkSession) -> None:
     """LEFT SEMI JOIN and WHERE EXISTS must return identical results."""
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
+        "customers"
+    )
 
     semi_result = spark.sql("""
         SELECT *
@@ -95,4 +103,6 @@ def test_semi_vs_exists_equivalence(spark: SparkSession) -> None:
         )
     """)
 
-    assert_df_equality(semi_result, exists_result, ignore_row_order=True, ignore_nullable=True)
+    assert_df_equality(
+        semi_result, exists_result, ignore_row_order=True, ignore_nullable=True
+    )

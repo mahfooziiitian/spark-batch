@@ -1,4 +1,4 @@
-# Hive Catalog
+# :material-bee: Hive Catalog
 
 The Hive catalog uses Hive Metastore to store Spark SQL table metadata.
 It is commonly exposed as `spark_catalog` when Spark is configured with Hive

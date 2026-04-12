@@ -1,7 +1,15 @@
-# List Functions
+# :material-format-list-bulleted: List Functions
 
 List functions create and work with ordered collections (arrays) in Spark SQL.
 The primary list aggregation functions are `COLLECT_LIST` and `ARRAY_AGG`.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input] --> B[COLLECT_LIST / ARRAY_AGG]
+    B --> C[Ordered Array]
+```
 
 ## 📌 Syntax
 

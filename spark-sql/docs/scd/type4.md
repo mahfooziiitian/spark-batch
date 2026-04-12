@@ -1,4 +1,4 @@
-# SCD Type 4?
+# :material-table-plus: SCD Type 4?
 
 SCD Type 4 (Hybrid) separates current data and historical data into two different tables:
 

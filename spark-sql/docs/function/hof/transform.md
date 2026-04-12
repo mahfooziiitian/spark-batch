@@ -1,7 +1,15 @@
-# Transform
+# :material-lambda: Transform
 
 The `TRANSFORM()` higher-order function applies a lambda expression to **each element** of an
 array and returns a new array of the results — similar to `map()` in functional programming.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
 
 ## 📌 Syntax
 

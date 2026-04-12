@@ -1,4 +1,4 @@
-# Control Flow in Spark SQL
+# :material-code-braces: Control Flow in Spark SQL
 
 Control flow constructs such as `CASE`, `IF`, and `COALESCE` allow conditional
 logic directly inside SQL queries.

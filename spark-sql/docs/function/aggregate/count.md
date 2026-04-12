@@ -1,6 +1,15 @@
-# Count Functions
+# :material-sigma: Count Functions
 
 Count functions determine the number of rows or distinct values in a group.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[COUNT / COUNT_IF]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Functions
 

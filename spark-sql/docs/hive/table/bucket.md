@@ -1,7 +1,16 @@
-# Bucketing in Hive Tables
+# :material-bee: Bucketing in Hive Tables
 
 Bucketing divides data into fixed hash buckets. It can improve join performance
 when tables are bucketed on the same key.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

@@ -1,11 +1,21 @@
-# REGEXP_COUNT
+# :material-regex: REGEXP_COUNT
 
 `REGEXP_COUNT` returns the number of matches of a regular expression in a
 string.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
 ---
 
-## 📌 Syntax
+## 📌 :material-regex: Syntax
 
 ```sql
 REGEXP_COUNT(str, pattern)
@@ -15,7 +25,7 @@ REGEXP_COUNT(str, pattern, position, match_type)
 
 ---
 
-## 🔍 Behavior Notes
+## 🔍 :material-regex: Behavior Notes
 
 1. Returns 0 when there is no match.
 2. Position is 1-based; matching starts at that index.
@@ -23,7 +33,7 @@ REGEXP_COUNT(str, pattern, position, match_type)
 
 ---
 
-## 🧪 Examples
+## 🧪 :material-regex: Examples
 
 ```sql
 SELECT REGEXP_COUNT('abcabc', 'ab') AS count;  -- 2
@@ -35,7 +45,7 @@ SELECT REGEXP_COUNT('Test123test', 'test', 1, 'i') AS count;  -- 2
 
 ---
 
-## 🧠 When to Use
+## 🧠 :material-regex: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

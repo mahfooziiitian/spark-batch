@@ -1,6 +1,17 @@
-# Null in sub-query
+# :material-null: Null in sub-query
 
 In Spark, `EXISTS and NOT EXISTS` expressions are allowed inside a `WHERE` clause.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A["Subquery"] --> B{Type}
+    B --> C["EXISTS / NOT EXISTS"]
+    B --> D["IN / NOT IN"]
+    C --> E["Not affected by NULL rows"]
+    D --> F["UNKNOWN when NULL in list"]
+```
 
 These are boolean expressions which return either `TRUE or FALSE`.
 

@@ -1,4 +1,4 @@
-# Spark SQL Configuration
+# :material-cog: Spark SQL Configuration
 
 Configuration settings control execution behavior, performance, and features.
 You can set options at session or cluster scope.

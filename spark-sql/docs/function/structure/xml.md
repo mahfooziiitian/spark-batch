@@ -1,7 +1,15 @@
-# XML Functions
+# :material-xml: XML Functions
 
 Spark SQL provides the `XPATH` family of functions to **extract values from XML strings** using
 XPath expressions — useful for processing XML payloads stored in string columns.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Raw XML String Column] --> B["from_xml(col, schema)"]
+    B --> C[Struct Column]
+```
 
 ## 📌 Available Functions
 

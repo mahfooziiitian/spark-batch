@@ -1,6 +1,16 @@
-# NULL in Filter Conditions
+# :material-null: NULL in Filter Conditions
 
 Filter conditions in `WHERE`, `HAVING`, and `JOIN ON` clauses discard rows where the condition evaluates to NULL — only rows where the condition is TRUE are kept.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[WHERE Condition] --> B{Result}
+    B -->|TRUE| C[Row Included]
+    B -->|FALSE| D[Row Excluded]
+    B -->|NULL| E[Row Excluded]
+```
 
 ---
 

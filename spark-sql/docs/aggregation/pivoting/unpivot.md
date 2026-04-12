@@ -1,4 +1,4 @@
-# unpivot
+# :material-table-pivot: unpivot
 
 UNPIVOT is a data transformation that turns columns into rows.
 

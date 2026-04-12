@@ -1,6 +1,16 @@
-# Cache Manager
+# :material-lightning-bolt: Cache Manager
 
 In Spark SQL, the Cache Manager is the internal component responsible for handling the caching and un-caching of structured data like DataFrames, Datasets, and temporary views.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[CACHE TABLE] --> B[CacheManager]
+    B --> C[InMemoryRelation]
+    C --> D[InMemoryTableScanExec]
+    D --> E[Query Results]
+```
 
 It acts as a layer that manages:
 

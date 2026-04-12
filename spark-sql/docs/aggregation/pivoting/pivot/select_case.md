@@ -1,4 +1,4 @@
-# Pivoting
+# :material-table-pivot: Pivoting
 
 Pivoting using `SELECT CASE` is a manual way to convert rows to columns in SQL (like a pivot table), especially when PIVOT keyword isn't supported or you want full control.
 

@@ -1,4 +1,4 @@
-# Aggregate Functions
+# :material-sigma: Aggregate Functions
 
 ## Syntax
 

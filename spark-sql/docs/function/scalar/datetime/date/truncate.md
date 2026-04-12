@@ -1,12 +1,20 @@
-# Date truncate
+# :material-calendar-clock: Date truncate
 
 date_trunc is a handy function used to truncate a timestamp or date to the specified unit of time — like truncating to the start of the year, month, day, hour, etc.
 
-## Purpose
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## :material-calendar-clock: Purpose
 
 Truncate a timestamp/date to a specified precision, returning the start of that unit.
 
-## Syntax
+## :material-calendar-clock: Syntax
 
 ```sql
 date_trunc(format, timestamp)
@@ -18,7 +26,7 @@ date_trunc(format, timestamp)
 
 It Returns timestamp ts truncated to the unit specified by the format model fmt.
 
-## Examples
+## :material-calendar-clock: Examples
 
 ### 1. Truncate to Year
 

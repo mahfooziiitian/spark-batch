@@ -1,4 +1,4 @@
-# Execution Order
+# :material-play-circle: Execution Order
 
 Here's the logical operator execution order, similar to SQL:
 
@@ -22,7 +22,19 @@ The Spark logical execution order is:
 6. ORDER BY
 7. LIMIT
 
-## Examples
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[SQL String] --> B[Parse]
+    B --> C[Analyze]
+    C --> D[Optimize]
+    D --> E[Plan]
+    E --> F[Execute on Executors]
+    F --> G[Return Results]
+```
+
+## :material-play-circle: Examples
 
 ```sql
 SELECT country, avg(salary) as avg_salary

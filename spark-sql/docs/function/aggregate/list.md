@@ -1,6 +1,15 @@
-# collect_list
+# :material-sigma: collect_list
 
 `collect_list` collects values from a group into a list, preserving duplicates.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[COLLECT_LIST]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

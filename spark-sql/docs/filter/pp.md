@@ -1,4 +1,4 @@
-# Predicate Pushdown
+# :material-filter-settings: Predicate Pushdown
 
 Predicate pushdown means Spark applies filters **as early as possible**, ideally
 at the data source. This reduces I/O by skipping irrelevant row groups or files.

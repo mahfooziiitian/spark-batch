@@ -1,7 +1,16 @@
-# Hive Table Data Sources
+# :material-bee: Hive Table Data Sources
 
 Hive tables can use different storage formats such as Parquet, ORC, or text.
 The choice impacts performance and compatibility.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

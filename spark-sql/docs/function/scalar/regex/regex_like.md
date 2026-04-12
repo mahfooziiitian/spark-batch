@@ -1,8 +1,18 @@
-# regexp_like
+# :material-regex: regexp_like
 
 `regexp_like` tests whether a string matches a regular expression pattern, returning a boolean.
 
-## 📌 Syntax
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
+## 📌 :material-regex: Syntax
 
 ```sql
 regexp_like(str, regexp)
@@ -12,14 +22,14 @@ regexp_like(str, regexp)
 - `regexp`: Java-style regular expression pattern
 - Returns: `BOOLEAN` — `true` if the pattern matches, `false` otherwise
 
-## 🔍 Behavior
+## 🔍 :material-regex: Behavior
 
 1. Returns `true` if the pattern matches **anywhere** within the string (partial match).
 2. To match the entire string, anchor with `^...$`.
 3. Equivalent to the `RLIKE` operator.
 4. NULL input returns NULL.
 
-## 🧪 Practical Examples
+## 🧪 :material-regex: Practical Examples
 
 ### Basic Pattern Match
 
@@ -63,7 +73,7 @@ AS logs(message);
 SELECT message FROM logs WHERE regexp_like(message, '^ERROR');
 ```
 
-## 🧠 regexp_like vs RLIKE vs LIKE
+## 🧠 :material-regex: regexp_like vs RLIKE vs LIKE
 
 | Operator | Pattern Type | Case Sensitive |
 |----------|-------------|---------------|

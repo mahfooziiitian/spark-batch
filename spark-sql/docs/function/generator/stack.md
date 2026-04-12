@@ -1,8 +1,18 @@
-# Stack
+# :material-expand-all: Stack
 
 `STACK()` converts **columns into rows** — it splits a flat list of expressions into `n` rows,
 each with a fixed number of columns. It is Spark SQL's primary tool for **unpivoting** wide
 data into a tall format.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Single Row] --> B[STACK]
+    B --> C[Row 1]
+    B --> D[Row 2]
+    B --> E[Row N]
+```
 
 ## 📌 Syntax
 

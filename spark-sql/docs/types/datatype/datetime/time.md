@@ -1,4 +1,4 @@
-# Time
+# :material-calendar-clock: Time
 
 Spark SQL does not have a standalone `TIME` type. Time-of-day information is part of the
 `TIMESTAMP` type. To work with time-only values, extract components from timestamps.

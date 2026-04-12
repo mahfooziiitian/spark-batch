@@ -1,7 +1,17 @@
-# Explode
+# :material-expand-all: Explode
 
 `EXPLODE()` transforms a single row containing an array or map into **multiple rows** — one per
 element. It is the most commonly used generator function in Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Row with ARRAY[a,b,c]"] --> B[EXPLODE]
+    B --> C[Row: a]
+    B --> D[Row: b]
+    B --> E[Row: c]
+```
 
 ## 📌 Syntax
 

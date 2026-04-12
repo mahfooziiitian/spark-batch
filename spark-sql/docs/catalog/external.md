@@ -1,4 +1,4 @@
-# External Catalog
+# :material-database-export: External Catalog
 
 An external catalog refers to a metadata store outside the Spark session that
 manages table definitions and locations. Examples include Hive Metastore or

@@ -1,7 +1,17 @@
-# Generator Functions
+# :material-expand-all: Generator Functions
 
 Generator (table-valued) functions produce **multiple output rows** from a single input row.
 They are the primary tool for flattening arrays, maps, and structs in Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Single Row] --> B[Generator Function]
+    B --> C[Row 1]
+    B --> D[Row 2]
+    B --> E[Row N]
+```
 
 ## 📌 Available Functions
 

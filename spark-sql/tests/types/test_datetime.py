@@ -1,4 +1,5 @@
 """Tests for Spark SQL date and timestamp functions."""
+
 import pytest
 from pyspark.sql import SparkSession
 

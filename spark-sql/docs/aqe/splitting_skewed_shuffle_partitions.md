@@ -1,4 +1,4 @@
-# Splitting Skewed Shuffle Partitions
+# :material-auto-fix: Splitting Skewed Shuffle Partitions
 
 AQE can split skewed shuffle partitions to avoid single tasks that process
 much more data than others.

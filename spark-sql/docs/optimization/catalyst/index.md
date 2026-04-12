@@ -1,7 +1,23 @@
-# Catalyst Optimizer
+# :material-atom: Catalyst Optimizer
 
 Catalyst is Spark SQL's rule-based and cost-based optimizer. It transforms
 logical plans into efficient physical plans.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[SQL String] --> B["Parser :material-file-tree:"]
+    B --> C["Unresolved Logical Plan"]
+    C --> D["Analyzer :material-magnify:"]
+    D --> E["Resolved Logical Plan"]
+    E --> F["Optimizer :material-atom:"]
+    F --> G["Optimized Logical Plan"]
+    G --> H["Physical Planner :material-server:"]
+    H --> I["Physical Plan"]
+    I --> J["Code Generation :material-code-braces:"]
+    J --> K[Execute]
+```
 
 ---
 

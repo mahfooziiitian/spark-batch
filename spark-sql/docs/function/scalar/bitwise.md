@@ -1,4 +1,4 @@
-# Bitwise
+# :material-chip: Bitwise
 
 | Function                       | Description                                                                                                                                                                  |
 |--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -12,7 +12,16 @@
 | expr1\| expr2                  | Returns the result of bitwise OR of `expr1` and `expr2`.                                                                                                                     |
 | ~ expr                         |  Returns the result of bitwise NOT of `expr`.                                                                                                                                |
 
-## Examples
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Integer A] --> B[Bitwise Operator]
+    C[Integer B] --> B
+    B --> D[Integer Result]
+```
+
+## :material-chip: Examples
 
 ```sql
 

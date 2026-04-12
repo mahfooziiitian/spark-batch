@@ -1,7 +1,16 @@
-# Hive Integration
+# :material-bee: Hive Integration
 
 Spark SQL integrates with Apache Hive to access the Hive Metastore, read and write Hive tables,
 and execute Hive UDFs. This enables seamless interoperability with existing Hive workloads.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

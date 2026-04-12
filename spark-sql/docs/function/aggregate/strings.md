@@ -1,6 +1,15 @@
-# String Aggregate Functions
+# :material-sigma: String Aggregate Functions
 
 String aggregate functions combine string values across rows within a group.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[String Aggregate Functions]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Functions
 

@@ -1,4 +1,4 @@
-# CREATE DATASOURCE TABLE
+# :material-file-table: CREATE DATASOURCE TABLE
 
 ```sql
 CREATE TABLE [ IF NOT EXISTS ] table_identifier
@@ -13,6 +13,20 @@ CREATE TABLE [ IF NOT EXISTS ] table_identifier
     [ COMMENT table_comment ]
     [ TBLPROPERTIES ( key1=val1, key2=val2, ... ) ]
     [ AS select_statement ]
+```
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Data Source] --> B["CSV :material-file-delimited:"]
+    A --> C["JSON :material-code-json:"]
+    A --> D["Parquet"]
+    A --> E["Delta Lake"]
+    B --> F[spark.read.format]
+    C --> F
+    D --> F
+    E --> F
 ```
 
 ## view

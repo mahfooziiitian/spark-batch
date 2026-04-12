@@ -1,4 +1,4 @@
-# 🧱 What Is a Window Frame?
+# :material-table-row: 🧱 What Is a Window Frame?
 
 Specifies which row to start the window on and where to end it.
 Window frames are a crucial part of window functions in Spark SQL / Databricks SQL — they define which rows are included in the calculation relative to the current row.
@@ -9,6 +9,16 @@ Used mainly with:
 
 1. Aggregate window functions (SUM, AVG, MIN, MAX, etc.)
 2. Value functions (FIRST_VALUE, LAST_VALUE, NTH_VALUE)
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Window Frame] --> B["ROWS BETWEEN"]
+    A --> C["RANGE BETWEEN"]
+    B --> D["Physical row offsets"]
+    C --> E["Value-based offsets"]
+```
 
 ## 🔧 Syntax
 

@@ -1,4 +1,4 @@
-# Databases (Schemas)
+# :material-database: Databases (Schemas)
 
 Databases (schemas) are logical namespaces that group tables and views.
 

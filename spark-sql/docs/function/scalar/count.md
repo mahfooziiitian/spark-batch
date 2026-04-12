@@ -1,6 +1,16 @@
-# Count
+# :material-counter: Count
 
-## 🔹 1. COUNT(*) — Count All Rows
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Table Rows] --> B[COUNT Function]
+    B --> C{NULL?}
+    C -->|Included| D["COUNT(*) result"]
+    C -->|Excluded| E["COUNT(col) result"]
+```
+
+## 🔹 :material-counter: 1. COUNT(*) — Count All Rows
 
 Counts every row, including rows with NULL values.
 
@@ -12,7 +22,7 @@ FROM your_table;
 
 ✅ Returns total row count, regardless of column values.
 
-## 🔹 2. COUNT(column) — Count Non-Nulls Only
+## 🔹 :material-counter: 2. COUNT(column) — Count Non-Nulls Only
 
 Counts only the non-null values in a specific column.
 
@@ -23,7 +33,7 @@ FROM your_table;
 
 ✅ Skips nulls. Useful when counting data completeness.
 
-## 🔹 3. COUNT(DISTINCT column) — Count Unique Non-Nulls
+## 🔹 :material-counter: 3. COUNT(DISTINCT column) — Count Unique Non-Nulls
 
 Returns the count of distinct non-null values in a column.
 
@@ -34,7 +44,7 @@ FROM your_table;
 
 ✅ Ignores nulls and returns count of unique values.
 
-## 🔹 4. COUNT(DISTINCT col1, col2) — Count Unique Combinations
+## 🔹 :material-counter: 4. COUNT(DISTINCT col1, col2) — Count Unique Combinations
 
 Counts distinct combinations of multiple columns.
 
@@ -45,7 +55,7 @@ FROM your_table;
 
 ✅ Each unique (department, role) pair is counted once.
 
-## 🔹 5. Grouped Count — With GROUP BY
+## 🔹 :material-counter: 5. Grouped Count — With GROUP BY
 
 Counts rows grouped by column(s).
 
@@ -57,7 +67,7 @@ GROUP BY department;
 
 ✅ Shows row count per group.
 
-## 🔹 6. Conditional Count — With CASE WHEN
+## 🔹 :material-counter: 6. Conditional Count — With CASE WHEN
 
 ### Case when
 
@@ -87,7 +97,7 @@ SELECT count_if(col % 2 = 0) FROM VALUES (NULL), (0), (1), (2), (3) AS tab(col);
 SELECT count_if(col IS NULL) FROM VALUES (NULL), (0), (1), (2), (3) AS tab(col);
 ```
 
-## 🔹 7. Window Count — With OVER()
+## 🔹 :material-counter: 7. Window Count — With OVER()
 
 Counts rows in a partition using window functions.
 
@@ -99,7 +109,7 @@ FROM your_table;
 
 ✅ Adds count as a new column without grouping the result.
 
-## 🔹 8. Count + Filtering
+## 🔹 :material-counter: 8. Count + Filtering
 
 ```sql
 SELECT COUNT(*) AS active_users
@@ -109,7 +119,7 @@ WHERE is_active = TRUE;
 
 ✅ Simple conditional count using WHERE.
 
-## count_min_sketch
+## :material-counter: count_min_sketch
 
 ```sql
 count_min_sketch(col, eps, confidence, seed)
@@ -121,7 +131,7 @@ The result is an array of bytes, which can be deserialized to a CountMinSketch b
 
 Count-min sketch is a probabilistic data structure used for cardinality estimation using sub-linear space.
 
-## ✅ Summary Table
+## ✅ :material-counter: Summary Table
 
 Count Type |Description |Includes NULLs?
 ---|---|---

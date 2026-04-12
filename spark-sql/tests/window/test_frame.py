@@ -6,7 +6,11 @@ from pyspark.sql import functions as F
 @pytest.fixture(scope="module")
 def tied_view(spark: SparkSession):
     """Three rows: two share the same order value (tie), one is distinct."""
-    tied_data = [("A", "2024-01-01", 100), ("A", "2024-01-01", 200), ("A", "2024-01-03", 300)]
+    tied_data = [
+        ("A", "2024-01-01", 100),
+        ("A", "2024-01-01", 200),
+        ("A", "2024-01-03", 300),
+    ]
     spark.createDataFrame(tied_data, ["grp", "dt", "val"]).createOrReplaceTempView(
         "tied_frame"
     )
@@ -16,8 +20,13 @@ def tied_view(spark: SparkSession):
 @pytest.fixture(scope="module")
 def seq_view(spark: SparkSession):
     """Sequential 5-row dataset for sliding window tests."""
-    seq_data = [("A", "2024-01-01", 10), ("A", "2024-01-02", 20), ("A", "2024-01-03", 30),
-                ("A", "2024-01-04", 40), ("A", "2024-01-05", 50)]
+    seq_data = [
+        ("A", "2024-01-01", 10),
+        ("A", "2024-01-02", 20),
+        ("A", "2024-01-03", 30),
+        ("A", "2024-01-04", 40),
+        ("A", "2024-01-05", 50),
+    ]
     spark.createDataFrame(seq_data, ["grp", "dt", "val"]).createOrReplaceTempView(
         "seq_frame"
     )
@@ -85,4 +94,6 @@ def test_unbounded_following_suffix_sum(spark: SparkSession, seq_view: str):
     sums = [row.suffix_sum for row in result.collect()]
     # 10+20+30+40+50=150; 20+30+40+50=140; 30+40+50=120; 40+50=90; 50
     assert sums == [150, 140, 120, 90, 50]
-    assert sums == sorted(sums, reverse=True), "Suffix sum should be strictly descending"
+    assert sums == sorted(sums, reverse=True), (
+        "Suffix sum should be strictly descending"
+    )

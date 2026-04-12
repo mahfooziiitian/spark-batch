@@ -1,6 +1,15 @@
-# Null function
+# :material-null: Null function
 
-## coalesce
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Value] --> B{IS NULL?}
+    B -->|Yes| C[Return Default / NULL]
+    B -->|No| D[Return Value]
+```
+
+## :material-null: coalesce
 
     coalesce(expr1, expr2, ...)
 
@@ -8,7 +17,7 @@ It returns the first non-null argument if exists. Otherwise, null.
 
     SELECT coalesce(NULL, 1, NULL);
 
-## equal_null
+## :material-null: equal_null
 
     equal_null(expr1, expr2)
 
@@ -28,7 +37,7 @@ For complex types such array/struct, the data types of fields must be orderable.
     SELECT equal_null(NULL, 'abc');
     SELECT equal_null(NULL, NULL);
 
-## first
+## :material-null: first
 
     first(expr[, isIgnoreNull])
 
@@ -41,7 +50,7 @@ If isIgnoreNull is true, returns only non-null values.
 
 The function is non-deterministic because its results depends on the order of the rows which may be non-deterministic after a shuffle.
 
-## first_value
+## :material-null: first_value
 
     first_value(expr[, isIgnoreNull])
 
@@ -54,7 +63,7 @@ If isIgnoreNull is true, returns only non-null values.
 
 The function is non-deterministic because its results depends on the order of the rows which may be non-deterministic after a shuffle.
 
-## ifnull
+## :material-null: ifnull
 
     ifnull(expr1, expr2)
 
@@ -62,7 +71,7 @@ Returns expr2 if expr1 is null, or expr1 otherwise.
 
     SELECT ifnull(NULL, array('2'));
 
-## nvl
+## :material-null: nvl
 
     nvl(expr1, expr2)
 
@@ -79,7 +88,7 @@ Returns: The result type is the least common type of the argument types.
     SELECT nvl(column_name, default_value) AS new_column_name
     FROM table_name;
 
-## isnotnull
+## :material-null: isnotnull
 
     isnotnull(expr)
 
@@ -87,20 +96,20 @@ Returns true if expr is not null, or false otherwise.
 
     SELECT isnotnull(1);
 
-## isnan
+## :material-null: isnan
   
     SELECT isnan(null) AS expression_output;
 
-## Builtin Aggregate Expressions
+## :material-null: Builtin Aggregate Expressions
 
 Aggregate functions compute a single result by processing a set of input rows. Below are the rules of how NULL values are handled by aggregate functions.
-## Ignoring null
+## :material-null: Ignoring null
 
 NULL values are ignored from processing by all the aggregate functions.Only exception to this rule is COUNT(*) function.
 
     SELECT count(*) FROM person;
 
-## Respect null
+## :material-null: Respect null
 
 Some aggregate functions return NULL when all input values are NULL or the input data set is empty.
 

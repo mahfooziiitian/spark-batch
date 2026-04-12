@@ -1,10 +1,20 @@
-# REGEXP_EXTRACT
+# :material-regex: REGEXP_EXTRACT
 
 `REGEXP_EXTRACT` returns a capturing group from a string that matches a regex.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
 ---
 
-## 📌 Syntax
+## 📌 :material-regex: Syntax
 
 ```sql
 REGEXP_EXTRACT(str, pattern, idx)
@@ -12,7 +22,7 @@ REGEXP_EXTRACT(str, pattern, idx)
 
 ---
 
-## 🔍 Behavior
+## 🔍 :material-regex: Behavior
 
 1. `idx` is the capture group index (0 = full match).
 2. Returns empty string when there is no match.
@@ -20,7 +30,7 @@ REGEXP_EXTRACT(str, pattern, idx)
 
 ---
 
-## 🧪 Example
+## 🧪 :material-regex: Example
 
 ```sql
 SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
@@ -28,7 +38,7 @@ SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
 
 ---
 
-## 🧠 When to Use
+## 🧠 :material-regex: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

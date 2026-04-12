@@ -1,0 +1,109 @@
+# Default: list all available recipes
+default:
+    @just --list
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+
+# Run pytest with verbose output
+test:
+    uv run pytest -vv tests
+
+# ── Quality ───────────────────────────────────────────────────────────────────
+
+# Run full quality pipeline
+quality: import format format-check lint type-check sql
+
+# Sort imports with isort (black profile)
+import:
+    uv run isort --profile black src tests
+
+# Format code with ruff
+format:
+    uv run ruff format src tests
+
+# Lint with ruff (no fixes)
+format-check:
+    uv run ruff check src tests
+
+# Lint with flake8
+lint:
+    uv run flake8 -v src tests
+
+# Static type check with mypy
+type-check:
+    uv run mypy src tests
+
+# Fix then lint all SQL files
+sql: sql-format sql-lint
+
+# Auto-fix SQL with sqlfluff
+sql-format:
+    uv run sqlfluff fix src
+
+# Lint SQL with sqlfluff
+sql-lint:
+    uv run sqlfluff lint src
+
+# ── Security ──────────────────────────────────────────────────────────────────
+
+# Run all security checks
+secure: bandit safety
+
+# Static security scan with bandit
+bandit:
+    uv run bandit -c pyproject.toml -r src
+
+# Check dependencies for known CVEs
+safety:
+    uv run safety check --policy-file .safety-policy.yml
+
+# ── Reporting ─────────────────────────────────────────────────────────────────
+
+# Generate HTML test report
+report-html:
+    uv run pytest --html=reports/reports.html --self-contained-html
+
+# Generate JUnit XML test report
+report-xml:
+    uv run pytest --junitxml=reports/report.xml
+
+# Generate JSON test report with coverage
+report-json:
+    uv run pytest --json-report --json-report-file=reports/report.json --cov-report=term-missing
+
+# Generate HTML coverage report
+report-cov-html:
+    uv run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing
+
+# Generate XML coverage report
+report-cov-xml:
+    uv run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+
+# Clean, build, then serve docs
+docs: clean docs-build docs-serve
+
+# Build MkDocs site (strict mode)
+docs-build:
+    NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict
+
+# Serve docs on 0.0.0.0:8080
+docs-serve:
+    uv run mkdocs serve -a 0.0.0.0:8080
+
+# Lint markdown files
+lint-md:
+    uv run pymarkdownlnt fix -r docs README.md
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+
+# Build the package
+build:
+    uv build
+
+# ── Clean ─────────────────────────────────────────────────────────────────────
+
+# Remove caches and build artefacts
+clean:
+    rm -rf __pycache__ .pytest_cache site

@@ -3,7 +3,14 @@
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import SparkSession
-from pyspark.sql.types import DoubleType, IntegerType, LongType, StringType, StructField, StructType
+from pyspark.sql.types import (
+    DoubleType,
+    IntegerType,
+    LongType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 
 @pytest.mark.unit
@@ -23,10 +30,12 @@ def test_group_by_single_column(spark: SparkSession) -> None:
     )
     expected = spark.createDataFrame(
         [("CA", 125.0), ("US", 300.0)],
-        StructType([
-            StructField("region", StringType()),
-            StructField("total", DoubleType()),
-        ]),
+        StructType(
+            [
+                StructField("region", StringType()),
+                StructField("total", DoubleType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
@@ -56,11 +65,13 @@ def test_group_by_multiple_columns(spark: SparkSession) -> None:
             ("US", "pending", 50.0),
             ("CA", "shipped", 75.0),
         ],
-        StructType([
-            StructField("region", StringType()),
-            StructField("status", StringType()),
-            StructField("total", DoubleType()),
-        ]),
+        StructType(
+            [
+                StructField("region", StringType()),
+                StructField("status", StringType()),
+                StructField("total", DoubleType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
@@ -87,10 +98,12 @@ def test_group_by_with_having(spark: SparkSession) -> None:
     )
     expected = spark.createDataFrame(
         [("US", 300.0)],
-        StructType([
-            StructField("region", StringType()),
-            StructField("total", DoubleType()),
-        ]),
+        StructType(
+            [
+                StructField("region", StringType()),
+                StructField("total", DoubleType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
@@ -118,10 +131,12 @@ def test_group_by_with_filter_clause(spark: SparkSession) -> None:
     )
     expected = spark.createDataFrame(
         [("US", 2), ("CA", 0)],
-        StructType([
-            StructField("region", StringType()),
-            StructField("shipped_count", LongType()),
-        ]),
+        StructType(
+            [
+                StructField("region", StringType()),
+                StructField("shipped_count", LongType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
@@ -170,9 +185,11 @@ def test_group_by_expression(spark: SparkSession) -> None:
     )
     expected = spark.createDataFrame(
         [(2023, 300.0), (2024, 125.0)],
-        StructType([
-            StructField("yr", IntegerType()),
-            StructField("total", DoubleType()),
-        ]),
+        StructType(
+            [
+                StructField("yr", IntegerType()),
+                StructField("total", DoubleType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)

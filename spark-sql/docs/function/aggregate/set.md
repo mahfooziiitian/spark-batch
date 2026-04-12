@@ -1,6 +1,15 @@
-# collect_set
+# :material-sigma: collect_set
 
 `collect_set` collects unique values from a group into an array, removing duplicates.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[COLLECT_SET]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

@@ -35,7 +35,9 @@ def test_sum_distinct(spark: SparkSession) -> None:
         ["amount"],
     ).createOrReplaceTempView("sum_distinct")
 
-    row = spark.sql("SELECT SUM(DISTINCT amount) AS total FROM sum_distinct").collect()[0]
+    row = spark.sql("SELECT SUM(DISTINCT amount) AS total FROM sum_distinct").collect()[
+        0
+    ]
     # Distinct values: 10, 20, 30 → 60
     assert row["total"] == 60.0
 
@@ -56,7 +58,12 @@ def test_sum_with_filter(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_sum_with_case(spark: SparkSession) -> None:
     spark.createDataFrame(
-        [("shipped", 100.0), ("pending", 50.0), ("shipped", 200.0), ("cancelled", 75.0)],
+        [
+            ("shipped", 100.0),
+            ("pending", 50.0),
+            ("shipped", 200.0),
+            ("cancelled", 75.0),
+        ],
         ["status", "amount"],
     ).createOrReplaceTempView("sum_case")
 

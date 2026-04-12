@@ -1,7 +1,16 @@
-# JSON Functions
+# :material-code-json: JSON Functions
 
 Spark SQL provides functions to **parse**, **generate**, **extract from**, and **inspect**
 JSON data — enabling full JSON processing within SQL expressions.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Raw JSON String Column] --> B["from_json(col, schema)"]
+    B --> C[Struct Column]
+    C --> D["col.field access"]
+```
 
 ## 📌 FROM_JSON — Parse JSON String
 

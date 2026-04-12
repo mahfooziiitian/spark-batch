@@ -1,6 +1,15 @@
-# array_agg
+# :material-sigma: array_agg
 
 `array_agg` collects values from a group into an array, including duplicates and NULLs.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[ARRAY_AGG]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

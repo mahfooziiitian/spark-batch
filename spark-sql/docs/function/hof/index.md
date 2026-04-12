@@ -1,7 +1,15 @@
-# Higher-Order Functions
+# :material-lambda: Higher-Order Functions
 
 Higher-order functions (HOFs) accept **lambda expressions** as arguments, allowing you to apply
 custom logic to each element of an array or map without exploding the data into rows.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
 
 ## 📌 Available Functions
 

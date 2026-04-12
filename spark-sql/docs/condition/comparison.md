@@ -1,4 +1,4 @@
-# Comparison Conditions
+# :material-compare: Comparison Conditions
 
 Comparison predicates test equality or ordering between values.
 

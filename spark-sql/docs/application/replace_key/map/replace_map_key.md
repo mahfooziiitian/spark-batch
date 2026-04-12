@@ -1,4 +1,4 @@
-# Replace Map Key
+# :material-application: Replace Map Key
 
 > **Note:** Map entry order is not guaranteed in output; results below are conceptual.
 

@@ -1,7 +1,16 @@
-# AQE: Sort-Merge to Broadcast Join
+# :material-auto-fix: AQE: Sort-Merge to Broadcast Join
 
 With AQE enabled, Spark can replace a sort-merge join (SMJ) with a broadcast
 hash join (BHJ) if runtime statistics show one side is small enough.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Sort Merge Join Planned] --> B{Runtime: small table?}
+    B -->|Yes size < threshold| C[Switch to Broadcast Join]
+    B -->|No| D[Keep Sort Merge Join]
+```
 
 ---
 

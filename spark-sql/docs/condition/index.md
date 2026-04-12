@@ -1,8 +1,18 @@
-# Conditions and Predicates
+# :material-filter-check: Conditions and Predicates
 
 Conditions (predicates) are boolean expressions used in `WHERE`, `HAVING`,
 `JOIN ... ON`, and `CASE WHEN`. They control which rows are kept and how
 records are classified.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-filter-check: Conditions"] --> B["Comparison: =, <, >, !=, BETWEEN, IN"]
+    A --> C["Logical: AND, OR, NOT"]
+    A --> D["Pattern: LIKE, RLIKE, ILIKE"]
+    A --> E["NULL: IS NULL, IS NOT NULL, <=>"]
+```
 
 ---
 

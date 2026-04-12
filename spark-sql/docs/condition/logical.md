@@ -1,4 +1,4 @@
-# Logical Conditions
+# :material-logic-and: Logical Conditions
 
 Logical operators combine or invert predicates to build more complex filters.
 

@@ -1,4 +1,4 @@
-# DateTime Types
+# :material-calendar-clock: DateTime Types
 
 Spark SQL provides `DATE`, `TIMESTAMP`, and `INTERVAL` types for working with
 temporal data — from simple calendar dates to precise timestamps with timezone handling.

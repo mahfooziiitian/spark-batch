@@ -117,7 +117,11 @@ WITH tied AS (
     SELECT region, rep, sale_date, amount FROM sales
     UNION ALL
     -- add a duplicate date for Alice/North on 2024-01-05 with a different amount
-    SELECT 'North' AS region, 'Alice' AS rep, DATE '2024-01-05' AS sale_date, 50 AS amount
+    SELECT
+        'North' AS region,
+        'Alice' AS rep,
+        DATE '2024-01-05' AS sale_date,
+        50 AS amount
 )
 
 SELECT

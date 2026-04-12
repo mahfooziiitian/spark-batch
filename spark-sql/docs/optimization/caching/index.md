@@ -1,7 +1,18 @@
-# Caching Overview
+# :material-lightning-bolt: Caching Overview
 
 Caching stores intermediate results in memory to speed up repeated queries.
 It is most useful for iterative analysis or multi-step pipelines.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[First Query] --> B[CACHE TABLE]
+    B --> C[In-Memory Store]
+    C --> D[Subsequent Queries]
+    D -->|Cache hit| C
+    D -->|Cache miss| E[Recompute]
+```
 
 ---
 

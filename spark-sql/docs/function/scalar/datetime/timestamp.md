@@ -1,4 +1,4 @@
-# Format
+# :material-calendar-clock: Format
 
 Symbol |Meaning |Presentation |Examples
 --|---|---|--
@@ -29,7 +29,15 @@ Z |zone-offset |offset-Z |+0000; -0800; -08:00;
 [ |optional section start||
 ] |optional section end ||
 
-## Text
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## :material-calendar-clock: Text
 
 The text style is determined based on the number of pattern letters used.
 
@@ -39,7 +47,7 @@ Exactly 4 pattern letters will use the full text form, typically the full descri
 
 5 or more letters will fail.
 
-## Number(n)
+## :material-calendar-clock: Number(n)
 
 The n here represents the maximum count of letters this type of datetime pattern can be used
 
@@ -47,11 +55,11 @@ In formatting, if the count of letters is one, then the value is output using th
 
 In parsing, the exact count of digits is expected in the input field.
 
-## Number/Text
+## :material-calendar-clock: Number/Text
 
 If the count of pattern letters is 3 or greater, use the Text rules above. Otherwise use the Number rules above
 
-## Fraction
+## :material-calendar-clock: Fraction
 
 Use one or more (up to 9) contiguous 'S' characters, e,g SSSSSS, to parse and format fraction of second.
 
@@ -61,11 +69,11 @@ For formatting, the fraction length would be padded to the number of contiguous 
 
 Spark supports datetime of micro-of-second precision, which has up to 6 significant digits, but can parse nano-of-second with exceeded part truncated.
 
-## Year
+## :material-calendar-clock: Year
 
 The count of letters determines the minimum field width below which padding is used. If the count of letters is two, then a reduced two digit form is used. For printing, this outputs the rightmost two digits. For parsing, this will parse using the base value of 2000, resulting in a year within the range 2000 to 2099 inclusive. If the count of letters is less than four (but not two), then the sign is only output for negative years. Otherwise, the sign is output if the pad width is exceeded when ‘G’ is not present. 7 or more letters will fail.
 
-## Month
+## :material-calendar-clock: Month
 
 ### 'M' or 'L'
 

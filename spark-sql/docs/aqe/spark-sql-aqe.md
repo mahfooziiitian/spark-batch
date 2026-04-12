@@ -1,4 +1,4 @@
-# Spark SQL AQE Overview
+# :material-auto-fix: Spark SQL AQE Overview
 
 Adaptive Query Execution (AQE) re-optimizes query plans at runtime based on
 actual data statistics.

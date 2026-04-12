@@ -94,8 +94,8 @@ def test_delta_calculation(spark: SparkSession, sales_view: str):
         .collect()
     )
     assert alice_north[0].delta is None
-    assert alice_north[1].delta == 100   # 200 - 100
-    assert alice_north[2].delta == 100   # 300 - 200
+    assert alice_north[1].delta == 100  # 200 - 100
+    assert alice_north[2].delta == 100  # 300 - 200
 
 
 @pytest.mark.unit

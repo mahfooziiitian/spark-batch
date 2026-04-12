@@ -1,7 +1,16 @@
-# NULL Ordering
+# :material-null: NULL Ordering
 
 By default, Spark SQL sorts NULLs **first** in ascending order and **last** in
 descending order. You can override this behavior explicitly.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["ORDER BY col ASC"] --> B["NULLS FIRST (default)"]
+    C["ORDER BY col DESC"] --> D["NULLS LAST (default)"]
+    E["NULLS FIRST / NULLS LAST"] --> F["Explicit Override"]
+```
 
 ---
 

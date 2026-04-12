@@ -1,7 +1,16 @@
-# Hive Context
+# :material-bee: Hive Context
 
 HiveContext was an older Spark SQL entry point that enabled Hive features.
 In modern Spark versions, `SparkSession` replaces it.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

@@ -1,7 +1,17 @@
-# NULL Checks
+# :material-null: NULL Checks
 
 Checking NULLs explicitly prevents silent filtering mistakes caused by
 three-valued logic.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Column Value] --> B{Check}
+    B --> C["IS NULL → TRUE/FALSE"]
+    B --> D["IS NOT NULL → TRUE/FALSE"]
+    B --> E["COALESCE → first non-NULL"]
+```
 
 ---
 

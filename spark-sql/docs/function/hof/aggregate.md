@@ -1,7 +1,15 @@
-# Aggregate
+# :material-lambda: Aggregate
 
 The `AGGREGATE()` higher-order function reduces the elements of an array into a single scalar
 value using custom lambda logic — similar to `reduce()` / `fold()` in functional programming.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
 
 ## 📌 Syntax
 

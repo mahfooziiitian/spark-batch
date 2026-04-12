@@ -40,7 +40,11 @@ def test_update_multiple_columns(spark: SparkSession) -> None:
         ]
     )
     orders = spark.createDataFrame(
-        [("o1", "active", None), ("o2", "active", None), ("o3", "pending", "2024-02-01")],
+        [
+            ("o1", "active", None),
+            ("o2", "active", None),
+            ("o3", "pending", "2024-02-01"),
+        ],
         schema,
     )
     to_cancel = "o1"
@@ -49,7 +53,9 @@ def test_update_multiple_columns(spark: SparkSession) -> None:
         F.when(F.col("order_id") == to_cancel, "cancelled").otherwise(F.col("status")),
     ).withColumn(
         "cancelled_at",
-        F.when(F.col("order_id") == to_cancel, "2024-03-01").otherwise(F.col("cancelled_at")),
+        F.when(F.col("order_id") == to_cancel, "2024-03-01").otherwise(
+            F.col("cancelled_at")
+        ),
     )
 
     row_o1 = result.filter(F.col("order_id") == "o1").first()
@@ -77,9 +83,9 @@ def test_conditional_update_with_case(spark: SparkSession) -> None:
         .otherwise(F.col("price")),
     )
     rows = {r["product_id"]: r["adjusted_price"] for r in result.collect()}
-    assert abs(rows["p1"] - 90.0) < 0.001   # electronics: 10% discount
-    assert abs(rows["p2"] - 55.0) < 0.001   # clothing: 10% surcharge
-    assert abs(rows["p3"] - 20.0) < 0.001   # food: unchanged
+    assert abs(rows["p1"] - 90.0) < 0.001  # electronics: 10% discount
+    assert abs(rows["p2"] - 55.0) < 0.001  # clothing: 10% surcharge
+    assert abs(rows["p3"] - 20.0) < 0.001  # food: unchanged
 
 
 @pytest.mark.unit
@@ -99,7 +105,9 @@ def test_update_with_subquery_filter(spark: SparkSession) -> None:
     high_velocity = spark.createDataFrame([("p1",), ("p3",)], ["product_id"])
 
     result = (
-        products.join(high_velocity.withColumn("_flag", F.lit(True)), on="product_id", how="left")
+        products.join(
+            high_velocity.withColumn("_flag", F.lit(True)), on="product_id", how="left"
+        )
         .withColumn(
             "reorder_flag",
             F.when(F.col("_flag").isNotNull(), 1).otherwise(F.col("reorder_flag")),

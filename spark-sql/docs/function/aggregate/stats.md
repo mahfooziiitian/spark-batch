@@ -1,7 +1,16 @@
-# Statistical Aggregate Functions
+# :material-sigma: Statistical Aggregate Functions
 
 Statistical functions compute **descriptive statistics** across grouped or ungrouped rows —
 averages, medians, modes, percentiles, and extremes with associated values.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[Statistical Function]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Available Functions
 

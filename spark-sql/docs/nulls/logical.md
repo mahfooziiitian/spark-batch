@@ -1,6 +1,16 @@
-# NULL in Logical Operators
+# :material-null: NULL in Logical Operators
 
 AND, OR, and NOT follow three-valued logic — a NULL input means "unknown", and the result depends on whether the known operand can short-circuit the evaluation.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["AND / OR / NOT"] --> B{Operand NULLs?}
+    B -->|"Short-circuit FALSE in AND"| C[FALSE]
+    B -->|"Short-circuit TRUE in OR"| D[TRUE]
+    B -->|Otherwise| E[NULL propagates]
+```
 
 ---
 

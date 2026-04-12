@@ -37,7 +37,9 @@ def test_percentile_approx(spark: SparkSession) -> None:
         ["val"],
     ).createOrReplaceTempView("stats_pct")
 
-    row = spark.sql("SELECT PERCENTILE_APPROX(val, 0.5) AS median FROM stats_pct").collect()[0]
+    row = spark.sql(
+        "SELECT PERCENTILE_APPROX(val, 0.5) AS median FROM stats_pct"
+    ).collect()[0]
     assert row["median"] == 5
 
 
@@ -66,5 +68,7 @@ def test_stats_with_filter_clause(spark: SparkSession) -> None:
     row = spark.sql(
         "SELECT STDDEV(val) FILTER (WHERE flag = true) AS sd FROM stats_filter"
     ).collect()[0]
-    expected_sd = math.sqrt(((10 - 70 / 3) ** 2 + (20 - 70 / 3) ** 2 + (40 - 70 / 3) ** 2) / 2)
+    expected_sd = math.sqrt(
+        ((10 - 70 / 3) ** 2 + (20 - 70 / 3) ** 2 + (40 - 70 / 3) ** 2) / 2
+    )
     assert math.isclose(row["sd"], expected_sd, rel_tol=1e-6)

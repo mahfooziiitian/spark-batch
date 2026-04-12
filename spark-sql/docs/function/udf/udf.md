@@ -1,6 +1,15 @@
-# UDF Guide
+# :material-code-braces-box: UDF Guide
 
 Complete reference for creating, registering, and using User-Defined Functions in Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Python / Scala Function] --> B["spark.udf.register(name, fn)"]
+    B --> C["SELECT my_udf(col) FROM table"]
+    C --> D[Result Column]
+```
 
 ---
 

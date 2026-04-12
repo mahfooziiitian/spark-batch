@@ -1,4 +1,4 @@
-# Coalesce Partitions
+# :material-table-merge-cells: Coalesce Partitions
 
 `COALESCE` reduces the number of partitions without a full shuffle.
 It is cheaper than `REPARTITION` but can lead to uneven partition sizes.

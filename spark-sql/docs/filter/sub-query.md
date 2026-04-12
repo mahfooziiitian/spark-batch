@@ -1,4 +1,4 @@
-# Subquery Filters
+# :material-file-tree: Subquery Filters
 
 Subqueries let you filter rows based on the results of another query.
 Spark SQL supports `IN`, `EXISTS`, and scalar subqueries.

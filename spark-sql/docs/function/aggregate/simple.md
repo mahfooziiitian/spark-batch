@@ -1,6 +1,15 @@
-# Simple Aggregate Functions
+# :material-sigma: Simple Aggregate Functions
 
 Simple aggregate functions perform basic numeric computations across rows in a group.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[MIN / MAX / SUM / AVG]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Functions
 

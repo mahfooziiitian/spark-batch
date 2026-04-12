@@ -1,8 +1,18 @@
-# regexp_replace
+# :material-regex: regexp_replace
 
 `regexp_replace` replaces all substrings matching a regular expression pattern with a replacement string.
 
-## 📌 Syntax
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
+## 📌 :material-regex: Syntax
 
 ```sql
 regexp_replace(str, regexp, rep[, position])
@@ -14,13 +24,13 @@ regexp_replace(str, regexp, rep[, position])
 - `position` (optional): Starting position for replacement (1-based)
 - Returns: `STRING`
 
-## 🔍 Behavior
+## 🔍 :material-regex: Behavior
 
 1. Replaces **all** occurrences of the pattern (not just the first).
 2. Supports backreferences in the replacement string (`$1` for first capturing group).
 3. If `position` is specified, characters before that position are left unchanged.
 
-## 🧪 Practical Examples
+## 🧪 :material-regex: Practical Examples
 
 ### Basic Replacement
 
@@ -57,7 +67,7 @@ SELECT regexp_replace('too    many   spaces', '\\s+', ' ');
 -- Result: 'too many spaces'
 ```
 
-## 🧠 regexp_replace vs translate
+## 🧠 :material-regex: regexp_replace vs translate
 
 | Function | Pattern Type | Scope |
 |----------|-------------|-------|

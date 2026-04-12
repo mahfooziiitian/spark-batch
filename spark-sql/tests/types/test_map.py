@@ -1,4 +1,5 @@
 """Tests for Spark SQL MAP type operations."""
+
 import pytest
 from pyspark.sql import SparkSession
 
@@ -39,9 +40,7 @@ def test_map_contains_key(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_map_concat(spark: SparkSession) -> None:
-    result = spark.sql(
-        "SELECT MAP_CONCAT(MAP('a', 1), MAP('b', 2)) AS merged"
-    )
+    result = spark.sql("SELECT MAP_CONCAT(MAP('a', 1), MAP('b', 2)) AS merged")
     merged = result.first()["merged"]
     assert len(merged) == 2
     assert merged["a"] == 1

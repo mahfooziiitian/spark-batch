@@ -1,6 +1,6 @@
-# Time-Based Aggregation
+# :material-clock-outline: Time-Based Aggregation
 
-## Daily Total per User
+## :material-clock-outline: Daily Total per User
 
 ```sql
 CREATE OR REPLACE TEMP VIEW events AS
@@ -20,7 +20,7 @@ GROUP BY user_id, TO_DATE(event_time)
 ORDER BY user_id, event_date
 ```
 
-## Weekly Active Users (WAU)
+## :material-clock-outline: Weekly Active Users (WAU)
 
 ```sql
 CREATE OR REPLACE TEMP VIEW events AS

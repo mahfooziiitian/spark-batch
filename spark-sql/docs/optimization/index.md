@@ -1,4 +1,4 @@
-# spark sql optimization
+# :material-speedometer: Spark SQL Optimization
 
 1. **Data Partitioning**: Ensure that your data is properly partitioned based on the nature of your queries. Repartitioning the data can help in parallelizing the processing and reducing shuffling.
 
@@ -33,6 +33,16 @@
 16. **Cluster Sizing**: Ensure your Spark cluster is appropriately sized to handle the workload.
 
 17. **Profiling and Monitoring**: Regularly profile and monitor your queries to identify bottlenecks and areas for improvement.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Query] --> B[Catalyst Optimizer]
+    B --> C[Physical Planning]
+    C --> D[Code Generation]
+    D --> E[Execution]
+```
 
 ## References
 

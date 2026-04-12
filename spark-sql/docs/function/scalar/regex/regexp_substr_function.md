@@ -1,8 +1,18 @@
-# regexp_substr
+# :material-regex: regexp_substr
 
 `regexp_substr` returns the substring that matches a regular expression pattern.
 
-## 📌 Syntax
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
+## 📌 :material-regex: Syntax
 
 ```sql
 regexp_substr(str, regexp)
@@ -12,14 +22,14 @@ regexp_substr(str, regexp)
 - `regexp`: Java-style regular expression pattern
 - Returns: `STRING` — the matched substring, or `NULL` if no match
 
-## 🔍 Behavior
+## 🔍 :material-regex: Behavior
 
 1. Scans the string for the **first** occurrence matching the pattern.
 2. Returns the entire matched substring (not a capturing group).
 3. Returns `NULL` if no match is found.
 4. Equivalent to `REGEXP_EXTRACT(str, regexp, 0)`.
 
-## 🧪 Practical Examples
+## 🧪 :material-regex: Practical Examples
 
 ### Basic Match
 
@@ -49,7 +59,7 @@ SELECT regexp_substr('Price: $99.50 USD', '\\$[\\d.]+');
 -- Result: '$99.50'
 ```
 
-## 🧠 regexp_substr vs regexp_extract
+## 🧠 :material-regex: regexp_substr vs regexp_extract
 
 | Function | Returns | Capturing Groups |
 |----------|---------|-----------------|

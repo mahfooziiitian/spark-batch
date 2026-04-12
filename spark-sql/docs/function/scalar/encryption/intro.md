@@ -1,11 +1,19 @@
-# Encryption and Hash Functions
+# :material-shield-lock: Encryption and Hash Functions
 
 Spark SQL includes functions for encryption, hashing, and masking sensitive
 values.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Plain Text] --> B[Hash Function]
+    B --> C[Hash Output]
+```
+
 ---
 
-## 📌 Common Functions
+## 📌 :material-shield-lock: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -17,7 +25,7 @@ values.
 
 ---
 
-## 🧪 Example
+## 🧪 :material-shield-lock: Example
 
 ```sql
 SELECT SHA2(email, 256) AS email_hash FROM users;
@@ -25,7 +33,7 @@ SELECT SHA2(email, 256) AS email_hash FROM users;
 
 ---
 
-## 🧠 When to Use
+## 🧠 :material-shield-lock: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

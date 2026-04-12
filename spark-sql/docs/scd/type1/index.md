@@ -1,4 +1,13 @@
-# Introduction
+# :material-pencil: Introduction
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Change Detected] --> B[UPDATE existing row]
+    B --> C[Old value overwritten]
+    C --> D[No history kept]
+```
 
 ## Definition
 

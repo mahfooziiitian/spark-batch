@@ -1,11 +1,19 @@
-# Array HOFs — ZIP_WITH & FORALL
+# :material-lambda: Array HOFs — ZIP_WITH & FORALL
 
 Additional higher-order functions that operate on arrays: `ZIP_WITH` merges two arrays
 element-wise, and `FORALL` validates that every element satisfies a condition.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
+
 ---
 
-## ZIP_WITH
+## :material-code-braces: ZIP_WITH
 
 ### 📌 Syntax
 
@@ -68,7 +76,7 @@ SELECT ZIP_WITH(
 
 ---
 
-## FORALL
+## :material-code-braces: FORALL
 
 ### 📌 Syntax
 

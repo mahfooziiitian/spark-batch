@@ -1,7 +1,17 @@
-# Views
+# :material-eye: Views
 
 Views are saved SQL queries that behave like virtual tables. They can simplify
 complex logic and improve reuse.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-eye: View Types"] --> B["Temp View (session-scoped)"]
+    A --> C["Global Temp View (app-scoped)"]
+    A --> D["Permanent View (catalog)"]
+    A --> E["Materialized View (Delta)"]
+```
 
 ---
 

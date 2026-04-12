@@ -24,10 +24,12 @@ def test_null_safe_inequality(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_is_null_filter(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("age", IntegerType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("age", IntegerType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", 30), ("Bob", None), ("Carol", None)],
         schema,
@@ -43,10 +45,12 @@ def test_is_null_filter(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_is_not_null_filter(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("age", IntegerType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("age", IntegerType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", 30), ("Bob", None), ("Carol", 25)],
         schema,
@@ -62,31 +66,39 @@ def test_is_not_null_filter(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_count_star_includes_nulls(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("age", IntegerType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("age", IntegerType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", 30), ("Bob", None), ("Carol", None)],
         schema,
     ).createOrReplaceTempView("people_count_star")
 
-    result = spark.sql("SELECT COUNT(*) AS cnt FROM people_count_star").collect()[0]["cnt"]
+    result = spark.sql("SELECT COUNT(*) AS cnt FROM people_count_star").collect()[0][
+        "cnt"
+    ]
     assert result == 3
 
 
 @pytest.mark.unit
 def test_count_col_excludes_nulls(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("age", IntegerType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("age", IntegerType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", 30), ("Bob", None), ("Carol", None)],
         schema,
     ).createOrReplaceTempView("people_count_col")
 
-    result = spark.sql("SELECT COUNT(age) AS cnt FROM people_count_col").collect()[0]["cnt"]
+    result = spark.sql("SELECT COUNT(age) AS cnt FROM people_count_col").collect()[0][
+        "cnt"
+    ]
     # Only Alice has a non-NULL age
     assert result == 1
 
@@ -99,13 +111,17 @@ def test_sum_ignores_nulls(spark: SparkSession) -> None:
         schema,
     ).createOrReplaceTempView("vals_sum_null")
 
-    result = spark.sql("SELECT SUM(val) AS total FROM vals_sum_null").collect()[0]["total"]
+    result = spark.sql("SELECT SUM(val) AS total FROM vals_sum_null").collect()[0][
+        "total"
+    ]
     assert result == 4
 
 
 @pytest.mark.unit
 def test_coalesce_returns_first_non_null(spark: SparkSession) -> None:
-    result = spark.sql("SELECT COALESCE(NULL, NULL, 5) AS result").collect()[0]["result"]
+    result = spark.sql("SELECT COALESCE(NULL, NULL, 5) AS result").collect()[0][
+        "result"
+    ]
     assert result == 5
 
 
@@ -117,10 +133,12 @@ def test_nullif_returns_null_on_match(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_null_in_group_by(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("region", StringType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("region", StringType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", "US"), ("Bob", None), ("Carol", None), ("Dave", "UK")],
         schema,
@@ -140,10 +158,12 @@ def test_null_in_group_by(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_nulls_last_ordering(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("score", IntegerType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("score", IntegerType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", 90), ("Bob", None), ("Carol", 70)],
         schema,
@@ -160,10 +180,12 @@ def test_nulls_last_ordering(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_nulls_first_ordering(spark: SparkSession) -> None:
-    schema = StructType([
-        StructField("name", StringType(), True),
-        StructField("score", IntegerType(), True),
-    ])
+    schema = StructType(
+        [
+            StructField("name", StringType(), True),
+            StructField("score", IntegerType(), True),
+        ]
+    )
     spark.createDataFrame(
         [("Alice", 90), ("Bob", None), ("Carol", 70)],
         schema,

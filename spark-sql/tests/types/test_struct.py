@@ -1,4 +1,5 @@
 """Tests for Spark SQL STRUCT type operations."""
+
 import pytest
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
@@ -12,9 +13,7 @@ def test_struct_field_access(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_named_struct_creation(spark: SparkSession) -> None:
-    result = spark.sql(
-        "SELECT NAMED_STRUCT('city', 'NYC', 'zip', '10001') AS addr"
-    )
+    result = spark.sql("SELECT NAMED_STRUCT('city', 'NYC', 'zip', '10001') AS addr")
     row = result.first()["addr"]
     assert row["city"] == "NYC"
     assert row["zip"] == "10001"

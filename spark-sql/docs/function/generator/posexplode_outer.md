@@ -1,8 +1,18 @@
-# Posexplode Outer
+# :material-expand-all: Posexplode Outer
 
 `POSEXPLODE_OUTER()` combines the position-tracking of `POSEXPLODE` with the row-preserving
 behavior of `EXPLODE_OUTER` — it adds a zero-based index **and** retains rows where the
 array/map is `NULL` or empty.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Single Row] --> B[POSEXPLODE_OUTER]
+    B --> C[Row 1]
+    B --> D[Row 2]
+    B --> E[Row N]
+```
 
 ## 📌 Syntax
 

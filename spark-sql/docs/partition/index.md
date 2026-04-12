@@ -1,7 +1,19 @@
-# Partitioning Overview
+# :material-table-split-cell: Partitioning Overview
 
 Partitioning divides table data into directories by one or more columns.
 Good partitioning improves filter performance and reduces I/O.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-table-split-cell: Partitioning"] --> B["REPARTITION(n) :material-shuffle-variant:"]
+    A --> C["COALESCE(n) :material-table-merge-cells:"]
+    A --> D["REBALANCE :material-scale-balance:"]
+    B --> E["Shuffle — increases partitions"]
+    C --> F["No shuffle — reduces partitions"]
+    D --> G["AQE-based balanced output"]
+```
 
 ---
 
@@ -38,7 +50,7 @@ PARTITIONED BY (order_date);
 
 ---
 
-### Related Guides
+### :material-table-split-cell: Related Guides
 
 - [Coalesce Partitions](coalesce.md)
 - [Rebalance](rebalance/rebalance.md)

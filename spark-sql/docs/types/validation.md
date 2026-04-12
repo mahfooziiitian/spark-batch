@@ -1,4 +1,4 @@
-# Data Validation
+# :material-check-all: Data Validation
 
 Spark SQL provides functions for **type validation**, **safe casting**, and **pattern matching**
 to ensure data quality before processing.

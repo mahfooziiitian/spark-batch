@@ -1,7 +1,15 @@
-# Collection Functions
+# :material-format-list-bulleted: Collection Functions
 
 Collection functions create, access, and manipulate complex data types — **arrays**, **maps**,
 and **structs** — which are the building blocks of nested and semi-structured data in Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Data] --> B[Collection Function]
+    B --> C[Array / Map / Struct]
+```
 
 ## 📌 Function Reference
 

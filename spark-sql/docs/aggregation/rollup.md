@@ -1,6 +1,16 @@
-# ROLLUP
+# :material-chevron-up: ROLLUP
 
 `ROLLUP` extends `GROUP BY` to produce aggregate rows along a **left-to-right hierarchy**, generating one subtotal row per prefix of the column list plus a single grand total.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A["ROLLUP(year, quarter, month)"] --> B["year, quarter, month"]
+    A --> C["year, quarter"]
+    A --> D["year"]
+    A --> E["Grand Total"]
+```
 
 ---
 

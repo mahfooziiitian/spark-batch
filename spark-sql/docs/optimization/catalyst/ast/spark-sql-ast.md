@@ -1,7 +1,16 @@
-# Spark SQL AST
+# :material-file-tree: Spark SQL AST
 
 The Abstract Syntax Tree (AST) represents the parsed structure of a SQL query
 before it becomes a logical plan.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[SQL String] --> B[ANTLR Parser]
+    B --> C[Abstract Syntax Tree]
+    C --> D[Logical Plan]
+```
 
 ---
 

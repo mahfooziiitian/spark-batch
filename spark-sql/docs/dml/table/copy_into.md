@@ -1,4 +1,4 @@
-# COPY INTO
+# :material-content-copy: COPY INTO
 
 `COPY INTO` bulk-loads data from external file locations into a Delta Lake
 table. It is **idempotent** — files that have already been loaded are
@@ -108,7 +108,7 @@ FORMAT_OPTIONS ('header' = 'false');
 
 ---
 
-## Format Options Reference
+## :material-content-copy: Format Options Reference
 
 | Option | Formats | Description |
 |--------|---------|-------------|

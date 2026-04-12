@@ -1,8 +1,20 @@
-# Filtering Data in Spark SQL
+# :material-filter: Filtering Data in Spark SQL
 
 Filtering reduces the number of rows processed and returned, which improves
 both performance and query correctness. Spark SQL supports multiple filtering
 styles depending on where and when you want the filter to apply.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-filter: Filter Options"] --> B["WHERE clause"]
+    A --> C["HAVING clause"]
+    A --> D["NULL filters"]
+    A --> E["Subquery filters"]
+    A --> F["Complex type filters"]
+    A --> G["Predicate Pushdown"]
+```
 
 ## 📌 Core Filtering Clauses
 

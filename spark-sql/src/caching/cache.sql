@@ -19,7 +19,7 @@ WITH base_data AS (
 
 SELECT *
 FROM base_data
-    LATERAL VIEW explode(sequence(1, 50000)) AS x;
+    LATERAL VIEW explode(sequence(1, 50000)) x;
 
 
 -- Step 2: Without Caching

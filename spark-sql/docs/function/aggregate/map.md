@@ -1,6 +1,15 @@
-# Map Aggregate Functions
+# :material-sigma: Map Aggregate Functions
 
 Map aggregate functions create key-value map structures from grouped data.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[Map Aggregate Functions]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Functions
 

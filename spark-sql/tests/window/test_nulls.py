@@ -24,7 +24,9 @@ def test_first_value_ignore_nulls(spark: SparkSession, null_df):
         .orderBy("dt")
         .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
     )
-    result = null_df.withColumn("first_non_null", F.first(F.col("amount"), ignorenulls=True).over(w))
+    result = null_df.withColumn(
+        "first_non_null", F.first(F.col("amount"), ignorenulls=True).over(w)
+    )
     rows = result.collect()
     for row in rows:
         assert row.first_non_null == 100, (
@@ -40,7 +42,9 @@ def test_last_value_ignore_nulls_forward_fill(spark: SparkSession, null_df):
         .orderBy("dt")
         .rowsBetween(Window.unboundedPreceding, Window.currentRow)
     )
-    result = null_df.withColumn("filled_amount", F.last(F.col("amount"), ignorenulls=True).over(w))
+    result = null_df.withColumn(
+        "filled_amount", F.last(F.col("amount"), ignorenulls=True).over(w)
+    )
     rows = result.orderBy("dt").collect()
     filled = [row.filled_amount for row in rows]
     # dt1=NULL→None, dt2=100→100, dt3=NULL→100(filled), dt4=200→200, dt5=NULL→200(filled)
@@ -56,7 +60,9 @@ def test_lag_ignore_nulls(spark: SparkSession, null_df):
         .orderBy("dt")
         .rowsBetween(Window.unboundedPreceding, -1)
     )
-    result = null_df.withColumn("prev_non_null", F.last(F.col("amount"), ignorenulls=True).over(w))
+    result = null_df.withColumn(
+        "prev_non_null", F.last(F.col("amount"), ignorenulls=True).over(w)
+    )
     rows = result.orderBy("dt").collect()
     prev = [row.prev_non_null for row in rows]
     # dt1: no prior rows → None

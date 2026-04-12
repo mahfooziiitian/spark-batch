@@ -1,6 +1,15 @@
-# Deduplication
+# :material-content-duplicate: Deduplication
 
 To de-duplicate data in Spark SQL, you typically want to remove rows that are exact duplicates or duplicates based on a specific key or set of columns.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Table with Duplicates] --> B["ROW_NUMBER() / DISTINCT / GROUP BY"]
+    B --> C[Filter rn = 1]
+    C --> D[Deduplicated Table]
+```
 
 ## Remove duplicate with all column
 

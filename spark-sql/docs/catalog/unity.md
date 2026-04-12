@@ -1,4 +1,4 @@
-# Unity Catalog
+# :material-unity: Unity Catalog
 
 Unity Catalog is a centralized governance solution (Databricks) for managing
 metadata, access control, and lineage across workspaces. It introduces a

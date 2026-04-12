@@ -1,7 +1,16 @@
-# last / last_value
+# :material-sigma: last / last_value
 
 `last` returns the last value in a group. When used with `ORDER BY` in window functions,
 it returns the last value in the ordered frame.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[LAST / LAST_VALUE]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

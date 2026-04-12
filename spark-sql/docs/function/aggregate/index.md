@@ -1,7 +1,16 @@
-# Aggregate Functions
+# :material-sigma: Aggregate Functions
 
 Aggregate functions perform calculations across a set of rows and return a single result.
 They are commonly used with `GROUP BY` clauses or as window functions with `OVER`.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[Aggregate Function]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Function Categories
 

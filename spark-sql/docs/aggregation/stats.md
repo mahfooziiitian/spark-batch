@@ -1,4 +1,4 @@
-# Statistical Aggregations
+# :material-chart-bar: Statistical Aggregations
 
 Spark SQL provides a suite of statistical aggregate functions for measuring dispersion, correlation, and distribution of numeric data.
 

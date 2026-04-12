@@ -1,8 +1,16 @@
-# Lambda Expressions
+# :material-lambda: Lambda Expressions
 
 Lambda expressions (also called anonymous functions) are inline functions passed as arguments
 to higher-order functions (HOFs) in Spark SQL. They define the logic applied to each element
 of an array or map.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Array / Map] --> B["Lambda: x -> expression"]
+    B --> C[HOF Result]
+```
 
 ## 📌 Syntax
 

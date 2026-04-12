@@ -1,6 +1,18 @@
-# NULL Semantics
+# :material-null: NULL Semantics
 
 NULL represents an unknown or missing value; most expressions propagate NULL when any input is NULL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-null: NULL Behavior"] --> B["Comparisons"]
+    A --> C["Logical Ops"]
+    A --> D["Aggregations"]
+    A --> E["JOINs"]
+    A --> F["Ordering"]
+    A --> G["Subqueries"]
+```
 
 ---
 

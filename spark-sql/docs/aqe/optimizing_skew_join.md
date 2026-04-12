@@ -1,4 +1,4 @@
-# AQE Skew Join Optimization
+# :material-auto-fix: AQE Skew Join Optimization
 
 AQE can detect and split skewed shuffle partitions to reduce straggler tasks.
 

@@ -1,4 +1,4 @@
-# List Operations
+# :material-format-list-bulleted: List Operations
 
 In Spark SQL, lists are represented as `ARRAY` types. The primary functions for building
 lists from grouped rows are `COLLECT_LIST` and `COLLECT_SET`.

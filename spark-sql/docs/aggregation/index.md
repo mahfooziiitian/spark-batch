@@ -1,8 +1,20 @@
-# Aggregation in Spark SQL
+# :material-sigma: Aggregation in Spark SQL
 
 Aggregation groups rows and computes summary metrics such as `COUNT`, `SUM`,
 `AVG`, and `MAX`. Spark SQL also supports advanced grouping with `ROLLUP`,
 `CUBE`, and `GROUPING SETS`.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-sigma: Aggregation"] --> B["GROUP BY :material-group:"]
+    A --> C["ROLLUP :material-chevron-up:"]
+    A --> D["CUBE :material-cube:"]
+    A --> E["GROUPING SETS :material-layers-triple:"]
+    A --> F["PIVOT :material-table-pivot:"]
+    A --> G["UNPIVOT"]
+```
 
 ---
 
@@ -50,7 +62,7 @@ GROUP BY ROLLUP(region, product);
 
 ---
 
-### Related Guides
+### :material-sigma: Related Guides
 
 - [Simple Aggregations](simple/index.md)
 - [Rollup](rollup.md)

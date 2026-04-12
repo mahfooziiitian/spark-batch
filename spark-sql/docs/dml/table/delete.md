@@ -1,4 +1,4 @@
-# DELETE
+# :material-table-minus: DELETE
 
 `DELETE` removes rows from a Delta Lake table that match a given condition.
 Like `UPDATE`, it requires a transactional table format — standard Hive or
@@ -84,7 +84,7 @@ WHERE event_date = '2024-01-15'
 
 ---
 
-## DELETE vs TRUNCATE vs DROP
+## :material-table-minus: DELETE vs TRUNCATE vs DROP
 
 | Operation | Rows Removed | Table Remains | Transaction Log | Time Travel |
 |-----------|:------------:|:-------------:|:---------------:|:-----------:|

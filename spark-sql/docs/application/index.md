@@ -1,4 +1,4 @@
-# Applications
+# :material-application: Applications
 
 This section focuses on practical Spark SQL solutions used in real pipelines.
 It includes patterns for de-duplication, key replacement, and data quality

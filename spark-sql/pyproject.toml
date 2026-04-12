@@ -45,24 +45,24 @@ dev = [
 ]
 
 [tool.sqlfluff.core]
-dialect = "sparksql"
+dialect = "databricks"
 templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
-line_length = 128
-
+max_line_length = 128
+ignore = "parsing"
+exclude_rules = "layout.spacing,layout.indent,references.keywords"
 [tool.sqlfluff.indentation]
 indented_joins = false
 indented_using_on = true
 template_blocks_indent = false
-
 [tool.sqlfluff.templater]
 unwrap_wrapped_queries = true
-
 [tool.sqlfluff.templater.jinja]
 apply_dbt_builtins = true
-
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "upper"
+[tool.sqlfluff.rules.capitalisation.identifiers]
+capitalisation_policy = "lower"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -149,5 +149,5 @@ clean = "task remove_cache && task remove_pytest_cache && task remove_html_build
 # Documentation
 lint_md = "uv run pymarkdownlnt fix -r docs README.md"
 docs_build = "uv run mkdocs build"
-docs_serve = "uv run mkdocs serve -a 0.0.0.0:8080"
+docs_serve = "uv run mkdocs serve -a 0.0.0.0:8000"
 docs = "task clean && task docs_build && task docs_serve"

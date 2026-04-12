@@ -60,7 +60,9 @@ SELECT
     sale_date,
     amount,
     amount
-    - LAG(amount, 1) OVER (PARTITION BY region, rep ORDER BY sale_date) AS amount_delta
+    - LAG(amount, 1)
+        OVER (PARTITION BY region, rep ORDER BY sale_date)
+        AS amount_delta
 FROM sales
 ORDER BY region, rep, sale_date;
 -- Result: amount_delta is NULL for the first sale, positive/negative for subsequent ones.

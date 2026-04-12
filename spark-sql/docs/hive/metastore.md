@@ -1,7 +1,16 @@
-# Hive Metastore
+# :material-bee: Hive Metastore
 
 The Hive Metastore stores metadata for databases, tables, and partitions.
 Spark SQL can use it as the default catalog when Hive support is enabled.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

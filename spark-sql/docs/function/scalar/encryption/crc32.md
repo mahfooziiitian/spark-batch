@@ -1,9 +1,17 @@
-# crc32
+# :material-shield-lock: crc32
 
 `crc32` computes a 32-bit cyclic redundancy check (CRC) value — a fast checksum
 used for data integrity validation.
 
-## 📌 Syntax
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Plain Text] --> B[Hash Function]
+    B --> C[Hash Output]
+```
+
+## 📌 :material-shield-lock: Syntax
 
 ```sql
 crc32(expr)
@@ -12,14 +20,14 @@ crc32(expr)
 - `expr`: `STRING` or `BINARY` input
 - Returns: `BIGINT` — 32-bit CRC hash value
 
-## 🔍 Behavior
+## 🔍 :material-shield-lock: Behavior
 
 1. Computes a CRC-32 checksum of the input expression.
 2. Useful for **quick data integrity checks**, not cryptographic security.
 3. Returns a numeric value (not a hex string like MD5/SHA).
 4. NULL input returns NULL.
 
-## 🧪 Practical Examples
+## 🧪 :material-shield-lock: Practical Examples
 
 ### Basic Hash
 
@@ -48,7 +56,7 @@ SELECT name, amount, crc32(CONCAT(name, CAST(amount AS STRING))) AS row_hash
 FROM source;
 ```
 
-## 🧠 CRC32 vs Other Hashes
+## 🧠 :material-shield-lock: CRC32 vs Other Hashes
 
 | Function | Output Size | Speed | Use Case |
 |----------|------------|-------|----------|

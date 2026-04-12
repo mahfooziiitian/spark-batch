@@ -1,4 +1,4 @@
-# Map Filtering
+# :material-map: Map Filtering
 
 Maps can be filtered by key, by value, or by applying higher-order functions.
 

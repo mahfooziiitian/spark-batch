@@ -1,7 +1,15 @@
-# Map Functions
+# :material-map: Map Functions
 
 Comprehensive reference for Spark SQL functions that **create, query, and transform maps**
 (key-value collections).
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Keys and Values] --> B[Map Functions]
+    B --> C[Map Type]
+```
 
 ## 📌 Creating Maps
 

@@ -1,6 +1,15 @@
-# Loading Hive Tables
+# :material-bee: Loading Hive Tables
 
 Hive tables can be loaded from files or inserted using Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

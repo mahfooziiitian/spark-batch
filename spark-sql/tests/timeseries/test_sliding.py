@@ -1,4 +1,5 @@
 """Tests for sliding window aggregations (moving average, running total)."""
+
 import pytest
 from pyspark.sql import SparkSession
 

@@ -1,8 +1,17 @@
-# Structure Functions
+# :material-file-code: Structure Functions
 
 Structure functions parse, generate, and manipulate semi-structured data formats
 such as **JSON**, **CSV**, and **XML** within Spark SQL. They bridge the gap between
 raw string data and Spark's typed column system.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Semi-structured String Column] --> B["from_json / from_csv / from_xml"]
+    B --> C[Typed Struct Column]
+    C --> D[Field Access]
+```
 
 ## 📌 Functions by Format
 

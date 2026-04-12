@@ -1,4 +1,4 @@
-# Column Expressions
+# :material-table-column: Column Expressions
 
 Columns are the building blocks of SQL queries. You can select, alias, and
 derive new columns using expressions and functions.

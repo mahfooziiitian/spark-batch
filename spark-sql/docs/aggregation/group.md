@@ -1,6 +1,19 @@
-# GROUP BY
+# :material-group: GROUP BY
 
 `GROUP BY` groups rows that share the same values across one or more columns so that aggregate functions operate on each group independently.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[All Input Rows] --> B["GROUP BY col"]
+    B --> C[Group 1]
+    B --> D[Group 2]
+    B --> E[Group N]
+    C --> F[Aggregate per Group]
+    D --> F
+    E --> F
+```
 
 ---
 

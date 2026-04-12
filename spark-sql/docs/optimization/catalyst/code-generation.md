@@ -1,7 +1,16 @@
-# Code Generation
+# :material-code-braces: Code Generation
 
 Catalyst uses whole-stage code generation to reduce function call overhead by
 compiling query stages into Java bytecode.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Physical Plan] --> B[WholeStageCodegen]
+    B --> C[Java Bytecode]
+    C --> D[JVM Execution]
+```
 
 ---
 

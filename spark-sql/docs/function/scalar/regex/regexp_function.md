@@ -1,10 +1,20 @@
-# Regex Functions
+# :material-regex: Regex Functions
 
 Spark SQL regex functions support pattern matching and extraction.
 
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
 ---
 
-## 📌 Common Functions
+## 📌 :material-regex: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -17,7 +27,7 @@ Spark SQL regex functions support pattern matching and extraction.
 
 ---
 
-## 🧪 Example
+## 🧪 :material-regex: Example
 
 ```sql
 SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
@@ -25,7 +35,7 @@ SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
 
 ---
 
-## 🧠 When to Use
+## 🧠 :material-regex: When to Use
 
 | Scenario | Function |
 |----------|----------|

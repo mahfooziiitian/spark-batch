@@ -1,4 +1,4 @@
-# Date
+# :material-calendar-clock: Date
 
 The `DATE` type represents a calendar date (year, month, day) without a time component.
 

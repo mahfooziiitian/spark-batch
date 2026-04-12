@@ -1,7 +1,17 @@
-# INSERT
+# :material-table-arrow-down: INSERT
 
 `INSERT` adds rows to a table. Spark SQL supports appending rows, overwriting
 entire tables or specific partitions, and inserting literal values.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Data] --> B{INSERT Mode}
+    B --> C["INSERT INTO: append"]
+    B --> D["INSERT OVERWRITE: replace"]
+    B --> E["INSERT OVERWRITE PARTITION: replace partition"]
+```
 
 ---
 

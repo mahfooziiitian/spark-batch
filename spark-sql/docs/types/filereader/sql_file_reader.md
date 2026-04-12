@@ -1,4 +1,4 @@
-# SQL File Reader
+# :material-file-eye: SQL File Reader
 
 Spark SQL can read files directly in SQL queries using the file format as a table name,
 without needing to create a table or DataFrame first.

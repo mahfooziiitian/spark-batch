@@ -1,6 +1,16 @@
-# Ranking Functions
+# :material-podium: Ranking Functions
 
 Ranking functions assign a position to each row within a partition based on an ordering expression.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Ordered Partition] --> B["ROW_NUMBER: unique 1,2,3"]
+    A --> C["RANK: gaps on ties 1,1,3"]
+    A --> D["DENSE_RANK: no gaps 1,1,2"]
+    A --> E["NTILE(n): bucket assignment"]
+```
 
 ---
 

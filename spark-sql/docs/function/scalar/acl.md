@@ -1,10 +1,21 @@
-# Acl
+# :material-lock: Acl
 
 In Spark SQL and Databricks, ACL (Access Control List) isn't a function — it refers to access control mechanisms used to manage permissions on objects like tables, views, notebooks, and clusters.
 
 However, if you're referring to ACLs in terms of SQL operations, Databricks provides SQL-based access control via Unity Catalog or table ACLs, not through a direct acl() function.
 
-## 🔐 ACL in Databricks – Overview
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[User / Group] --> B[GRANT / REVOKE]
+    B --> C[Table / View / Schema]
+    C --> D{Privilege Check}
+    D -->|Allowed| E[Access Granted]
+    D -->|Denied| F[Access Denied]
+```
+
+## 🔐 :material-lock: ACL in Databricks – Overview
 
 ### ✅ 1. Table ACLs (Legacy)
 
@@ -35,7 +46,7 @@ GRANT INSERT, UPDATE ON TABLE orders TO `data-engineers`;
 REVOKE ALL PRIVILEGES ON TABLE orders FROM `interns`;
 ```
 
-## 👥 ACL Roles
+## 👥 :material-lock: ACL Roles
 
 Common privileges you can grant:
 
@@ -50,7 +61,7 @@ EXECUTE| Functions
 MODIFY| Storage locations (Unity Catalog)
 ALL PRIVILEGES| All supported permissions
 
-## 🧪 Example: Managing ACLs in Unity Catalog
+## 🧪 :material-lock: Example: Managing ACLs in Unity Catalog
 
 ```sql
 -- Create schema and table
@@ -64,7 +75,7 @@ GRANT SELECT ON TABLE finance.budget TO `analyst@datacorp.com`;
 REVOKE ALL PRIVILEGES ON TABLE finance.budget FROM `old_user@datacorp.com`;
 ```
 
-## 🧠 Check ACLs
+## 🧠 :material-lock: Check ACLs
 
 You can inspect privileges with:
 
@@ -78,7 +89,7 @@ Or check for a specific user:
 SHOW GRANTS TO USER `analyst@datacorp.com`;
 ```
 
-## 🛡️ Notes
+## 🛡️ :material-lock: Notes
 
 1. Unity Catalog is recommended for enterprise-level governance.
 2. ACLs apply to SQL, notebooks, data access APIs, etc.

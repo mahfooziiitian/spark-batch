@@ -1,7 +1,17 @@
-# Profiling Queries
+# :material-chart-timeline-variant: Profiling Queries
 
 Profiling helps identify bottlenecks in Spark SQL queries using `EXPLAIN`,
 Spark UI, and runtime metrics.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Query] --> B[EXPLAIN FORMATTED]
+    B --> C[Logical Plan]
+    B --> D[Physical Plan]
+    D --> E[Spark UI Metrics]
+```
 
 ---
 

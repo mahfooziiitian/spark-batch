@@ -1,8 +1,18 @@
-# regexp operator
+# :material-regex: regexp operator
 
     str [NOT] regexp regex
 
-## Arguments
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
+## :material-regex: Arguments
 
 str: A STRING expression to be matched.
 
@@ -12,7 +22,7 @@ regex: A STRING expression with a matching pattern.
     SELECT r'%SystemDrive%\Users\John' rlike r'%SystemDrive%\Users.*';
     SELECT r'%SystemDrive%\Users\John' rlike '%SystemDrive%\\\\Users.*';
 
-## ilike operator
+## :material-regex: ilike operator
 
     str [ NOT ] ilike ( pattern [ ESCAPE escape ] )
     str [ NOT ] ilike { ANY | SOME | ALL } ( [ pattern [, ...] ] )

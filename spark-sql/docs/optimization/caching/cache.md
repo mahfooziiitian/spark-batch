@@ -1,6 +1,17 @@
-# Caching
+# :material-lightning-bolt: Caching
 
 In Spark SQL, CACHE is used to persist the results of a table or query in memory across multiple operations to improve performance — especially if the same data is accessed repeatedly.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[First Query] --> B[CACHE TABLE]
+    B --> C[In-Memory Store]
+    C --> D[Subsequent Queries]
+    D -->|Cache hit| C
+    D -->|Cache miss| E[Recompute]
+```
 
 1. SQL CACHE TABLE is eager
 

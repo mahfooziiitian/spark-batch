@@ -1,4 +1,4 @@
-# Session Catalog
+# :material-clock-time-four: Session Catalog
 
 The **session catalog** stores session-scoped objects such as temporary views
 and temporary functions. These objects exist only for the current Spark session

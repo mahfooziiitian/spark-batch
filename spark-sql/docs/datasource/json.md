@@ -1,4 +1,4 @@
-# JSON Data Source
+# :material-code-json: JSON Data Source
 
 Spark SQL can read and write JSON files using the built-in JSON data source.
 It supports schema inference and custom parsing options.

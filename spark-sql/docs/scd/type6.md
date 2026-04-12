@@ -1,4 +1,4 @@
-# SCD Type 6?
+# :material-layers: SCD Type 6?
 
 SCD Type 6 is a hybrid of Types 1, 2, and 3. It allows:
 

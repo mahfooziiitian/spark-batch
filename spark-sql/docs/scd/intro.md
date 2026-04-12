@@ -1,4 +1,4 @@
-# Introduction
+# :material-information: Introduction
 
 SCD (Slowly Changing Dimension) is a common data warehousing concept where you manage and track changes in dimension tables over time.
 

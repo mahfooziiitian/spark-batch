@@ -1,4 +1,4 @@
-# Refresh Table Metadata
+# :material-information-outline: Refresh Table Metadata
 
 `REFRESH TABLE` invalidates cached metadata and refreshes table information.
 This is useful when underlying data changes outside Spark.

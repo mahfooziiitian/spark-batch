@@ -1,4 +1,13 @@
-# Caching config
+# :material-lightning-bolt: Caching config
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Config Setting] --> B[CacheManager]
+    B --> C[InMemoryRelation]
+    C --> D[Columnar Store]
+```
 
 ## 🔧 Common SQL Caching Configurations
 

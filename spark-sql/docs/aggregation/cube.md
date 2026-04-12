@@ -1,6 +1,16 @@
-# CUBE
+# :material-cube: CUBE
 
 `CUBE` extends `GROUP BY` to generate aggregate rows for **every possible combination** of the specified grouping columns, including all sub-totals and one grand total.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A["CUBE(region, product)"] --> B["region, product"]
+    A --> C["region only"]
+    A --> D["product only"]
+    A --> E["Grand Total"]
+```
 
 ---
 

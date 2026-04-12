@@ -1,6 +1,15 @@
-# NULL in Comparison Operators
+# :material-null: NULL in Comparison Operators
 
 Comparing any value with NULL produces NULL (unknown), not TRUE or FALSE — standard equality and relational operators cannot determine whether an unknown value satisfies a condition.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["NULL = NULL"] --> B["UNKNOWN (not TRUE)"]
+    C["NULL <=> NULL"] --> D["TRUE (null-safe)"]
+    E["IS NULL check"] --> F["TRUE / FALSE"]
+```
 
 ---
 

@@ -26,7 +26,7 @@ def test_delete_orphaned_rows(spark: SparkSession) -> None:
         [
             ("o1", "c1"),
             ("o2", "c2"),
-            ("o3", "c99"),   # orphan — customer does not exist
+            ("o3", "c99"),  # orphan — customer does not exist
         ],
         ["order_id", "customer_id"],
     )

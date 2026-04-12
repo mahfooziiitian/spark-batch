@@ -1,7 +1,16 @@
-# External Hive Tables
+# :material-bee: External Hive Tables
 
 External tables store data in a user-managed location.
 Dropping the table removes metadata but leaves the data files intact.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Hive Metastore"] --> B["Spark SQL Catalog"]
+    B --> C["Tables / Partitions / Views"]
+    C --> D["Query Execution"]
+```
 
 ---
 

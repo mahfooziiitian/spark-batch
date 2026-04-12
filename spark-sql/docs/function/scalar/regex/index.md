@@ -1,9 +1,19 @@
-# Regex Functions Overview
+# :material-regex: Regex Functions Overview
 
 Spark SQL provides a comprehensive set of regular expression functions for pattern matching,
 extraction, and replacement within string data.
 
-## 📌 Functions at a Glance
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[Regex Pattern]
+    B --> C{Match?}
+    C -->|Yes| D[Extract / Replace]
+    C -->|No| E[NULL / Original]
+```
+
+## 📌 :material-regex: Functions at a Glance
 
 | Function | Description | Returns |
 |----------|-------------|---------|
@@ -16,7 +26,7 @@ extraction, and replacement within string data.
 | `REGEXP_INSTR(str, regex)` | Return position of first match | `INT` |
 | `REGEXP_COUNT(str, regex)` | Count number of matches | `INT` |
 
-## 🔍 Regex Syntax Notes
+## 🔍 :material-regex: Regex Syntax Notes
 
 Spark SQL uses **Java-style** regular expressions. Key patterns:
 
@@ -30,7 +40,7 @@ Spark SQL uses **Java-style** regular expressions. Key patterns:
 | `[abc]` | Character class |
 | `^` / `$` | Start / end of string |
 
-## 🧪 Quick Examples
+## 🧪 :material-regex: Quick Examples
 
 ```sql
 -- Match: does string contain digits?

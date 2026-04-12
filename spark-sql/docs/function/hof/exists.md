@@ -1,7 +1,15 @@
-# Exists
+# :material-lambda: Exists
 
 The `EXISTS()` higher-order function checks whether **at least one element** in an array
 satisfies a given condition, returning a boolean.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Array] --> B["Lambda: element -> expression"]
+    B --> C[Output Array / Scalar]
+```
 
 ## 📌 Syntax
 

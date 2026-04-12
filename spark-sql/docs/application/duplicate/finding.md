@@ -1,6 +1,15 @@
-# Find duplicates
+# :material-content-duplicate: Find duplicates
 
 To find duplicates using a key in Spark SQL, you want to identify key values that appear more than once in a dataset.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Raw Table] --> B["ROW_NUMBER() OVER PARTITION BY key"]
+    B --> C[Filter rn > 1]
+    C --> D[Duplicate Rows]
+```
 
 ## ✅ Example: Find Duplicates by Key in Spark SQL
 

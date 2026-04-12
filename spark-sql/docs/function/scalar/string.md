@@ -1,6 +1,14 @@
-# String
+# :material-text: String
 
-## Substring function
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input String] --> B[String Function]
+    B --> C[Transformed String]
+```
+
+## :material-text: Substring function
 
 ### instr
 
@@ -14,7 +22,7 @@ Returns the (1-based) index of the first occurrence of substr in str.
 SELECT instr('SparkSQL', 'SQL');
 ```
 
-## char
+## :material-text: char
 
 ```sql
 char(expr)
@@ -27,7 +35,7 @@ char(expr)
 SELECT char(65);
 ```
 
-## char_length
+## :material-text: char_length
 
 ```sql
 char_length(expr)
@@ -44,7 +52,7 @@ SELECT CHAR_LENGTH('Spark SQL ');
 SELECT CHARACTER_LENGTH('Spark SQL ');
 ```
 
-## character_length
+## :material-text: character_length
 
 ```sql
 character_length(expr)
@@ -63,7 +71,7 @@ SELECT CHAR_LENGTH('Spark SQL ');
 SELECT CHARACTER_LENGTH('Spark SQL ');
 ```
 
-## chr
+## :material-text: chr
 
 ```sql
 chr(expr)
@@ -78,7 +86,7 @@ Examples:
 SELECT chr(65);
 ```
 
-## concatenation
+## :material-text: concatenation
 
 ### concat
 
@@ -109,7 +117,7 @@ SELECT concat_ws('s');
 SELECT concat_ws('/', 'foo', null, 'bar');
 ```
 
-## contains
+## :material-text: contains
 
 ```sql
 contains(left, right)
@@ -127,7 +135,7 @@ SELECT contains('Spark SQL', null);
 SELECT contains(x'537061726b2053514c', x'537061726b');
 ```
 
-## conv
+## :material-text: conv
 
 ```sql
 conv(num, from_base, to_base)
@@ -140,7 +148,7 @@ SELECT conv('100', 2, 10);
 SELECT conv(-10, 16, -10);
 ```
 
-## endswith
+## :material-text: endswith
 
 ```sql
 endswith(left, right)
@@ -159,7 +167,7 @@ SELECT endswith(x'537061726b2053514c', x'537061726b');
 SELECT endswith(x'537061726b2053514c', x'53514c');
 ```
 
-## split
+## :material-text: split
 
 ```sql
 split(str, delimiter)
@@ -188,7 +196,7 @@ SELECT id,
 FROM customers;
 ```
 
-## padding
+## :material-text: padding
 
 ```sql
 SELECT lpad('apple', 10, '*') AS padded_string;

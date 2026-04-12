@@ -11,7 +11,7 @@
 DROP TABLE IF EXISTS dim_customer;
 
 CREATE TABLE dim_customer (
-    surrogate_key  BIGINT GENERATED ALWAYS AS IDENTITY,
+    surrogate_key  BIGINT,
     customer_id    INT,
     name           STRING,
     email          STRING,

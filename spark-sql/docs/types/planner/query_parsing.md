@@ -1,4 +1,4 @@
-# Query Parsing & Execution
+# :material-map-legend: Query Parsing & Execution
 
 Spark SQL processes queries through a multi-stage pipeline: parsing → analysis → optimization
 → physical planning → execution.

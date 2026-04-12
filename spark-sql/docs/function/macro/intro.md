@@ -1,7 +1,15 @@
-# Macros & Dynamic SQL
+# :material-code-json: Macros & Dynamic SQL
 
 Macros and dynamic SQL helpers let you define **reusable SQL logic** and safely construct
 **dynamic identifiers** — reducing duplication and avoiding injection risks.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["CREATE TEMPORARY MACRO name(x) expr"] --> B[Reusable Expression]
+    B --> C["SELECT name(col) FROM table"]
+```
 
 ## 📌 What's Available
 

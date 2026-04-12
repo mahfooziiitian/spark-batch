@@ -5,6 +5,7 @@ SCD3 keeps only the current and one previous value in the same row.
 When a tracked attribute changes, the old current value shifts to the
 previous_* column, and the new value becomes the current_* column.
 """
+
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import DataFrame, SparkSession
@@ -84,7 +85,7 @@ def test_scd3_previous_shifts_to_old_column(spark: SparkSession) -> None:
     )
     result = _apply_scd3(target, source)
     row = result.filter(F.col("customer_id") == "c1").first()
-    assert row["previous_city"] == "NY"   # old current shifts to previous
+    assert row["previous_city"] == "NY"  # old current shifts to previous
 
 
 @pytest.mark.unit
@@ -99,7 +100,7 @@ def test_scd3_new_value_in_current_column(spark: SparkSession) -> None:
     )
     result = _apply_scd3(target, source)
     row = result.filter(F.col("customer_id") == "c1").first()
-    assert row["current_city"] == "LA"    # new city is in current_city
+    assert row["current_city"] == "LA"  # new city is in current_city
 
 
 @pytest.mark.unit
@@ -115,7 +116,7 @@ def test_scd3_unchanged_rows_not_modified(spark: SparkSession) -> None:
     result = _apply_scd3(target, source)
     row = result.filter(F.col("customer_id") == "c1").first()
     assert row["current_city"] == "NY"
-    assert row["previous_city"] == "TX"   # previous must not be overwritten
+    assert row["previous_city"] == "TX"  # previous must not be overwritten
 
 
 @pytest.mark.unit
@@ -134,4 +135,4 @@ def test_scd3_new_records_inserted(spark: SparkSession) -> None:
     new_row = result.filter(F.col("customer_id") == "c2").first()
     assert new_row is not None
     assert new_row["current_city"] == "SF"
-    assert new_row["previous_city"] is None   # no prior address
+    assert new_row["previous_city"] is None  # no prior address

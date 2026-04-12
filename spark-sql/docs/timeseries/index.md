@@ -1,8 +1,20 @@
-# Timeseries data
+# :material-timeline: Timeseries data
 
 Time series queries in Apache Spark (particularly with Spark SQL or PySpark) are very useful for analyzing data that changes over time—such as logs, stock prices, sensor data, etc.
 
 These queries typically involve timestamps and require understanding window functions, date manipulation, and aggregation over time intervals.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Event Stream] --> B["Tumbling Window :material-window-closed:"]
+    A --> C["Sliding Window :material-chevron-right-box:"]
+    A --> D["Hopping Window :material-skip-next:"]
+    B --> E[Fixed non-overlapping windows]
+    C --> F[Overlapping windows]
+    D --> G[Fixed hop interval windows]
+```
 
 ## 🔍 What Is a Time Series Query?
 
@@ -10,15 +22,15 @@ A time series query analyzes data that changes over time, where each row is asso
 
 ## 📌 Core Concepts of Time Series Queries
 
-### 1. Timestamp Columns
+### :material-timeline: 1. Timestamp Columns
 
 All time series queries require a proper timestamp field (e.g., event_time, created_at, etc.).
 
-### 2. Ordering
+### :material-timeline: 2. Ordering
 
 Time series analysis depends on ordering, often by timestamp. Sorting and partitioning by time enables correct window calculations.
 
-### 3. Time Windows
+### :material-timeline: 3. Time Windows
 
 Spark has powerful support for windowed aggregations using:
 

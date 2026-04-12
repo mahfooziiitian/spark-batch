@@ -41,7 +41,9 @@ def test_running_total(spark: SparkSession, sales_view: str):
         .collect()
     )
     totals = [row.running_total for row in alice_north]
-    assert totals == sorted(totals), f"Running total is not monotonically increasing: {totals}"
+    assert totals == sorted(totals), (
+        f"Running total is not monotonically increasing: {totals}"
+    )
     assert totals == [100, 300, 600]
 
 
@@ -151,8 +153,12 @@ def test_partition_count(spark: SparkSession, sales_view: str):
         FROM agg_sales
         """
     )
-    north_counts = {row.region_count for row in result.filter(F.col("region") == "North").collect()}
-    south_counts = {row.region_count for row in result.filter(F.col("region") == "South").collect()}
+    north_counts = {
+        row.region_count for row in result.filter(F.col("region") == "North").collect()
+    }
+    south_counts = {
+        row.region_count for row in result.filter(F.col("region") == "South").collect()
+    }
 
     # North has 5 rows (Alice×3 + Bob×2), South has 4 rows (Alice×2 + Bob×2)
     assert north_counts == {5}

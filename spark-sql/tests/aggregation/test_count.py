@@ -49,10 +49,12 @@ def test_count_per_group(spark: SparkSession) -> None:
     actual = spark.sql("SELECT region, COUNT(*) AS cnt FROM cnt_group GROUP BY region")
     expected = spark.createDataFrame(
         [("US", 2), ("CA", 1)],
-        StructType([
-            StructField("region", StringType()),
-            StructField("cnt", LongType()),
-        ]),
+        StructType(
+            [
+                StructField("region", StringType()),
+                StructField("cnt", LongType()),
+            ]
+        ),
     )
     assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
@@ -64,6 +66,8 @@ def test_approx_count_distinct(spark: SparkSession) -> None:
         ["val"],
     ).createOrReplaceTempView("cnt_approx")
 
-    row = spark.sql("SELECT APPROX_COUNT_DISTINCT(val) AS approx FROM cnt_approx").collect()[0]
+    row = spark.sql(
+        "SELECT APPROX_COUNT_DISTINCT(val) AS approx FROM cnt_approx"
+    ).collect()[0]
     # Result should be within 10% of the exact count (1000)
     assert 900 <= row["approx"] <= 1100

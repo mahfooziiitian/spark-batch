@@ -1,6 +1,16 @@
-# Logical Optimization
+# :material-map-legend: Logical Optimization
 
 Spark SQL optimization, the standard `rule-based optimization` is applied to the `logical plan`.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[Logical Plan] --> B[Filter Pushdown]
+    B --> C[Column Pruning]
+    C --> D[Constant Folding]
+    D --> E[Optimized Logical Plan]
+```
 
 It includes
 

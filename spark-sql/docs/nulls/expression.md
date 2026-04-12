@@ -1,6 +1,16 @@
-# Expressions
+# :material-null: Expressions
 
 The comparison operators and logical operators are treated as expressions in Spark. Other than these two kinds of expressions, Spark supports other form of expressions such as function expressions, cast expressions, etc. The expressions in Spark can be broadly classified as :
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Expression Input] --> B{NULL Input?}
+    B -->|Intolerant| C[Returns NULL]
+    B -->|Tolerant| D["COALESCE / NULLIF / ISNULL"]
+    D --> E[Non-NULL Result Possible]
+```
 
 ## Null intolerant expressions
 

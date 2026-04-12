@@ -1,4 +1,4 @@
-# Conversion
+# :material-swap-horizontal: Conversion
 
 | Function           | Description                                                 |
 |--------------------|-------------------------------------------------------------|
@@ -16,73 +16,82 @@
 | timestamp(expr)    | Casts the value `expr` to the target data type `timestamp`. |
 | tinyint(expr)      | Casts the value `expr` to the target data type `tinyint`.   |
 
-## Expression to bigint
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Source Type] --> B[CAST / TRY_CAST]
+    B --> C[Target Type]
+    B -->|Error| D[NULL / Exception]
+```
+
+## :material-swap-horizontal: Expression to bigint
 
 ```sql
 SELECT bigint('12345')
 ```
 
-## Expression to binary
+## :material-swap-horizontal: Expression to binary
 
 ```sql
 SELECT hex(binary('abc'))
 ```
 
-## Expression to boolean
+## :material-swap-horizontal: Expression to boolean
 
 ```sql
 SELECT cast('2025-01-01' AS date)
 ```
 
-## Converts to DATE
+## :material-swap-horizontal: Converts to DATE
 
 ```sql
 SELECT date('2025-07-20')
 ```
 
-## Converts to DECIMAL(10, 0) unless specified
+## :material-swap-horizontal: Converts to DECIMAL(10, 0) unless specified
 
 ```sql
 SELECT decimal('123.456')
 ```
 
-## Converts to FLOAT (float32)
+## :material-swap-horizontal: Converts to FLOAT (float32)
 
 ```sql
 SELECT float('123.456')
 ```
 
-## Converts to INT (32-bit integer)
+## :material-swap-horizontal: Converts to INT (32-bit integer)
 
 ```sql
 SELECT int('42.99')
 ```
 
-## Converts to SMALLINT (16-bit integer)
+## :material-swap-horizontal: Converts to SMALLINT (16-bit integer)
 
 ```sql
 SELECT smallint('12')
 ```
 
-## Converts to STRING
+## :material-swap-horizontal: Converts to STRING
 
 ```sql
 SELECT string(2025)
 ```
 
-## Converts to TIMESTAMP
+## :material-swap-horizontal: Converts to TIMESTAMP
 
 ```sql
 SELECT timestamp('2024-01-01 12:34:56') 2024-01-01 12:34:56
 ```
 
-## Converts to TINYINT (8-bit integer)
+## :material-swap-horizontal: Converts to TINYINT (8-bit integer)
 
 ```sql
 SELECT tinyint('127')
 ```
 
-## cast and try_cast()
+## :material-swap-horizontal: cast and try_cast()
 
 ### cast
 
@@ -100,7 +109,7 @@ Use try_cast() (if available in your Spark version) to avoid failure on bad inpu
 
 ```
 
-## 🔍 Bonus: Chained Casting
+## 🔍 :material-swap-horizontal: Bonus: Chained Casting
 
 ```sql
 SELECT

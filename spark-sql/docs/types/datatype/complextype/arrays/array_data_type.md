@@ -1,6 +1,16 @@
-# Array Data Type
+# :material-code-array: Array Data Type
 
 An `ARRAY` is an ordered, zero-indexed collection of elements of the same type.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["ARRAY[1, 2, 3]"] --> B["array_contains()"]
+    A --> C["array_size() / cardinality()"]
+    A --> D["explode() → rows"]
+    A --> E["TRANSFORM / FILTER HOF"]
+```
 
 ## 📌 Syntax
 

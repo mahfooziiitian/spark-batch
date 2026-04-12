@@ -1,8 +1,16 @@
-# 🕒 Time Zone in Spark SQL
+# 🕒 :material-calendar-clock: Time Zone in Spark SQL
 
 In Spark SQL, time zone handling is crucial when working with TIMESTAMP data types, especially across systems with different time zone settings.
 
-## 🔧 1. Session Time Zone Setting
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## 🔧 :material-calendar-clock: 1. Session Time Zone Setting
 
 ```sql
 SET spark.sql.session.timeZone = 'UTC';
@@ -14,7 +22,7 @@ This setting affects:
 2. How timestamps are displayed
 3. Built-in time functions like current_timestamp()
 
-## 📥 2. Converting Between Time Zones
+## 📥 :material-calendar-clock: 2. Converting Between Time Zones
 
 Use the function:
 
@@ -30,7 +38,7 @@ SELECT from_utc_timestamp('2025-07-21 12:00:00', 'Asia/Kolkata') AS india_time;
 SELECT to_utc_timestamp('2025-07-21 17:30:00', 'Asia/Kolkata') AS utc_time;
 ```
 
-## 🕑 1. Supported Time Zones in Spark SQL / Databricks
+## 🕑 :material-calendar-clock: 1. Supported Time Zones in Spark SQL / Databricks
 
 Spark supports two formats for time zone settings:
 

@@ -1,7 +1,16 @@
-# grouping / grouping_id
+# :material-sigma: grouping / grouping_id
 
 `GROUPING` and `GROUPING_ID` identify which columns are aggregated in `CUBE`, `ROLLUP`,
 and `GROUPING SETS` queries, distinguishing actual NULLs from aggregation-level NULLs.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Rows] --> B[GROUP BY]
+    B --> C[GROUPING / GROUPING_ID]
+    C --> D[One Row per Group]
+```
 
 ## 📌 Syntax
 

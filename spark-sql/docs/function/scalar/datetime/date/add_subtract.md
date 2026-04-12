@@ -1,6 +1,14 @@
-# Date addition/substraction
+# :material-calendar-clock: Date addition/substraction
 
-## date_add
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Date / Timestamp] --> B[DateTime Function]
+    B --> C[Result Value]
+```
+
+## :material-calendar-clock: date_add
 
 ```sql
 date_add(start_date, num_days)
@@ -13,7 +21,7 @@ date_add(start_date, num_days)
 SELECT date_add('2016-07-30', 1);
 ```
 
-## date_sub
+## :material-calendar-clock: date_sub
 
 ```sql
 date_sub(start_date, num_days)
@@ -25,7 +33,7 @@ It Returns the date that is num_days before start_date.
 SELECT date_sub('2016-07-30', 1);
 ```
 
-## dateadd
+## :material-calendar-clock: dateadd
 
 ```sql
 dateadd(start_date, num_days)
@@ -37,4 +45,4 @@ It returns the date that is num_days after start_date.
 SELECT dateadd('2016-07-30', 1);
 ```
 
-## add_months()
+## :material-calendar-clock: add_months()

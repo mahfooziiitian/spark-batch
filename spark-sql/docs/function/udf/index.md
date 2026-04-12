@@ -1,7 +1,16 @@
-# User-Defined Functions (UDFs)
+# :material-code-braces-box: User-Defined Functions (UDFs)
 
 User-Defined Functions extend Spark SQL with **custom logic** written in Python, Scala, or Java.
 They allow you to call arbitrary code from SQL queries when built-in functions are insufficient.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Python / Scala Function] --> B["spark.udf.register(name, fn)"]
+    B --> C["SELECT my_udf(col) FROM table"]
+    C --> D[Result Column]
+```
 
 ## 📌 Types of UDFs
 

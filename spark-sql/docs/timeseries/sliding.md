@@ -1,4 +1,4 @@
-# Sliding Window Aggregation
+# :material-chevron-right-box: Sliding Window Aggregation
 
 Use overlapping time windows to smooth trends (e.g., rolling 1-day window every 30 minutes).
 

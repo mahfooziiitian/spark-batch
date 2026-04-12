@@ -1,8 +1,18 @@
-# MERGE INTO (Upsert)
+# :material-merge: MERGE INTO (Upsert)
 
 `MERGE INTO` performs an atomic **upsert** — a single statement that can
 `INSERT`, `UPDATE`, and `DELETE` rows by comparing a target table against a
 source. It is the most powerful DML statement in Delta Lake.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Source Table] --> B{MERGE INTO Target}
+    B -->|Row matched| C["WHEN MATCHED: UPDATE / DELETE"]
+    B -->|No match in target| D["WHEN NOT MATCHED: INSERT"]
+    B -->|No match in source| E["WHEN NOT MATCHED BY SOURCE: DELETE"]
+```
 
 ---
 

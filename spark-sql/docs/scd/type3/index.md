@@ -1,4 +1,4 @@
-# Introduction
+# :material-table-column-plus-after: Introduction
 
 SCD Type 3 tracks limited history by storing previous values in additional columns alongside current values.
 It’s best when:

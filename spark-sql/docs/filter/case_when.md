@@ -1,8 +1,19 @@
-# CASE WHEN Filters
+# :material-source-branch: CASE WHEN Filters
 
 `CASE WHEN` is a conditional expression that returns a value. It is often used
 for **classification** and **flagging** and can be combined with `WHERE` to
 filter based on derived logic.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Row] --> B{CASE WHEN cond1}
+    B -->|true| C[Result 1]
+    B -->|false| D{WHEN cond2}
+    D -->|true| E[Result 2]
+    D -->|false| F[ELSE Result]
+```
 
 ---
 

@@ -1,7 +1,17 @@
-# Posexplode
+# :material-expand-all: Posexplode
 
 `POSEXPLODE()` works like `EXPLODE()` but adds a **zero-based position column** alongside each
 element — essential when array order matters.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Single Row] --> B[POSEXPLODE]
+    B --> C[Row 1]
+    B --> D[Row 2]
+    B --> E[Row N]
+```
 
 ## 📌 Syntax
 

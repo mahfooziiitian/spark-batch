@@ -1,8 +1,19 @@
-# Web Functions
+# :material-web: Web Functions
 
 Web functions in Spark SQL parse and extract components from URLs.
 
-## 📌 parse_url
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[URL String] --> B[parse_url]
+    B --> C[HOST]
+    B --> D[PATH]
+    B --> E[QUERY]
+    B --> F[PROTOCOL]
+```
+
+## 📌 :material-web: parse_url
 
 ```sql
 parse_url(url, partToExtract[, key])
@@ -13,13 +24,13 @@ parse_url(url, partToExtract[, key])
 - `key` (optional): Extract a specific query parameter by name
 - Returns: `STRING`
 
-## 🔍 Behavior
+## 🔍 :material-web: Behavior
 
 1. Parses the URL according to standard URL structure.
 2. Returns the specified component, or NULL if the URL is invalid.
 3. When `key` is provided with `QUERY`, extracts that specific parameter's value.
 
-## 🧪 Practical Examples
+## 🧪 :material-web: Practical Examples
 
 ### Extract Host
 
@@ -70,7 +81,7 @@ SELECT
 FROM VALUES ('https://spark.apache.org/docs/latest?format=pdf') AS t(url);
 ```
 
-## 🧠 URL Components Reference
+## 🧠 :material-web: URL Components Reference
 
 | Part | Example URL: `https://user:pass@host.com:8080/path?q=1#ref` |
 |------|-------------------------------------------------------------|

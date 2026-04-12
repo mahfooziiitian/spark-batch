@@ -1,10 +1,20 @@
-# Decision control
+# :material-source-branch: Decision control
 
 In Spark SQL, control flow functions are used to apply conditional logic — similar to `IF, CASE, COALESCE`, etc. in traditional SQL.
 
 These functions are essential for data transformation, cleaning, and business logic implementation.
 
-## 🔁 1. CASE WHEN
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input Expression] --> B{Condition}
+    B -->|TRUE| C[Result A]
+    B -->|FALSE| D[Result B]
+    B -->|NULL| E[Default / NULL]
+```
+
+## 🔁 :material-source-branch: 1. CASE WHEN
 
 Conditional branching logic — similar to IF...ELSE IF...ELSE.
 
@@ -43,7 +53,7 @@ SELECT
 FROM employees;
 ```
 
-## if
+## :material-source-branch: if
 
 Simplified `IF-THEN-ELSE` expression (like ternary operator).
 
@@ -71,7 +81,7 @@ SELECT
 FROM employees;
 ```
 
-## 🔄 3. Coalesce
+## 🔄 :material-source-branch: 3. Coalesce
 
 ```sql
 COALESCE(expr1, expr2, ..., exprN)
@@ -95,7 +105,7 @@ SELECT
 FROM employees;
 ```
 
-## ⚠️ 4. Nullif
+## ⚠️ :material-source-branch: 4. Nullif
 
 ```sql
 NULLIF(expr1, expr2)
@@ -121,7 +131,7 @@ SELECT
 FROM employees;
 ```
 
-## 🪙 5. Nvl
+## 🪙 :material-source-branch: 5. Nvl
 
 ```SQL
 NVL(expr1, expr2)
@@ -161,7 +171,7 @@ SELECT
 FROM users;
 ```
 
-## ✅ Summary Table
+## ✅ :material-source-branch: Summary Table
 
 Function  | Purpose
 ----------|---------------------------------------

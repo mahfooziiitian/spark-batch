@@ -1,7 +1,19 @@
-# Slowly Changing Dimensions (SCD)
+# :material-history: Slowly Changing Dimensions (SCD)
 
 SCD patterns track changes in dimension tables over time. Spark SQL supports
 multiple SCD types depending on how history should be preserved.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A["Dimension Change Detected"] --> B{SCD Type?}
+    B --> C["Type 1: Overwrite :material-pencil:"]
+    B --> D["Type 2: New Row :material-clock-plus:"]
+    B --> E["Type 3: New Column :material-table-column-plus-after:"]
+    B --> F["Type 4: History Table :material-table-plus:"]
+    B --> G["Type 6: Hybrid :material-layers:"]
+```
 
 ---
 

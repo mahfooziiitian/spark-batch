@@ -1,4 +1,4 @@
-# Sorting & Ordering
+# :material-sort: Sorting & Ordering
 
 Spark SQL provides several ways to sort query results — from simple `ORDER BY` to
 window-based and partition-level ordering.

@@ -1,9 +1,22 @@
-# Scalar Functions
+# :material-function: Scalar Functions
 
 Scalar functions operate on individual values and return a single result per input row.
 Unlike aggregate functions, they do not reduce multiple rows into one.
 
-## 📌 Categories
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-function: Scalar Functions"] --> B["String :material-text:"]
+    A --> C["DateTime :material-calendar-clock:"]
+    A --> D["Math :material-calculator:"]
+    A --> E["NULL :material-null:"]
+    A --> F["Regex :material-regex:"]
+    A --> G["Encryption :material-shield-lock:"]
+    A --> H["Type Conversion :material-swap-horizontal:"]
+```
+
+## 📌 :material-function: Categories
 
 | Category | Description | Key Functions |
 |----------|-------------|---------------|
@@ -21,7 +34,7 @@ Unlike aggregate functions, they do not reduce multiple rows into one.
 | **Encryption** | Hashing and data masking | `MD5`, `SHA2`, `CRC32`, `MASK` |
 | **Web** | URL parsing | `PARSE_URL` |
 
-## 🧪 Quick Examples
+## 🧪 :material-function: Quick Examples
 
 ```sql
 -- String

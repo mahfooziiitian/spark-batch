@@ -1,4 +1,4 @@
-# Struct Filtering
+# :material-code-braces: Struct Filtering
 
 Structs store nested fields. You can filter by nested fields using dot notation.
 
