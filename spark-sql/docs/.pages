@@ -1,39 +1,39 @@
 nav:
 
-- Home: index.md
-- SQL Basics:
-  - Table: table
-  - Column: column.md
-  - Data Types: types
-  - DML: dml
-  - Key: key.md
-  - Operator: operator.md
-  - Control Flow: control
-  - Data Sources: datasource
-- Queries:
-  - Filter: filter
-  - Condition: condition
-  - Join: join
-  - Subquery: subquery.md
-  - CTE: cte.md
-  - Aggregation: aggregation
-  - Having: having
-  - NULL Handling: nulls
-- Functions:
+- 🏠 Home: index.md
+- 📐 SQL Basics:
+  - 📋 Table: table
+  - 📊 Column: column.md
+  - 🗃️ Data Types: types
+  - ✏️ DML: dml
+  - 🔑 Key: key.md
+  - ➕ Operator: operator.md
+  - 🔀 Control Flow: control
+  - 💾 Data Sources: datasource
+- 🔍 Queries:
+  - 🔎 Filter: filter
+  - ❓ Condition: condition
+  - 🔗 Join: join
+  - 📦 Subquery: subquery.md
+  - 🔄 CTE: cte.md
+  - Σ Aggregation: aggregation
+  - 🎯 Having: having
+  - ∅ NULL Handling: nulls
+- ⚙️ Functions:
   - function
-  - UDF: udf.md
-- Advanced:
-  - Window Functions: window
-  - Optimization: optimization
-  - AQE: aqe
-  - Execution: execution.md
-  - Partitioning: partition
-  - View: view
-- Data Engineering:
-  - SCD: scd
-  - Time Series: timeseries
-  - Applications: application
-  - Catalog: catalog
-  - Hive: hive
-  - CLI: cli.md
-  - Configuration: config.md
+  - 🐍 UDF: udf.md
+- 🚀 Advanced:
+  - 📊 Window Functions: window
+  - ⚡ Optimization: optimization
+  - 🧠 AQE: aqe
+  - ▶️ Execution: execution.md
+  - 🗂️ Partitioning: partition
+  - 👁️ View: view
+- 🏗️ Data Engineering:
+  - 🔄 SCD: scd
+  - ⏱️ Time Series: timeseries
+  - 🛠️ Applications: application
+  - 📚 Catalog: catalog
+  - 🐝 Hive: hive
+  - 💻 CLI: cli.md
+  - ⚙️ Configuration: config.md

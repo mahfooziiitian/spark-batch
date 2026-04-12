@@ -13,7 +13,6 @@ theme:
     - navigation.prune
     - navigation.path
     - navigation.top
-    - navigation.expand
     - navigation.footer
     - navigation.instant
     - navigation.instant.prefetch
@@ -22,8 +21,11 @@ theme:
     - toc.follow
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
     - content.code.annotate
+    - content.tooltips
+    - content.tabs.link
   palette:
     - scheme: default
       primary: deep purple

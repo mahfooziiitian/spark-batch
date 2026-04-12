@@ -1,5 +1,5 @@
 nav:
   - index.md
-  - Coalesce: coalesce.md
-  - Repartition: repartition
-  - Rebalance: rebalance
+  - 🗜️ Coalesce: coalesce.md
+  - 🔀 Repartition: repartition
+  - ⚖️ Rebalance: rebalance

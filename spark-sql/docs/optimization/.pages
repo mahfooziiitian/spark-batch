@@ -1,7 +1,7 @@
 nav:
   - index.md
-  - Techniques: optimization.md
-  - Catalyst: catalyst
-  - Caching: caching
-  - Shuffling: shuffling.md
-  - Profiling: profiling.md
+  - 💡 Techniques: optimization.md
+  - ⚗️ Catalyst: catalyst
+  - 💾 Caching: caching
+  - 🔀 Shuffling: shuffling.md
+  - 📊 Profiling: profiling.md

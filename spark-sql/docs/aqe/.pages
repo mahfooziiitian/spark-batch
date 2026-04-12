@@ -1,8 +1,8 @@
 nav:
   - index.md
-  - Overview: spark-sql-aqe.md
-  - Coalescing Partitions: coalescing_post_shuffle_partitions.md
-  - SMJ to Broadcast: converting_sort_merge_join_broadcast_join.md
-  - SMJ to Shuffled Hash: converting_sort_merge_join_to_shuffled_hash_join.md
-  - Skew Join: optimizing_skew_join.md
-  - Splitting Skewed Partitions: splitting_skewed_shuffle_partitions.md
+  - 📖 Overview: spark-sql-aqe.md
+  - 🗂️ Coalescing Partitions: coalescing_post_shuffle_partitions.md
+  - 📡 SMJ to Broadcast: converting_sort_merge_join_broadcast_join.md
+  - 🔀 SMJ to Shuffled Hash: converting_sort_merge_join_to_shuffled_hash_join.md
+  - ⚖️ Skew Join: optimizing_skew_join.md
+  - ✂️ Splitting Skewed Partitions: splitting_skewed_shuffle_partitions.md
