@@ -1,4 +1,16 @@
-# Demo
+# :material-table-column-plus-after: Demo
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Source row] --> B{Match + city changed?}
+    B -- Yes --> C["Move current_city to previous_city"]
+    C --> D["Set current_city = new value"]
+    B -- No match --> E[Insert new row]
+    D --> F[Updated target]
+    E --> F
+```
 
 ## Schema
 

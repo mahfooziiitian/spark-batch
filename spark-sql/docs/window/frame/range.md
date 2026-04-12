@@ -1,10 +1,18 @@
-# Range
+# :material-table-row: Range
 
 A RANGE frame defines the window based on the values of the ORDER BY column, rather than physical row positions.
 
 1. Uses ORDER BY values
 2. Time intervals, numeric gaps
 3. RANGE requires numeric or date-based columns.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["RANGE BETWEEN 7 PRECEDING AND CURRENT ROW"] --> B[All rows within value range]
+    B --> C[Aggregate over value window]
+```
 
 With RANGE BETWEEN 100 PRECEDING AND CURRENT ROW:
 → Includes all rows with amount ≥ current - 100

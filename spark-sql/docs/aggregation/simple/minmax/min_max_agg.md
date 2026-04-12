@@ -1,6 +1,17 @@
-# MIN / MAX
+# :material-arrow-collapse-vertical: MIN / MAX
 
 `MIN` and `MAX` return the smallest or largest non-NULL value in a group, supporting numbers, strings, dates, and timestamps.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input rows] --> B[Skip NULLs]
+    B --> C["MIN: keep smallest"]
+    B --> D["MAX: keep largest"]
+    C --> E[MIN result]
+    D --> F[MAX result]
+```
 
 ---
 

@@ -1,4 +1,16 @@
-# Demo
+# :material-clock-plus: Demo
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Source row] --> B{Match + changed?}
+    B -- Yes --> C[Expire old row]
+    C --> D[Insert new row with updated dates]
+    B -- No match --> E[Insert new row]
+    D --> F[Target with full history]
+    E --> F
+```
 
 ## Simpe cte
 

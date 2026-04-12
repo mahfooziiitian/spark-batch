@@ -1,7 +1,16 @@
-# Lateral View Filtering
+# :material-table-row: Lateral View Filtering
 
 `LATERAL VIEW` expands arrays or maps into multiple rows using `explode`.
 This makes it easy to filter based on individual array elements or map entries.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["Row with ARRAY column"] --> B["LATERAL VIEW explode(arr) AS item"]
+    B --> C[One row per array element]
+    C --> D[Join back to original row columns]
+```
 
 ---
 

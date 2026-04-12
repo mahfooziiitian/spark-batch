@@ -1,7 +1,19 @@
-# ROWS Window Frame
+# :material-table-row: ROWS Window Frame
 
 `ROWS` defines a frame based on physical row offsets around the current row.
 It is used inside `OVER (...)` window definitions.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["ROWS BETWEEN 2 PRECEDING AND CURRENT ROW"] --> B[Row -2]
+    A --> C[Row -1]
+    A --> D[Current Row]
+    B --> E[Include in frame]
+    C --> E
+    D --> E
+```
 
 ---
 

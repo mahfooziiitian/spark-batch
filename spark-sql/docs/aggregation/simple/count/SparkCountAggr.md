@@ -1,6 +1,18 @@
-# COUNT
+# :material-counter: COUNT
 
 `COUNT` counts rows or non-NULL values within a group, making it one of the most commonly used aggregate functions in Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["COUNT(*)"] --> E[Count all rows]
+    B["COUNT(col)"] --> F[Skip NULLs then count]
+    C["COUNT(DISTINCT col)"] --> G[Deduplicate then count]
+    E --> H[BIGINT result]
+    F --> H
+    G --> H
+```
 
 ---
 

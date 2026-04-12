@@ -1,7 +1,19 @@
-# View Overview
+# :material-eye: View Overview
 
 Views are virtual tables defined by a stored SQL query.
 They simplify complex logic and promote reuse.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["CREATE VIEW"] --> B[View defined]
+    B --> C["SELECT from view"]
+    C --> D[Underlying query runs]
+    D --> E[Results returned]
+    B --> F["DROP VIEW"]
+    F --> G[View removed]
+```
 
 ---
 

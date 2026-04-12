@@ -1,6 +1,17 @@
-# View Examples
+# :material-eye: View Examples
 
 Examples of creating and using views in Spark SQL.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Base Table] --> B["CREATE VIEW query"]
+    B --> C[View definition stored]
+    C --> D["SELECT * FROM view"]
+    D --> E[Query re-executed on base table]
+    E --> F[Result]
+```
 
 ---
 

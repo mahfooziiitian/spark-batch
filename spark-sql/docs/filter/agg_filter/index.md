@@ -1,8 +1,16 @@
-# Aggregate FILTER
+# :material-filter: Aggregate FILTER
 
 The `FILTER` clause applies a predicate **inside** an aggregate function.
 It lets you compute multiple conditional aggregates in a single pass without
 writing `CASE WHEN` expressions.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["SUM(amount) FILTER (WHERE status = 'paid')"] --> B[Apply filter before aggregating]
+    B --> C[Conditional aggregate result]
+```
 
 ---
 

@@ -1,10 +1,20 @@
-# nulls_option
+# :material-null: nulls_option
 
 Specifies whether to skip null values when evaluating the window function.
 
 `RESPECT NULLS` means not skipping null values, while `IGNORE NULLS` means skipping.
 
 If not specified, the `default` is `RESPECT NULLS`.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["ORDER BY col ASC"] --> B["Default: NULLs last"]
+    C["ORDER BY col DESC"] --> D["Default: NULLs first"]
+    E["ORDER BY col ASC NULLS FIRST"] --> F["NULLs placed first"]
+    G["ORDER BY col DESC NULLS LAST"] --> H["NULLs placed last"]
+```
 
 ## Syntax
 

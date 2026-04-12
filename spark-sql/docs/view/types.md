@@ -1,4 +1,14 @@
-# View Types
+# :material-eye: View Types
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A["Views"] --> B["Temporary View (session only)"]
+    A --> C["Global Temp View (app lifetime)"]
+    A --> D["Permanent View (catalog)"]
+    A --> E["Materialized View (Delta Lake)"]
+```
 
 ## Session Temporary view
 

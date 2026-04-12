@@ -1,6 +1,18 @@
-# Window Function Categories
+# :material-window-shutter: Window Function Categories
 
 Window functions fall into three main categories.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A["Window Functions"] --> B["Aggregate"]
+    A --> C["Ranking"]
+    A --> D["Navigation"]
+    B --> B1["SUM, AVG, COUNT"]
+    C --> C1["ROW_NUMBER, RANK, DENSE_RANK"]
+    D --> D1["LAG, LEAD, NTH_VALUE"]
+```
 
 ---
 

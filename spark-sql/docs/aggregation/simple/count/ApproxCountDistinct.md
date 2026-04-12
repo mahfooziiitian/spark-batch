@@ -1,6 +1,16 @@
-# APPROX_COUNT_DISTINCT
+# :material-counter: APPROX_COUNT_DISTINCT
 
 `APPROX_COUNT_DISTINCT` returns an approximate count of distinct values using the **HyperLogLog** algorithm — far faster and less memory-intensive than `COUNT(DISTINCT ...)` on large datasets.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input rows] --> B[Hash each value]
+    B --> C[HyperLogLog sketch]
+    C --> D[Estimate cardinality]
+    D --> E[APPROX_COUNT_DISTINCT result]
+```
 
 ---
 

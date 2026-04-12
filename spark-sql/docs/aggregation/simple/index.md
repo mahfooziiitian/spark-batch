@@ -1,6 +1,17 @@
-# Simple Aggregations
+# :material-sigma: Simple Aggregations
 
 Simple aggregation functions summarize values within groups or across a table.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-sigma: Simple Aggregations"] --> B["SUM :material-sigma:"]
+    A --> C["COUNT :material-counter:"]
+    A --> D["AVG :material-sigma:"]
+    A --> E["MIN / MAX :material-arrow-collapse-vertical:"]
+    A --> F["APPROX_COUNT_DISTINCT :material-counter:"]
+```
 
 ---
 

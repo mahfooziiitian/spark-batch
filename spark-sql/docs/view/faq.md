@@ -1,4 +1,17 @@
-# FAQ
+# :material-frequently-asked-questions: FAQ
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A["SELECT * FROM my_view"] --> B{View type?}
+    B -- "Temp view" --> C[Session scope]
+    B -- "Global temp" --> D["global_temp.view_name"]
+    B -- "Permanent" --> E[Metastore lookup]
+    C --> F[Query resolved]
+    D --> F
+    E --> F
+```
 
 ## 1. View Not Found
 

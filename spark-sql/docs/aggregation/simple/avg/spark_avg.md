@@ -1,6 +1,16 @@
-# AVG
+# :material-sigma: AVG
 
 `AVG` returns the arithmetic mean of non-NULL values.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input rows] --> B[Skip NULLs]
+    B --> C[SUM all values]
+    C --> D[Divide by COUNT]
+    D --> E[AVG result]
+```
 
 ---
 

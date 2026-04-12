@@ -1,6 +1,15 @@
-# SUM
+# :material-sigma: SUM
 
 `SUM` returns the total of all non-NULL numeric values in a group.
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Input rows] --> B[Skip NULLs]
+    B --> C[Accumulate values]
+    C --> D[SUM result]
+```
 
 ---
 

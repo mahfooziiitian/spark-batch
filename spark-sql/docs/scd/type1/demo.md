@@ -1,4 +1,15 @@
-# Demo
+# :material-pencil: Demo
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[Source row] --> B{Match on key?}
+    B -- Yes --> C[Overwrite existing values]
+    B -- No --> D[Insert new row]
+    C --> E[Updated target]
+    D --> E
+```
 
 ```sql
 -- Step 1: Find records that changed or are new

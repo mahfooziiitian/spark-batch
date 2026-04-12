@@ -1,7 +1,17 @@
-# HAVING Clause
+# :material-filter-variant: HAVING Clause
 
 `HAVING` filters **groups** after aggregation. Use it when you need to apply a
 condition to aggregated results (e.g., `COUNT`, `SUM`, `AVG`).
+
+### :material-sitemap: Overview
+
+```mermaid
+graph LR
+    A[All Rows] --> B["WHERE: filter rows before aggregation"]
+    B --> C[GROUP BY]
+    C --> D["HAVING: filter groups after aggregation"]
+    D --> E[Result]
+```
 
 ---
 

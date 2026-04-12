@@ -1,4 +1,15 @@
-# Application
+# :material-window-shutter: Application
+
+### :material-sitemap: Overview
+
+```mermaid
+graph TD
+    A[":material-window-shutter: Window Use Cases"] --> B["Running totals"]
+    A --> C["Ranking / Top-N"]
+    A --> D["Moving averages"]
+    A --> E["Previous / Next row values"]
+    A --> F["Sessionisation"]
+```
 
 ## Duplicate
 
