@@ -1,4 +1,4 @@
-CREATE TABLE sales (
+CREATE TABLE IF NOT EXISTS sales (
     sale_id INT,
     year INT,
     month STRING,
