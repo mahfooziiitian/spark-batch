@@ -2,3 +2,17 @@ nav:
   - index.md
   - duplicate
   - replace_key
+  - Aggregation: aggregation
+  - Analytics: analytics
+  - CTE: cte
+  - Date Strings: date_string
+  - Derived Tables: derived_table
+  - Filter: filter
+  - Grouping: grouping
+  - Keys & Structs: key_n_struct
+  - Numeric: numeric
+  - Pivot: pivot
+  - Ranking: ranking
+  - Rolling Analysis: rolling
+  - Subqueries: subquery
+  - Time Series: time_series
