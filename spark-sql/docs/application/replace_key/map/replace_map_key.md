@@ -1,128 +1,82 @@
-# :material-application: Replace Map Key
+# :material-swap-horizontal: Replace Map Key
 
-> **Note:** Map entry order is not guaranteed in output; results below are conceptual.
+Remap keys inside a Databricks SQL `MAP` column without losing values. The
+pattern uses `MAP_ENTRIES`, `TRANSFORM`, and `AGGREGATE` higher-order functions
+to apply a lookup map atomically — no UDF required.
 
----
+!!! note "Map entry order"
+    Map entry iteration order is not guaranteed in Spark SQL. Results below are
+    conceptual; the **values** are always correct even if key order varies.
 
-## Simple Remap (No Collisions)
+## :material-sitemap: How It Works
 
-- **key_map:** `A → X`, `B → Y`
-- **original_map:** `{A: 1, B: 2, C: 3}`
-- **Expected:** `{X: 1, Y: 2, C: 3}`
-
----
-
-## Collision with Existing Original Key
-
-- **key_map:** `A → X`
-- **original_map:** `{A: 1, X: 9}`
-- Remapping `A → X` would collide with existing key `X`; the rule skips A’s remap.
-- **Expected:** `{X: 9}` (`A: 1` is dropped due to collision skip)
-
----
-
-## Two Keys Map to the Same New Key (Dedupe Keeps Last)
-
-- **key_map:** `A → Z`, `B → Z`
-- **original_map:** `{A: 1, B: 2}`
-- Both remap to `Z`. The second aggregate + filter keeps the last of the duplicates.
-- **Expected:** `{Z: 2}` (assuming iteration A then B; last wins)
+```mermaid
+graph LR
+    OM["original_map\n{A:1, B:2, C:3}"] --> EX["MAP_ENTRIES\n→ array of kv pairs"]
+    KM["key_map\n{A→X, B→Y}"] --> TR
+    EX --> TR["TRANSFORM\n→ compute new_key\nvia COALESCE"]
+    TR --> AGG["AGGREGATE\n→ skip collisions\n→ build result array"]
+    AGG --> RF["MAP_FROM_ENTRIES\n→ {X:1, Y:2, C:3}"]
+```
 
 ---
 
-## Identity Mapping (No-op) Plus One Real Remap
+## 📌 Algorithm Summary
 
-- **key_map:** `A → A`, `B → B`, `C → K`
-- **original_map:** `{A: 10, B: 20, C: 30}`
-- **Expected:** `{A: 10, B: 20, K: 30}`
+For each `(original_key, value)` pair in `original_map`:
 
----
-
-## key_map Has Entries for Missing Keys (Ignored)
-
-- **key_map:** `Z → Q`, `C → K`
-- **original_map:** `{A: 1, B: 2}`
-- **Expected:** `{A: 1, B: 2}`
+1. Compute `new_key = COALESCE(key_map[original_key], original_key)`.
+2. If `new_key` already exists in `original_map` **and** `new_key != original_key` — **skip** (collision avoidance).
+3. Otherwise emit `(new_key, value)`.
+4. If two entries produce the same `new_key`, the **last** one wins (iteration order of `MAP_ENTRIES`).
 
 ---
 
-## Empty key_map
+## 🧪 Behaviour Reference
 
-- **original_map:** `{A: foo, B: bar}`
-- **Expected:** `{A: foo, B: bar}`
+| Scenario | key_map | original_map | Expected output | Notes |
+|----------|---------|-------------|-----------------|-------|
+| Simple remap | `A->X, B->Y` | `{A:1, B:2, C:3}` | `{X:1, Y:2, C:3}` | Unmapped keys pass through |
+| Collision | `A->X` | `{A:1, X:9}` | `{X:9}` | Remap skipped; A:1 dropped |
+| Duplicate target | `A->Z, B->Z` | `{A:1, B:2}` | `{Z:2}` | Last entry wins |
+| Identity + remap | `A->A, B->B, C->K` | `{A:10, B:20, C:30}` | `{A:10, B:20, K:30}` | Identity is no-op |
+| Missing key | `Z->Q, C->K` | `{A:1, B:2}` | `{A:1, B:2}` | Extra key_map entries ignored |
+| Empty key_map | `{}` | `{A:foo, B:bar}` | `{A:foo, B:bar}` | No-op |
+| Empty original_map | any | `{}` | `{}` | Nothing to remap |
+| Whitespace | `" Tenant"->"+Tenant"` | `{" Tenant":1}` | `{Tenant:1}` | Exact match required |
+| Case sensitivity | `env->ENV` | `{Env:1, env:2}` | `{Env:1, ENV:2}` | Env != env |
+| NULL value | `A->X` | `{A:null, B:bbb}` | `{X:null, B:bbb}` | Value NULL preserved |
+| Mixed complex | `U->X (collides), A->Z, B->Z` | `{U:100, X:999, A:10, B:20, C:30}` | `{X:999, Z:20, C:30}` | Collision skip + last wins |
+| No chaining | `A->B, B->C` | `{A:1, B:2, C:3}` | `{C:3}` | Both collide; only C remains |
 
----
-
-## Empty original_map
-
-- **Expected:** `{}`
-
----
-
-## Whitespace Normalization
-
-- **key_map:** `' Tenant' → 'Tenant'`, `'Tent' → 'Tenant'`, `'Environ' → 'Env'`
-- **original_map:** `{' Tenant': 1, 'c': 3, 'Environ': 'prod'}`
-- **Expected:** `{Tenant: 1, c: 3, Env: 'prod'}`
-
----
-
-## Case Sensitivity
-
-- **key_map:** `env → ENV`, `Prod → PROD`
-- **original_map:** `{Env: 1, env: 2, Prod: 3}`
-- Only exact-case matches remap: `env → ENV`, `Prod → PROD`; `Env` stays.
-- **Expected:** `{Env: 1, ENV: 2, PROD: 3}`
+            {                 echo ___BEGIN___COMMAND_OUTPUT_MARKER___;                 PS1=;PS2=;unset HISTFILE;                 EC=0;                 echo ___BEGIN___COMMAND_DONE_MARKER___0;             }! warning "No chain remapping"
+    The algorithm is **single-hop**. `A -> B -> C` is not applied transitively.
+    For multi-hop remapping, run the query in successive passes until the output equals the input.
 
 ---
 
-## Null Value Supported
+## 🔍 SQL Implementation
 
-- **key_map:** `A → X`
-- **original_map:** `{A: null, B: 'bbb'}`
-- **Expected:** `{X: null, B: 'bbb'}`
-
----
-
-## Mixed Complex Scenario
-
-- **key_map:** `U → X` (collides), `A → Z`, `B → Z` (duplicate target)
-- **original_map:** `{U: 100, X: 999, A: 10, B: 20, C: 30}`
-- `U → X` collides with existing key `X` → skip U’s remap; `A → Z` and `B → Z` both target `Z` → keep last (`B`).
-- **Expected:** `{X: 999, Z: 20, C: 30}`
+```sql
+--8<-- "src/application/map_key_replace/v5/map_key_replace_v5.sql"
+```
 
 ---
 
-## Single-hop Only (No Chaining)
+## 🧠 Tips and Variations
 
-- **key_map:** `A → B`, `B → C`
-- **original_map:** `{A: 1, B: 2, C: 3}`
-- `A` maps to `B` (not then to `C`), `B` maps to `C`, `C` stays `C`.
-- There’s a collision potential when `A → B` and original already has `B`; since `B` exists, `A`’s remap is skipped (collision rule).
-- `B → C` proceeds (but original key `C` exists, so this is a collision and is skipped).
-- Final: only original keys remain untouched.
-- **Expected:** `{C: 3}`
+| Need | Approach |
+|------|----------|
+| Preserve original key on collision | Append original pair instead of discarding |
+| Multi-hop remapping | Run iteratively until output equals input |
+| Case-insensitive matching | Wrap keys with `LOWER()` in both maps |
+| Audit remapped keys | Add a TRANSFORM pass emitting (old_key, new_key) pairs |
 
-> This test highlights a subtle behavior: colliding remaps get dropped, not preserved as original keys.
+            {                 echo ___BEGIN___COMMAND_OUTPUT_MARKER___;                 PS1=;PS2=;unset HISTFILE;                 EC=0;                 echo ___BEGIN___COMMAND_DONE_MARKER___0;             }! success "Good fit"
+    - Renaming tenant/environment identifiers stored as map keys
+    - Normalising ad-hoc tag keys from external systems
+    - Applying a canonical alias table to raw map columns
 
----
-> 🔎 **Behavior summary of your query**
->
-> - For each `(original_key, value)`:
->   - Compute `new_key = coalesce(key_map[original_key], original_key)`.
->   - If `new_key` **already exists** among the **original_map's keys** and `new_key != original_key`, then **skip** (to avoid overriding original).  
->   - Otherwise, include `(new_key, value)`.
-> - If multiple entries produce the **same `new_key`**, the final reduction keeps the **last** one (based on iteration order of `map_entries()`).
-
----
-
-## Tips & Variations
-
-- If you **want to preserve** the original `(original_key, value)` when a collision occurs (instead of dropping it), you’d need to tweak the first aggregate to append the **original** pair instead of skipping.
-- If you want **multi-hop remapping** (A→B and then B→C), you’ll need an iterative/recursive approach or a loop of remap passes until no change.
-
----
-
-If you’d like, I can tailor the tests to your exact dataset or adjust the logic (e.g., “preserve-on-collision” behavior). Do you want these as a **Databricks SQL notebook cell** with a pretty display of each `final_map` by `test_id`?
-
----
+            {                 echo ___BEGIN___COMMAND_OUTPUT_MARKER___;                 PS1=;PS2=;unset HISTFILE;                 EC=0;                 echo ___BEGIN___COMMAND_DONE_MARKER___0;             }! failure "Not a good fit"
+    - Simple scalar column renames — use `withColumnRenamed` or `AS` alias
+    - Maps with thousands of keys — AGGREGATE HOF has linear cost per row
