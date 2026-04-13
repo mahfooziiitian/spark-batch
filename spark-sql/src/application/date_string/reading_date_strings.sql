@@ -92,14 +92,14 @@ SELECT
     salesperson,
     raw_date,
     -- Each row's format is known ahead of time; use CASE to dispatch
+    saleprice,
     CASE fmt
         WHEN 'MM/dd/yyyy' THEN TO_DATE(raw_date, 'MM/dd/yyyy')
         WHEN 'dd/MM/yyyy' THEN TO_DATE(raw_date, 'dd/MM/yyyy')
         WHEN 'yyyy-MM-dd' THEN TO_DATE(raw_date, 'yyyy-MM-dd')
         WHEN 'dd-MMM-yyyy' THEN TO_DATE(raw_date, 'dd-MMM-yyyy')
         WHEN 'yyyyMMdd' THEN TO_DATE(raw_date, 'yyyyMMdd')
-    END AS sale_date,
-    saleprice
+    END AS sale_date
 FROM raw_sales
 ORDER BY id;
 
