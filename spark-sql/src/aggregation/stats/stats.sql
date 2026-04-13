@@ -39,13 +39,8 @@ FROM sales_dt;
 
 -- Percentiles and Quantiles
 SELECT
-    percentile_cont(0.5), --WITHIN GROUP (ORDER BY sales) AS median_sales,
-    percentile_disc(0.9), --WITHIN GROUP (ORDER BY sales) AS p90_sales,
-    --quantile(0.25) WITHIN GROUP (ORDER BY sales) AS q1_sales,
-    percentile(sales, 0.5) --- WITHIN GROUP (ORDER BY sales) 
-        AS q1_sales,
-    --quantile(0.75) WITHIN GROUP (ORDER BY sales) AS q3_sales
-    percentile(sales, 0.75)
-    --WITHIN GROUP (ORDER BY sales) 
-        AS q3_sales
+    percentile_cont(0.5) AS median_sales,
+    percentile_disc(0.9) AS p90_sales,
+    percentile(sales, 0.5) AS q1_sales,
+    percentile(sales, 0.75) AS q3_sales
 FROM sales_dt;
