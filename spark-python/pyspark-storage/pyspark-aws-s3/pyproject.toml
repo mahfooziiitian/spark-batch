@@ -1,0 +1,9 @@
+[project]
+name = "pyspark-aws-s3"
+version = "0.1.0"
+description = "PySpark AWS S3 storage examples"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark<4.0.0",
+]

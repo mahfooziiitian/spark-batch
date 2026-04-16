@@ -1,24 +1,28 @@
+import os
+
 from pyspark.sql import SparkSession
 
-if __name__ == '__main__':
-    hadoop_aws = "3.2.2"
+if __name__ == "__main__":
+    hadoop_aws = "3.3.4"
+    master = os.environ.get("SPARK_MASTER", "local[*]")
+    input_path = os.environ.get("INPUT_PATH", "s3a://spark-demo/input/sample.csv")
+
     spark = (SparkSession
              .builder
-             .appName("spark_localstack_demo")
+             .appName("read_s3_spark")
+             .master(master)
              .config("spark.jars.packages", f"org.apache.hadoop:hadoop-aws:{hadoop_aws}")
              .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:4566")
              .config("spark.hadoop.fs.s3a.access.key", "test")
              .config("spark.hadoop.fs.s3a.secret.key", "test")
              .config("spark.hadoop.fs.s3a.path.style.access", "true")
              .config("spark.hadoop.fs.s3a.aws.credentials.provider",
-                     "com.amazonaws.auth.profile.ProfileCredentialsProvider")
+                     "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
              .getOrCreate())
 
-    # On EMR you can use `s3` instead of `s3a`
-    df = spark.read.csv('s3a://otdm-magna-dev-landing/requests.csv')
+    spark.sparkContext.setLogLevel("WARN")
 
+    df = spark.read.option("header", True).option("inferSchema", True).csv(input_path)
     df.show(truncate=False)
 
-    (df.write.format("csv")
-     .option("header", True)
-     .save("s3a://otdm-magna-dev-landing/kafka/request", mode="overwrite"))
+    spark.stop()

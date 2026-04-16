@@ -1,0 +1,125 @@
+x-hadoop-ha: &hadoop-ha
+  HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+  HADOOP_HOME: /opt/hadoop
+  CORE-SITE.XML_fs.defaultFS: "hdfs://mycluster"
+  HDFS-SITE.XML_dfs.nameservices: "mycluster"
+  HDFS-SITE.XML_dfs.ha.namenodes.mycluster: "nn1,nn2"
+  HDFS-SITE.XML_dfs.namenode.rpc-address.mycluster.nn1: "namenode1:8020"
+  HDFS-SITE.XML_dfs.namenode.rpc-address.mycluster.nn2: "namenode2:8020"
+  HDFS-SITE.XML_dfs.namenode.http-address.mycluster.nn1: "namenode1:9870"
+  HDFS-SITE.XML_dfs.namenode.http-address.mycluster.nn2: "namenode2:9870"
+  HDFS-SITE.XML_dfs.namenode.shared.edits.dir: "qjournal://journalnode1:8485;journalnode2:8485;journalnode3:8485/mycluster"
+  HDFS-SITE.XML_dfs.client.failover.proxy.provider.mycluster: "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider"
+  HDFS-SITE.XML_dfs.ha.fencing.methods: "shell(/bin/true)"
+  HDFS-SITE.XML_dfs.replication: "1"
+  HDFS-SITE.XML_dfs.permissions.enabled: "false"
+  HDFS-SITE.XML_dfs.namenode.name.dir: "/tmp/hadoop/dfs/name"
+
+services:
+  journalnode1:
+    image: apache/hadoop:3.3.6
+    container_name: journalnode1
+    hostname: journalnode1
+    environment:
+      <<: *hadoop-ha
+    command: hdfs journalnode
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8480/jmx || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  journalnode2:
+    image: apache/hadoop:3.3.6
+    container_name: journalnode2
+    hostname: journalnode2
+    environment:
+      <<: *hadoop-ha
+    command: hdfs journalnode
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8480/jmx || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  journalnode3:
+    image: apache/hadoop:3.3.6
+    container_name: journalnode3
+    hostname: journalnode3
+    environment:
+      <<: *hadoop-ha
+    command: hdfs journalnode
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8480/jmx || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  namenode1:
+    image: apache/hadoop:3.3.6
+    container_name: namenode1
+    hostname: namenode1
+    ports:
+      - "9870:9870"
+      - "8020:8020"
+    environment:
+      <<: *hadoop-ha
+    command:
+      - bash
+      - -c
+      - |
+        if [ ! -d /tmp/hadoop/dfs/name/current ]; then
+          echo "Formatting NameNode 1..."
+          hdfs namenode -format -clusterid CID-mycluster -force -nonInteractive
+        fi
+        exec hdfs namenode
+    depends_on:
+      journalnode1: { condition: service_healthy }
+      journalnode2: { condition: service_healthy }
+      journalnode3: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://namenode1:9870/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  namenode2:
+    image: apache/hadoop:3.3.6
+    container_name: namenode2
+    hostname: namenode2
+    ports:
+      - "9871:9870"
+      - "8021:8020"
+    environment:
+      <<: *hadoop-ha
+    command:
+      - bash
+      - -c
+      - |
+        if [ ! -d /tmp/hadoop/dfs/name/current ]; then
+          echo "Bootstrapping NameNode 2 as standby..."
+          hdfs namenode -bootstrapStandby -force -nonInteractive
+        fi
+        exec hdfs namenode
+    depends_on:
+      namenode1: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://namenode2:9870/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  datanode:
+    image: apache/hadoop:3.3.6
+    container_name: datanode-ha
+    hostname: datanode-ha
+    environment:
+      <<: *hadoop-ha
+    command: hdfs datanode
+    depends_on:
+      namenode1: { condition: service_healthy }

@@ -1,0 +1,89 @@
+site_name: PySpark Pandas
+site_description: Pandas API on Spark, pandas UDFs, Arrow optimization, and UDTFs — a complete PySpark 3.5 reference.
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Arrow Optimization: arrow.md
+  - DataFrame Interop: dataframe.md
+  - Pandas on Spark:
+      - Overview: pandas_on_spark/index.md
+      - DataFrame: pandas_on_spark/dataframe.md
+      - Cross-Frame Ops: pandas_on_spark/ops_diff_frames.md
+      - Options: pandas_on_spark/options.md
+      - Conversion: pandas_on_spark/conversion.md
+  - Pandas UDFs:
+      - Overview: pandas_udf/index.md
+      - Series UDF: pandas_udf/series.md
+      - Aggregate UDF: pandas_udf/aggregate.md
+      - Iterator UDF: pandas_udf/iterator.md
+      - mapInPandas: pandas_udf/map_in_pandas.md
+      - Grouped Map: pandas_udf/grouped_map.md
+      - Cogrouped Map: pandas_udf/cogroup.md
+  - Integration:
+      - Overview: integration/index.md
+      - Patterns: integration/patterns.md
+      - Pandas Function APIs: integration/pandas_function_apis.md
+      - Use Cases: integration/use_cases.md
+      - Best Practices: integration/best_practices.md
+  - UDTFs:
+      - Overview: udtf/index.md
+      - Basic UDTF: udtf/basic.md
+      - Stateful UDTF: udtf/stateful.md
+      - Date Expander: udtf/date_expander.md
+      - SQL Integration: udtf/sql.md
+      - Table Arguments: udtf/table_arguments.md

@@ -1,0 +1,4 @@
+site_name: GCP Storage
+docs_dir: docs/
+nav:
+  - index.md

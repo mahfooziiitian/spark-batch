@@ -1,0 +1,14 @@
+[project]
+name = "pyspark-storage"
+version = "0.1.0"
+description = "PySpark examples for cloud and local object storage systems"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocs-monorepo-plugin>=1.1",
+    "mkdocs-include-markdown-plugin>=7.0",
+]

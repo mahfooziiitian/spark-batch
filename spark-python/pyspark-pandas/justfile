@@ -1,0 +1,148 @@
+# pyspark-pandas task runner
+# Usage: just <recipe>
+
+set dotenv-load := false
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+uv     := "uv"
+python := uv + " run python"
+pytest := uv + " run pytest"
+ruff   := uv + " run ruff"
+bandit := uv + " run bandit"
+mypy   := uv + " run mypy"
+radon  := uv + " run radon"
+
+src    := "src/"
+tests  := "tests/"
+all    := src + " " + tests
+
+# ──────────────────────────────────────────────
+# Help
+# ──────────────────────────────────────────────
+
+# List available recipes
+default:
+    @just --list
+
+# ──────────────────────────────────────────────
+# Setup
+# ──────────────────────────────────────────────
+
+# Full project setup (install uv + sync deps)
+setup: install sync
+
+# Install uv if not present
+install:
+    @command -v {{ uv }} >/dev/null 2>&1 || { echo "Installing uv…"; curl -LsSf https://astral.sh/uv/install.sh | sh; }
+
+# Sync project dependencies (including dev group)
+sync:
+    {{ uv }} sync --group dev
+
+# ──────────────────────────────────────────────
+# Code Quality
+# ──────────────────────────────────────────────
+
+# Run ruff linter
+lint:
+    {{ ruff }} check {{ all }}
+
+# Auto-format code with ruff
+format:
+    {{ ruff }} format {{ all }}
+    {{ ruff }} check --fix {{ all }}
+
+# Check formatting without modifying files
+format-check:
+    {{ ruff }} format --check {{ all }}
+    {{ ruff }} check {{ all }}
+
+# ──────────────────────────────────────────────
+# Type Checking
+# ──────────────────────────────────────────────
+
+# Run mypy type checker
+typecheck:
+    {{ mypy }} {{ all }}
+
+# Run mypy in strict mode
+typecheck-strict:
+    {{ mypy }} --strict {{ all }}
+
+# ──────────────────────────────────────────────
+# Security
+# ──────────────────────────────────────────────
+
+# Run bandit security scan
+security:
+    {{ bandit }} -r {{ src }} -c pyproject.toml
+
+# ──────────────────────────────────────────────
+# Analysis
+# ──────────────────────────────────────────────
+
+# Show cyclomatic complexity (grade A-F per function)
+complexity:
+    {{ radon }} cc {{ src }} -a -nb
+
+# Show maintainability index
+maintainability:
+    {{ radon }} mi {{ src }} -nb
+
+# ──────────────────────────────────────────────
+# Testing
+# ──────────────────────────────────────────────
+
+# Run the full test suite
+test:
+    {{ pytest }} {{ tests }}
+
+# Run tests in parallel (requires pytest-xdist)
+test-fast:
+    {{ pytest }} {{ tests }} -n auto
+
+# Run tests with coverage report
+test-cov:
+    {{ pytest }} {{ tests }} --cov={{ src }} --cov-report=term-missing
+
+# Run a specific Python module (e.g. just run spp.pandas_udf.pandas_udf)
+run module:
+    {{ python }} -m {{ module }}
+
+# ──────────────────────────────────────────────
+# Documentation
+# ──────────────────────────────────────────────
+
+# Serve docs locally with live reload
+docs:
+    {{ uv }} run mkdocs serve
+
+# Build docs in strict mode
+docs-build:
+    {{ uv }} run mkdocs build --strict
+
+# ──────────────────────────────────────────────
+# Cleanup
+# ──────────────────────────────────────────────
+
+# Remove caches and build artifacts
+clean:
+    rm -rf .pytest_cache .mypy_cache .ruff_cache
+    rm -rf site/ dist/ build/
+    find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+    find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+    find . -type f -name "*.pyc" -delete 2>/dev/null || true
+
+# Remove everything including .venv
+clean-all: clean
+    rm -rf .venv
+
+# ──────────────────────────────────────────────
+# Combined Targets
+# ──────────────────────────────────────────────
+
+# Run all code quality checks (lint + typecheck + security)
+check: lint typecheck security
+
+# Run full CI pipeline
+ci: format-check typecheck security test docs-build

@@ -1,0 +1,5 @@
+site_name: LocalStack S3
+docs_dir: docs/
+nav:
+  - index.md
+  - S3A Reference: s3a.md

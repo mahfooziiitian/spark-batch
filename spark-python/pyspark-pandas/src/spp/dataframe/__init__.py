@@ -1,0 +1,1 @@
+"""Pandas ↔ Spark DataFrame interop."""
