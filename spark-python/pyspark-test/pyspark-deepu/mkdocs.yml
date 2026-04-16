@@ -1,6 +1,6 @@
-site_name: pyspark-chispa
-site_description: PySpark testing reference with chispa and pytest
-repo_url: https://github.com/example/pyspark-chispa
+site_name: pyspark-deepu
+site_description: Data quality testing with PyDeequ and PySpark
+repo_url: https://github.com/mahfooziiitian/spark-batch
 
 theme:
   name: material
@@ -60,14 +60,10 @@ nav:
       - Installation: getting-started/installation.md
       - Project Structure: getting-started/project-structure.md
   - API Reference:
-      - Column Functions: api/columns.md
-      - Arithmetic Functions: api/functions.md
-      - DataFrame Equality: api/equality.md
-      - Transformations: api/transformations.md
-      - Schema Utilities: api/schema.md
-      - String Helpers: api/helpers.md
-  - Testing with Chispa:
+      - Analyzers: api/analyzers.md
+      - Constraint Verification: api/verification.md
+      - Constraint Suggestions: api/suggestions.md
+      - Column Profiling: api/profiling.md
+      - Metrics Repository: api/repository.md
+  - Testing:
       - Overview: testing/overview.md
-      - Column Assertions: testing/column-assertions.md
-      - DataFrame Assertions: testing/dataframe-assertions.md
-      - Schema Assertions: testing/schema-assertions.md

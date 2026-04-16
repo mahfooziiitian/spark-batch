@@ -1,6 +1,6 @@
-site_name: pyspark-chispa
-site_description: PySpark testing reference with chispa and pytest
-repo_url: https://github.com/example/pyspark-chispa
+site_name: PySpark Test
+site_description: Mono-repo of PySpark testing reference projects
+repo_url: https://github.com/mahfooziiitian/spark-batch
 
 theme:
   name: material
@@ -30,6 +30,7 @@ theme:
 
 plugins:
   - search
+  - monorepo
 
 markdown_extensions:
   - admonition
@@ -57,17 +58,8 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started:
+      - Overview: getting-started/overview.md
       - Installation: getting-started/installation.md
-      - Project Structure: getting-started/project-structure.md
-  - API Reference:
-      - Column Functions: api/columns.md
-      - Arithmetic Functions: api/functions.md
-      - DataFrame Equality: api/equality.md
-      - Transformations: api/transformations.md
-      - Schema Utilities: api/schema.md
-      - String Helpers: api/helpers.md
-  - Testing with Chispa:
-      - Overview: testing/overview.md
-      - Column Assertions: testing/column-assertions.md
-      - DataFrame Assertions: testing/dataframe-assertions.md
-      - Schema Assertions: testing/schema-assertions.md
+  - PySpark Chispa: '!include ./pyspark-chispa/mkdocs.yml'
+  - PySpark PyDeequ: '!include ./pyspark-deepu/mkdocs.yml'
+  - PySpark Pytest: '!include ./pyspark-pytest/mkdocs.yml'

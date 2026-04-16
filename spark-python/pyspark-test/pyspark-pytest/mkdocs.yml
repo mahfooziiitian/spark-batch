@@ -1,6 +1,6 @@
-site_name: pyspark-chispa
-site_description: PySpark testing reference with chispa and pytest
-repo_url: https://github.com/example/pyspark-chispa
+site_name: pyspark-pytest
+site_description: PySpark testing patterns with pytest and pyspark.testing
+repo_url: https://github.com/mahfooziiitian/spark-batch
 
 theme:
   name: material
@@ -60,14 +60,13 @@ nav:
       - Installation: getting-started/installation.md
       - Project Structure: getting-started/project-structure.md
   - API Reference:
-      - Column Functions: api/columns.md
-      - Arithmetic Functions: api/functions.md
-      - DataFrame Equality: api/equality.md
+      - Data Processing: api/data-processing.md
+      - CSV Reader: api/reader.md
       - Transformations: api/transformations.md
-      - Schema Utilities: api/schema.md
-      - String Helpers: api/helpers.md
-  - Testing with Chispa:
+  - Utilities:
+      - Faker Data Generation: utilities/faker.md
+      - Docker: utilities/docker.md
+  - Testing:
       - Overview: testing/overview.md
-      - Column Assertions: testing/column-assertions.md
       - DataFrame Assertions: testing/dataframe-assertions.md
-      - Schema Assertions: testing/schema-assertions.md
+      - Mock Testing: testing/mock-testing.md
