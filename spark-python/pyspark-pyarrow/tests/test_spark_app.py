@@ -1,92 +1,76 @@
-from common import remove_extra_spaces, filter_senior_citizen
+import pytest
+from pyspark.sql import functions as F
+
+from common import filter_senior_citizen, remove_extra_spaces
 
 
-# Test Case 1 - Remove Single Space
-def test_single_space(spark):
-    sample_data = [{"name": "John    D.", "age": 30},
-                   {"name": "Alice   G.", "age": 25},
-                   {"name": "Bob  T.", "age": 35},
-                   {"name": "Eve   A.", "age": 28}]
+class TestRemoveExtraSpaces:
+    def test_collapses_multiple_spaces(self, spark):
+        data = [{"name": "John    D.", "age": 30},
+                {"name": "Alice   G.", "age": 25},
+                {"name": "Bob  T.", "age": 35},
+                {"name": "Eve   A.", "age": 28}]
+        df = spark.createDataFrame(data)
+        result = remove_extra_spaces(df, "name")
 
-    # Create a Spark DataFrame
-    original_df = spark.createDataFrame(sample_data)
+        expected = [{"name": "John D.", "age": 30},
+                    {"name": "Alice G.", "age": 25},
+                    {"name": "Bob T.", "age": 35},
+                    {"name": "Eve A.", "age": 28}]
+        expected_df = spark.createDataFrame(expected)
 
-    # Apply the transformation function from before
-    transformed_df = remove_extra_spaces(original_df, "name")
+        assert result.collect() == expected_df.collect()
 
-    expected_data = [{"name": "John D.", "age": 30},
-                     {"name": "Alice G.", "age": 25},
-                     {"name": "Bob T.", "age": 35},
-                     {"name": "Eve A.", "age": 28}]
+    def test_preserves_row_count(self, spark):
+        data = [{"name": "John    D.", "age": 30},
+                {"name": "Alice   G.", "age": 25},
+                {"name": "Bob  T.", "age": 35},
+                {"name": "Eve   A.", "age": 28}]
+        df = spark.createDataFrame(data)
+        result = remove_extra_spaces(df, "name")
+        assert result.count() == 4
 
-    expected_df = spark.createDataFrame(expected_data)
-
-    assert transformed_df.collect() == expected_df.collect()
-
-
-# Test Case 2 - Row count
-def test_row_count(spark):
-    sample_data = [{"name": "John    D.", "age": 30},
-                   {"name": "Alice   G.", "age": 25},
-                   {"name": "Bob  T.", "age": 35},
-                   {"name": "Eve   A.", "age": 28}]
-
-    # Create a Spark DataFrame
-    original_df = spark.createDataFrame(sample_data)
-
-    # Apply the transformation function from before
-    transformed_df = remove_extra_spaces(original_df, "name")
-
-    expected_data = [{"name": "John D.", "age": 30},
-                     {"name": "Alice G.", "age": 25},
-                     {"name": "Bob T.", "age": 35},
-                     {"name": "Eve A.", "age": 28}]
-
-    expected_df = spark.createDataFrame(expected_data)
-    print(expected_df.count())
-
-    assert transformed_df.count() == expected_df.count()
+    def test_no_change_when_single_spaces(self, spark):
+        data = [{"name": "John D.", "age": 30}]
+        df = spark.createDataFrame(data)
+        result = remove_extra_spaces(df, "name")
+        assert result.first()["name"] == "John D."
 
 
-# Test Case 3 - Senior Citizen count
-def test_senior_citizen_count(spark):
-    sample_data = [{"name": "John D.", "age": 60},
-                   {"name": "Alice G.", "age": 25},
-                   {"name": "Bob T.", "age": 65},
-                   {"name": "Eve A.", "age": 28}]
+class TestFilterSeniorCitizen:
+    def test_filters_age_60_and_above(self, spark):
+        data = [{"name": "John D.", "age": 60},
+                {"name": "Alice G.", "age": 25},
+                {"name": "Bob T.", "age": 65},
+                {"name": "Eve A.", "age": 28}]
+        df = spark.createDataFrame(data)
+        result = filter_senior_citizen(df, "age")
+        assert result.count() == 2
+        assert set(row["name"] for row in result.collect()) == {"John D.", "Bob T."}
 
-    # Create a Spark DataFrame
-    original_df = spark.createDataFrame(sample_data)
+    def test_includes_exact_boundary(self, spark):
+        data = [{"name": "Boundary", "age": 60},
+                {"name": "Below", "age": 59}]
+        df = spark.createDataFrame(data)
+        result = filter_senior_citizen(df, "age")
+        assert result.count() == 1
+        assert result.first()["name"] == "Boundary"
 
-    # Apply the filter function from before
-    filtered_df = filter_senior_citizen(original_df, "age")
+    def test_all_seniors(self, spark):
+        data = [{"name": "John D.", "age": 60},
+                {"name": "Bob T.", "age": 65},
+                {"name": "Eve A.", "age": 66}]
+        df = spark.createDataFrame(data)
+        result = filter_senior_citizen(df, "age")
+        assert result.count() == 3
 
-    expected_data = [{"name": "John D.", "age": 60},
-                     {"name": "Bob T.", "age": 65}]
+    def test_no_seniors(self, spark):
+        data = [{"name": "Alice G.", "age": 25},
+                {"name": "Eve A.", "age": 28}]
+        df = spark.createDataFrame(data)
+        result = filter_senior_citizen(df, "age")
+        assert result.count() == 0
 
-    expected_df = spark.createDataFrame(expected_data)
-    print(expected_df.count())
 
-    assert filtered_df.count() == expected_df.count()
-
-
-# Test Case 4 - Senior Citizen count Negative case
-def test_senior_citizen_count_negative(spark):
-    sample_data = [{"name": "John D.", "age": 60},
-                   {"name": "Alice G.", "age": 25},
-                   {"name": "Bob T.", "age": 65},
-                   {"name": "Eve A.", "age": 66}]
-
-    # Create a Spark DataFrame
-    original_df = spark.createDataFrame(sample_data)
-
-    # Apply the filter function from before
-    filtered_df = filter_senior_citizen(original_df, "age")
-
-    expected_data = [{"name": "John D.", "age": 60},
-                     {"name": "Bob T.", "age": 65}]
-
-    expected_df = spark.createDataFrame(expected_data)
-    print(expected_df.count())
-
-    assert filtered_df.count() == expected_df.count()
+if __name__ == "__main__":
+    pytest.main([__file__, "-v", "--tb=short"])

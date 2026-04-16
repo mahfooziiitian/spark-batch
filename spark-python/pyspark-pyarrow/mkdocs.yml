@@ -1,0 +1,84 @@
+site_name: PySpark PyArrow
+site_description: Arrow-optimized PySpark patterns — conversions, Pandas UDFs, and UDTFs
+site_url: https://github.com/mahfooziiitian/spark-batch/tree/master/spark-python/pyspark-pyarrow
+strict: true
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Java Setup: getting-started/java-setup.md
+  - Arrow Conversions:
+      - arrow/index.md
+      - Pandas ↔ Spark: arrow/pandas-spark.md
+      - mapInPandas: arrow/map-in-pandas.md
+      - applyInPandas: arrow/apply-in-pandas.md
+  - Pandas UDFs:
+      - pandas-udf/index.md
+      - Series → Series: pandas-udf/series-to-series.md
+      - Iterator UDF: pandas-udf/iterator-udf.md
+      - Grouped Aggregate: pandas-udf/grouped-aggregate.md
+      - Grouped Map: pandas-udf/grouped-map.md
+  - UDTFs:
+      - udtf/index.md
+      - Basic UDTF: udtf/basic-udtf.md
+      - Lifecycle UDTF: udtf/lifecycle-udtf.md
+      - Arrow UDTF: udtf/arrow-udtf.md
+  - Testing:
+      - testing/index.md
+      - Test Setup: testing/test-setup.md

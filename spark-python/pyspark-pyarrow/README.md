@@ -1,17 +1,49 @@
-# Pyarrow
+# PySpark + PyArrow
 
-Apache Arrow is an in-memory columnar data format that is used in Spark to efficiently transfer data between JVM and Python processes.
+Apache Arrow is an in-memory columnar data format used by Spark to efficiently transfer
+data between the JVM and Python processes. This module demonstrates Arrow-optimized
+PySpark patterns including conversions, Pandas UDFs, and UDTFs.
 
-This currently is most beneficial to Python users that work with Pandas/NumPy data.
+## Examples
 
-Its usage is not automatic and might require some minor changes to configuration or code to take full advantage and ensure compatibility.
+| File | What it demonstrates |
+|------|---------------------|
+| `src/psa/pyspark_pyarrow.py` | Arrow-enabled `createDataFrame`, `toPandas`, `mapInPandas`, `applyInPandas` |
+| `src/psa/pandas_udf_spark.py` | Series→Series, Iterator, Grouped Aggregate, and Grouped Map Pandas UDFs |
+| `src/psa/pyspark_udtf.py` | Basic UDTF, lifecycle UDTF (`__init__`/`terminate`), Arrow-optimized UDTF |
+| `src/psa/common.py` | Reusable DataFrame transforms (`remove_extra_spaces`, `filter_senior_citizen`) |
 
-This guide will give a high-level description of how to use Arrow in Spark and highlight any differences when working with Arrow-enabled data.
+## Setup
 
-## Enabling for Conversion to/from Pandas
+```bash
+# Install dependencies (pick one)
+poetry install
 
-Arrow is available as an optimization when converting a Spark DataFrame to a Pandas DataFrame using the call `DataFrame.toPandas()` and when creating a Spark DataFrame from a Pandas DataFrame with `SparkSession.createDataFrame()`.
+# or with pip
+pip install pyspark[sql] pyarrow pandas numpy
+```
 
-To use Arrow when executing these calls, users need to first set the Spark configuration `spark.sql.execution.arrow.pyspark.enabled` to true.
+## Enabling Arrow
 
-This is disabled by default.
+Set this Spark config to enable Arrow-optimized Pandas ↔ Spark transfers:
+
+```python
+spark = (SparkSession.builder
+         .config("spark.sql.execution.arrow.pyspark.enabled", "true")
+         .config("spark.sql.execution.arrow.pyspark.fallback.enabled", "true")
+         .getOrCreate())
+```
+
+## Running Examples
+
+```bash
+python src/psa/pyspark_pyarrow.py
+python src/psa/pandas_udf_spark.py
+python src/psa/pyspark_udtf.py
+```
+
+## Running Tests
+
+```bash
+pytest tests/ -v
+```

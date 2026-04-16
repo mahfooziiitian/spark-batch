@@ -1,28 +1,121 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/psa"]
+
+# ── Project metadata (PEP 621) ──────────────────────────────────────────────
+
+[project]
 name = "pyspark-pyarrow"
 version = "0.1.0"
-description = ""
-authors = ["mahfooz_iiitian <mahfooz.iiitian@gmail.com>"]
+description = "Arrow-optimized PySpark patterns — conversions, Pandas UDFs, and UDTFs"
 readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "mahfooz_iiitian", email = "mahfooz.iiitian@gmail.com" }]
+keywords = ["pyspark", "pyarrow", "pandas-udf", "udtf", "spark"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-pyspark = {extras = ["sql"], version = "^3.5.1"}
-ipykernel = "^6.29.5"
+dependencies = [
+    "pyspark[sql]>=3.5.1,<4",
+    "pyarrow>=14.0.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+]
 
+[project.optional-dependencies]
+notebook = ["ipykernel>=6.29.5"]
 
-[tool.poetry.group.dev.dependencies]
-pytest-mock = "^3.14.0"
+# ── Dev dependency group (PEP 735) ──────────────────────────────────────────
+
+[dependency-groups]
+dev = [
+    # Testing
+    "pytest>=7.0",
+    "pytest-mock>=3.14.0",
+    "pytest-cov>=6.0",
+    "pytest-sugar>=1.0",
+    # Code quality
+    "ruff>=0.11.0",
+    "mypy>=1.15.0",
+    "bandit>=1.9.0",
+    # Documentation
+    "mkdocs>=1.6.1,<2",
+    "mkdocs-material>=9.7.6,<10",
+]
+
+# ── Tool configuration ──────────────────────────────────────────────────────
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-pythonpath = ["src"]
-testpaths = [
-    "tests",
-    "integration",
+pythonpath = ["src", "src/psa"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "S",     # flake8-bandit
+    "T20",   # flake8-print
+    "SIM",   # flake8-simplify
+    "RUF",   # ruff-specific
+]
+ignore = [
+    "T201",  # allow print() in example scripts
+    "S101",  # allow assert in tests
+    "S603",  # allow subprocess without shell=True check
+    "S607",  # allow partial executable path
+    "N812",  # allow import functions as F (project convention)
 ]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S311"]
+"src/**/*.py" = ["T201"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/", "tests/"]
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["pyspark.*", "py4j.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["psa.pyspark_udtf", "psa.pandas_udf_spark"]
+disable_error_code = ["call-overload", "arg-type", "call-arg", "union-attr", "attr-defined"]
+
+[tool.bandit]
+targets = ["src/"]
+exclude_dirs = ["tests/", ".venv/"]
+
+[tool.coverage.run]
+source = ["src/psa"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
