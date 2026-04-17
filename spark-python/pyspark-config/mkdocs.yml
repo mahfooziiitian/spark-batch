@@ -1,0 +1,71 @@
+site_name: PySpark Config
+site_description: PySpark configuration examples — config files, SparkConf, and validation
+repo_url: https://github.com/mahfooziiitian/spark-batch
+repo_name: mahfooziiitian/spark-batch
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - include-markdown
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Config Options:
+      - config-options/index.md
+      - ConfigParser: config-options/configparser.md
+      - jproperties: config-options/jproperties.md
+      - Spark Options: config-options/spark-options.md
+  - Dynamic Config: dynamic-config.md
+  - SparkConf Validation: config-validation.md
+  - findspark: findspark.md
+  - Notebooks: notebooks.md
+  - Testing: testing.md
