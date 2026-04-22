@@ -16,11 +16,11 @@ graph LR
     D --> G[Fixed hop interval windows]
 ```
 
-## 🔍 What Is a Time Series Query?
+## :material-magnify: What Is a Time Series Query?
 
 A time series query analyzes data that changes over time, where each row is associated with a timestamp. In Spark, these queries are optimized using window functions, time-based grouping, and ordered operations.
 
-## 📌 Core Concepts of Time Series Queries
+## :material-pin: Core Concepts of Time Series Queries
 
 ### :material-timeline: 1. Timestamp Columns
 
@@ -38,11 +38,11 @@ Spark has powerful support for windowed aggregations using:
 2. Time-based grouping (e.g., group by 5-minute intervals)
 3. Sliding and tumbling windows
 
-## 🔁 Concept Comparison
+## :material-repeat: Concept Comparison
 
 Feature Tumbling Window Hopping Window  Sliding Window
-Fixed Size  ✅ Yes   ✅ Yes   ✅ Yes
-Overlap ❌ No    ✅ Yes   ✅ Yes
+Fixed Size  :material-check-circle-outline: Yes   :material-check-circle-outline: Yes   :material-check-circle-outline: Yes
+Overlap :material-close-circle-outline: No    :material-check-circle-outline: Yes   :material-check-circle-outline: Yes
 Event Count 1 window max    Few windows Many windows
 Use Case    Hourly reports, batch   Near-real-time trends   Moving averages, smoothing
 Examples    10:00–11:00, 11:00–12:00    10:00–11:00, 10:30–11:30    Every 5m for last 1h

@@ -5,7 +5,7 @@ It supports schema inference and custom parsing options.
 
 ---
 
-## 📌 Read JSON
+## :material-pin: Read JSON
 
 ```sql
 CREATE OR REPLACE TEMP VIEW events
@@ -15,7 +15,7 @@ OPTIONS (path 's3://data/events/');
 
 ---
 
-## 📌 Write JSON
+## :material-pin: Write JSON
 
 ```sql
 CREATE TABLE events_json
@@ -25,7 +25,7 @@ AS SELECT * FROM events;
 
 ---
 
-## 🔍 Common Options
+## :material-magnify: Common Options
 
 | Option | Description |
 |--------|-------------|
@@ -36,7 +36,7 @@ AS SELECT * FROM events;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

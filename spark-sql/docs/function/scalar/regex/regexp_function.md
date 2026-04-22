@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 :material-regex: Common Functions
+## :material-pin: :material-regex: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -27,7 +27,7 @@ graph LR
 
 ---
 
-## 🧪 :material-regex: Example
+## :material-flask-outline: :material-regex: Example
 
 ```sql
 SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
@@ -35,7 +35,7 @@ SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
 
 ---
 
-## 🧠 :material-regex: When to Use
+## :material-brain: :material-regex: When to Use
 
 | Scenario | Function |
 |----------|----------|

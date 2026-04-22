@@ -16,7 +16,7 @@ graph TD
     A --> H["Type Conversion :material-swap-horizontal:"]
 ```
 
-## 📌 :material-function: Categories
+## :material-pin: :material-function: Categories
 
 | Category | Description | Key Functions |
 |----------|-------------|---------------|
@@ -34,7 +34,7 @@ graph TD
 | **Encryption** | Hashing and data masking | `MD5`, `SHA2`, `CRC32`, `MASK` |
 | **Web** | URL parsing | `PARSE_URL` |
 
-## 🧪 :material-function: Quick Examples
+## :material-flask-outline: :material-function: Quick Examples
 
 ```sql
 -- String

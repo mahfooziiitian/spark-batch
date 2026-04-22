@@ -10,7 +10,7 @@ graph LR
     B --> C[Hash Output]
 ```
 
-## 📌 :material-shield-lock: Syntax
+## :material-pin: :material-shield-lock: Syntax
 
 ```sql
 md5(expr)
@@ -19,14 +19,14 @@ md5(expr)
 - `expr`: `STRING` or `BINARY` input
 - Returns: `STRING` — 32-character lowercase hex representation
 
-## 🔍 :material-shield-lock: Behavior
+## :material-magnify: :material-shield-lock: Behavior
 
 1. Produces a 128-bit hash digest as a 32-character hex string.
 2. Deterministic — same input always produces the same output.
 3. **Not cryptographically secure** — use `SHA2` for security-sensitive applications.
 4. Commonly used for data fingerprinting, deduplication, and change detection.
 
-## 🧪 :material-shield-lock: Practical Examples
+## :material-flask-outline: :material-shield-lock: Practical Examples
 
 ### Basic Hash
 
@@ -64,7 +64,7 @@ JOIN target t ON s.id = t.id
 WHERE md5(CONCAT_WS('|', s.name, s.value)) != md5(CONCAT_WS('|', t.name, t.value));
 ```
 
-## 🧠 :material-shield-lock: MD5 vs SHA
+## :material-brain: :material-shield-lock: MD5 vs SHA
 
 | Function | Output Length | Security | Speed |
 |----------|-------------|----------|-------|

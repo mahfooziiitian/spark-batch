@@ -83,8 +83,148 @@ WHERE
     epoch >= window_start_epoch
     AND epoch < window_start_epoch + 3600;
 
-SELECT * FROM hopping_assignments
-ORDER BY window_start, event_id;
+---
+-- 6. Top-N events per hopping window using RANK
+---
+
+WITH windows AS (
+    SELECT
+        event_id,
+        event_time,
+        region,
+        revenue,
+        FROM_UNIXTIME(window_start_epoch) AS window_start,
+        FROM_UNIXTIME(window_start_epoch + 3600) AS window_end
+    FROM clickstream_epoch
+        LATERAL VIEW EXPLODE(
+            SEQUENCE(
+                (FLOOR(epoch / 900) - 3) * 900,
+                FLOOR(epoch / 900) * 900,
+                900
+            )
+        ) AS window_start_epoch
+    WHERE
+        epoch >= window_start_epoch
+        AND epoch < window_start_epoch + 3600
+),
+
+ranked AS (
+    SELECT
+        window_start,
+        window_end,
+        event_id,
+        region,
+        revenue,
+        RANK() OVER (PARTITION BY window_start ORDER BY revenue DESC) AS revenue_rank
+    FROM windows
+)
+
+SELECT *
+FROM ranked
+WHERE revenue_rank <= 3
+ORDER BY
+    window_start,
+    revenue_rank;
+-- Result: top 3 highest-revenue events in each 1-hour hopping window
+
+---
+-- 7. Anomaly detection — windows where total revenue exceeds mean + 1 stddev
+---
+
+WITH windows AS (
+    SELECT
+        event_id,
+        region,
+        revenue,
+        window_start_epoch,
+        FROM_UNIXTIME(window_start_epoch) AS window_start,
+        FROM_UNIXTIME(window_start_epoch + 3600) AS window_end
+    FROM clickstream_epoch
+        LATERAL VIEW EXPLODE(
+            SEQUENCE(
+                (FLOOR(epoch / 900) - 3) * 900,
+                FLOOR(epoch / 900) * 900,
+                900
+            )
+        ) AS window_start_epoch
+    WHERE
+        epoch >= window_start_epoch
+        AND epoch < window_start_epoch + 3600
+),
+
+aggregated AS (
+    SELECT
+        window_start,
+        window_end,
+        SUM(revenue) AS total_revenue,
+        COUNT(*) AS event_count
+    FROM windows
+    GROUP BY window_start, window_end
+),
+
+stats AS (
+    SELECT
+        AVG(total_revenue) AS mean_revenue,
+        STDDEV(total_revenue) AS stddev_revenue
+    FROM aggregated
+)
+
+SELECT
+    a.window_start,
+    a.window_end,
+    a.total_revenue,
+    a.event_count,
+    ROUND(s.mean_revenue, 2) AS mean_revenue,
+    ROUND(s.mean_revenue + s.stddev_revenue, 2) AS anomaly_threshold,
+    a.total_revenue > (s.mean_revenue + s.stddev_revenue) AS is_anomaly
+FROM aggregated AS a
+CROSS JOIN stats AS s
+ORDER BY a.window_start;
+
+---
+-- 8. Peak window — single window with the highest total revenue per region
+---
+
+WITH windows AS (
+    SELECT
+        event_id,
+        region,
+        revenue,
+        FROM_UNIXTIME(window_start_epoch) AS window_start,
+        FROM_UNIXTIME(window_start_epoch + 3600) AS window_end
+    FROM clickstream_epoch
+        LATERAL VIEW EXPLODE(
+            SEQUENCE(
+                (FLOOR(epoch / 900) - 3) * 900,
+                FLOOR(epoch / 900) * 900,
+                900
+            )
+        ) AS window_start_epoch
+    WHERE
+        epoch >= window_start_epoch
+        AND epoch < window_start_epoch + 3600
+),
+
+aggregated AS (
+    SELECT
+        window_start,
+        window_end,
+        region,
+        SUM(revenue) AS total_revenue
+    FROM windows
+    GROUP BY window_start, window_end, region
+)
+
+SELECT *
+FROM (
+    SELECT
+        *,
+        RANK() OVER (PARTITION BY region ORDER BY total_revenue DESC) AS rnk
+    FROM aggregated
+)
+WHERE rnk = 1
+ORDER BY region;
+-- Result: the single busiest hopping window per region
 
 ---
 -- 2. Aggregate over hopping windows

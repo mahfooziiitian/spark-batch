@@ -14,7 +14,7 @@ graph LR
     B -->|NULL| E[Default / NULL]
 ```
 
-## 🔁 :material-source-branch: 1. CASE WHEN
+## :material-repeat: :material-source-branch: 1. CASE WHEN
 
 Conditional branching logic — similar to IF...ELSE IF...ELSE.
 
@@ -81,7 +81,7 @@ SELECT
 FROM employees;
 ```
 
-## 🔄 :material-source-branch: 3. Coalesce
+## :material-refresh: :material-source-branch: 3. Coalesce
 
 ```sql
 COALESCE(expr1, expr2, ..., exprN)
@@ -105,7 +105,7 @@ SELECT
 FROM employees;
 ```
 
-## ⚠️ :material-source-branch: 4. Nullif
+## :material-alert:️ :material-source-branch: 4. Nullif
 
 ```sql
 NULLIF(expr1, expr2)
@@ -131,7 +131,7 @@ SELECT
 FROM employees;
 ```
 
-## 🪙 :material-source-branch: 5. Nvl
+## :material-coin-outline: :material-source-branch: 5. Nvl
 
 ```SQL
 NVL(expr1, expr2)
@@ -159,7 +159,7 @@ SELECT
 FROM employees;
 ```
 
-### 🔄 6. CASE with Boolean Flags
+### :material-refresh: 6. CASE with Boolean Flags
 
 ```sql
 SELECT 
@@ -171,7 +171,7 @@ SELECT
 FROM users;
 ```
 
-## ✅ :material-source-branch: Summary Table
+## :material-check-circle-outline: :material-source-branch: Summary Table
 
 Function  | Purpose
 ----------|---------------------------------------

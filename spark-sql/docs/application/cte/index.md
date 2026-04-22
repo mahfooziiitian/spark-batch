@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Quick Reference
+## :material-pin: Quick Reference
 
 | Technique | Use Case | Key Function |
 |-----------|----------|-------------|
@@ -26,7 +26,7 @@ graph LR
 
 ---
 
-## 🔍 Examples
+## :material-magnify: Examples
 
 ### CTE Basics
 
@@ -48,7 +48,7 @@ Chained CTEs and reuse patterns for complex multi-step pipelines.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

@@ -10,7 +10,7 @@ graph LR
     B --> C[Hash Output]
 ```
 
-## 📌 :material-shield-lock: Syntax
+## :material-pin: :material-shield-lock: Syntax
 
 ```sql
 sha1(expr)
@@ -22,14 +22,14 @@ sha2(expr, bitLength)
   - Supported `bitLength` values: `0` (= 256), `224`, `256`, `384`, `512`
 - NULL input returns NULL
 
-## 🔍 :material-shield-lock: Behavior
+## :material-magnify: :material-shield-lock: Behavior
 
 1. `SHA1` produces a 160-bit hash — considered weak for cryptographic use.
 2. `SHA2` with 256+ bits is recommended for security-sensitive applications.
 3. Both are deterministic — same input always yields the same hash.
 4. Passing `0` as `bitLength` to `SHA2` defaults to 256.
 
-## 🧪 :material-shield-lock: Practical Examples
+## :material-flask-outline: :material-shield-lock: Practical Examples
 
 ### SHA1
 
@@ -70,7 +70,7 @@ SELECT
   sha2('test', 512)     AS sha512_result;
 ```
 
-## 🧠 :material-shield-lock: Choosing the Right SHA Variant
+## :material-brain: :material-shield-lock: Choosing the Right SHA Variant
 
 | Function | Output | Strength | Use Case |
 |----------|--------|----------|----------|

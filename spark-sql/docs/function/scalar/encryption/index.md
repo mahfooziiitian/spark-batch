@@ -11,7 +11,7 @@ graph LR
     B --> C[Hash Output]
 ```
 
-## 📌 :material-shield-lock: Functions Overview
+## :material-pin: :material-shield-lock: Functions Overview
 
 | Function | Type | Output | Use Case |
 |----------|------|--------|----------|
@@ -22,7 +22,7 @@ graph LR
 | `SHA2(expr, bits)` | Hash | Variable-length hex | Secure hashing (224/256/384/512-bit) |
 | `MASK(expr)` | Masking | Masked string | PII anonymization |
 
-## 🧪 :material-shield-lock: Quick Comparison
+## :material-flask-outline: :material-shield-lock: Quick Comparison
 
 ```sql
 SELECT
@@ -34,7 +34,7 @@ SELECT
   MASK('555-12-3456')     AS masked;
 ```
 
-## 🧠 :material-shield-lock: Choosing the Right Function
+## :material-brain: :material-shield-lock: Choosing the Right Function
 
 | Need | Recommended |
 |------|-------------|

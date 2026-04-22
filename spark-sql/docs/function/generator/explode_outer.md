@@ -13,7 +13,7 @@ graph LR
     B --> E[Row: c]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT EXPLODE_OUTER(array_or_map);
@@ -35,7 +35,7 @@ FROM your_table t
 LATERAL VIEW EXPLODE_OUTER(map_column) AS key, value;
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Produces one row per array element or map entry — identical to `EXPLODE`.
 2. When the array/map is **empty** → outputs one row with `NULL` in generated columns.
@@ -43,9 +43,9 @@ LATERAL VIEW EXPLODE_OUTER(map_column) AS key, value;
 4. All other columns from the original row are preserved in both cases.
 5. Equivalent to `LATERAL VIEW OUTER EXPLODE(...)`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Side-by-Side: EXPLODE vs EXPLODE_OUTER
+### :material-toy-brick: 1. Side-by-Side: EXPLODE vs EXPLODE_OUTER
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sample AS
@@ -64,7 +64,7 @@ SELECT id, val FROM sample LATERAL VIEW EXPLODE_OUTER(arr) AS val;
 -- (1, A), (1, B), (2, NULL), (3, NULL)
 ```
 
-### 🧱 2. Array of Structs — Safe Flattening
+### :material-toy-brick: 2. Array of Structs — Safe Flattening
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -80,7 +80,7 @@ LATERAL VIEW EXPLODE_OUTER(items) AS item;
 -- (1001, pen, 3), (1002, NULL, NULL), (1003, NULL, NULL)
 ```
 
-### 🗺️ 3. Map with Missing Entries
+### :material-map:️ 3. Map with Missing Entries
 
 ```sql
 CREATE OR REPLACE TEMP VIEW inventory AS
@@ -96,7 +96,7 @@ LATERAL VIEW EXPLODE_OUTER(stock) AS fruit, quantity;
 -- (1, apple, 10), (1, banana, 5), (2, NULL, NULL), (3, NULL, NULL)
 ```
 
-### 🧱 4. SEQUENCE with Fallback for Empty Ranges
+### :material-toy-brick: 4. SEQUENCE with Fallback for Empty Ranges
 
 ```sql
 CREATE OR REPLACE TEMP VIEW ranges AS
@@ -112,7 +112,7 @@ LATERAL VIEW EXPLODE_OUTER(numbers) AS num;
 -- (1, 1), (1, 2), (1, 3), (2, NULL), (3, NULL)
 ```
 
-### 🧱 5. COALESCE for Default Values
+### :material-toy-brick: 5. COALESCE for Default Values
 
 ```sql
 SELECT id,
@@ -122,7 +122,7 @@ LATERAL VIEW EXPLODE_OUTER(arr) AS val;
 -- (1, A), (1, B), (2, no data), (3, no data)
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `EXPLODE_OUTER`? |
 |----------|---------------------|

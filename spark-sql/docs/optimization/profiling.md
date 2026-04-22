@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Key Tools
+## :material-pin: Key Tools
 
 | Tool | Purpose |
 |------|---------|
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 EXPLAIN FORMATTED
@@ -34,7 +34,7 @@ SELECT * FROM orders WHERE amount > 1000;
 
 ---
 
-## 🔍 What to Look For
+## :material-magnify: What to Look For
 
 1. Large shuffles
 2. Skewed tasks
@@ -42,7 +42,7 @@ SELECT * FROM orders WHERE amount > 1000;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -1,80 +1,129 @@
-# :material-table-row: Range
+# :material-ruler: RANGE Frame
 
-A RANGE frame defines the window based on the values of the ORDER BY column, rather than physical row positions.
+`RANGE` frames define the window using a **value-based offset** from the current row's `ORDER BY` value, not a physical row count. All rows whose `ORDER BY` value falls within the range are included in the frame.
 
-1. Uses ORDER BY values
-2. Time intervals, numeric gaps
-3. RANGE requires numeric or date-based columns.
+---
 
-### :material-sitemap: Overview
-
-```mermaid
-graph LR
-    A["RANGE BETWEEN 7 PRECEDING AND CURRENT ROW"] --> B[All rows within value range]
-    B --> C[Aggregate over value window]
-```
-
-With RANGE BETWEEN 100 PRECEDING AND CURRENT ROW:
-→ Includes all rows with amount ≥ current - 100
-
-## ✅ Requirements for RANGE Frames
-
-1. Must use a numeric, timestamp, or date column in ORDER BY.
-2. You can use intervals (like INTERVAL 7 DAYS) or direct numeric values.
-
-## Examples
-
-### 7-Day Rolling Total (Using RANGE on Dates)
+## :material-pin: Syntax
 
 ```sql
+RANGE BETWEEN range_start AND range_end
+```
 
-CREATE OR REPLACE TEMP VIEW sales AS
+Where each boundary is:
+
+```sql
+UNBOUNDED PRECEDING
+N PRECEDING              -- numeric distance
+INTERVAL N UNITS PRECEDING  -- date/timestamp distance
+CURRENT ROW
+N FOLLOWING
+INTERVAL N UNITS FOLLOWING
+UNBOUNDED FOLLOWING
+```
+
+---
+
+## :material-magnify: Behavior
+
+1. **Tied ORDER BY values**: all rows sharing the same `ORDER BY` value are always included in the same `RANGE` frame — they are never split.
+2. **Numeric or date ORDER BY only**: `RANGE` offsets require the `ORDER BY` column to be numeric or date/timestamp. String or boolean columns are not supported with offset boundaries.
+3. **INTERVAL for dates**: use `INTERVAL N DAYS` (or `HOURS`, `MONTHS`, etc.) when the `ORDER BY` column is a `DATE` or `TIMESTAMP`.
+4. **Multi-column ORDER BY not supported with offsets**: `RANGE BETWEEN N PRECEDING AND CURRENT ROW` requires exactly one column in `ORDER BY`. Use `ROWS` when multiple sort columns are needed.
+
+---
+
+## :material-flask-outline: Examples
+
+```sql
+CREATE OR REPLACE TEMP VIEW daily_sales AS
 SELECT * FROM VALUES
-  ('2024-01-01', 'North', 100),
-  ('2024-01-02', 'North', 200),
-  ('2024-01-05', 'North', 300),
-  ('2024-01-08', 'North', 400),
-  ('2024-01-10', 'North', 500)
-AS sales(sale_date, region, amount);
-SELECT *,
-  SUM(amount) OVER (
-    ORDER BY to_date(sale_date)
-    RANGE BETWEEN INTERVAL 7 DAYS PRECEDING AND CURRENT ROW
-  ) AS range_7d_total
-FROM sales;
+  (CAST('2024-01-01' AS DATE), 100),
+  (CAST('2024-01-03' AS DATE), 200),
+  (CAST('2024-01-05' AS DATE), 150),
+  (CAST('2024-01-07' AS DATE), 300),
+  (CAST('2024-01-10' AS DATE), 250)
+AS daily_sales(sale_date, amount);
 ```
 
-### Amount-Based Range (RANGE on Numeric Column)
-
-Includes all rows where amount is within 200 units less than current row.
+### Example 1 — 7-Day Rolling Total
 
 ```sql
-CREATE OR REPLACE TEMP VIEW sales AS
+SELECT
+    sale_date,
+    amount,
+    SUM(amount) OVER (
+        ORDER BY CAST(sale_date AS TIMESTAMP)
+        RANGE BETWEEN INTERVAL 6 DAYS PRECEDING AND CURRENT ROW
+    ) AS rolling_7d_total
+FROM daily_sales
+ORDER BY sale_date;
+-- Result:
+-- | sale_date  | amount | rolling_7d_total |
+-- |------------|--------|------------------|
+-- | 2024-01-01 |    100 |              100 |
+-- | 2024-01-03 |    200 |              300 |
+-- | 2024-01-05 |    150 |              450 |
+-- | 2024-01-07 |    300 |              650 |  -- 2024-01-01 is 6 days before, included
+-- | 2024-01-10 |    250 |              700 |  -- 2024-01-03 falls outside 6-day window
+```
+
+### Example 2 — Numeric Amount Range
+
+```sql
+CREATE OR REPLACE TEMP VIEW scored AS
 SELECT * FROM VALUES
-  ('2024-01-01', 'North', 100),
-  ('2024-01-02', 'North', 200),
-  ('2024-01-05', 'North', 300),
-  ('2024-01-08', 'North', 400),
-  ('2024-01-10', 'North', 500)
-AS sales(sale_date, region, amount);
-SELECT *,
-  SUM(amount) OVER (
-    ORDER BY amount
-    RANGE BETWEEN 200 PRECEDING AND CURRENT ROW
-  ) AS range_amt_total
-FROM sales;
+  ('Alice', 100),
+  ('Bob',   150),
+  ('Carol', 200),
+  ('Dave',  280),
+  ('Eve',   320)
+AS scored(name, score);
+
+SELECT
+    name,
+    score,
+    COUNT(*) OVER (
+        ORDER BY score
+        RANGE BETWEEN 100 PRECEDING AND CURRENT ROW
+    ) AS peers_within_100
+FROM scored
+ORDER BY score;
+-- Result:
+-- | name  | score | peers_within_100 |
+-- |-------|-------|------------------|
+-- | Alice |   100 |                1 |  -- no scores in [0, 100] below
+-- | Bob   |   150 |                2 |  -- Alice (100) within 100 below
+-- | Carol |   200 |                2 |  -- Bob (150) within 100, Alice outside
+-- | Dave  |   280 |                2 |  -- Carol (200) within 100, Bob outside
+-- | Eve   |   320 |                2 |  -- Dave (280) within 100, Carol outside
 ```
 
-### Invalid Use (Non-numeric ORDER BY in RANGE)
+### Example 3 — Invalid: String Column with RANGE Offset
 
 ```sql
--- ❌ This will cause an error
-SELECT *,
-  SUM(amount) OVER (
-    ORDER BY region
-    RANGE BETWEEN 1 PRECEDING AND CURRENT ROW
-  )
-FROM sales;
+-- ERROR: RANGE with a string ORDER BY column and a numeric offset is not supported.
+-- The following query will fail at runtime:
+SELECT
+    name,
+    score,
+    SUM(score) OVER (
+        ORDER BY name          -- string column
+        RANGE BETWEEN 1 PRECEDING AND CURRENT ROW  -- numeric offset on string: invalid
+    ) AS bad_range
+FROM scored;
+-- SparkException: Window frame RANGE BETWEEN 1 PRECEDING AND CURRENT ROW
+-- requires the ORDER BY expression to be of a numeric type or date/timestamp type.
+-- Use ROWS instead when ORDER BY is a string column.
 ```
 
-❌ region is a string → RANGE can’t be used.
+---
+
+## :material-brain: When to Use
+
+| Scenario | Recommended Pattern |
+|----------|---------------------|
+| Rolling N-day revenue window | `RANGE BETWEEN INTERVAL N DAYS PRECEDING AND CURRENT ROW` |
+| Include all rows within a numeric tolerance band | `RANGE BETWEEN N PRECEDING AND CURRENT ROW` |
+| Running total where tied dates must show the same cumulative sum | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
+| Per-row window requiring physical row counts | Use `ROWS` instead |

@@ -4,7 +4,7 @@ Spark SQL has a rich type system covering primitives, datetime types, and comple
 (nested) types. Every column in a DataFrame has a data type that determines how
 values are stored, compared, and processed.
 
-## 📌 Primitive Types
+## :material-pin: Primitive Types
 
 | Type | SQL Syntax | Description | Example |
 |------|-----------|-------------|---------|
@@ -19,7 +19,7 @@ values are stored, compared, and processed.
 | `STRING` | `STRING` | Variable-length text | `'hello'` |
 | `BINARY` | `BINARY` | Byte array | `X'48656C6C6F'` |
 
-## 📌 DateTime Types
+## :material-pin: DateTime Types
 
 | Type | SQL Syntax | Description | Example |
 |------|-----------|-------------|---------|
@@ -30,7 +30,7 @@ values are stored, compared, and processed.
 
 See [DateTime](datetime/index.md) for detailed datetime functions and formatting.
 
-## 📌 Complex Types
+## :material-pin: Complex Types
 
 | Type | SQL Syntax | Description |
 |------|-----------|-------------|
@@ -40,7 +40,7 @@ See [DateTime](datetime/index.md) for detailed datetime functions and formatting
 
 See [Arrays](complextype/arrays/array_data_type.md), [Lists](complextype/lists/list_data_type.md), and [Structs](complextype/structs/struct_data_type.md) for detailed usage.
 
-## 🧪 Type Inspection
+## :material-flask-outline: Type Inspection
 
 ```sql
 -- Check column types
@@ -55,7 +55,7 @@ SELECT TRY_CAST('abc' AS INT);
 -- Result: NULL
 ```
 
-## 🧠 Type Precedence (Implicit Casting)
+## :material-brain: Type Precedence (Implicit Casting)
 
 When mixing types in expressions, Spark follows this promotion order:
 

@@ -13,7 +13,7 @@ graph LR
     C -->|No| E[NULL / Original]
 ```
 
-## 📌 :material-regex: Syntax
+## :material-pin: :material-regex: Syntax
 
 ```sql
 regexp_instr(str, regexp)
@@ -23,13 +23,13 @@ regexp_instr(str, regexp)
 - `regexp`: Java-style regular expression pattern
 - Returns: `INT` — 1-based position of the match, or `0` if no match
 
-## 🔍 :material-regex: Behavior
+## :material-magnify: :material-regex: Behavior
 
 1. Positions are **1-based** (not 0-based).
 2. Returns `0` if no match is found.
 3. Returns the position of the **first** occurrence.
 
-## 🧪 :material-regex: Practical Examples
+## :material-flask-outline: :material-regex: Practical Examples
 
 ### Find Position of Pattern
 
@@ -60,7 +60,7 @@ SELECT SUBSTRING('item-456-detail', regexp_instr('item-456-detail', '\\d'));
 -- Result: '456-detail'
 ```
 
-## 🧠 :material-regex: When to Use
+## :material-brain: :material-regex: When to Use
 
 | Scenario | Function |
 |----------|----------|

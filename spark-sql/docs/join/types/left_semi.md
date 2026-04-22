@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 💡 When to Use a Left Semi Join?
+## :material-lightbulb-outline: When to Use a Left Semi Join?
 
 | Use Case                     | Why Use a Semi Join?                          |
 |------------------------------|-----------------------------------------------|
@@ -28,7 +28,7 @@ graph LR
 
 ---
 
-## 🔁 How Does a Semi Join Work?
+## :material-repeat: How Does a Semi Join Work?
 
 1. Spark evaluates the join condition for each row in the left DataFrame.
 2. If **at least one match** is found in the right DataFrame, the row from the left is **retained**.
@@ -36,22 +36,22 @@ graph LR
 
 ---
 
-## 🗺️ Visual Flow
+## :material-map:️ Visual Flow
 
 ```mermaid
 flowchart TD
   A["Left Table (L)"] --> J{Does L.id match R.id?}
   R["Right Table (R)"] --> J
 
-  J -- Yes --> D1[✅ Keep row from L]
-  J -- No --> D2[❌ Discard row from L]
+  J -- Yes --> D1[:material-check-circle-outline: Keep row from L]
+  J -- No --> D2[:material-close-circle-outline: Discard row from L]
 
   D1 --> O[Final Semi Join Output]
 ```
 
 ---
 
-## ⚡ Spark Execution Strategies
+## :material-lightning-bolt: Spark Execution Strategies
 
 | Condition        | Join Strategy           |
 |------------------|------------------------|
@@ -61,7 +61,7 @@ flowchart TD
 
 ---
 
-## 📝 SQL Example
+## :material-pencil-outline: SQL Example
 
 **All orders that have a valid customer:**
 
@@ -74,7 +74,7 @@ LEFT SEMI JOIN customers c
 
 ---
 
-## 🔄 SQL Equivalent (with `IN`)
+## :material-refresh: SQL Equivalent (with `IN`)
 
 ```sql
 SELECT *
@@ -84,19 +84,19 @@ WHERE customer_id IN (
 )
 ```
 
-> ⚠️ **Note:** `IN` can be less efficient and buggy with nulls—`LEFT SEMI JOIN` is safer and faster in Spark.
+> :material-alert:️ **Note:** `IN` can be less efficient and buggy with nulls—`LEFT SEMI JOIN` is safer and faster in Spark.
 
 ---
 
-## 🔬 Comparing Join Types
+## :material-microscope: Comparing Join Types
 
 | Join Type  | Left Only | Right Only | Matching | Output Columns         |
 |------------|-----------|------------|----------|-----------------------|
-| Inner      | ❌        | ❌         | ✅       | Left + Right          |
-| Left Semi  | ✅        | ❌         | ✅       | Left only             |
-| Left Anti  | ✅        | ❌         | ❌       | Left only (no match)  |
+| Inner      | :material-close-circle-outline:        | :material-close-circle-outline:         | :material-check-circle-outline:       | Left + Right          |
+| Left Semi  | :material-check-circle-outline:        | :material-close-circle-outline:         | :material-check-circle-outline:       | Left only             |
+| Left Anti  | :material-check-circle-outline:        | :material-close-circle-outline:         | :material-close-circle-outline:       | Left only (no match)  |
 
 ---
 
-✨ **Summary:**  
+:material-shimmer: **Summary:**  
 Use **left semi join** for efficient existence checks and subquery filters—especially when you only care about the left DataFrame’s rows and don’t need columns from the right.

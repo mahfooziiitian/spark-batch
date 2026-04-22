@@ -34,7 +34,7 @@ CREATE TABLE grade_range (
 
 ## 2️⃣ Load Sample Data
 
-### 👩‍🎓 Insert Students
+### :material-account:‍:material-school: Insert Students
 
 ```sql
 INSERT INTO students_rj (id, name, score) VALUES
@@ -46,7 +46,7 @@ INSERT INTO students_rj (id, name, score) VALUES
     (6, 'Frank', 90);
 ```
 
-### 🏷️ Insert Grade Ranges
+### :material-tag-outline:️ Insert Grade Ranges
 
 ```sql
 INSERT INTO grade_range (grade, min_score, max_score) VALUES
@@ -81,7 +81,7 @@ ON
 
 ## 4️⃣ Example Output
 
-| 🆔 | Name     | Score | Grade |
+| :material-identifier: | Name     | Score | Grade |
 |----|----------|-------|-------|
 | 1  | Alice    | 55    | C     |
 | 2  | Bob      | 75    | B     |
@@ -92,7 +92,7 @@ ON
 
 ---
 
-> 💡 **Tip:**  
+> :material-lightbulb-outline: **Tip:**  
 > Range joins are powerful for mapping continuous values (like scores, timestamps, or prices) to categorical intervals.
 
 ---

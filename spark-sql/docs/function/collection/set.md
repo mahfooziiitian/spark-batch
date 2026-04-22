@@ -11,7 +11,7 @@ graph LR
     B --> C[Distinct Array]
 ```
 
-## 📌 COLLECT_SET
+## :material-pin: COLLECT_SET
 
 ### Syntax
 
@@ -21,23 +21,23 @@ COLLECT_SET(expr)
 
 Aggregates all non-NULL values from a group into an array of **unique** elements.
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns an `ARRAY<T>` containing distinct non-NULL values from the group.
 2. Duplicates are **removed** (use `COLLECT_LIST` to keep them).
 3. Order is **non-deterministic** after a shuffle.
 4. Returns an empty array if all values are NULL.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
-#### 🧱 1. Basic Distinct Collection
+#### :material-toy-brick: 1. Basic Distinct Collection
 
 ```sql
 SELECT COLLECT_SET(col) FROM VALUES (1), (2), (1), (3), (2) AS tab(col);
 -- Result: [1, 2, 3]  (order may vary)
 ```
 
-#### 🧱 2. Grouped Distinct Collection
+#### :material-toy-brick: 2. Grouped Distinct Collection
 
 ```sql
 CREATE OR REPLACE TEMP VIEW purchases AS
@@ -52,7 +52,7 @@ GROUP BY customer;
 -- Alice → [laptop, mouse], Bob → [keyboard, monitor]
 ```
 
-#### 🧱 3. Count Distinct via Set
+#### :material-toy-brick: 3. Count Distinct via Set
 
 ```sql
 SELECT customer, SIZE(COLLECT_SET(product)) AS distinct_count
@@ -61,7 +61,7 @@ GROUP BY customer;
 -- Alice → 2, Bob → 2
 ```
 
-#### 🧱 4. Sorted Distinct Values
+#### :material-toy-brick: 4. Sorted Distinct Values
 
 ```sql
 SELECT SORT_ARRAY(COLLECT_SET(col)) AS sorted_unique
@@ -69,7 +69,7 @@ FROM VALUES (3), (1), (4), (1), (5), (3) AS tab(col);
 -- Result: [1, 3, 4, 5]
 ```
 
-#### 🧱 5. As Comma-Separated Distinct String
+#### :material-toy-brick: 5. As Comma-Separated Distinct String
 
 ```sql
 SELECT CONCAT_WS(', ', SORT_ARRAY(COLLECT_SET(col))) AS csv
@@ -79,7 +79,7 @@ FROM VALUES ('b'), ('a'), ('c'), ('a') AS tab(col);
 
 ---
 
-## 📌 FIND_IN_SET
+## :material-pin: FIND_IN_SET
 
 ### Syntax
 
@@ -89,30 +89,30 @@ FIND_IN_SET(str, str_array)
 
 Returns the **1-based index** of `str` in a comma-delimited string `str_array`.
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns the 1-based position if found.
 2. Returns `0` if not found.
 3. Returns `0` if `str` itself contains a comma.
 4. Returns `NULL` if either argument is NULL.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
-#### 🧱 1. Find Position in CSV String
+#### :material-toy-brick: 1. Find Position in CSV String
 
 ```sql
 SELECT FIND_IN_SET('ab', 'abc,b,ab,c,def');
 -- Result: 3
 ```
 
-#### 🧱 2. Not Found
+#### :material-toy-brick: 2. Not Found
 
 ```sql
 SELECT FIND_IN_SET('xyz', 'abc,b,ab,c,def');
 -- Result: 0
 ```
 
-#### 🧱 3. Use in WHERE Clause
+#### :material-toy-brick: 3. Use in WHERE Clause
 
 ```sql
 CREATE OR REPLACE TEMP VIEW users AS
@@ -124,7 +124,7 @@ SELECT * FROM users WHERE FIND_IN_SET('admin', roles) > 0;
 -- Returns users 1 and 3
 ```
 
-#### 🧱 4. Conditional Logic
+#### :material-toy-brick: 4. Conditional Logic
 
 ```sql
 SELECT id,
@@ -136,7 +136,7 @@ FROM users;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function | Why |
 |----------|----------|-----|

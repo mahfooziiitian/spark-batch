@@ -13,7 +13,7 @@ graph LR
     B --> E[Row N]
 ```
 
-## 📌 Available Functions
+## :material-pin: Available Functions
 
 | Function | Input | Output Columns | NULL/Empty Handling |
 |----------|-------|---------------|---------------------|
@@ -25,7 +25,7 @@ graph LR
 | `POSEXPLODE_OUTER(expr)` | `array<T>` / `map<K,V>` | `pos, col` or `pos, key, value` | Keeps row (NULLs) |
 | `STACK(n, expr1, …, exprk)` | Scalar values | `col0, col1, …` | N/A |
 
-## 🔍 Usage Patterns
+## :material-magnify: Usage Patterns
 
 ### Direct SELECT
 
@@ -49,7 +49,7 @@ FROM my_table t
 LATERAL VIEW OUTER EXPLODE(t.array_col) AS col;
 ```
 
-## 🧪 Quick Examples
+## :material-flask-outline: Quick Examples
 
 ```sql
 -- Explode an array
@@ -73,7 +73,7 @@ SELECT STACK(2, 'math', 95, 'science', 88);
 -- (math, 95), (science, 88)
 ```
 
-## 🧠 Choosing the Right Generator
+## :material-brain: Choosing the Right Generator
 
 | Need | Function | Why |
 |------|----------|-----|

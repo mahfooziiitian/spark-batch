@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Common Formats
+## :material-pin: Common Formats
 
 | Format | Benefits |
 |--------|----------|
@@ -24,7 +24,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE TABLE hive_sales (
@@ -35,7 +35,7 @@ CREATE TABLE hive_sales (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

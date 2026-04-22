@@ -1,6 +1,6 @@
 nav:
   - index.md
-  - ⚙️ Config: config.md
-  - 🔌 Context: context.md
-  - 🗃️ Metastore: metastore.md
-  - 📋 Tables: table
+  - Config: config.md
+  - Context: context.md
+  - Metastore: metastore.md
+  - Tables: table

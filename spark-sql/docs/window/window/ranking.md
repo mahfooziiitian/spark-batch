@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Syntax | Description |
 |----------|--------|-------------|
@@ -28,7 +28,7 @@ All ranking functions require `ORDER BY` inside the `OVER` clause.
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Tie handling — RANK vs DENSE_RANK**: when rows tie on the `ORDER BY` value, both receive the same rank. `RANK` then skips the next integer (leaving gaps), while `DENSE_RANK` continues from the immediately following integer (no gaps).
 2. **ROW_NUMBER determinism**: always produces distinct values, but the relative order of tied rows is non-deterministic unless the `ORDER BY` expression is unique across all rows in the partition.
@@ -38,7 +38,7 @@ All ranking functions require `ORDER BY` inside the `OVER` clause.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales AS
@@ -156,7 +156,7 @@ WHERE rn = 1;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

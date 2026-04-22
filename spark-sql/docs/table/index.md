@@ -5,7 +5,7 @@ external and use formats like Parquet, ORC, or Delta.
 
 ---
 
-## 📌 Table Types
+## :material-pin: Table Types
 
 | Type | Description |
 |------|-------------|
@@ -14,7 +14,7 @@ external and use formats like Parquet, ORC, or Delta.
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE TABLE orders (
@@ -25,7 +25,7 @@ CREATE TABLE orders (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Quick Reference
+## :material-pin: Quick Reference
 
 | Technique | Use Case | Key Function |
 |-----------|----------|-------------|
@@ -26,7 +26,7 @@ graph LR
 
 ---
 
-## 🔍 Examples
+## :material-magnify: Examples
 
 ### KPI and Alerts
 
@@ -68,7 +68,7 @@ Truncate, pad, and concatenate strings for formatted report output.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

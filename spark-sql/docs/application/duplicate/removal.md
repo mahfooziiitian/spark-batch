@@ -10,12 +10,12 @@ tie-breaking rule.
 
 ```mermaid
 graph LR
-    DUP["🗄️ Table with\nDuplicates"] --> Q{"Duplicate\nType?"}
+    DUP[":material-database:️ Table with\nDuplicates"] --> Q{"Duplicate\nType?"}
     Q -->|"All columns match"| DIST["DISTINCT *"]
     Q -->|"Key columns match\n(keep latest)"| RN["ROW_NUMBER()\nORDER BY timestamp DESC"]
     Q -->|"Key columns match\n(keep any)"| FIRST["FIRST() / MIN()"]
     Q -->|"Delta table"| DEL["DELETE + NOT IN subquery"]
-    DIST --> OUT["✅ Deduplicated\nOutput"]
+    DIST --> OUT[":material-check-circle-outline: Deduplicated\nOutput"]
     RN --> OUT
     FIRST --> OUT
     DEL --> OUT
@@ -23,7 +23,7 @@ graph LR
 
 ---
 
-## 📌 Strategy Comparison
+## :material-pin: Strategy Comparison
 
 | Strategy | Keeps | Requires Order? | Best For |
 |----------|-------|-----------------|----------|
@@ -36,7 +36,7 @@ graph LR
 
 ---
 
-## ✅ Strategy 1 — DISTINCT (exact duplicates)
+## :material-check-circle-outline: Strategy 1 — DISTINCT (exact duplicates)
 
 Remove rows where **every column** is identical.
 
@@ -52,7 +52,7 @@ FROM students;
 
 ---
 
-## ✅ Strategy 2 — ROW_NUMBER() (keep latest row per key)
+## :material-check-circle-outline: Strategy 2 — ROW_NUMBER() (keep latest row per key)
 
 The most flexible approach — pick which row to keep using any `ORDER BY`.
 
@@ -76,7 +76,7 @@ WHERE rn = 1; -- (3)!
 
 ---
 
-## ✅ Strategy 3 — FIRST() / GROUP BY (keep any row per key)
+## :material-check-circle-outline: Strategy 3 — FIRST() / GROUP BY (keep any row per key)
 
 When order does not matter — fastest deduplication approach.
 
@@ -93,7 +93,7 @@ GROUP BY id;
 
 ---
 
-## ✅ Strategy 4 — ROW_NUMBER() (keep latest by timestamp)
+## :material-check-circle-outline: Strategy 4 — ROW_NUMBER() (keep latest by timestamp)
 
 Production pattern for CDC (Change Data Capture) pipelines.
 
@@ -115,7 +115,7 @@ WHERE rn = 1;
 
 ---
 
-## ✅ Strategy 5 — RANK() with conditional tie-break
+## :material-check-circle-outline: Strategy 5 — RANK() with conditional tie-break
 
 Use when you need a priority-based rule (e.g., prefer `status = 'active'`).
 
@@ -142,7 +142,7 @@ WHERE rn = 1;
 
 ---
 
-## ✅ Strategy 6 — CTE + MIN() + INNER JOIN
+## :material-check-circle-outline: Strategy 6 — CTE + MIN() + INNER JOIN
 
 Deterministic dedup using the minimum key value as the canonical row.
 
@@ -165,7 +165,7 @@ INNER JOIN dedup_keys AS d
 
 ---
 
-## ✅ Strategy 7 — Delta table in-place DELETE
+## :material-check-circle-outline: Strategy 7 — Delta table in-place DELETE
 
 Remove duplicates directly from a Delta table without rewriting it.
 
@@ -192,7 +192,7 @@ WHERE id NOT IN (
 
 ---
 
-## 🧪 Full Example with Sample Data
+## :material-flask-outline: Full Example with Sample Data
 
 ```sql
 --8<-- "src/application/duplicate/removal/deduplication.sql"
@@ -200,7 +200,7 @@ WHERE id NOT IN (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Strategy |
 |----------|---------------------|

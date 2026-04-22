@@ -9,18 +9,18 @@ window functions, and subquery patterns. All techniques work on Delta and Parque
 
 ```mermaid
 graph LR
-    A["🗄️ Source Table"] --> B{"Duplicate\nDetection"}
+    A[":material-database:️ Source Table"] --> B{"Duplicate\nDetection"}
     B -->|"GROUP BY + HAVING"| C["Count > 1\n→ duplicated keys"]
     B -->|"ROW_NUMBER()"| D["rn > 1\n→ duplicate rows"]
     B -->|"CTE + JOIN"| E["Full duplicate\nrow records"]
-    C --> F["📋 Report / Alert"]
+    C --> F[":material-clipboard-list-outline: Report / Alert"]
     D --> F
     E --> F
 ```
 
 ---
 
-## 📌 Approach Comparison
+## :material-pin: Approach Comparison
 
 | Approach | Returns | Best For |
 |----------|---------|----------|
@@ -32,7 +32,7 @@ graph LR
 
 ---
 
-## 🔍 Approach 1 — GROUP BY + HAVING (key frequency)
+## :material-magnify: Approach 1 — GROUP BY + HAVING (key frequency)
 
 Find which key values appear more than once.
 
@@ -53,7 +53,7 @@ ORDER BY duplicate_count DESC;
 
 ---
 
-## 🔍 Approach 2 — CTE + INNER JOIN (full rows)
+## :material-magnify: Approach 2 — CTE + INNER JOIN (full rows)
 
 Retrieve every column for all duplicated records.
 
@@ -75,7 +75,7 @@ INNER JOIN duplicated_keys AS d
 
 ---
 
-## 🔍 Approach 3 — ROW_NUMBER() (identify specific duplicate rows)
+## :material-magnify: Approach 3 — ROW_NUMBER() (identify specific duplicate rows)
 
 Label every occurrence with a row number; rows with `rn > 1` are duplicates.
 
@@ -99,7 +99,7 @@ WHERE rn > 1; -- (3)!
 
 ---
 
-## 🔍 Approach 4 — IN subquery (single-column key)
+## :material-magnify: Approach 4 — IN subquery (single-column key)
 
 Convenient for a single key column.
 
@@ -120,7 +120,7 @@ WHERE email IN (
 
 ---
 
-## 🔍 Approach 5 — Candidate Primary Key check
+## :material-magnify: Approach 5 — Candidate Primary Key check
 
 Verify whether a column (or combination) could serve as a primary key.
 
@@ -134,7 +134,7 @@ FROM your_table;
 
 ---
 
-## 🧪 Full Example with Sample Data
+## :material-flask-outline: Full Example with Sample Data
 
 ```sql
 --8<-- "src/application/duplicate/finding/find-duplicate.sql"
@@ -142,7 +142,7 @@ FROM your_table;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 📌 Example
+## :material-pin: Example
 
 ```sql
 CREATE OR REPLACE VIEW high_value_orders AS
@@ -26,7 +26,7 @@ SELECT * FROM orders WHERE amount > 1000;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Views do not store data; they store a query definition.
 2. Querying a view runs its underlying SQL.
@@ -34,7 +34,7 @@ SELECT * FROM orders WHERE amount > 1000;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

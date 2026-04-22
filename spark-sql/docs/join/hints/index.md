@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Common Hints
+## :material-pin: Common Hints
 
 | Hint | Effect |
 |------|--------|
@@ -26,7 +26,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT /*+ BROADCAST(dim) */
@@ -38,7 +38,7 @@ ON f.region_id = dim.id;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Hints are best-effort; invalid hints are ignored.
 2. Broadcast joins require the build side to fit in memory.

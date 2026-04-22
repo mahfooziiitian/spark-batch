@@ -8,7 +8,7 @@ Hopping windows have a fixed size with advances smaller than the length of the w
 
 So, from the illustration above, hopping windows can produce overlapping results.
 
-## ✅ Scenario
+## :material-check-circle-outline: Scenario
 
 1. Window size: 1 hour
 2. Hop (slide interval): 30 minutes
@@ -81,3 +81,9 @@ FROM TABLE(
 )
 GROUP BY window;
 ```
+
+## :material-animation-play: Interactive Demo
+
+> Hover any window row to highlight the events it contains and see the event count.
+
+<div id="viz-hopping" class="ts-viz"></div>

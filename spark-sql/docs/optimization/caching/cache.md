@@ -28,7 +28,7 @@ CACHE TABLE students;
 SELECT * FROM students WHERE age > 20;
 ```
 
-## ✅ 2. Cache a Temporary View
+## :material-check-circle-outline: 2. Cache a Temporary View
 
 ```sql
 CACHE TABLE my_temp_view;
@@ -43,7 +43,7 @@ SELECT * FROM students WHERE age > 20;
 CACHE TABLE temp_students;
 ```
 
-### ✅ 4. Check What Is Cached
+### :material-check-circle-outline: 4. Check What Is Cached
 
 ```sql
 SHOW TABLES;
@@ -51,13 +51,13 @@ SHOW TABLES;
 SHOW TABLE EXTENDED LIKE 'students';
 ```
 
-### ✅ 5. Uncache a Table
+### :material-check-circle-outline: 5. Uncache a Table
 
 ```sql
 UNCACHE TABLE students;
 ```
 
-### ✅ 6. Remove All Caches
+### :material-check-circle-outline: 6. Remove All Caches
 
 ```sql
 CLEAR CACHE;
@@ -83,7 +83,7 @@ Query uses same table/view repeatedly    | Saves time by avoiding recomputation
 Table fits in memory                     | Fastest access (memory vs. disk)
 Intermediate query reused multiple times | Great performance improvement
 
-## ⚠️ Notes
+## :material-alert:️ Notes
 
 1. Lazy Evaluation: Cache is lazy. The first action (count, collect, show, etc.) triggers caching.
 2. Memory Sensitive: If the data doesn’t fit in memory, Spark may spill to disk or evict older cached data.

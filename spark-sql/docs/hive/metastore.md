@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Key Concepts
+## :material-pin: Key Concepts
 
 | Concept | Description |
 |---------|-------------|
@@ -24,7 +24,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SHOW DATABASES;
@@ -33,7 +33,7 @@ SHOW TABLES IN default;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

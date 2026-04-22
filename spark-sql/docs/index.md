@@ -20,7 +20,7 @@ graph TD
 
 ---
 
-## 📌 Quick Start
+## :material-pin: Quick Start
 
 ```sql
 -- Basic query
@@ -35,7 +35,7 @@ GROUP BY region;
 
 ---
 
-## 🧭 Sections
+## :material-compass-outline: Sections
 
 | Section | What You'll Find |
 |---------|-------------------|
@@ -51,7 +51,7 @@ GROUP BY region;
 
 ---
 
-## 🧠 Tips
+## :material-brain: Tips
 
 - Use `EXPLAIN` to inspect query plans.
 - Filter early to reduce data scanned.

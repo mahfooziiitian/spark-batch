@@ -11,7 +11,7 @@ graph LR
     B --> C[Hash Output]
 ```
 
-## 📌 :material-shield-lock: Syntax
+## :material-pin: :material-shield-lock: Syntax
 
 ```sql
 crc32(expr)
@@ -20,14 +20,14 @@ crc32(expr)
 - `expr`: `STRING` or `BINARY` input
 - Returns: `BIGINT` — 32-bit CRC hash value
 
-## 🔍 :material-shield-lock: Behavior
+## :material-magnify: :material-shield-lock: Behavior
 
 1. Computes a CRC-32 checksum of the input expression.
 2. Useful for **quick data integrity checks**, not cryptographic security.
 3. Returns a numeric value (not a hex string like MD5/SHA).
 4. NULL input returns NULL.
 
-## 🧪 :material-shield-lock: Practical Examples
+## :material-flask-outline: :material-shield-lock: Practical Examples
 
 ### Basic Hash
 
@@ -56,7 +56,7 @@ SELECT name, amount, crc32(CONCAT(name, CAST(amount AS STRING))) AS row_hash
 FROM source;
 ```
 
-## 🧠 :material-shield-lock: CRC32 vs Other Hashes
+## :material-brain: :material-shield-lock: CRC32 vs Other Hashes
 
 | Function | Output Size | Speed | Use Case |
 |----------|------------|-------|----------|

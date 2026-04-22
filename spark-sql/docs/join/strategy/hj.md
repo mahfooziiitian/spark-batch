@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 🧩 How Hash Join Works
+## :material-puzzle-outline: How Hash Join Works
 
 1. **Build Phase:**  
     Spark constructs a hash table using the *join key* from the smaller DataFrame.
@@ -23,11 +23,11 @@ graph LR
 3. **Output:**  
     Rows with matching keys are joined and emitted as output.
 
-> ⚡ **Note:** Hash Join is only supported for *equality joins* (`=` condition).
+> :material-lightning-bolt: **Note:** Hash Join is only supported for *equality joins* (`=` condition).
 
 ---
 
-## 🏗️ Hash Join in Spark: Node-Level Strategy
+## :material-office-building-cog:️ Hash Join in Spark: Node-Level Strategy
 
 - Hash join operates **per node** in a Spark cluster.
 - Each node joins its local partitions:
@@ -36,7 +36,7 @@ graph LR
 
 ---
 
-## 🌟 Variants of Hash Join in Spark
+## :material-star: Variants of Hash Join in Spark
 
 | Type                  | When Used                                         | Build Side                |
 |-----------------------|---------------------------------------------------|---------------------------|
@@ -45,14 +45,14 @@ graph LR
 
 ---
 
-## ✅ Requirements for Hash Join
+## :material-check-circle-outline: Requirements for Hash Join
 
 - **Join condition:** Must be *equality only* (`colA = colB`)
 - **Supported join types:** `inner`, `left outer`, `right outer`, `semi`, `anti`
 
 ---
 
-## 🔄 Execution Flow
+## :material-refresh: Execution Flow
 
 1. **Build Phase:**  
     Hash table is built from the smaller DataFrame on the join key.
@@ -91,5 +91,5 @@ probe2 --> out2[Join Output 2]
 
 ---
 
-> 💡 **Tip:**  
+> :material-lightbulb-outline: **Tip:**  
 > Use Broadcast Hash Join when one DataFrame is small enough to fit in memory. For larger datasets, Spark automatically chooses Shuffle Hash Join or other strategies.

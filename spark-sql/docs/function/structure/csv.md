@@ -11,7 +11,7 @@ graph LR
     B --> C[Struct Column]
 ```
 
-## 📌 FROM_CSV — Parse CSV String
+## :material-pin: FROM_CSV — Parse CSV String
 
 ### Syntax
 
@@ -25,23 +25,23 @@ FROM_CSV(csv_string, schema [, options])
 | `schema` | DDL schema string defining field names and types |
 | `options` | *(Optional)* Map of parsing options |
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns a `STRUCT` with fields matching the schema.
 2. Fields are matched by **position** (first CSV field → first schema field).
 3. Returns `NULL` for the entire struct if parsing fails (in PERMISSIVE mode).
 4. Use `options` map to customize delimiter, quote character, etc.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
-#### 🧱 1. Basic Parsing
+#### :material-toy-brick: 1. Basic Parsing
 
 ```sql
 SELECT FROM_CSV('Alice,30,NYC', 'name STRING, age INT, city STRING') AS parsed;
 -- Result: {name: Alice, age: 30, city: NYC}
 ```
 
-#### 🧱 2. Access Struct Fields
+#### :material-toy-brick: 2. Access Struct Fields
 
 ```sql
 SELECT parsed.name, parsed.age, parsed.city
@@ -51,21 +51,21 @@ FROM (
 -- Result: Alice, 30, NYC
 ```
 
-#### 🧱 3. Timestamp Parsing with Format
+#### :material-toy-brick: 3. Timestamp Parsing with Format
 
 ```sql
 SELECT FROM_CSV('26/08/2015', 'time TIMESTAMP', MAP('timestampFormat', 'dd/MM/yyyy')) AS parsed;
 -- Result: {time: 2015-08-26 00:00:00}
 ```
 
-#### 🧱 4. Custom Delimiter
+#### :material-toy-brick: 4. Custom Delimiter
 
 ```sql
 SELECT FROM_CSV('Tom|25|LA', 'name STRING, age INT, city STRING', MAP('delimiter', '|')) AS parsed;
 -- Result: {name: Tom, age: 25, city: LA}
 ```
 
-#### 🧱 5. Parse a CSV Column
+#### :material-toy-brick: 5. Parse a CSV Column
 
 ```sql
 CREATE OR REPLACE TEMP VIEW raw_data AS
@@ -92,7 +92,7 @@ FROM raw_data;
 
 ---
 
-## 📌 TO_CSV — Serialize Struct to CSV
+## :material-pin: TO_CSV — Serialize Struct to CSV
 
 ### Syntax
 
@@ -100,7 +100,7 @@ FROM raw_data;
 TO_CSV(struct_expr [, options])
 ```
 
-### 🧪 Examples
+### :material-flask-outline: Examples
 
 ```sql
 SELECT TO_CSV(NAMED_STRUCT('name', 'Alice', 'age', 30, 'city', 'NYC')) AS csv;
@@ -113,7 +113,7 @@ SELECT TO_CSV(NAMED_STRUCT('a', 1, 'b', 2), MAP('delimiter', '|')) AS csv;
 
 ---
 
-## 📌 SCHEMA_OF_CSV — Infer Schema
+## :material-pin: SCHEMA_OF_CSV — Infer Schema
 
 ### Syntax
 
@@ -130,17 +130,17 @@ SELECT SCHEMA_OF_CSV('Alice,30,NYC');
 
 ---
 
-## 🆚 FROM_CSV vs File-Based CSV Reading
+## :material-compare: FROM_CSV vs File-Based CSV Reading
 
 | Feature | `read.csv()` / `USING csv` | `FROM_CSV()` |
 |---------|---------------------------|-------------|
-| Reads CSV files | ✅ Yes | ❌ No |
-| Parses CSV strings | ❌ No | ✅ Yes |
-| Used in SQL expressions | ✅ (USING csv) | ✅ (function) |
+| Reads CSV files | :material-check-circle-outline: Yes | :material-close-circle-outline: No |
+| Parses CSV strings | :material-close-circle-outline: No | :material-check-circle-outline: Yes |
+| Used in SQL expressions | :material-check-circle-outline: (USING csv) | :material-check-circle-outline: (function) |
 | Returns | DataFrame | STRUCT column |
 | Use case | Batch file ingestion | Inline string parsing |
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function |
 |----------|----------|

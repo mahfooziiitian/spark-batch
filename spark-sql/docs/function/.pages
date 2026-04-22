@@ -1,11 +1,11 @@
 nav:
   - index.md
-  - Σ Aggregate: aggregate
-  - 🔢 Scalar: scalar
-  - 🗂️ Collection: collection
-  - ⚡ Generator: generator
-  - λ Higher-Order: hof
-  - 🏗️ Structure: structure
-  - λ Lambda: lambda.md
-  - 📜 Macro: macro
-  - 🐍 UDF: udf
+  - Aggregate: aggregate
+  - Scalar: scalar
+  - Collection: collection
+  - Generator: generator
+  - Higher-Order: hof
+  - Structure: structure
+  - Lambda: lambda.md
+  - Macro: macro
+  - UDF: udf

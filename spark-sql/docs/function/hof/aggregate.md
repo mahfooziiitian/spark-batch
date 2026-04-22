@@ -11,7 +11,7 @@ graph LR
     B --> C[Output Array / Scalar]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 AGGREGATE(array, initial_value, merge_function [, finish_function])
@@ -26,7 +26,7 @@ AGGREGATE(array, initial_value, merge_function [, finish_function])
 | `merge_function` | `(acc, element) -> new_acc` — combines accumulator with each element |
 | `finish_function` | *(Optional)* `acc -> result` — transforms the final accumulator |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Initializes the accumulator to `initial_value`.
 2. Iterates through each element of the array, applying `merge_function` to update the accumulator.
@@ -34,16 +34,16 @@ AGGREGATE(array, initial_value, merge_function [, finish_function])
 4. Returns `NULL` if the input array is `NULL`.
 5. The type of `initial_value` determines the accumulator and return type.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Sum All Elements
+### :material-toy-brick: 1. Sum All Elements
 
 ```sql
 SELECT AGGREGATE(ARRAY(1, 2, 3, 4, 5), 0, (acc, x) -> acc + x) AS total;
 -- Result: 15
 ```
 
-### 🧱 2. Concatenate Strings
+### :material-toy-brick: 2. Concatenate Strings
 
 ```sql
 SELECT AGGREGATE(
@@ -53,7 +53,7 @@ SELECT AGGREGATE(
 -- Result: 'spark, sql, hof'
 ```
 
-### 🧱 3. Find the Maximum Value
+### :material-toy-brick: 3. Find the Maximum Value
 
 ```sql
 SELECT AGGREGATE(
@@ -63,7 +63,7 @@ SELECT AGGREGATE(
 -- Result: 42
 ```
 
-### 🧱 4. Count Non-Null Elements
+### :material-toy-brick: 4. Count Non-Null Elements
 
 ```sql
 SELECT AGGREGATE(
@@ -73,7 +73,7 @@ SELECT AGGREGATE(
 -- Result: 3
 ```
 
-### 🧱 5. Sum with a Finish Function (Average)
+### :material-toy-brick: 5. Sum with a Finish Function (Average)
 
 ```sql
 SELECT AGGREGATE(
@@ -85,7 +85,7 @@ SELECT AGGREGATE(
 -- Result: 25.0
 ```
 
-### 🧱 6. Sum Nested Arrays
+### :material-toy-brick: 6. Sum Nested Arrays
 
 ```sql
 SELECT AGGREGATE(
@@ -96,7 +96,7 @@ SELECT AGGREGATE(
 -- Result: 15
 ```
 
-### 🧱 7. Aggregate Struct Fields
+### :material-toy-brick: 7. Aggregate Struct Fields
 
 ```sql
 SELECT AGGREGATE(
@@ -110,7 +110,7 @@ SELECT AGGREGATE(
 -- Result: 175
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `AGGREGATE`? |
 |----------|-----------------|

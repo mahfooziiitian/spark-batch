@@ -4,7 +4,7 @@ Logical operators combine or invert predicates to build more complex filters.
 
 ---
 
-## 📌 Operators
+## :material-pin: Operators
 
 | Operator | Example | Description |
 |----------|---------|-------------|
@@ -14,14 +14,14 @@ Logical operators combine or invert predicates to build more complex filters.
 
 ---
 
-## 🔍 Precedence
+## :material-magnify: Precedence
 
 `NOT` is evaluated first, then `AND`, then `OR`.
 Use parentheses to make precedence explicit.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Combine Conditions
 
@@ -47,7 +47,7 @@ WHERE NOT (event_type = 'test');
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

@@ -15,7 +15,7 @@ graph TD
 
 ---
 
-## 📌 What It Chooses
+## :material-pin: What It Chooses
 
 | Choice | Examples |
 |--------|----------|
@@ -25,7 +25,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 EXPLAIN FORMATTED SELECT * FROM orders JOIN customers USING (id);
@@ -33,7 +33,7 @@ EXPLAIN FORMATTED SELECT * FROM orders JOIN customers USING (id);
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 COUNT(*)
@@ -36,7 +36,7 @@ COUNT(expr) FILTER (WHERE condition)
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **`COUNT(*)`** counts every row regardless of `NULL`s; it is the only aggregate that never returns `NULL` — it returns `0` for an empty group.
 2. **`COUNT(col)`** skips rows where `col` IS `NULL`; the expression `COUNT(*) - COUNT(col)` equals the number of `NULL`s in that column.
@@ -47,7 +47,7 @@ COUNT(expr) FILTER (WHERE condition)
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -174,7 +174,7 @@ ORDER BY null_count DESC;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

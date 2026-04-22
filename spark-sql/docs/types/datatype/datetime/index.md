@@ -3,7 +3,7 @@
 Spark SQL provides `DATE`, `TIMESTAMP`, and `INTERVAL` types for working with
 temporal data — from simple calendar dates to precise timestamps with timezone handling.
 
-## 📌 Type Summary
+## :material-pin: Type Summary
 
 | Type | Stores | Precision | Timezone |
 |------|--------|-----------|----------|
@@ -12,7 +12,7 @@ temporal data — from simple calendar dates to precise timestamps with timezone
 | `TIMESTAMP_NTZ` | Date + time | Microsecond | No timezone |
 | `INTERVAL` | Duration | Variable | N/A |
 
-## 🧪 Quick Examples
+## :material-flask-outline: Quick Examples
 
 ```sql
 -- Literals

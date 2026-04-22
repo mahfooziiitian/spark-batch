@@ -15,7 +15,7 @@ graph LR
 
 ## :material-code-braces: ZIP_WITH
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 ZIP_WITH(array1, array2, (left, right) -> expression)
@@ -28,7 +28,7 @@ ZIP_WITH(array1, array2, (left, right) -> expression)
 | `(left, right)` | Lambda parameters for corresponding elements |
 | `expression` | Logic to combine each pair of elements |
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Pairs elements from `array1` and `array2` by index position.
 2. Applies the lambda to each `(left, right)` pair to produce a result element.
@@ -36,16 +36,16 @@ ZIP_WITH(array1, array2, (left, right) -> expression)
 4. Returns an array with the same length as the longer input.
 5. Returns `NULL` if either input array is `NULL`.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
-#### 🧱 1. Element-Wise Addition
+#### :material-toy-brick: 1. Element-Wise Addition
 
 ```sql
 SELECT ZIP_WITH(ARRAY(1, 2, 3), ARRAY(10, 20, 30), (x, y) -> x + y) AS sums;
 -- Result: [11, 22, 33]
 ```
 
-#### 🧱 2. Combine Names and Scores into Labels
+#### :material-toy-brick: 2. Combine Names and Scores into Labels
 
 ```sql
 SELECT ZIP_WITH(
@@ -56,14 +56,14 @@ SELECT ZIP_WITH(
 -- Result: ['Alice: 95', 'Bob: 82', 'Charlie: 91']
 ```
 
-#### 🧱 3. Unequal-Length Arrays (NULL Padding)
+#### :material-toy-brick: 3. Unequal-Length Arrays (NULL Padding)
 
 ```sql
 SELECT ZIP_WITH(ARRAY(1, 2), ARRAY(10, 20, 30), (x, y) -> x + y) AS sums;
 -- Result: [11, 22, NULL]  (x is NULL for the third pair)
 ```
 
-#### 🧱 4. Build Structs from Parallel Arrays
+#### :material-toy-brick: 4. Build Structs from Parallel Arrays
 
 ```sql
 SELECT ZIP_WITH(
@@ -78,7 +78,7 @@ SELECT ZIP_WITH(
 
 ## :material-code-braces: FORALL
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 FORALL(array, element -> condition)
@@ -90,37 +90,37 @@ FORALL(array, element -> condition)
 | `element` | Variable representing each element |
 | `condition` | Boolean expression that must hold for every element |
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns `TRUE` only if **every** element satisfies the condition.
 2. Returns `FALSE` if any element fails the condition.
 3. Returns `TRUE` for an empty array (vacuously true).
 4. Returns `NULL` if the input array is `NULL`.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
-#### 🧱 1. Check All Positive
+#### :material-toy-brick: 1. Check All Positive
 
 ```sql
 SELECT FORALL(ARRAY(1, 2, 3, 4), x -> x > 0) AS all_positive;
 -- Result: true
 ```
 
-#### 🧱 2. Check All Non-Null
+#### :material-toy-brick: 2. Check All Non-Null
 
 ```sql
 SELECT FORALL(ARRAY(1, NULL, 3), x -> x IS NOT NULL) AS all_non_null;
 -- Result: false
 ```
 
-#### 🧱 3. Validate String Lengths
+#### :material-toy-brick: 3. Validate String Lengths
 
 ```sql
 SELECT FORALL(ARRAY('ab', 'cd', 'ef'), x -> LENGTH(x) = 2) AS all_two_chars;
 -- Result: true
 ```
 
-#### 🧱 4. Validate Struct Fields
+#### :material-toy-brick: 4. Validate Struct Fields
 
 ```sql
 SELECT FORALL(
@@ -133,7 +133,7 @@ SELECT FORALL(
 -- Result: true
 ```
 
-#### 🧱 5. Data Quality Check on a Column
+#### :material-toy-brick: 5. Data Quality Check on a Column
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -150,7 +150,7 @@ FROM orders;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Function | Use Case | Returns |
 |----------|----------|---------|

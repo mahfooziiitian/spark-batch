@@ -4,7 +4,7 @@ Navigation functions access values from other rows relative to the current row w
 
 ---
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Syntax | Description |
 |----------|--------|-------------|
@@ -16,7 +16,7 @@ Navigation functions access values from other rows relative to the current row w
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Default offset for LAG/LEAD**: `offset` defaults to `1` when omitted — `LAG(amount)` is equivalent to `LAG(amount, 1)`.
 2. **Default value for LAG/LEAD**: the third argument provides a fallback when the offset reaches beyond the partition boundary (e.g., the first row has no preceding row for `LAG`). Defaults to `NULL` when not specified.
@@ -26,7 +26,7 @@ Navigation functions access values from other rows relative to the current row w
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales AS
@@ -165,7 +165,7 @@ FROM sales;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

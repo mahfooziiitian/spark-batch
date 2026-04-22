@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 Quick Reference
+## :material-pin: Quick Reference
 
 | Technique | Use Case | Key Function |
 |-----------|----------|-------------|
@@ -28,7 +28,7 @@ graph LR
 
 ---
 
-## 🔍 Examples
+## :material-magnify: Examples
 
 ### AND / OR Filters
 
@@ -80,7 +80,7 @@ Apply regular expression patterns with RLIKE for advanced text filtering.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

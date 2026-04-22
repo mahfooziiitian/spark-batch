@@ -1,106 +1,172 @@
 # :material-filter: Filtering Data in Spark SQL
 
-Filtering reduces the number of rows processed and returned, which improves
-both performance and query correctness. Spark SQL supports multiple filtering
-styles depending on where and when you want the filter to apply.
+Filter clauses control which rows enter aggregations, projections, and result sets.
 
-### :material-sitemap: Overview
+---
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph TD
-    A[":material-filter: Filter Options"] --> B["WHERE clause"]
-    A --> C["HAVING clause"]
-    A --> D["NULL filters"]
-    A --> E["Subquery filters"]
-    A --> F["Complex type filters"]
-    A --> G["Predicate Pushdown"]
+    F[Filtering in Spark SQL] --> W[WHERE]
+    F --> H[HAVING]
+    F --> FI[FILTER]
+    F --> CW[CASE WHEN]
+    F --> S[Subquery]
+    F --> N[NULL Handling]
+    F --> PD[Predicate Pushdown]
+    F --> CT[Complex Types]
 ```
 
-## 📌 Core Filtering Clauses
+### SQL Execution Order
 
-| Clause | Applies To | When It Runs | Typical Use |
-|--------|------------|--------------|-------------|
-| `WHERE` | Rows | Before aggregation | Row-level filters |
-| `HAVING` | Groups | After aggregation | Filter grouped results |
-| `FILTER` | Aggregates | During aggregation | Conditional aggregates |
-| `CASE WHEN` | Expressions | During evaluation | Build flags or conditional logic |
-| `LATERAL VIEW` | Exploded rows | During row expansion | Filter inside arrays/maps |
-
-## 🔍 Behavior Notes
-
-1. **Predicate pushdown** — Data sources (Parquet, ORC, Delta) can apply filters
-   during scan to avoid reading unnecessary data files.
-2. **Partition pruning** — Filters on partition columns skip entire partitions.
-3. **NULL logic** — Comparisons with NULL return NULL (not TRUE). Use `IS NULL`,
-   `IS NOT NULL`, or the null-safe equality operator `<=>`.
-4. **UDFs block pushdown** — User-defined functions often prevent pushdown and
-   can force full scans.
-5. **Order of operations** — `WHERE` runs before `GROUP BY`, `HAVING` runs after
-   aggregation, and `FILTER` runs inside an individual aggregate.
-
-## 🧪 Quick Examples
-
-### Basic WHERE Filter
-
-```sql
-SELECT * FROM orders
-WHERE order_status = 'SHIPPED'
-  AND order_date >= '2024-01-01';
+```mermaid
+flowchart LR
+    FR[FROM / JOIN] --> W[WHERE\nrow filter]
+    W --> GB[GROUP BY]
+    GB --> HV[HAVING\ngroup filter]
+    HV --> SE[SELECT\nFILTER / CASE WHEN]
+    SE --> OB[ORDER BY]
+    OB --> LM[LIMIT]
 ```
 
-### HAVING Filter (After Aggregation)
+---
+
+## Core Filtering Clauses
+
+| Clause | Scope | Removes rows? | Typical use |
+|--------|-------|---------------|-------------|
+| `WHERE` | Before aggregation | Yes | Row-level predicate |
+| `HAVING` | After aggregation | Yes | Post-aggregate predicate |
+| `FILTER` | Inside aggregate function | No (scopes aggregation) | Conditional aggregation |
+| `CASE WHEN` | Expression level | No | Value derivation / conditional logic |
+| Subquery (`IN`, `EXISTS`) | Correlated or scalar | Yes | Set membership, existence checks |
+| `IS NULL / IS NOT NULL` | Any position | Yes (when in WHERE) | NULL-safe filtering |
+| Complex type (`array_contains`, HOF) | Column expression | Yes (when in WHERE) | Array, map, struct predicates |
+
+---
+
+## :material-magnify: Behavior Notes
+
+1. **Predicate pushdown** — Catalyst pushes `WHERE` predicates into file scans (Parquet, Delta), reading only matching row groups.
+2. **Partition pruning** — Filtering on partition columns skips entire directories; always filter on partition columns first.
+3. **NULL three-valued logic** — `NULL = NULL` evaluates to `UNKNOWN`, not `TRUE`; use `IS NULL` or `<=>` for NULL-safe comparisons.
+4. **UDFs block pushdown** — Wrapping a column in a UDF (`my_udf(col) = 1`) prevents Catalyst from pushing the predicate to the scan layer.
+5. **Order of operations** — `WHERE` runs before `GROUP BY`; `HAVING` runs after. Putting selective predicates in `WHERE` reduces the rows reaching the aggregation stage.
+
+---
+
+## :material-flask-outline: Quick Examples
 
 ```sql
-SELECT customer_id, SUM(amount) AS total_spend
+-- 1. WHERE row filter
+SELECT order_id, amount
 FROM orders
-GROUP BY customer_id
+WHERE region = 'US' AND amount > 500;
+-- Result:
+-- order_id | amount
+-- ---------|-------
+-- 1        | 1200.00
+-- 6        | 1500.00
+```
+
+```sql
+-- 2. HAVING post-aggregate filter
+SELECT region, SUM(amount) AS total
+FROM orders
+GROUP BY region
 HAVING SUM(amount) > 1000;
+-- Result:
+-- region | total
+-- -------|-------
+-- US     | 3150.00
+-- EU     | 2500.00
 ```
 
-### FILTER Clause (Per-Aggregate)
-
 ```sql
+-- 3. FILTER conditional aggregate
 SELECT
-  COUNT(*) AS total_orders,
-  COUNT(*) FILTER (WHERE status = 'shipped') AS shipped_orders
+    region,
+    SUM(amount) FILTER (WHERE status = 'shipped') AS shipped_total
+FROM orders
+GROUP BY region;
+-- Result:
+-- region | shipped_total
+-- -------|-------------
+-- US     | 1650.00
+-- EU     | 600.00
+-- APAC   | 300.00
+```
+
+```sql
+-- 4. CASE WHEN value derivation
+SELECT order_id,
+    CASE
+        WHEN amount >= 1000 THEN 'high'
+        WHEN amount >= 500  THEN 'medium'
+        ELSE 'low'
+    END AS tier
 FROM orders;
+-- Result:
+-- order_id | tier
+-- ---------|------
+-- 1        | high
+-- 2        | medium
+-- 3        | low
 ```
 
-### Subquery Filter
-
 ```sql
-SELECT * FROM orders
-WHERE customer_id IN (
-  SELECT id FROM customers WHERE country = 'US'
+-- 5. EXISTS subquery
+SELECT c.name
+FROM customers AS c
+WHERE EXISTS (
+    SELECT 1 FROM orders AS o
+    WHERE o.customer_id = c.id
 );
-```
-
-### Complex Types
-
-```sql
-SELECT * FROM events
-WHERE array_contains(tags, 'priority');
+-- Result:
+-- name
+-- -----
+-- Alice
+-- Bob
+-- Carol
+-- Dave
 ```
 
 ---
 
-## 🧠 When to Use
+## Quick Reference: WHERE vs HAVING vs FILTER vs CASE WHEN
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Filter raw rows | `WHERE` |
-| Filter aggregated results | `HAVING` |
-| Multiple conditional metrics | `FILTER` on aggregates |
-| Filter nested arrays/maps | `LATERAL VIEW` + `explode` |
-| Handle NULL equality | `<=>` or `IS NULL` |
+| Feature | WHERE | HAVING | FILTER | CASE WHEN |
+|---------|-------|--------|--------|-----------|
+| Applies to | Individual rows | Aggregated groups | Aggregate inputs | Any expression |
+| Runs after | FROM / JOIN | GROUP BY | Within SELECT | Within SELECT |
+| Removes rows? | Yes | Yes | No | No |
+| Use case | Row predicate | Group predicate | Conditional aggregation | Conditional value |
 
 ---
 
-### Related Guides
+## :material-brain: When to Use
+
+| Scenario | Recommended |
+|----------|-------------|
+| Filter rows before aggregation | `WHERE` |
+| Filter groups after aggregation | `HAVING` |
+| Compute multiple conditional aggregates in one pass | `FILTER` |
+| Derive a value based on conditions | `CASE WHEN` |
+| Check membership in a result set | `IN` / `EXISTS` subquery |
+| Handle NULLs safely | `IS NULL`, `COALESCE`, `<=>` |
+| Filter on array/map/struct columns | HOFs (`array_contains`, `exists`) |
+
+---
+
+## Related Guides
 
 - [Aggregate FILTER](agg_filter/index.md)
-- [CASE WHEN Filters](case_when.md)
-- [NULL Handling](null_filter.md)
+- [CASE WHEN](case_when.md)
+- [NULL Filter](null_filter.md)
 - [Predicate Pushdown](pp.md)
-- [Subquery Filters](sub-query.md)
-- [Complex Type Filters](complex/array.md)
+- [Subquery Filter](sub-query.md)
+- [Array Filters](complex/array.md)
+- [Map Filters](complex/map.md)
+- [Struct Filters](complex/struct.md)
+- [LATERAL VIEW](complex/lateral_view.md)

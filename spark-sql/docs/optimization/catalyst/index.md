@@ -21,7 +21,7 @@ graph LR
 
 ---
 
-## 📌 Stages
+## :material-pin: Stages
 
 | Stage | Description |
 |-------|-------------|
@@ -31,7 +31,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 EXPLAIN FORMATTED SELECT * FROM orders WHERE amount > 100;
@@ -39,7 +39,7 @@ EXPLAIN FORMATTED SELECT * FROM orders WHERE amount > 100;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

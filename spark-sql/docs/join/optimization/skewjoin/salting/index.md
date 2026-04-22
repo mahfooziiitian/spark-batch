@@ -18,7 +18,7 @@ graph LR
 
 ---
 
-## 🚩 The Problem: Skewed Joins
+## :material-flag: The Problem: Skewed Joins
 
 Suppose you want to join a large `transactions` table with a medium-sized `customers` table:
 
@@ -33,7 +33,7 @@ If `customer_id = 12345` appears **50 million times** (while others appear ~1,00
 
 ---
 
-## 💡 Salting Techniques in Spark SQL
+## :material-lightbulb-outline: Salting Techniques in Spark SQL
 
 ### 1. **Random Salting (Basic Hash Salting)**
 
@@ -140,7 +140,7 @@ JOIN expanded_cust ec
 
 ---
 
-## 📝 Summary Table
+## :material-pencil-outline: Summary Table
 
 | Technique           | Use Case              | Pros                   | Cons                        |
 |---------------------|----------------------|------------------------|-----------------------------|
@@ -151,7 +151,7 @@ JOIN expanded_cust ec
 
 ---
 
-## ✅ End-to-End Approach
+## :material-check-circle-outline: End-to-End Approach
 
 1. **Detect skewed keys:**  
 

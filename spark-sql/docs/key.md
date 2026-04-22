@@ -4,7 +4,7 @@ Keys uniquely identify rows and define relationships between tables.
 
 ---
 
-## 📌 Common Key Types
+## :material-pin: Common Key Types
 
 | Key Type | Description |
 |----------|-------------|
@@ -15,7 +15,7 @@ Keys uniquely identify rows and define relationships between tables.
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE TABLE customers (
@@ -26,7 +26,7 @@ CREATE TABLE customers (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

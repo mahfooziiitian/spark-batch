@@ -26,7 +26,7 @@ It acts as a layer that manages:
 3. Uses in-memory columnar storage
 4. Ensures that cached data remains consistent with Spark's query plan
 
-## 🧱 Components Behind the Scenes
+## :material-toy-brick: Components Behind the Scenes
 
 Component                 | Role
 --------------------------|--------------------------------------------------

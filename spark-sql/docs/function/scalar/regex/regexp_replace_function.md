@@ -12,7 +12,7 @@ graph LR
     C -->|No| E[NULL / Original]
 ```
 
-## 📌 :material-regex: Syntax
+## :material-pin: :material-regex: Syntax
 
 ```sql
 regexp_replace(str, regexp, rep[, position])
@@ -24,13 +24,13 @@ regexp_replace(str, regexp, rep[, position])
 - `position` (optional): Starting position for replacement (1-based)
 - Returns: `STRING`
 
-## 🔍 :material-regex: Behavior
+## :material-magnify: :material-regex: Behavior
 
 1. Replaces **all** occurrences of the pattern (not just the first).
 2. Supports backreferences in the replacement string (`$1` for first capturing group).
 3. If `position` is specified, characters before that position are left unchanged.
 
-## 🧪 :material-regex: Practical Examples
+## :material-flask-outline: :material-regex: Practical Examples
 
 ### Basic Replacement
 
@@ -67,7 +67,7 @@ SELECT regexp_replace('too    many   spaces', '\\s+', ' ');
 -- Result: 'too many spaces'
 ```
 
-## 🧠 :material-regex: regexp_replace vs translate
+## :material-brain: :material-regex: regexp_replace vs translate
 
 | Function | Pattern Type | Scope |
 |----------|-------------|-------|

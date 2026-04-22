@@ -6,7 +6,7 @@ Parquet tables do not support row-level deletes.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 DELETE FROM table_name
@@ -19,7 +19,7 @@ DELETE FROM table_name
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **File rewrite** — Delta does not delete individual rows in-place. Instead it
    rewrites the affected data files without the deleted rows and updates the
@@ -35,7 +35,7 @@ DELETE FROM table_name
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Delete by Condition
 
@@ -88,13 +88,13 @@ WHERE event_date = '2024-01-15'
 
 | Operation | Rows Removed | Table Remains | Transaction Log | Time Travel |
 |-----------|:------------:|:-------------:|:---------------:|:-----------:|
-| `DELETE FROM t` (no WHERE) | All | ✅ | ✅ Entry added | ✅ |
-| `TRUNCATE TABLE t` | All | ✅ | ❌ Resets | ❌ |
-| `DROP TABLE t` | All | ❌ | ❌ Removed | ❌ |
+| `DELETE FROM t` (no WHERE) | All | :material-check-circle-outline: | :material-check-circle-outline: Entry added | :material-check-circle-outline: |
+| `TRUNCATE TABLE t` | All | :material-check-circle-outline: | :material-close-circle-outline: Resets | :material-close-circle-outline: |
+| `DROP TABLE t` | All | :material-close-circle-outline: | :material-close-circle-outline: Removed | :material-close-circle-outline: |
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

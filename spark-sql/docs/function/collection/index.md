@@ -11,7 +11,7 @@ graph LR
     B --> C[Array / Map / Struct]
 ```
 
-## 📌 Function Reference
+## :material-pin: Function Reference
 
 ### Array Functions
 
@@ -73,7 +73,7 @@ graph LR
 | `COLLECT_SET(expr)` | Aggregate into array (distinct) |
 | `ARRAY_AGG(expr)` | Alias for `COLLECT_LIST` |
 
-## 🧠 Choosing the Right Type
+## :material-brain: Choosing the Right Type
 
 | Need | Type | Why |
 |------|------|-----|

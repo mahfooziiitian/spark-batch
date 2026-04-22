@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 📌 Quick Reference
+## :material-pin: Quick Reference
 
 | Technique | Use Case | Key Function |
 |-----------|----------|-------------|
@@ -32,7 +32,7 @@ graph LR
 
 ---
 
-## 🔍 Examples
+## :material-magnify: Examples
 
 ### Year-to-Date Aggregation
 
@@ -124,7 +124,7 @@ Divide each hour into 15-minute interval buckets.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

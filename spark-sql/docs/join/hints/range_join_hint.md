@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 🚀 Enabling Range Join with Hints
+## :material-rocket-launch: Enabling Range Join with Hints
 
 Use the `RANGE_JOIN` hint to instruct the optimizer to use a range join strategy. Specify the target table and an appropriate bin size for partitioning.
 
@@ -44,7 +44,7 @@ JOIN c ON a.ts BETWEEN c.start_time AND c.end_time;
 
 ---
 
-## ⚙️ Configuration
+## :material-cog-outline:️ Configuration
 
 Set the bin size for range joins to control partitioning granularity:
 
@@ -54,7 +54,7 @@ SET spark.databricks.optimizer.rangeJoin.binSize = 5;
 
 ---
 
-## 📊 Analyzing Range Distribution
+## :material-chart-bar: Analyzing Range Distribution
 
 Estimate the distribution of range widths using `APPROX_PERCENTILE`:
 

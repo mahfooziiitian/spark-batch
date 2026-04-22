@@ -10,7 +10,7 @@ graph LR
     B --> C[Hash Output]
 ```
 
-## 📌 :material-shield-lock: Syntax
+## :material-pin: :material-shield-lock: Syntax
 
 ```sql
 hex(expr)
@@ -20,14 +20,14 @@ unhex(hex_str)
 - `hex(expr)`: Accepts `STRING`, `BINARY`, or `BIGINT`; returns hex-encoded `STRING`
 - `unhex(hex_str)`: Accepts hex `STRING`; returns `BINARY`
 
-## 🔍 :material-shield-lock: Behavior
+## :material-magnify: :material-shield-lock: Behavior
 
 1. **String input**: each character is converted to its 2-digit hex ASCII code.
 2. **Numeric input**: the number is converted to its hexadecimal representation.
 3. `unhex` reverses hex encoding — returns raw bytes (cast to `STRING` for text).
 4. `unhex` returns NULL for invalid hex strings.
 
-## 🧪 :material-shield-lock: Practical Examples
+## :material-flask-outline: :material-shield-lock: Practical Examples
 
 ### Encode String to Hex
 
@@ -64,7 +64,7 @@ SELECT hex(CAST('Hello' AS BINARY)) AS binary_hex;
 -- Result: '48656C6C6F'
 ```
 
-## 🧠 :material-shield-lock: When to Use
+## :material-brain: :material-shield-lock: When to Use
 
 | Scenario | Function |
 |----------|----------|

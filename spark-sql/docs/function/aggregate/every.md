@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 every(expr)
@@ -23,14 +23,14 @@ bool_and(expr)
 - Returns `false` if any value is false
 - NULL values are ignored (unless all values are NULL, then returns NULL)
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Evaluates to `true` when every non-NULL value in the group is `true`.
 2. Evaluates to `false` if any value is `false`.
 3. NULL values are skipped during evaluation.
 4. `every` and `bool_and` are aliases — they behave identically.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### All True
 
@@ -80,7 +80,7 @@ SELECT some(col) FROM VALUES (false), (true), (false) AS tab(col);
 -- Result: true
 ```
 
-## 🧠 every vs some
+## :material-brain: every vs some
 
 | Function | Returns true when | Alias |
 |----------|------------------|-------|

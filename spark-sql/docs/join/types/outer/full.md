@@ -1,4 +1,4 @@
-# :material-set-all: 🌐 Full Outer Join
+# :material-set-all: :material-web: Full Outer Join
 
 A **Full Outer Join** returns **all rows** from both tables:
 
@@ -20,7 +20,7 @@ graph LR
 
 ---
 
-## 📋 Example
+## :material-clipboard-list-outline: Example
 
 ```sql
 SELECT
@@ -35,7 +35,7 @@ ON
 
 ---
 
-## 📝 Result Explained
+## :material-pencil-outline: Result Explained
 
 - **All employees** are included, even if they don't belong to a department.
 - **All departments** are included, even if they have no employees.
@@ -43,7 +43,7 @@ ON
 
 ---
 
-## 🖼️ Visual Representation
+## :material-image-frame:️ Visual Representation
 
 | employees.dept_no | employees.name | departments.id | departments.name |
 |:-----------------:|:--------------|:--------------:|:----------------|
@@ -53,7 +53,7 @@ ON
 
 ---
 
-## 💡 Real-World Use Cases
+## :material-lightbulb-outline: Real-World Use Cases
 
 - **Customers vs Orders:** Find customers with and without orders, and orders without matching customers.
 - **Employees vs Departments:** List all employees and departments, even if some are unassigned or empty.
@@ -61,7 +61,7 @@ ON
 
 ---
 
-## ⚡ Performance Notes
+## :material-lightning-bolt: Performance Notes
 
 - A full outer join **shuffles both datasets** (like a sort-merge join).
 - Can be **expensive** for very large datasets.
@@ -69,7 +69,7 @@ ON
 
 ---
 
-## 🎯 Diagram
+## :material-target: Diagram
 
 ```mermaid
 flowchart TD

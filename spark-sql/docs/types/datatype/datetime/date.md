@@ -2,7 +2,7 @@
 
 The `DATE` type represents a calendar date (year, month, day) without a time component.
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 -- Literal
@@ -13,22 +13,22 @@ CAST('2024-01-15' AS DATE)
 TO_DATE('15/01/2024', 'dd/MM/yyyy')
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Stored as the number of days since `1970-01-01` (epoch).
 2. Valid range: `0001-01-01` to `9999-12-31`.
 3. No time component — comparisons are date-only.
 4. Supports arithmetic with `INTERVAL` types.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Current Date
+### :material-toy-brick: 1. Current Date
 
 ```sql
 SELECT CURRENT_DATE() AS today;
 ```
 
-### 🧱 2. Date Arithmetic
+### :material-toy-brick: 2. Date Arithmetic
 
 ```sql
 SELECT DATE '2024-01-15' + INTERVAL '30' DAY AS future;
@@ -38,7 +38,7 @@ SELECT DATE '2024-03-01' - INTERVAL '1' MONTH AS past;
 -- Result: 2024-02-01
 ```
 
-### 🧱 3. Difference Between Dates
+### :material-toy-brick: 3. Difference Between Dates
 
 ```sql
 SELECT DATEDIFF(DATE '2024-12-31', DATE '2024-01-01') AS days;
@@ -48,7 +48,7 @@ SELECT MONTHS_BETWEEN(DATE '2024-06-15', DATE '2024-01-15') AS months;
 -- Result: 5.0
 ```
 
-### 🧱 4. Extract Components
+### :material-toy-brick: 4. Extract Components
 
 ```sql
 SELECT
@@ -60,7 +60,7 @@ SELECT
 -- yr=2024, mo=7, dy=15, dow=2 (Monday), qtr=3
 ```
 
-### 🧱 5. Date Truncation
+### :material-toy-brick: 5. Date Truncation
 
 ```sql
 SELECT DATE_TRUNC('MONTH', DATE '2024-07-15') AS first_of_month;
@@ -70,14 +70,14 @@ SELECT DATE_TRUNC('YEAR', DATE '2024-07-15') AS first_of_year;
 -- Result: 2024-01-01
 ```
 
-### 🧱 6. Generate Date Ranges
+### :material-toy-brick: 6. Generate Date Ranges
 
 ```sql
 SELECT EXPLODE(SEQUENCE(DATE '2024-01-01', DATE '2024-01-05')) AS day;
 -- 2024-01-01, 2024-01-02, ..., 2024-01-05
 ```
 
-## 🧠 Common Functions
+## :material-brain: Common Functions
 
 | Function | Description |
 |----------|-------------|

@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Syntax — Enable Hive Support
+## :material-pin: Syntax — Enable Hive Support
 
 === "Python"
 
@@ -53,7 +53,7 @@ graph LR
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 ### HiveContext vs SparkSession
 
@@ -63,7 +63,7 @@ graph LR
 | Hive support | Built-in | `.enableHiveSupport()` |
 | SQL dialect | HiveQL | SQL + HiveQL subset |
 | Metastore | Embedded Derby / Remote | Embedded Derby / Remote |
-| Status | **Deprecated** | ✅ Recommended |
+| Status | **Deprecated** | :material-check-circle-outline: Recommended |
 | UDF support | Yes | Yes |
 | DataFrames | Yes | Yes |
 
@@ -82,7 +82,7 @@ graph LR
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### List databases and tables
 
@@ -124,7 +124,7 @@ df.show()
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

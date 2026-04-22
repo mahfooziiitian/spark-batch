@@ -16,14 +16,14 @@ graph LR
 
 ---
 
-## 📌 Common Symptoms
+## :material-pin: Common Symptoms
 
 - `AnalysisException: Reference 'id' is ambiguous`
 - Unexpected values after `SELECT *`
 
 ---
 
-## 🧪 Practical Fixes
+## :material-flask-outline: Practical Fixes
 
 ### 1) Use Table Aliases
 
@@ -56,7 +56,7 @@ JOIN c ON o.customer_id = c.customer_id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

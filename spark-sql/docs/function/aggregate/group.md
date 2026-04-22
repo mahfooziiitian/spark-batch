@@ -12,7 +12,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 GROUPING(column)
@@ -22,13 +22,13 @@ GROUPING_ID([column1, column2, ...])
 - `GROUPING(col)`: Returns `1` if `col` is aggregated (NULL due to rollup), `0` if it's a real group value
 - `GROUPING_ID()`: Returns a bitmask integer representing which columns are aggregated
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. `GROUPING(col)` returns `1` when the column is at a super-aggregate level (i.e., the NULL represents "all values").
 2. `GROUPING_ID()` encodes the grouping state of multiple columns into a single integer using binary representation.
 3. These functions are **only valid** inside `GROUP BY CUBE`, `ROLLUP`, or `GROUPING SETS`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### GROUPING — Identify Super-Aggregate Rows
 
@@ -88,7 +88,7 @@ AS employees(department, role, salary)
 GROUP BY CUBE(department, role);
 ```
 
-## 🧠 GROUPING_ID Bitmask Reference
+## :material-brain: GROUPING_ID Bitmask Reference
 
 | GROUPING_ID(A, B) | A grouped? | B grouped? | Level |
 |--------------------|-----------|-----------|-------|

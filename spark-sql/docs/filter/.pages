@@ -1,8 +1,9 @@
+title: Filter
 nav:
   - index.md
-  - Σ Aggregate Filter: agg_filter
-  - 🔀 CASE WHEN: case_when.md
-  - ∅ NULL Filter: null_filter.md
-  - ⬇️ Predicate Pushdown: pp.md
-  - 📦 Subquery Filter: sub-query.md
-  - 🗂️ Complex Types: complex
+  - Aggregate Filter: agg_filter
+  - CASE WHEN: case_when.md
+  - NULL Filter: null_filter.md
+  - Predicate Pushdown: pp.md
+  - Subquery Filter: sub-query.md
+  - Complex Types: complex

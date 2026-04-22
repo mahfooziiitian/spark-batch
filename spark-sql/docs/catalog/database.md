@@ -4,7 +4,7 @@ Databases (schemas) are logical namespaces that group tables and views.
 
 ---
 
-## 📌 Common Commands
+## :material-pin: Common Commands
 
 ```sql
 SHOW DATABASES;
@@ -14,7 +14,7 @@ USE analytics;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. `DATABASE` and `SCHEMA` are interchangeable in Spark SQL.
 2. `USE` changes the current database context.
@@ -22,7 +22,7 @@ USE analytics;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

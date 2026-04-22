@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 📌 Causes of Shuffle
+## :material-pin: Causes of Shuffle
 
 - Joins on non-partitioned keys
 - `GROUP BY` on high-cardinality columns
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT customer_id, SUM(amount)
@@ -35,7 +35,7 @@ GROUP BY customer_id;
 
 ---
 
-## 🧠 When to Optimize
+## :material-brain: When to Optimize
 
 | Scenario | Recommendation |
 |----------|----------------|

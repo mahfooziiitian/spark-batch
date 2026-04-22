@@ -13,7 +13,7 @@ graph LR
 
 ---
 
-## 📌 :material-shield-lock: Common Functions
+## :material-pin: :material-shield-lock: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🧪 :material-shield-lock: Example
+## :material-flask-outline: :material-shield-lock: Example
 
 ```sql
 SELECT SHA2(email, 256) AS email_hash FROM users;
@@ -33,7 +33,7 @@ SELECT SHA2(email, 256) AS email_hash FROM users;
 
 ---
 
-## 🧠 :material-shield-lock: When to Use
+## :material-brain: :material-shield-lock: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

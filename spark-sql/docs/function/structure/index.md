@@ -13,7 +13,7 @@ graph LR
     C --> D[Field Access]
 ```
 
-## 📌 Functions by Format
+## :material-pin: Functions by Format
 
 ### JSON
 
@@ -48,7 +48,7 @@ graph LR
 | `XPATH_FLOAT(xml, xpath)` | Extract | Extract float value |
 | `XPATH_SHORT(xml, xpath)` | Extract | Extract short value |
 
-## 🧪 Quick Examples
+## :material-flask-outline: Quick Examples
 
 ```sql
 -- Parse JSON into a struct
@@ -70,7 +70,7 @@ SELECT TO_CSV(NAMED_STRUCT('name', 'Alice', 'age', 30)) AS csv_str;
 SELECT XPATH_STRING('<root><name>Spark</name></root>', '/root/name') AS val;
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function |
 |----------|----------|

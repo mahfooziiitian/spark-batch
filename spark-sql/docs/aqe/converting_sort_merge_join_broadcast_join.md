@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Why It Happens
+## :material-pin: Why It Happens
 
 | Condition | Result |
 |-----------|--------|
@@ -32,7 +32,7 @@ SET spark.sql.autoBroadcastJoinThreshold = 104857600; -- 100MB
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. AQE evaluates partition sizes after shuffle.
 2. Broadcast joins are faster but require memory for the build side.
@@ -40,7 +40,7 @@ SET spark.sql.autoBroadcastJoinThreshold = 104857600; -- 100MB
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

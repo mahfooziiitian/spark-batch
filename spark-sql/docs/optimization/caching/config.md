@@ -9,7 +9,7 @@ graph LR
     C --> D[Columnar Store]
 ```
 
-## 🔧 Common SQL Caching Configurations
+## :material-wrench: Common SQL Caching Configurations
 
 Config                                       | Description                                                          | Default
 ---------------------------------------------|----------------------------------------------------------------------|------------------
@@ -20,7 +20,7 @@ spark.sql.autoBroadcastJoinThreshold         | Can interact with caching for joi
 spark.sql.cache.level                        | Set default cache storage level (since Spark 3.3+)                   | MEMORY_AND_DISK
 spark.sql.defaultSizeInBytes                 | Default size used when no stats are available                        | 1GB
 
-## ✅ How to Set Caching Configs in SQL
+## :material-check-circle-outline: How to Set Caching Configs in SQL
 
 You can set these directly in a SQL notebook or script:
 
@@ -48,7 +48,7 @@ CACHE TABLE my_view;
 3. Compression saves memory at a slight CPU cost.
 4. Storage level controls whether Spark spills to disk if memory is insufficient.
 
-## 🔍 Check Cache Status
+## :material-magnify: Check Cache Status
 You can check what’s cached:
 
 ```sql

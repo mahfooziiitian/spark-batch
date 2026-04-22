@@ -18,7 +18,7 @@ graph TD
 
 ---
 
-## 📌 Key Levers
+## :material-pin: Key Levers
 
 | Lever | Effect |
 |-------|--------|
@@ -29,7 +29,7 @@ graph TD
 
 ---
 
-## 🧪 Practical Example
+## :material-flask-outline: Practical Example
 
 ```sql
 SELECT /*+ BROADCAST(dim) */
@@ -42,7 +42,7 @@ WHERE f.order_date >= '2024-01-01';
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Spark chooses strategies automatically but hints can override.
 2. Skewed keys can cause single-task bottlenecks.

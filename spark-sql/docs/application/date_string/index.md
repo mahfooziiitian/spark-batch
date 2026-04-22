@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 Quick Reference
+## :material-pin: Quick Reference
 
 | Technique | Use Case | Key Function |
 |-----------|----------|-------------|
@@ -27,7 +27,7 @@ graph LR
 
 ---
 
-## 🔍 Examples
+## :material-magnify: Examples
 
 ### Reading Date Strings
 
@@ -39,7 +39,7 @@ Parse varchar date columns and format them for downstream use.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

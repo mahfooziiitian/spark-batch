@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 APPROX_COUNT_DISTINCT(expr [, rsd])
@@ -27,7 +27,7 @@ APPROX_COUNT_DISTINCT(expr [, rsd])
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **HyperLogLog algorithm** — uses a probabilistic data structure that trades perfect accuracy for dramatically reduced memory usage; memory scales with `1 / rsd²` not with cardinality.
 2. **`rsd` accuracy** — the default `0.05` means results are within roughly ±5% of the true count with high probability; setting `rsd = 0.01` gives ±1% accuracy at higher memory cost.
@@ -38,7 +38,7 @@ APPROX_COUNT_DISTINCT(expr [, rsd])
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -136,7 +136,7 @@ ORDER BY event_date;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

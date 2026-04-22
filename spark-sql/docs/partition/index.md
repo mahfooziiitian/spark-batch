@@ -17,7 +17,7 @@ graph TD
 
 ---
 
-## 📌 Key Concepts
+## :material-pin: Key Concepts
 
 | Concept | Description |
 |---------|-------------|
@@ -27,7 +27,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE TABLE sales (
@@ -40,7 +40,7 @@ PARTITIONED BY (order_date);
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

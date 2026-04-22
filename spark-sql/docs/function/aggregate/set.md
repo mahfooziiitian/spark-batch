@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 collect_set(expr)
@@ -22,14 +22,14 @@ collect_set(expr)
 - Excludes NULLs
 - Non-deterministic ordering
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Aggregates all **distinct** non-NULL values from the group into an array.
 2. Duplicates are **removed** (unlike `collect_list`).
 3. NULLs are excluded from the result.
 4. The order of elements is non-deterministic.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Basic Collection
 
@@ -72,7 +72,7 @@ FROM visits;
 -- Result: 3
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function |
 |----------|----------|

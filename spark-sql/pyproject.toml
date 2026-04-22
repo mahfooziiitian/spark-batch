@@ -1,34 +1,43 @@
 [project]
 name = "spark-sql"
 version = "0.1.0"
-description = "Add your description here"
+description = "Spark SQL reference examples and PySpark utilities targeting Databricks Runtime / Spark 3.5"
 readme = "README.md"
 requires-python = ">=3.11"
 
 dependencies = [
     "graphviz>=0.21",
     "ipykernel>=6.30.0",
-    "pyspark<4.0.0,>=3.4.0",
+    "pyspark>=3.5.0,<4.0.0",
     "sqlalchemy>=2.0.43",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/*"]
 
 [dependency-groups]
 dev = [
     # Code quality
     "black[jupyter]>=25.1.0",
-    "isort>=6.0.1",
-    "mypy>=1.17.1",
-    "ruff>=0.12.8",
-    "flake8-pyproject>=1.2.3",
+    "isort>=8.0.1",
+    "mypy>=1.20.2",
+    "ruff>=0.15.11",
+    "flake8-pyproject>=1.2.4",
     "radon>=6.0.1",
     "sqlfluff>=4.0.4",
     # Testing
     "pytest-sugar>=1.0.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
+    "pytest-html>=4.1.1",
+    "pytest-json-report>=1.5.0",
     "ipytest>=0.14.2",
     "pytest-datadir>=1.8.0",
-    "pytest==8.4.1",
+    "pytest>=8.4.1",
     "chispa>=0.11.1",
     # Security
     "bandit>=1.8.6",
@@ -39,6 +48,7 @@ dev = [
     "mkdocs>=1.6.0,<2",
     "mkdocs-material>=9.7.4,<10",
     "mkdocs-awesome-pages-plugin>=2.10.1",
+    "mkdocs-include-markdown-plugin>=6.0.0",
     "pymarkdownlnt>=0.9.36",
     "mkdocs-mermaid2-plugin>=1.2.3",
     "pytest-xdist>=3.8.0",
@@ -69,6 +79,10 @@ minversion = "6.0"
 addopts = "-ra -q"
 pythonpath = ["src"]
 testpaths = ["tests", "integration"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
 markers = [
     "login: mark test as login related",
     "signup: mark test as signup related",
@@ -85,15 +99,30 @@ markers = [
 
 [tool.coverage.run]
 branch = true
+source = ["src"]
+omit = ["tests/*", "integration/*", ".venv/*", "*/migrations/*"]
 
 [tool.coverage.report]
 ignore_errors = true
+show_missing = true
+fail_under = 60
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
 
 [tool.coverage.html]
 directory = "htmlcov"
 
 [tool.mypy]
+python_version = "3.11"
 ignore_missing_imports = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_optional = true
 
 [tool.flake8]
 extend-ignore = "E203"
@@ -101,8 +130,16 @@ max-line-length = 128
 exclude = [".git", "__pycache__", "docs/conf.py", ".venv", "build", "dist"]
 max-complexity = 10
 
+[tool.ruff]
+line-length = 128
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E203"]
+
 [tool.bandit]
-targets = ["."]
+targets = ["src"]
 exclude_dirs = ["tests", "migrations", ".venv"]
 severity = "medium"
 confidence = "high"
@@ -121,6 +158,7 @@ lint = "uv run flake8 -v src tests"
 type_check = "uv run mypy src tests"
 format = "uv run ruff format src tests"
 format_check = "uv run ruff check src tests"
+complexity = "uv run radon cc src -a -nc"
 quality = "task import && task format && task format_check && task lint && task type_check && task sql"
 
 # Security
@@ -136,18 +174,18 @@ report_html = "uv run pytest --html=reports/reports.html --self-contained-html"
 report_xml = "uv run pytest --junitxml=reports/report.xml"
 report_json = "uv run pytest --json-report  --json-report-file=reports/report.json --cov-report=term-missing"
 report_json2 = "uv run pytest --cov-report=json:reports/report.json --cov-report=term-missing"
-report_cov_html = "uv run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing"
-report_cov_xml = "uv run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing"
-report_cov_annotate = "uv run pytest --cov=. --cov-report=annotate --cov-config=.coveragerc --cov-report=term-missing"
+report_cov_html = "uv run pytest --cov=src --cov-report=html --cov-report=term-missing"
+report_cov_xml = "uv run pytest --cov=src --cov-report=xml --cov-report=term-missing"
+report_cov_annotate = "uv run pytest --cov=src --cov-report=annotate --cov-report=term-missing"
 
 # clean up
-remove_cache = "if test -e __pycache__;then rm -rf __pycache__;fi"
-remove_pytest_cache = "if test -e .pytest_cache; then rm -rf .pytest_cache pycache__;fi"
+remove_cache = "if test -e __pycache__; then rm -rf __pycache__; fi"
+remove_pytest_cache = "if test -e .pytest_cache; then rm -rf .pytest_cache __pycache__; fi"
 remove_html_build = "if test -e site; then rm -rf site;fi"
 clean = "task remove_cache && task remove_pytest_cache && task remove_html_build"
 
 # Documentation
 lint_md = "uv run pymarkdownlnt fix -r docs README.md"
-docs_build = "uv run mkdocs build"
-docs_serve = "uv run mkdocs serve -a 0.0.0.0:8000"
+docs_build = "NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict"
+docs_serve = "uv run mkdocs serve -a 0.0.0.0:8080"
 docs = "task clean && task docs_build && task docs_serve"

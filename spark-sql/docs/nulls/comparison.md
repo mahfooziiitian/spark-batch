@@ -13,7 +13,7 @@ graph LR
 
 ---
 
-## 📌 Operators
+## :material-pin: Operators
 
 | Operator | Name | NULL behaviour |
 |----------|------|----------------|
@@ -27,7 +27,7 @@ graph LR
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 ### Three-Valued Logic
 
@@ -51,7 +51,7 @@ Because `NULL = NULL` evaluates to NULL (not TRUE), a `WHERE col = NULL` clause 
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### `>` Operator — NULL Propagation
 
@@ -121,7 +121,7 @@ JOIN person p2
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

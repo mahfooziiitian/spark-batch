@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Description | NULL Handling |
 |----------|-------------|---------------|
@@ -24,7 +24,7 @@ graph LR
 | `MAX_BY(x, y)` | Value of `x` at the row where `y` is maximum | Ignores NULLs in `y` |
 | `ANY_VALUE(expr)` | Any arbitrary value from the group | May return NULL |
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### MIN / MAX
 
@@ -87,7 +87,7 @@ GROUP BY region;
 | East | 3 | 350 | 116.67 | 50 | 200 |
 | West | 2 | 450 | 225.0 | 150 | 300 |
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Need | Function |
 |------|----------|

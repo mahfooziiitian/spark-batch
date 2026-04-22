@@ -5,7 +5,7 @@ properties. Spark exposes metadata via `DESCRIBE` and `SHOW` commands.
 
 ---
 
-## 📌 Common Commands
+## :material-pin: Common Commands
 
 ```sql
 DESCRIBE TABLE EXTENDED sales;
@@ -15,7 +15,7 @@ SHOW PARTITIONS sales;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. `DESCRIBE TABLE EXTENDED` includes provider, location, and properties.
 2. `SHOW PARTITIONS` works for partitioned tables only.
@@ -23,7 +23,7 @@ SHOW PARTITIONS sales;
 
 ---
 
-## 🧪 Practical Example
+## :material-flask-outline: Practical Example
 
 ```sql
 DESCRIBE TABLE EXTENDED orders;
@@ -31,7 +31,7 @@ DESCRIBE TABLE EXTENDED orders;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Command |
 |----------|---------|

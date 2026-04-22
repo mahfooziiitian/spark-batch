@@ -12,7 +12,7 @@ graph LR
     B --> C["SELECT name(col) FROM table"]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### Create a Macro
 
@@ -27,7 +27,7 @@ CREATE TEMPORARY MACRO macro_name(param1 TYPE, param2 TYPE, ...)
 DROP TEMPORARY MACRO [IF EXISTS] macro_name;
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Macros are **expanded inline** — the expression replaces the macro call in the query plan.
 2. **No serialization overhead** — unlike UDFs, there is no data conversion cost.
@@ -36,9 +36,9 @@ DROP TEMPORARY MACRO [IF EXISTS] macro_name;
 5. **Catalyst-optimized** — the inlined expression benefits from predicate pushdown, constant folding, etc.
 6. **No side effects** — macros are pure expressions (no state, no I/O).
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Simple Calculation
+### :material-toy-brick: 1. Simple Calculation
 
 ```sql
 CREATE TEMPORARY MACRO double_it(x INT) x * 2;
@@ -50,7 +50,7 @@ SELECT double_it(amount) FROM VALUES (10), (20), (30) AS t(amount);
 -- Result: 20, 40, 60
 ```
 
-### 🧱 2. Multi-Parameter — String Formatting
+### :material-toy-brick: 2. Multi-Parameter — String Formatting
 
 ```sql
 CREATE TEMPORARY MACRO full_name(first STRING, last STRING)
@@ -60,7 +60,7 @@ SELECT full_name('John', 'Doe');
 -- Result: 'John Doe'
 ```
 
-### 🧱 3. Business Logic — Tax Calculation
+### :material-toy-brick: 3. Business Logic — Tax Calculation
 
 ```sql
 CREATE TEMPORARY MACRO tax_amount(price DOUBLE, rate DOUBLE)
@@ -76,7 +76,7 @@ FROM VALUES ('Widget', 29.99), ('Gadget', 49.99) AS t(product, price);
 -- Gadget: tax=4.00, total=53.99
 ```
 
-### 🧱 4. Conditional Logic — Status Labeling
+### :material-toy-brick: 4. Conditional Logic — Status Labeling
 
 ```sql
 CREATE TEMPORARY MACRO status_label(code INT)
@@ -92,7 +92,7 @@ FROM VALUES (1, 1), (2, 3), (3, 99) AS t(id, status_code);
 -- (1, Active), (2, Suspended), (3, Unknown)
 ```
 
-### 🧱 5. Date Helpers
+### :material-toy-brick: 5. Date Helpers
 
 ```sql
 CREATE TEMPORARY MACRO fiscal_quarter(d DATE)
@@ -106,7 +106,7 @@ FROM VALUES (DATE '2024-01-10'), (DATE '2024-05-20'), (DATE '2024-11-01') AS t(d
 -- Q1, Q2, Q4
 ```
 
-### 🧱 6. NULL-Safe Defaults
+### :material-toy-brick: 6. NULL-Safe Defaults
 
 ```sql
 CREATE TEMPORARY MACRO safe_div(a DOUBLE, b DOUBLE)
@@ -117,7 +117,7 @@ SELECT safe_div(10.0, 0.0);   -- NULL
 SELECT safe_div(10.0, NULL);  -- NULL
 ```
 
-### 🧱 7. Composing Macros
+### :material-toy-brick: 7. Composing Macros
 
 ```sql
 CREATE TEMPORARY MACRO cents_to_dollars(c INT) ROUND(c / 100.0, 2);
@@ -127,7 +127,7 @@ SELECT with_tax(cents_to_dollars(4999), 0.08) AS total;
 -- 49.99 * 1.08 = 53.99
 ```
 
-### 🧹 Clean Up
+### :material-broom: Clean Up
 
 ```sql
 DROP TEMPORARY MACRO IF EXISTS double_it;
@@ -140,7 +140,7 @@ DROP TEMPORARY MACRO IF EXISTS cents_to_dollars;
 DROP TEMPORARY MACRO IF EXISTS with_tax;
 ```
 
-## ⚠️ Limitations
+## :material-alert:️ Limitations
 
 1. **Session-scoped only** — cannot create permanent macros; they must be recreated each session.
 2. **SQL expressions only** — no procedural logic, loops, or variable assignments.
@@ -148,13 +148,13 @@ DROP TEMPORARY MACRO IF EXISTS with_tax;
 4. **No recursion** — a macro cannot call itself.
 5. **Spark 3.0+** — not available in older Spark versions.
 
-## 🧠 Macros vs UDFs vs Views
+## :material-brain: Macros vs UDFs vs Views
 
 | Feature | SQL Macro | UDF | View |
 |---------|-----------|-----|------|
 | Expansion | Inline at compile time | Executed at runtime | Subquery at compile time |
 | Performance | Fastest (no overhead) | Slower (serialization) | Good (optimized) |
-| Parameterized | ✅ Typed parameters | ✅ Any language | ❌ No parameters |
+| Parameterized | :material-check-circle-outline: Typed parameters | :material-check-circle-outline: Any language | :material-close-circle-outline: No parameters |
 | Scope | Session only | Session or permanent | Session or permanent |
 | Language | SQL expressions | Python, Scala, Java | SQL queries |
 | Catalyst optimization | Fully optimized | Opaque to optimizer | Fully optimized |

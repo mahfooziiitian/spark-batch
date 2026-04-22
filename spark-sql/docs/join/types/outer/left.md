@@ -1,10 +1,10 @@
-# :material-set-all: 🌟 Left Outer Join in Spark SQL
+# :material-set-all: :material-star: Left Outer Join in Spark SQL
 
 A **Left Outer Join** returns:
 
-- ✅ **All rows from the left table**
-- ✅ **Matching rows from the right table**
-- ❌ **If no match:** right-side columns are filled with `NULL`
+- :material-check-circle-outline: **All rows from the left table**
+- :material-check-circle-outline: **Matching rows from the right table**
+- :material-close-circle-outline: **If no match:** right-side columns are filled with `NULL`
 
 > **In plain English:**  
 > _“Give me everything from the left side, and add matching info from the right if it exists.”_
@@ -22,7 +22,7 @@ graph LR
 
 ---
 
-## 📝 SQL Syntax in Spark
+## :material-pencil-outline: SQL Syntax in Spark
 
 ```sql
 SELECT A.*, B.*
@@ -35,7 +35,7 @@ _Short form: `LEFT JOIN`_
 
 ---
 
-## 📊 Example
+## :material-chart-bar: Example
 
 **Left Table (`Customers`)**
 
@@ -74,7 +74,7 @@ LEFT JOIN Orders o
 
 ---
 
-## ⚙️ Physical Execution in Spark
+## :material-cog-outline:️ Physical Execution in Spark
 
 - **Equi-joins** (`A.id = B.id`):  
   - Sort-Merge Join  
@@ -85,7 +85,7 @@ LEFT JOIN Orders o
 
 ---
 
-## 🌍 Real-World Use Cases
+## :material-earth: Real-World Use Cases
 
 - **Customers vs Orders:** Keep all customers, even those without orders.
 - **Employees vs Departments:** Show employees, even if some aren’t assigned.
@@ -94,7 +94,7 @@ LEFT JOIN Orders o
 
 ---
 
-## 🚀 Performance Considerations
+## :material-rocket-launch: Performance Considerations
 
 - **Broadcast Join Optimization:**  
   If the right table is small (dimension/lookup), broadcast it:
@@ -111,7 +111,7 @@ LEFT JOIN Orders o
 
 ---
 
-## 🎨 Diagram (Venn Style)
+## :material-palette: Diagram (Venn Style)
 
 ```mermaid
 flowchart TD
@@ -129,17 +129,17 @@ classDef result fill:#caffbf,stroke:#000,stroke-width:2px;
 
 ---
 
-## 🔎 Quick Comparison
+## :material-magnify: Quick Comparison
 
 | Join Type   | Keeps All Left? | Keeps All Right? | Keeps Matches? |
 |-------------|:---------------:|:----------------:|:--------------:|
-| Inner Join  | ❌              | ❌               | ✅             |
-| Left Join   | ✅              | ❌               | ✅             |
-| Right Join  | ❌              | ✅               | ✅             |
-| Full Join   | ✅              | ✅               | ✅             |
+| Inner Join  | :material-close-circle-outline:              | :material-close-circle-outline:               | :material-check-circle-outline:             |
+| Left Join   | :material-check-circle-outline:              | :material-close-circle-outline:               | :material-check-circle-outline:             |
+| Right Join  | :material-close-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:             |
+| Full Join   | :material-check-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:             |
 
 ---
 
-## ✅ Summary
+## :material-check-circle-outline: Summary
 
 A **Left Outer Join** is best when your left table is the main dataset you don’t want to lose rows from, but you only enrich it with data from the right side if it exists.

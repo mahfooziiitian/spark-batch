@@ -4,7 +4,7 @@ Spark SQL provides a suite of statistical aggregate functions for measuring disp
 
 ---
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Syntax | Description |
 |----------|--------|-------------|
@@ -22,7 +22,7 @@ Spark SQL provides a suite of statistical aggregate functions for measuring disp
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Sample vs population** — `STDDEV` / `VARIANCE` divide by `n − 1` (Bessel's correction for a sample); `STDDEV_POP` / `VAR_POP` divide by `n`. Use sample variants when working with a subset drawn from a larger population.
 2. **NULL handling** — all statistical functions ignore `NULL` values; if every input is `NULL` the result is `NULL`.
@@ -33,7 +33,7 @@ Spark SQL provides a suite of statistical aggregate functions for measuring disp
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -143,7 +143,7 @@ ORDER BY region;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Function |
 |----------|---------------------|

@@ -12,7 +12,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Available Functions
+## :material-pin: Available Functions
 
 | Function | Description | NULL Handling |
 |----------|-------------|--------------|
@@ -35,7 +35,7 @@ graph LR
 | `COVAR_SAMP(expr1, expr2)` | Sample covariance | Skips NULLs |
 | `COVAR_POP(expr1, expr2)` | Population covariance | Skips NULLs |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. All statistical functions **skip NULLs** — NULLs are excluded from computation.
 2. If all values are NULL, the result is `NULL`.
@@ -45,9 +45,9 @@ graph LR
 6. `PERCENTILE` uses linear interpolation for fractional percentiles.
 7. `MIN_BY` / `MAX_BY` return the value of the first expression at the row where the second expression is minimized / maximized.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. AVG / MEAN — Arithmetic Mean
+### :material-toy-brick: 1. AVG / MEAN — Arithmetic Mean
 
 ```sql
 SELECT AVG(col) FROM VALUES (1), (2), (3) AS tab(col);
@@ -58,7 +58,7 @@ SELECT AVG(col) FROM VALUES (1), (2), (NULL) AS tab(col);
 -- Result: 1.5  (sum=3, count=2)
 ```
 
-### 🧱 2. MEDIAN — Middle Value
+### :material-toy-brick: 2. MEDIAN — Middle Value
 
 ```sql
 SELECT MEDIAN(col) FROM VALUES (0), (10) AS tab(col);
@@ -72,7 +72,7 @@ SELECT MEDIAN(col) FROM VALUES (INTERVAL '0' MONTH), (INTERVAL '10' MONTH) AS ta
 -- Result: INTERVAL '5' MONTH
 ```
 
-### 🧱 3. MODE — Most Frequent Value
+### :material-toy-brick: 3. MODE — Most Frequent Value
 
 ```sql
 SELECT MODE(col) FROM VALUES (0), (10), (10) AS tab(col);
@@ -88,7 +88,7 @@ FROM VALUES (INTERVAL '0' MONTH), (INTERVAL '10' MONTH), (INTERVAL '10' MONTH) A
 -- Result: INTERVAL '10' MONTH
 ```
 
-### 🧱 4. PERCENTILE — Value at Percentile
+### :material-toy-brick: 4. PERCENTILE — Value at Percentile
 
 ```sql
 -- Single percentile
@@ -105,14 +105,14 @@ FROM VALUES (INTERVAL '0' SECOND), (INTERVAL '10' SECOND) AS tab(col);
 -- Result: INTERVAL '5' SECOND
 ```
 
-### 🧱 5. MIN / MAX — Extremes
+### :material-toy-brick: 5. MIN / MAX — Extremes
 
 ```sql
 SELECT MIN(col), MAX(col) FROM VALUES (10), (-1), (20) AS tab(col);
 -- Result: -1, 20
 ```
 
-### 🧱 6. MIN_BY / MAX_BY — Value at Extreme
+### :material-toy-brick: 6. MIN_BY / MAX_BY — Value at Extreme
 
 ```sql
 -- Which name has the lowest score?
@@ -126,7 +126,7 @@ FROM VALUES ('Alice', 90), ('Bob', 50), ('Charlie', 80) AS tab(name, score);
 -- Result: Alice
 ```
 
-### 🧱 7. Standard Deviation & Variance
+### :material-toy-brick: 7. Standard Deviation & Variance
 
 ```sql
 SELECT
@@ -138,7 +138,7 @@ FROM VALUES (2), (4), (4), (4), (5), (5), (7), (9) AS tab(col);
 -- sample_stddev=2.14, pop_stddev=2.0, sample_var=4.57, pop_var=4.0
 ```
 
-### 🧱 8. Correlation & Covariance
+### :material-toy-brick: 8. Correlation & Covariance
 
 ```sql
 SELECT
@@ -149,7 +149,7 @@ FROM VALUES (1, 10), (2, 20), (3, 30), (4, 40) AS tab(x, y);
 -- correlation=1.0, sample_cov=16.67, pop_cov=12.5
 ```
 
-### 🧱 9. Skewness & Kurtosis
+### :material-toy-brick: 9. Skewness & Kurtosis
 
 ```sql
 SELECT
@@ -159,7 +159,7 @@ FROM VALUES (1), (2), (2), (3), (3), (3), (4) AS tab(col);
 -- skew and kurtosis of the distribution
 ```
 
-### 🧱 10. Grouped Statistics
+### :material-toy-brick: 10. Grouped Statistics
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales AS
@@ -180,7 +180,7 @@ GROUP BY region;
 -- West: avg=317, median=300, min=250, max=400, stddev=76.4
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function(s) |
 |----------|------------|

@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 :material-regex: Syntax
+## :material-pin: :material-regex: Syntax
 
 ```sql
 REGEXP_EXTRACT(str, pattern, idx)
@@ -22,7 +22,7 @@ REGEXP_EXTRACT(str, pattern, idx)
 
 ---
 
-## 🔍 :material-regex: Behavior
+## :material-magnify: :material-regex: Behavior
 
 1. `idx` is the capture group index (0 = full match).
 2. Returns empty string when there is no match.
@@ -30,7 +30,7 @@ REGEXP_EXTRACT(str, pattern, idx)
 
 ---
 
-## 🧪 :material-regex: Example
+## :material-flask-outline: :material-regex: Example
 
 ```sql
 SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
@@ -38,7 +38,7 @@ SELECT REGEXP_EXTRACT('abc-123', '([a-z]+)-(\d+)', 2) AS num;
 
 ---
 
-## 🧠 :material-regex: When to Use
+## :material-brain: :material-regex: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

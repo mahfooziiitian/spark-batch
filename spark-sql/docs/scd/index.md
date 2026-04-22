@@ -17,7 +17,7 @@ graph TD
 
 ---
 
-## 📌 SCD Types
+## :material-pin: SCD Types
 
 | Type | Description |
 |------|-------------|
@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 🧪 Example (Type 2)
+## :material-flask-outline: Example (Type 2)
 
 ```sql
 INSERT INTO dim_customer
@@ -41,7 +41,7 @@ FROM staging_customer;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | SCD Type |
 |----------|----------|

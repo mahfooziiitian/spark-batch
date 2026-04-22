@@ -3,7 +3,7 @@
 Spark SQL can read files directly in SQL queries using the file format as a table name,
 without needing to create a table or DataFrame first.
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT * FROM format.`path`
@@ -17,7 +17,7 @@ SELECT * FROM format.`path`
 | ORC | `SELECT * FROM orc.\`/path/to/file.orc\`` |
 | Text | `SELECT * FROM text.\`/path/to/file.txt\`` |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. The format name acts as a **virtual table** backed by the file.
 2. Schema is **inferred** from the file (Parquet/ORC have embedded schema; CSV/JSON inferred).
@@ -25,15 +25,15 @@ SELECT * FROM format.`path`
 4. Supports directory paths: reads all files in the directory.
 5. Read-only — cannot INSERT into file-based references.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Read Parquet Directly
+### :material-toy-brick: 1. Read Parquet Directly
 
 ```sql
 SELECT * FROM parquet.`/data/sales/2024/`;
 ```
 
-### 🧱 2. Read CSV with Schema
+### :material-toy-brick: 2. Read CSV with Schema
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales
@@ -48,7 +48,7 @@ OPTIONS (
 SELECT * FROM sales WHERE amount > 100;
 ```
 
-### 🧱 3. Read JSON
+### :material-toy-brick: 3. Read JSON
 
 ```sql
 SELECT * FROM json.`/data/events.json`;
@@ -62,13 +62,13 @@ OPTIONS (
 );
 ```
 
-### 🧱 4. Read with Glob Pattern
+### :material-toy-brick: 4. Read with Glob Pattern
 
 ```sql
 SELECT * FROM parquet.`/data/logs/2024-01-*`;
 ```
 
-### 🧱 5. Create Temp View from File
+### :material-toy-brick: 5. Create Temp View from File
 
 ```sql
 CREATE OR REPLACE TEMPORARY VIEW customers
@@ -78,7 +78,7 @@ OPTIONS (path '/data/customers.parquet');
 SELECT * FROM customers WHERE country = 'US';
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Approach |
 |----------|----------|

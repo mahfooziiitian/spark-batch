@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 :material-regex: Syntax
+## :material-pin: :material-regex: Syntax
 
 ```sql
 REGEXP_COUNT(str, pattern)
@@ -25,7 +25,7 @@ REGEXP_COUNT(str, pattern, position, match_type)
 
 ---
 
-## 🔍 :material-regex: Behavior Notes
+## :material-magnify: :material-regex: Behavior Notes
 
 1. Returns 0 when there is no match.
 2. Position is 1-based; matching starts at that index.
@@ -33,7 +33,7 @@ REGEXP_COUNT(str, pattern, position, match_type)
 
 ---
 
-## 🧪 :material-regex: Examples
+## :material-flask-outline: :material-regex: Examples
 
 ```sql
 SELECT REGEXP_COUNT('abcabc', 'ab') AS count;  -- 2
@@ -45,7 +45,7 @@ SELECT REGEXP_COUNT('Test123test', 'test', 1, 'i') AS count;  -- 2
 
 ---
 
-## 🧠 :material-regex: When to Use
+## :material-brain: :material-regex: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

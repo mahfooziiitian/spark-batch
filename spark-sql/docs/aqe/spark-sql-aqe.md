@@ -5,7 +5,7 @@ actual data statistics.
 
 ---
 
-## 📌 Benefits
+## :material-pin: Benefits
 
 | Benefit | Description |
 |---------|-------------|
@@ -15,7 +15,7 @@ actual data statistics.
 
 ---
 
-## 🧪 Enable AQE
+## :material-flask-outline: Enable AQE
 
 ```sql
 SET spark.sql.adaptive.enabled = true;
@@ -23,7 +23,7 @@ SET spark.sql.adaptive.enabled = true;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

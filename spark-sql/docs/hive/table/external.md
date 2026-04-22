@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 CREATE TABLE ext_sales (
@@ -27,7 +27,7 @@ LOCATION 's3://data/sales/';
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Data files are not deleted when the table is dropped.
 2. Useful for shared data lake locations.
@@ -35,7 +35,7 @@ LOCATION 's3://data/sales/';
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

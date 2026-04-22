@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Common Settings
+## :material-pin: Common Settings
 
 | Setting | Description |
 |---------|-------------|
@@ -24,7 +24,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SET spark.sql.catalogImplementation = hive;
@@ -33,7 +33,7 @@ SET hive.metastore.uris = thrift://metastore:9083;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

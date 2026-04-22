@@ -2,7 +2,7 @@
 
 A **Cartesian join** (also called a **cross join**) is the simplest join type in Spark SQL. It **does not require a join expression**—instead, it pairs **every row** from the left DataFrame with **every row** from the right DataFrame.
 
-> ⚠️ **Warning:** Cartesian joins can be extremely expensive and may cause performance or memory issues if used carelessly.
+> :material-alert:️ **Warning:** Cartesian joins can be extremely expensive and may cause performance or memory issues if used carelessly.
 
 
 ### :material-sitemap: Overview
@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 🧮 What Happens in a Cartesian Join?
+## :material-calculator: What Happens in a Cartesian Join?
 
 - **Every combination** of rows from both DataFrames is returned.
 - If DataFrame **A** has `m` rows and DataFrame **B** has `n` rows, the result will have `m × n` rows.
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🚀 How Spark Executes a Cartesian Join
+## :material-rocket-launch: How Spark Executes a Cartesian Join
 
 1. **Full Shuffle:** Both DataFrames are shuffled across all executors.
 2. **Partition Pairing:** Every partition from the left is paired with every partition from the right.
@@ -35,7 +35,7 @@ graph LR
 
 ---
 
-## 🗺️ Visual Flow
+## :material-map:️ Visual Flow
 
 ```mermaid
 flowchart TB
@@ -67,7 +67,7 @@ flowchart TB
 
 ---
 
-## 💡 Key Takeaways
+## :material-lightbulb-outline: Key Takeaways
 
 - Spark **fully shuffles** both DataFrames and computes the cross product between all partitions.
 - **Not a broadcast join:** Both sides can be large, increasing risk of memory issues.

@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 collect_list(expr)
@@ -21,13 +21,13 @@ collect_list(expr)
 - Preserves duplicates
 - Non-deterministic ordering after shuffle
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Aggregates all non-NULL values from the group into an ordered array.
 2. Duplicates are **preserved** (unlike `collect_set`).
 3. The order of collected results depends on the order of rows, which may be non-deterministic after a shuffle.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Basic Collection
 
@@ -70,7 +70,7 @@ FROM VALUES (3), (1), (2), (1) AS tab(col);
 -- Result: [1, 1, 2, 3]
 ```
 
-## 🧠 collect_list vs collect_set
+## :material-brain: collect_list vs collect_set
 
 | Feature | collect_list | collect_set |
 |---------|-------------|-------------|

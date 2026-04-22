@@ -5,7 +5,7 @@ much more data than others.
 
 ---
 
-## 📌 How It Works
+## :material-pin: How It Works
 
 1. Detects partitions larger than `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes`.
 2. Splits large partitions into smaller chunks.
@@ -13,7 +13,7 @@ much more data than others.
 
 ---
 
-## 🧪 Example Configuration
+## :material-flask-outline: Example Configuration
 
 ```sql
 SET spark.sql.adaptive.enabled = true;
@@ -23,7 +23,7 @@ SET spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 256000000;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

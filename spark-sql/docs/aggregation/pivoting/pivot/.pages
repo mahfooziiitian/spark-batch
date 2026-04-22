@@ -1,3 +1,4 @@
 nav:
-  - Pivot (CASE): select_case.md
-  - Pivot (Spark): spark.md
+
+- Pivot (CASE): select_case.md
+- Pivot (Spark): spark.md

@@ -12,7 +12,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 first(expr[, ignoreNulls])
@@ -23,14 +23,14 @@ first_value(expr[, ignoreNulls])
 - `ignoreNulls`: When `true`, skips NULL values (default: `false`)
 - Returns: Same type as `expr`
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Returns the first value encountered in the group.
 2. Result is **non-deterministic** without an explicit `ORDER BY` (row order depends on shuffle).
 3. When `ignoreNulls = true`, the first non-NULL value is returned.
 4. `first` and `first_value` are aliases.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Basic Usage
 
@@ -84,7 +84,7 @@ SELECT
 FROM events;
 ```
 
-## 🧠 first vs last
+## :material-brain: first vs last
 
 | Function | Returns | ignoreNulls |
 |----------|---------|------------|

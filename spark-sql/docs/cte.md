@@ -12,7 +12,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 **Single CTE:**
 
@@ -51,7 +51,7 @@ SELECT * FROM prepared;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **No materialization by default** — Spark may inline a CTE at every reference site, re-evaluating it each time. Use a temp view or `CACHE TABLE` when the CTE is expensive and referenced multiple times.
 2. **Forward references are not allowed** — a CTE can only reference CTEs defined earlier in the same `WITH` block.
@@ -60,7 +60,7 @@ SELECT * FROM prepared;
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -207,7 +207,7 @@ SELECT n FROM numbers;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

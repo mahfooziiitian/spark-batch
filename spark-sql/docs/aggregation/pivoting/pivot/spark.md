@@ -52,7 +52,7 @@ SELECT * FROM students
 
 ## Emulate Dynamic Pivot via SQL Generation
 
-### ✅ 1. Generate SQL Dynamically (Recommended)
+### :material-check-circle-outline: 1. Generate SQL Dynamically (Recommended)
 
 Write a small query to fetch distinct genders, and build your final SQL dynamically.
 
@@ -96,30 +96,28 @@ df = spark.sql(sql)
 df.show()
 ```
 
-### ✅ 2. Use CASE WHEN (Fully SQL Only) — Works Dynamically
+### :material-check-circle-outline: 2. Use CASE WHEN (Fully SQL Only) — Works Dynamically
 
 If you're okay not using PIVOT, you can write a dynamic query that looks like pivoting.
 
 #### Static version (but can be generated dynamically):
 
 ```sql
-Copy
-Edit
 SELECT
-  min(CASE WHEN gender = 'M' THEN weight END) AS min_M,
-  min(CASE WHEN gender = 'F' THEN weight END) AS min_F,
-  max(CASE WHEN gender = 'M' THEN weight END) AS max_M,
-  max(CASE WHEN gender = 'F' THEN weight END) AS max_F,
-  avg(CASE WHEN gender = 'M' THEN weight END) AS avg_M,
-  avg(CASE WHEN gender = 'F' THEN weight END) AS avg_F
+    MIN(CASE WHEN gender = 'M' THEN weight END) AS min_m,
+    MIN(CASE WHEN gender = 'F' THEN weight END) AS min_f,
+    MAX(CASE WHEN gender = 'M' THEN weight END) AS max_m,
+    MAX(CASE WHEN gender = 'F' THEN weight END) AS max_f,
+    AVG(CASE WHEN gender = 'M' THEN weight END) AS avg_m,
+    AVG(CASE WHEN gender = 'F' THEN weight END) AS avg_f
 FROM students;
 ```
 
 You can generate this part dynamically using PySpark or SQL string concat.
 
-### ✅ Summary
+### :material-check-circle-outline: Summary
 Method             | Dynamic | Uses PIVOT | Complexity
 -------------------|---------|------------|-----------
-PySpark string gen | ✅ Yes   | ✅ Yes      | Medium
-SQL with CASE WHEN | ✅ Yes   | ❌ No       | Easy
-Native Spark SQL   | ❌ No    | ✅ Yes      | Easy
+PySpark string gen | :material-check-circle-outline: Yes   | :material-check-circle-outline: Yes      | Medium
+SQL with CASE WHEN | :material-check-circle-outline: Yes   | :material-close-circle-outline: No       | Easy
+Native Spark SQL   | :material-close-circle-outline: No    | :material-check-circle-outline: Yes      | Easy

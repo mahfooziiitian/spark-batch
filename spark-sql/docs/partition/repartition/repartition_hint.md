@@ -5,7 +5,7 @@ partitions and improve distribution.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT /*+ REPARTITION(n) */ * FROM table;
@@ -14,7 +14,7 @@ SELECT /*+ REPARTITION(col1) */ * FROM table;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Triggers a full shuffle.
 2. Use for balancing skewed datasets.
@@ -22,7 +22,7 @@ SELECT /*+ REPARTITION(col1) */ * FROM table;
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT /*+ REPARTITION(200) */ *
@@ -31,7 +31,7 @@ FROM large_table;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -109,7 +109,7 @@ Use try_cast() (if available in your Spark version) to avoid failure on bad inpu
 
 ```
 
-## 🔍 :material-swap-horizontal: Bonus: Chained Casting
+## :material-magnify: :material-swap-horizontal: Bonus: Chained Casting
 
 ```sql
 SELECT

@@ -3,7 +3,7 @@
 Spark SQL uses Java's `SimpleDateFormat` pattern letters for parsing and formatting
 dates and timestamps.
 
-## 📌 Pattern Reference
+## :material-pin: Pattern Reference
 
 | Pattern | Meaning | Example |
 |---------|---------|---------|
@@ -25,9 +25,9 @@ dates and timestamps.
 | `z` | Timezone abbreviation | `PST` |
 | `Z` | Timezone offset | `+0000` |
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. DATE_FORMAT — Timestamp to String
+### :material-toy-brick: 1. DATE_FORMAT — Timestamp to String
 
 ```sql
 SELECT DATE_FORMAT(TIMESTAMP '2024-07-15 14:30:45', 'yyyy-MM-dd') AS date_only;
@@ -43,7 +43,7 @@ SELECT DATE_FORMAT(TIMESTAMP '2024-07-15 14:30:45', 'yyyy/MM/dd hh:mm a') AS cus
 -- Result: '2024/07/15 02:30 PM'
 ```
 
-### 🧱 2. TO_DATE — String to Date
+### :material-toy-brick: 2. TO_DATE — String to Date
 
 ```sql
 SELECT TO_DATE('15/07/2024', 'dd/MM/yyyy') AS parsed;
@@ -53,7 +53,7 @@ SELECT TO_DATE('July 15, 2024', 'MMMM dd, yyyy') AS parsed;
 -- Result: 2024-07-15
 ```
 
-### 🧱 3. TO_TIMESTAMP — String to Timestamp
+### :material-toy-brick: 3. TO_TIMESTAMP — String to Timestamp
 
 ```sql
 SELECT TO_TIMESTAMP('2024-07-15 14:30', 'yyyy-MM-dd HH:mm') AS parsed;
@@ -63,7 +63,7 @@ SELECT TO_TIMESTAMP('07/15/2024 02:30 PM', 'MM/dd/yyyy hh:mm a') AS parsed;
 -- Result: 2024-07-15 14:30:00
 ```
 
-### 🧱 4. FROM_CSV / FROM_JSON with Date Formats
+### :material-toy-brick: 4. FROM_CSV / FROM_JSON with Date Formats
 
 ```sql
 SELECT FROM_CSV('26/08/2015', 'time TIMESTAMP',
@@ -73,7 +73,7 @@ SELECT FROM_JSON('{"dt":"2024-07-15"}', 'dt DATE',
   MAP('dateFormat', 'yyyy-MM-dd')) AS parsed;
 ```
 
-## 🧠 Common Format Strings
+## :material-brain: Common Format Strings
 
 | Use Case | Pattern | Example Output |
 |----------|---------|----------------|

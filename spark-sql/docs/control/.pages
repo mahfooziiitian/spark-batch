@@ -1,3 +1,4 @@
 nav:
-  - index.md
-  - 🔀 Control Statements: control.md
+
+- index.md
+- Control Statements: control.md

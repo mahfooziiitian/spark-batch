@@ -1,10 +1,10 @@
-# :material-set-all: 🌟 Right Outer Join in Spark SQL
+# :material-set-all: :material-star: Right Outer Join in Spark SQL
 
 A **Right Outer Join** returns:
 
-- ✅ **All rows from the right table**
-- ✅ **Matching rows from the left table**
-- ❌ **If no match:** fills left-side columns with `NULL`.
+- :material-check-circle-outline: **All rows from the right table**
+- :material-check-circle-outline: **Matching rows from the left table**
+- :material-close-circle-outline: **If no match:** fills left-side columns with `NULL`.
 
 > **Tip:** It’s the mirror image of a Left Outer Join.  
 > **Question it answers:**  
@@ -152,13 +152,13 @@ classDef result fill:#caffbf,stroke:#000,stroke-width:2px;
 
 | Join Type  | Keeps All Left? | Keeps All Right? | Matches? |
 |------------|:---------------:|:----------------:|:--------:|
-| Left Join  | ✅              | ❌               | ✅       |
-| Right Join | ❌              | ✅               | ✅       |
-| Full Join  | ✅              | ✅               | ✅       |
+| Left Join  | :material-check-circle-outline:              | :material-close-circle-outline:               | :material-check-circle-outline:       |
+| Right Join | :material-close-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:       |
+| Full Join  | :material-check-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:       |
 
 ---
 
-## ✅ Summary
+## :material-check-circle-outline: Summary
 
 - **Right Outer Join = all rows from right + matching rows from left**
 - Useful when the right table is the “main” dataset you don’t want to lose

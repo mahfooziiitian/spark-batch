@@ -11,7 +11,7 @@ graph LR
     B --> C[Output Array / Scalar]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 TRANSFORM(array, element -> expression)
@@ -29,7 +29,7 @@ TRANSFORM(array, (element, index) -> expression)
 | `index` | *(Optional)* Zero-based position of the element |
 | `expression` | Logic to apply; its result becomes the new element |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Iterates over each element and applies the expression.
 2. Returns a new array with the same length as the input.
@@ -37,23 +37,23 @@ TRANSFORM(array, (element, index) -> expression)
 4. Returns `NULL` if the input array is `NULL`.
 5. Works on nested types: `array<array<T>>`, `array<struct<...>>`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Double Each Element
+### :material-toy-brick: 1. Double Each Element
 
 ```sql
 SELECT TRANSFORM(ARRAY(1, 2, 3), x -> x * 2) AS doubled;
 -- Result: [2, 4, 6]
 ```
 
-### 🧱 2. Add Index to Each Element
+### :material-toy-brick: 2. Add Index to Each Element
 
 ```sql
 SELECT TRANSFORM(ARRAY(10, 20, 30), (x, i) -> x + i) AS indexed;
 -- Result: [10, 21, 32]
 ```
 
-### 🧱 3. Conditional Transformation
+### :material-toy-brick: 3. Conditional Transformation
 
 ```sql
 SELECT TRANSFORM(
@@ -63,7 +63,7 @@ SELECT TRANSFORM(
 -- Result: [0, 0, 3, 4]
 ```
 
-### 🧱 4. Transform Struct Fields
+### :material-toy-brick: 4. Transform Struct Fields
 
 ```sql
 SELECT TRANSFORM(
@@ -76,7 +76,7 @@ SELECT TRANSFORM(
 -- Result: [{name: ALICE, age: 26}, {name: BOB, age: 31}]
 ```
 
-### 🧱 5. Nested Array Transformation
+### :material-toy-brick: 5. Nested Array Transformation
 
 ```sql
 SELECT TRANSFORM(
@@ -86,7 +86,7 @@ SELECT TRANSFORM(
 -- Result: [[10, 20], [30, 40]]
 ```
 
-### 🧱 6. Format Elements as Strings
+### :material-toy-brick: 6. Format Elements as Strings
 
 ```sql
 SELECT TRANSFORM(
@@ -96,7 +96,7 @@ SELECT TRANSFORM(
 -- Result: ['item_0=1', 'item_1=2', 'item_2=3']
 ```
 
-### 🧱 7. Extract Fields from Array of Structs
+### :material-toy-brick: 7. Extract Fields from Array of Structs
 
 ```sql
 SELECT TRANSFORM(
@@ -109,7 +109,7 @@ SELECT TRANSFORM(
 -- Result: ['Widget', 'Gadget']
 ```
 
-## 🏭 Real-World Applications
+## :material-factory: Real-World Applications
 
 ### Normalize Sensor Readings
 
@@ -136,7 +136,7 @@ SELECT TRANSFORM(
 -- Result: ['[0] error', '[1] warn', '[2] info']
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `TRANSFORM`? |
 |----------|-----------------|

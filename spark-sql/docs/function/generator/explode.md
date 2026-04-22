@@ -13,7 +13,7 @@ graph LR
     B --> E[Row: c]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### Direct
 
@@ -44,7 +44,7 @@ LATERAL VIEW EXPLODE(map_column) AS key, value;
 | `array<T>` | `col` (element value) |
 | `map<K,V>` | `key`, `value` |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Produces one output row per array element or map entry.
 2. Duplicates all other column values for each generated row.
@@ -52,9 +52,9 @@ LATERAL VIEW EXPLODE(map_column) AS key, value;
 4. **Drops rows** where the array/map is `NULL` or empty — use `EXPLODE_OUTER` to retain them.
 5. Default output column names are `col` (array) or `key`/`value` (map); override with `AS`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Explode an Array of Primitives
+### :material-toy-brick: 1. Explode an Array of Primitives
 
 ```sql
 CREATE OR REPLACE TEMP VIEW people AS
@@ -69,7 +69,7 @@ LATERAL VIEW EXPLODE(names) AS name;
 -- (1, Alice), (1, Bob), (2, Charlie), (2, Diana)
 ```
 
-### 🗺️ 2. Explode a Map
+### :material-map:️ 2. Explode a Map
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales AS
@@ -84,7 +84,7 @@ LATERAL VIEW EXPLODE(items) AS fruit, quantity;
 -- (1, apple, 2), (1, banana, 3), (2, orange, 1), (2, grape, 5)
 ```
 
-### 🧱 3. Explode an Array of Structs
+### :material-toy-brick: 3. Explode an Array of Structs
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -101,14 +101,14 @@ LATERAL VIEW EXPLODE(products) AS item;
 -- (1001, book, 2), (1001, pen, 5), (1002, notebook, 1), (1002, eraser, 3)
 ```
 
-### 🔁 4. Generate Date Ranges with SEQUENCE
+### :material-repeat: 4. Generate Date Ranges with SEQUENCE
 
 ```sql
 SELECT EXPLODE(SEQUENCE(DATE '2024-01-01', DATE '2024-01-05')) AS day;
 -- 2024-01-01, 2024-01-02, …, 2024-01-05
 ```
 
-### 🔗 5. Chain with Higher-Order Functions
+### :material-link: 5. Chain with Higher-Order Functions
 
 ```sql
 -- Filter first, then explode
@@ -118,7 +118,7 @@ SELECT EXPLODE(
 -- 2, 4
 ```
 
-### 🧱 6. Multiple LATERAL VIEWs
+### :material-toy-brick: 6. Multiple LATERAL VIEWs
 
 ```sql
 CREATE OR REPLACE TEMP VIEW multi AS
@@ -133,7 +133,7 @@ LATERAL VIEW EXPLODE(numbers) AS num;
 -- Cross-product: (1,a,10), (1,a,20), (1,b,10), (1,b,20)
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `EXPLODE`? |
 |----------|---------------|

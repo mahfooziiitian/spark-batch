@@ -132,7 +132,142 @@ GROUP BY DATE_TRUNC('HOUR', event_time)
 ORDER BY window_start;
 
 ---
--- 7. Structured Streaming equivalent (comment — not executable in batch)
+-- 7. Weekly tumbling windows
+---
+
+SELECT
+    region,
+    DATE_TRUNC('WEEK', event_time) AS week_start,
+    DATE_TRUNC('WEEK', event_time) + INTERVAL 7 DAYS AS week_end,
+    SUM(revenue) AS weekly_revenue,
+    COUNT(*) AS weekly_events
+FROM clickstream
+GROUP BY
+    DATE_TRUNC('WEEK', event_time),
+    region
+ORDER BY
+    week_start,
+    region;
+
+---
+-- 8. Quarterly tumbling windows
+---
+
+SELECT
+    region,
+    DATE_TRUNC('QUARTER', event_time) AS quarter_start,
+    ADD_MONTHS(DATE_TRUNC('QUARTER', event_time), 3) AS quarter_end,
+    SUM(revenue) AS quarterly_revenue,
+    COUNT(*) AS quarterly_events
+FROM clickstream
+GROUP BY
+    DATE_TRUNC('QUARTER', event_time),
+    region
+ORDER BY
+    quarter_start,
+    region;
+
+---
+-- 9. Multi-granularity rollup with GROUPING SETS
+-- Produces hour, day, and grand-total rows in one pass.
+---
+
+SELECT
+    region,
+    DATE_TRUNC('HOUR', event_time) AS hour_bucket,
+    CAST(event_time AS DATE) AS day_bucket,
+    GROUPING(DATE_TRUNC('HOUR', event_time)) AS is_day_rollup,
+    SUM(revenue) AS total_revenue,
+    COUNT(*) AS event_count
+FROM clickstream
+GROUP BY GROUPING SETS (
+    (region, DATE_TRUNC('HOUR', event_time)),
+    (region, CAST(event_time AS DATE)),
+    (region)
+)
+ORDER BY
+    region,
+    hour_bucket NULLS LAST,
+    day_bucket NULLS LAST;
+-- Result: rows at hour granularity, day granularity, and per-region totals
+
+---
+-- 10. Count-based tumbling bucket (every N events per region)
+-- ROW_NUMBER() / N assigns each event a bucket index.
+---
+
+SELECT
+    region,
+    CEIL(ROW_NUMBER() OVER (PARTITION BY region ORDER BY event_time) / 3.0) AS bucket,
+    event_id,
+    event_time,
+    revenue
+FROM clickstream
+ORDER BY
+    region,
+    bucket,
+    event_time;
+-- Result: events grouped into buckets of 3 within each region
+
+---
+-- 11. Gap detection — find missing hourly windows in a time range
+-- Generates the expected set of windows then LEFT JOINs actual data.
+---
+
+WITH expected_hours AS (
+    SELECT
+        EXPLODE(
+            SEQUENCE(
+                CAST('2024-06-01 00:00:00' AS TIMESTAMP),
+                CAST('2024-06-03 23:00:00' AS TIMESTAMP),
+                INTERVAL 1 HOUR
+            )
+        ) AS expected_window
+),
+
+actual_hours AS (
+    SELECT DISTINCT DATE_TRUNC('HOUR', event_time) AS actual_window
+    FROM clickstream
+)
+
+SELECT
+    e.expected_window,
+    CASE WHEN a.actual_window IS NULL THEN TRUE ELSE FALSE END AS is_gap
+FROM expected_hours AS e
+LEFT JOIN actual_hours AS a
+    ON e.expected_window = a.actual_window
+ORDER BY e.expected_window;
+-- Result: rows where is_gap = TRUE represent hours with no events
+
+---
+-- 12. Tumbling window with running rank (busiest window per region)
+---
+
+WITH hourly AS (
+    SELECT
+        region,
+        DATE_TRUNC('HOUR', event_time) AS window_start,
+        SUM(revenue) AS total_revenue,
+        COUNT(*) AS event_count
+    FROM clickstream
+    GROUP BY
+        DATE_TRUNC('HOUR', event_time),
+        region
+)
+
+SELECT
+    region,
+    window_start,
+    total_revenue,
+    event_count,
+    RANK() OVER (PARTITION BY region ORDER BY total_revenue DESC) AS revenue_rank
+FROM hourly
+ORDER BY
+    region,
+    revenue_rank;
+
+---
+-- 13. Structured Streaming equivalent (comment — not executable in batch)
 --
 -- In Spark Structured Streaming the same 1-hour tumbling window is expressed as:
 --

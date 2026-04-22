@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 🚀 Why Use Inner Joins?
+## :material-rocket-launch: Why Use Inner Joins?
 
 | Use Case                   | Benefit                                      | Example                        |
 |----------------------------|----------------------------------------------|--------------------------------|
@@ -24,7 +24,7 @@ graph LR
 
 ---
 
-## ⚡ Spark Join Strategies for Inner Join
+## :material-lightning-bolt: Spark Join Strategies for Inner Join
 
 Depending on data size and configuration, Spark automatically selects the most efficient join strategy:
 
@@ -37,7 +37,7 @@ Depending on data size and configuration, Spark automatically selects the most e
 
 ---
 
-## 🔄 Join Strategy Flow
+## :material-refresh: Join Strategy Flow
 
 ```mermaid
 flowchart TD
@@ -54,7 +54,7 @@ flowchart TD
 
 ---
 
-## 💡 Tips for Efficient Inner Joins
+## :material-lightbulb-outline: Tips for Efficient Inner Joins
 
 | Tip                                   | Why It Helps                                      |
 |----------------------------------------|---------------------------------------------------|
@@ -65,7 +65,7 @@ flowchart TD
 
 ---
 
-## ⚠️ Common Pitfalls & Solutions
+## :material-alert:️ Common Pitfalls & Solutions
 
 | Issue                  | Solution                                  |
 |------------------------|-------------------------------------------|

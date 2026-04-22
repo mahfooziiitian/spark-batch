@@ -5,7 +5,7 @@ A **non-equi join** is a join where the condition is *not* based solely on equal
 - `<`, `>`, `<=`, `>=`
 - `!=`, `BETWEEN`, or even complex expressions
 
-> ⚠️ **Note:** Non-equi joins are not hashable. Spark cannot use efficient broadcast/hash joins for them, so it must fall back to more expensive join strategies (like sort-merge or nested loop joins).
+> :material-alert:️ **Note:** Non-equi joins are not hashable. Spark cannot use efficient broadcast/hash joins for them, so it must fall back to more expensive join strategies (like sort-merge or nested loop joins).
 
 
 ### :material-sitemap: Overview
@@ -33,7 +33,7 @@ These joins are often more complex and computationally expensive, especially wit
 
 ---
 
-## 📚 Use Cases
+## :material-bookshelf: Use Cases
 
 Non-equi joins are particularly useful for:
 
@@ -46,7 +46,7 @@ Non-equi joins are particularly useful for:
 
 ---
 
-## 🔄 How Non-Equi Joins Work in Spark
+## :material-refresh: How Non-Equi Joins Work in Spark
 
 ```mermaid
 flowchart TB
@@ -67,7 +67,7 @@ flowchart TB
 
 ---
 
-## ⚡️ Key Points
+## :material-lightning-bolt:️ Key Points
 
 - Non-equi joins are powerful for advanced analytics but can be slow on large datasets.
 - Always consider data size and join conditions when designing Spark jobs.
@@ -75,4 +75,4 @@ flowchart TB
 
 ---
 
-> 💡 **Tip:** If possible, rewrite your logic to use equi joins for better performance, or pre-filter data to minimize the join workload.
+> :material-lightbulb-outline: **Tip:** If possible, rewrite your logic to use equi joins for better performance, or pre-filter data to minimize the join workload.

@@ -18,7 +18,7 @@ graph TD
 
 ---
 
-## 📌 Common Issues
+## :material-pin: Common Issues
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
@@ -28,7 +28,7 @@ graph TD
 
 ---
 
-## 🧠 Tips
+## :material-brain: Tips
 
 1. Validate join keys and nullability.
 2. Use `EXPLAIN` to inspect strategy.

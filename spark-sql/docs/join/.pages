@@ -1,8 +1,8 @@
 nav:
   - index.md
-  - 🔗 Join Types: types
-  - 📝 Expressions: expression.md
-  - ⚡ Strategy: strategy
-  - 💡 Hints: hints
-  - ⚠️ Issues: issues
-  - 🚀 Optimization: optimization
+  - Join Types: types
+  - Expressions: expression.md
+  - Strategy: strategy
+  - Hints: hints
+  - Issues: issues
+  - Optimization: optimization

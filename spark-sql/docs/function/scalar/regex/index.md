@@ -13,7 +13,7 @@ graph LR
     C -->|No| E[NULL / Original]
 ```
 
-## 📌 :material-regex: Functions at a Glance
+## :material-pin: :material-regex: Functions at a Glance
 
 | Function | Description | Returns |
 |----------|-------------|---------|
@@ -26,7 +26,7 @@ graph LR
 | `REGEXP_INSTR(str, regex)` | Return position of first match | `INT` |
 | `REGEXP_COUNT(str, regex)` | Count number of matches | `INT` |
 
-## 🔍 :material-regex: Regex Syntax Notes
+## :material-magnify: :material-regex: Regex Syntax Notes
 
 Spark SQL uses **Java-style** regular expressions. Key patterns:
 
@@ -40,7 +40,7 @@ Spark SQL uses **Java-style** regular expressions. Key patterns:
 | `[abc]` | Character class |
 | `^` / `$` | Start / end of string |
 
-## 🧪 :material-regex: Quick Examples
+## :material-flask-outline: :material-regex: Quick Examples
 
 ```sql
 -- Match: does string contain digits?

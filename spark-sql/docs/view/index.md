@@ -15,7 +15,7 @@ graph TD
 
 ---
 
-## 📌 View Types
+## :material-pin: View Types
 
 | Type | Description |
 |------|-------------|
@@ -25,7 +25,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE OR REPLACE VIEW active_customers AS
@@ -34,7 +34,7 @@ SELECT * FROM customers WHERE is_active = true;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

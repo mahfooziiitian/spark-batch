@@ -6,7 +6,7 @@ Unity Catalog.
 
 ---
 
-## 📌 Why Use an External Catalog
+## :material-pin: Why Use an External Catalog
 
 | Benefit | Description |
 |---------|-------------|
@@ -16,7 +16,7 @@ Unity Catalog.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Create a Table in External Catalog
 
@@ -36,14 +36,14 @@ SHOW SCHEMAS IN external_db;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. External catalogs typically manage table locations and schema evolution.
 2. They allow sharing data across multiple Spark clusters.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

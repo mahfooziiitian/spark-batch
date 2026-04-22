@@ -16,7 +16,7 @@ graph TD
 
 ---
 
-## 📌 Predicate Forms
+## :material-pin: Predicate Forms
 
 | Predicate Type | Example | Purpose |
 |----------------|---------|---------|
@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. **Three-valued logic** — Comparisons with NULL return NULL, which is treated
    as FALSE in filters.
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Combine Multiple Conditions
 
@@ -70,7 +70,7 @@ WHERE device_id <=> previous_device_id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

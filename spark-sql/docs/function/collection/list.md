@@ -11,7 +11,7 @@ graph LR
     B --> C[Ordered Array]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### COLLECT_LIST
 
@@ -27,7 +27,7 @@ ARRAY_AGG(expr)
 
 Both aggregate all non-NULL values from a group into an ordered array.
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Aggregates all non-NULL values from the group into an array.
 2. Duplicate values are **preserved** (use `COLLECT_SET` for distinct).
@@ -35,16 +35,16 @@ Both aggregate all non-NULL values from a group into an ordered array.
 4. Returns an empty array if all values are NULL.
 5. Returns `array<T>` where `T` matches the type of `expr`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Basic Collection
+### :material-toy-brick: 1. Basic Collection
 
 ```sql
 SELECT COLLECT_LIST(col) FROM VALUES (1), (2), (1) AS tab(col);
 -- Result: [1, 2, 1]
 ```
 
-### 🧱 2. Grouped Collection
+### :material-toy-brick: 2. Grouped Collection
 
 ```sql
 CREATE OR REPLACE TEMP VIEW purchases AS
@@ -59,7 +59,7 @@ GROUP BY customer;
 -- Alice → [laptop, mouse, laptop], Bob → [keyboard, monitor]
 ```
 
-### 🧱 3. Sorted List
+### :material-toy-brick: 3. Sorted List
 
 ```sql
 SELECT SORT_ARRAY(COLLECT_LIST(col)) AS sorted
@@ -67,7 +67,7 @@ FROM VALUES (3), (1), (4), (1), (5) AS tab(col);
 -- Result: [1, 1, 3, 4, 5]
 ```
 
-### 🧱 4. Convert to Comma-Separated String
+### :material-toy-brick: 4. Convert to Comma-Separated String
 
 ```sql
 SELECT CONCAT_WS(', ', COLLECT_LIST(col)) AS csv
@@ -75,7 +75,7 @@ FROM VALUES ('a'), ('b'), ('c') AS tab(col);
 -- Result: 'a, b, c'
 ```
 
-### 🧱 5. Collect with Ordering (Window Function)
+### :material-toy-brick: 5. Collect with Ordering (Window Function)
 
 ```sql
 CREATE OR REPLACE TEMP VIEW events AS
@@ -93,7 +93,7 @@ FROM events;
 -- Alice → [login, click, logout], Bob → [login, purchase]
 ```
 
-### 🧱 6. Collect Structs
+### :material-toy-brick: 6. Collect Structs
 
 ```sql
 SELECT customer,
@@ -105,7 +105,7 @@ AS orders(customer, product, amount)
 GROUP BY customer;
 ```
 
-## 🧠 COLLECT_LIST vs COLLECT_SET
+## :material-brain: COLLECT_LIST vs COLLECT_SET
 
 | Feature | `COLLECT_LIST` | `COLLECT_SET` |
 |---------|---------------|--------------|

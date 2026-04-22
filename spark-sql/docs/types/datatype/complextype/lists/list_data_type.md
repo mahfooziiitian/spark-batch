@@ -3,21 +3,21 @@
 In Spark SQL, lists are represented as `ARRAY` types. The primary functions for building
 lists from grouped rows are `COLLECT_LIST` and `COLLECT_SET`.
 
-## 📌 COLLECT_LIST — Aggregate with Duplicates
+## :material-pin: COLLECT_LIST — Aggregate with Duplicates
 
 ```sql
 SELECT COLLECT_LIST(col) FROM VALUES (1), (2), (1) AS tab(col);
 -- Result: [1, 2, 1]
 ```
 
-## 📌 COLLECT_SET — Aggregate without Duplicates
+## :material-pin: COLLECT_SET — Aggregate without Duplicates
 
 ```sql
 SELECT COLLECT_SET(col) FROM VALUES (1), (2), (1) AS tab(col);
 -- Result: [1, 2]
 ```
 
-## 🧪 Grouped Collection
+## :material-flask-outline: Grouped Collection
 
 ```sql
 CREATE OR REPLACE TEMP VIEW purchases AS
@@ -37,7 +37,7 @@ FROM purchases GROUP BY customer;
 -- Alice → [laptop, mouse]
 ```
 
-## 🧠 COLLECT_LIST vs COLLECT_SET
+## :material-brain: COLLECT_LIST vs COLLECT_SET
 
 | Feature | `COLLECT_LIST` | `COLLECT_SET` |
 |---------|---------------|--------------|

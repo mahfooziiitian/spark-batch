@@ -5,7 +5,7 @@ logic directly inside SQL queries.
 
 ---
 
-## 📌 Common Constructs
+## :material-pin: Common Constructs
 
 | Construct | Purpose |
 |-----------|---------|
@@ -16,7 +16,7 @@ logic directly inside SQL queries.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### CASE WHEN
 
@@ -39,7 +39,7 @@ FROM orders;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

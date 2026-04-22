@@ -24,3 +24,10 @@ FROM (
 GROUP BY window
 ORDER BY start_time;
 ```
+
+## :material-animation-play: Interactive Demo
+
+> **Drag** the dashed window frame left/right — or use the **Prev / Next** buttons — to slide it through the data.
+> The purple MA line tracks the 3-day rolling average; the highlighted window updates the MA value live.
+
+<div id="viz-sliding" class="ts-viz"></div>

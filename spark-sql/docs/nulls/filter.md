@@ -14,7 +14,7 @@ graph TD
 
 ---
 
-## 📌 Core Patterns
+## :material-pin: Core Patterns
 
 | Goal | Pattern |
 |------|---------|
@@ -26,7 +26,7 @@ graph TD
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 ### Three-Valued Logic in WHERE
 
@@ -54,7 +54,7 @@ A standard `JOIN ON a.key = b.key` never matches rows where `key` is NULL on eit
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### WHERE — NULLs Silently Excluded
 
@@ -140,7 +140,7 @@ JOIN person p2
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

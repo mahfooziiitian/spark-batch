@@ -14,7 +14,7 @@ graph LR
     B --> E[Row N]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT POSEXPLODE_OUTER(array_or_map);
@@ -28,16 +28,16 @@ FROM your_table t
 LATERAL VIEW POSEXPLODE_OUTER(array_column) AS pos, element;
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Produces one row per element with a zero-based `pos` column — like `POSEXPLODE`.
 2. When the array/map is **empty** → one row with `pos = NULL`, `element = NULL`.
 3. When the array/map is **NULL** → one row with `pos = NULL`, `element = NULL`.
 4. All other columns from the original row are preserved.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Side-by-Side: POSEXPLODE vs POSEXPLODE_OUTER
+### :material-toy-brick: 1. Side-by-Side: POSEXPLODE vs POSEXPLODE_OUTER
 
 ```sql
 CREATE OR REPLACE TEMP VIEW demo AS
@@ -60,7 +60,7 @@ LATERAL VIEW POSEXPLODE_OUTER(arr) AS pos, val;
 -- (1, 0, A), (1, 1, B), (2, NULL, NULL), (3, NULL, NULL)
 ```
 
-### 🧱 2. Array of Structs — Safe Flattening with Index
+### :material-toy-brick: 2. Array of Structs — Safe Flattening with Index
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -76,7 +76,7 @@ LATERAL VIEW POSEXPLODE_OUTER(products) AS pos, p;
 -- (101, 0, book, 2), (102, NULL, NULL, NULL), (103, NULL, NULL, NULL)
 ```
 
-### 🧱 3. Label Array Entries Safely
+### :material-toy-brick: 3. Label Array Entries Safely
 
 ```sql
 CREATE OR REPLACE TEMP VIEW students AS
@@ -96,7 +96,7 @@ LATERAL VIEW POSEXPLODE_OUTER(subjects) AS pos, subject;
 -- (1, Subject_1, Math), (1, Subject_2, Physics), (2, N/A, none)
 ```
 
-### 🧱 4. Audit Missing Data
+### :material-toy-brick: 4. Audit Missing Data
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sensor_log AS
@@ -115,7 +115,7 @@ LATERAL VIEW POSEXPLODE_OUTER(readings) AS pos, reading;
 -- dev01 has readings at pos 0,1; dev02 and dev03 flagged as missing
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `POSEXPLODE_OUTER`? |
 |----------|------------------------|

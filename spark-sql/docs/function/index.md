@@ -16,7 +16,7 @@ graph TD
     A --> G["UDF :material-code-braces-box:"]
 ```
 
-## 📌 Function Categories
+## :material-pin: Function Categories
 
 | Category | Description | Examples |
 |----------|-------------|----------|
@@ -29,7 +29,7 @@ graph TD
 | **Lambda** | Anonymous functions used as arguments to higher-order functions | `x -> x * 2`, `(k, v) -> k` |
 | **Macro** | Reusable SQL expressions defined with `CREATE TEMPORARY MACRO` | User-defined SQL macros |
 
-## 🔍 How Functions Are Used
+## :material-magnify: How Functions Are Used
 
 ```sql
 -- Aggregate: summarize groups
@@ -45,7 +45,7 @@ SELECT id, name FROM employees LATERAL VIEW EXPLODE(skills) AS skill;
 SELECT TRANSFORM(scores, x -> x * 1.1) AS curved_scores FROM students;
 ```
 
-## 🧠 Choosing the Right Function Type
+## :material-brain: Choosing the Right Function Type
 
 | You Want To... | Use |
 |----------------|-----|

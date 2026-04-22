@@ -13,7 +13,7 @@ graph LR
 
 ---
 
-## 📌 :material-calculator: Common Functions
+## :material-pin: :material-calculator: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -28,7 +28,7 @@ graph LR
 
 ---
 
-## 🧪 :material-calculator: Examples
+## :material-flask-outline: :material-calculator: Examples
 
 ```sql
 SELECT ABS(-10) AS abs_val,
@@ -38,7 +38,7 @@ SELECT ABS(-10) AS abs_val,
 
 ---
 
-## 🧠 :material-calculator: When to Use
+## :material-brain: :material-calculator: When to Use
 
 | Scenario | Function |
 |----------|----------|

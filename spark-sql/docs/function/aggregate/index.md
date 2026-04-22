@@ -12,7 +12,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Function Categories
+## :material-pin: Function Categories
 
 | Category | Functions | Description |
 |----------|-----------|-------------|
@@ -28,7 +28,7 @@ graph LR
 | **Stats** | `STDDEV`, `VARIANCE`, `CORR`, `COVAR_*`, `PERCENTILE` | Statistical aggregations |
 | **Strings** | `CONCAT_WS` + `COLLECT_LIST` | String concatenation across rows |
 
-## 🧪 Quick Examples
+## :material-flask-outline: Quick Examples
 
 ```sql
 -- Simple aggregates
@@ -49,7 +49,7 @@ GROUP BY department;
 SELECT EVERY(salary > 0) AS all_positive FROM employees;
 ```
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Most aggregate functions **ignore NULLs** (except `COUNT(*)`).
 2. `COUNT(*)` counts all rows; `COUNT(col)` counts non-NULL values only.

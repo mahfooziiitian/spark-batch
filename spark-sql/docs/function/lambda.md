@@ -12,7 +12,7 @@ graph LR
     B --> C[HOF Result]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### Single Parameter
 
@@ -79,7 +79,7 @@ SELECT AGGREGATE(ARRAY(1, 2, 3, 4), 0, (acc, x) -> acc + x);
 -- Result: 10
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Lambda expressions are **not standalone** — they can only appear as arguments to HOFs.
 2. Parameter names are arbitrary (`x`, `elem`, `acc`, etc.) — choose descriptive names.
@@ -88,9 +88,9 @@ SELECT AGGREGATE(ARRAY(1, 2, 3, 4), 0, (acc, x) -> acc + x);
 5. Lambdas have **no side effects** — they are pure expressions evaluated per element.
 6. **Nested lambdas** are supported for nested data structures.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Filter + Transform Pipeline
+### :material-toy-brick: 1. Filter + Transform Pipeline
 
 ```sql
 -- Keep evens, then square them
@@ -101,7 +101,7 @@ SELECT TRANSFORM(
 -- Result: [4, 16, 36]
 ```
 
-### 🧱 2. Conditional Logic Inside Lambda
+### :material-toy-brick: 2. Conditional Logic Inside Lambda
 
 ```sql
 SELECT TRANSFORM(
@@ -116,7 +116,7 @@ SELECT TRANSFORM(
 -- Result: ['B', 'F', 'A', 'C']
 ```
 
-### 🧱 3. Nested Lambda — Nested Arrays
+### :material-toy-brick: 3. Nested Lambda — Nested Arrays
 
 ```sql
 SELECT TRANSFORM(
@@ -126,7 +126,7 @@ SELECT TRANSFORM(
 -- Result: [[10, 20], [30, 40, 50]]
 ```
 
-### 🧱 4. Struct Field Access in Lambda
+### :material-toy-brick: 4. Struct Field Access in Lambda
 
 ```sql
 SELECT FILTER(
@@ -140,7 +140,7 @@ SELECT FILTER(
 -- Result: [{Alice, 25}, {Charlie, 30}]
 ```
 
-### 🧱 5. Accumulator with Finish Function
+### :material-toy-brick: 5. Accumulator with Finish Function
 
 ```sql
 SELECT AGGREGATE(
@@ -152,7 +152,7 @@ SELECT AGGREGATE(
 -- Result: 25.0
 ```
 
-### 🧱 6. Index-Aware Filtering
+### :material-toy-brick: 6. Index-Aware Filtering
 
 ```sql
 -- Keep only elements at even indices
@@ -163,7 +163,7 @@ SELECT FILTER(
 -- Result: ['a', 'c', 'e']
 ```
 
-### 🧱 7. Map Value Transformation
+### :material-toy-brick: 7. Map Value Transformation
 
 ```sql
 SELECT TRANSFORM_VALUES(
@@ -173,7 +173,7 @@ SELECT TRANSFORM_VALUES(
 -- Result: {price -> 100, tax -> 9, shipping -> 6}
 ```
 
-## 📋 Lambda Forms by HOF
+## :material-clipboard-list-outline: Lambda Forms by HOF
 
 | HOF | Lambda Form | Purpose |
 |-----|------------|---------|
@@ -191,7 +191,7 @@ SELECT TRANSFORM_VALUES(
 | `TRANSFORM_VALUES(map, ...)` | `(k, v) -> v'` | Transform map values |
 | `MAP_ZIP_WITH(m1, m2, ...)` | `(k, v1, v2) -> v'` | Merge two maps |
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Lambda Approach |
 |----------|----------------|

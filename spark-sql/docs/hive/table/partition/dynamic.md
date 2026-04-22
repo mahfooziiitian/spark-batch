@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 INSERT INTO TABLE sales
@@ -25,7 +25,7 @@ FROM staging_sales;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Spark creates partitions based on the data values.
 2. Requires `hive.exec.dynamic.partition=true` in some environments.
@@ -33,7 +33,7 @@ FROM staging_sales;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

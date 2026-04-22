@@ -13,7 +13,7 @@ graph LR
     B --> F[PROTOCOL]
 ```
 
-## 📌 :material-web: parse_url
+## :material-pin: :material-web: parse_url
 
 ```sql
 parse_url(url, partToExtract[, key])
@@ -24,13 +24,13 @@ parse_url(url, partToExtract[, key])
 - `key` (optional): Extract a specific query parameter by name
 - Returns: `STRING`
 
-## 🔍 :material-web: Behavior
+## :material-magnify: :material-web: Behavior
 
 1. Parses the URL according to standard URL structure.
 2. Returns the specified component, or NULL if the URL is invalid.
 3. When `key` is provided with `QUERY`, extracts that specific parameter's value.
 
-## 🧪 :material-web: Practical Examples
+## :material-flask-outline: :material-web: Practical Examples
 
 ### Extract Host
 
@@ -81,7 +81,7 @@ SELECT
 FROM VALUES ('https://spark.apache.org/docs/latest?format=pdf') AS t(url);
 ```
 
-## 🧠 :material-web: URL Components Reference
+## :material-brain: :material-web: URL Components Reference
 
 | Part | Example URL: `https://user:pass@host.com:8080/path?q=1#ref` |
 |------|-------------------------------------------------------------|

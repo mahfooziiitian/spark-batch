@@ -6,7 +6,7 @@ support.
 
 ---
 
-## 📌 Key Features
+## :material-pin: Key Features
 
 | Feature | Description |
 |---------|-------------|
@@ -16,7 +16,7 @@ support.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ```sql
 SHOW DATABASES;
@@ -30,7 +30,7 @@ CREATE TABLE hive_sales (
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. The Hive catalog is persistent across sessions.
 2. Tables can be **managed** or **external**.
@@ -38,7 +38,7 @@ CREATE TABLE hive_sales (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

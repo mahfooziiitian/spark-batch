@@ -4,7 +4,7 @@
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT col1 [, col2, ...], agg_func(expr) [AS alias]
@@ -35,7 +35,7 @@ GROUPING SETS ((a, b), (a), (b), ())
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **NULL as grouping marker** — columns not included in a specific grouping set appear as `NULL` in the output rows for that set; these are synthetic NULLs, not data NULLs.
 2. **`GROUPING(col)`** — returns `1` for a synthetic NULL (grouping placeholder) and `0` for a real grouping value; use it to label or filter subtotal rows.
@@ -45,7 +45,7 @@ GROUPING SETS ((a, b), (a), (b), ())
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -179,7 +179,7 @@ ORDER BY yr NULLS LAST, region NULLS LAST, product NULLS LAST;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 MIN(expr)
@@ -32,7 +32,7 @@ MAX(expr) FILTER (WHERE condition)
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **NULL ignored** — both functions skip `NULL` values; if all values in a group are `NULL` the result is `NULL`.
 2. **Any orderable type** — works on `NUMERIC`, `STRING` (lexicographic order), `DATE`, `TIMESTAMP`, `DECIMAL`, and any type that supports comparison operators.
@@ -43,7 +43,7 @@ MAX(expr) FILTER (WHERE condition)
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -192,7 +192,7 @@ ORDER BY region;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

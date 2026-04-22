@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### INSERT INTO (Append)
 
@@ -49,7 +49,7 @@ VALUES (val1, val2, ...), (val3, val4, ...);
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Schema matching** — Column count and types of the source must match the
    target. Column names are matched by *position*, not by name.
@@ -66,7 +66,7 @@ VALUES (val1, val2, ...), (val3, val4, ...);
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Append from a Query
 
@@ -119,7 +119,7 @@ INSERT INTO view_events
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|-------------------|

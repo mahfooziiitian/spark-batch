@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 Common Techniques
+## :material-pin: Common Techniques
 
 | Technique | Benefit |
 |----------|---------|
@@ -28,7 +28,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT /*+ BROADCAST(dim) */
@@ -40,7 +40,7 @@ ON f.region_id = dim.id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

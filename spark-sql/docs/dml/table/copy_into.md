@@ -7,7 +7,7 @@ ingestion pipelines.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 COPY INTO target_table
@@ -30,7 +30,7 @@ FILEFORMAT = format
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Idempotent by default** — Delta tracks which files have been loaded in the
    table's transaction log. Re-running the same `COPY INTO` skips already-loaded
@@ -46,7 +46,7 @@ FILEFORMAT = format
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Load CSV Files
 
@@ -123,7 +123,7 @@ FORMAT_OPTIONS ('header' = 'false');
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

@@ -3,7 +3,7 @@
 Spark SQL processes queries through a multi-stage pipeline: parsing → analysis → optimization
 → physical planning → execution.
 
-## 📌 Execution Pipeline
+## :material-pin: Execution Pipeline
 
 ```
 SQL String
@@ -34,7 +34,7 @@ SQL String
      Execution
 ```
 
-## 🔍 Stage Details
+## :material-magnify: Stage Details
 
 ### 1. Parsing
 
@@ -71,7 +71,7 @@ Selects concrete algorithms for each operation:
 Whole-stage code generation compiles query stages into optimized JVM bytecode,
 avoiding virtual method dispatch overhead and enabling CPU-efficient processing.
 
-## 🧪 Inspect the Query Plan
+## :material-flask-outline: Inspect the Query Plan
 
 ```sql
 -- Logical plan
@@ -90,7 +90,7 @@ EXPLAIN COST SELECT * FROM sales WHERE amount > 100;
 EXPLAIN CODEGEN SELECT * FROM sales WHERE amount > 100;
 ```
 
-## 🧠 Key Concepts
+## :material-brain: Key Concepts
 
 | Concept | Description |
 |---------|-------------|

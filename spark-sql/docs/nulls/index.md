@@ -16,7 +16,7 @@ graph TD
 
 ---
 
-## 📌 Core Concepts
+## :material-pin: Core Concepts
 
 A table consists of rows, and each row contains columns. When the value of a column for a given row is not known at the time the row comes into existence, SQL represents it as NULL. NULL is not zero, not an empty string — it is the absence of any known value.
 
@@ -42,7 +42,7 @@ INSERT INTO person VALUES (700, 'Dan',      50);
 
 ---
 
-## 🔍 Comparison Operators
+## :material-magnify: Comparison Operators
 
 Spark supports the standard comparison operators `>`, `>=`, `=`, `<`, `<=`. When one or both operands are NULL, the result is NULL (unknown) — never TRUE or FALSE.
 
@@ -65,7 +65,7 @@ SELECT NULL <=> NULL      AS expression_output; -- Result: TRUE
 
 ---
 
-## 🔍 Logical Operators
+## :material-magnify: Logical Operators
 
 AND, OR, and NOT follow three-valued logic (TRUE, FALSE, NULL/unknown). A NULL input does not always produce a NULL result — short-circuit rules apply.
 
@@ -89,7 +89,7 @@ SELECT NOT(NULL)         AS expression_output; -- Result: NULL
 
 ---
 
-## 🔍 Expressions
+## :material-magnify: Expressions
 
 ### Null-Intolerant Expressions
 
@@ -118,7 +118,7 @@ These expressions can accept NULL operands and may return a non-NULL result:
 
 ---
 
-## 🔍 NULL in Aggregations
+## :material-magnify: NULL in Aggregations
 
 Aggregate functions silently skip NULL values. Only `COUNT(*)` counts every row including those with NULLs.
 
@@ -150,7 +150,7 @@ ORDER BY age;
 
 ---
 
-## 🧠 Best Practices
+## :material-brain: Best Practices
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

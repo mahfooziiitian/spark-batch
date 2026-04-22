@@ -4,7 +4,7 @@ Comparison predicates test equality or ordering between values.
 
 ---
 
-## 📌 Operators
+## :material-pin: Operators
 
 | Operator | Example | Notes |
 |----------|---------|-------|
@@ -17,7 +17,7 @@ Comparison predicates test equality or ordering between values.
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. **`BETWEEN` is inclusive** — `x BETWEEN 1 AND 5` includes 1 and 5.
 2. **`IN` with NULLs** — If the list (or subquery) contains NULL, `NOT IN` can
@@ -26,7 +26,7 @@ Comparison predicates test equality or ordering between values.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Range Filter
 
@@ -53,7 +53,7 @@ ON a.id <=> b.id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

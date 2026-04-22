@@ -11,7 +11,7 @@ graph LR
     B --> C[Output Array / Scalar]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 EXISTS(array, element -> condition)
@@ -23,37 +23,37 @@ EXISTS(array, element -> condition)
 | `element` | Variable representing each element during iteration |
 | `condition` | Boolean expression evaluated for each element |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Returns `TRUE` if **any** element satisfies the condition (short-circuits on first match).
 2. Returns `FALSE` if no element satisfies the condition.
 3. Returns `TRUE` for an empty array (vacuously — no failing element exists).
 4. Returns `NULL` if the input array is `NULL`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Check for Any Even Number
+### :material-toy-brick: 1. Check for Any Even Number
 
 ```sql
 SELECT EXISTS(ARRAY(1, 2, 3, 4, 5), x -> x % 2 = 0) AS has_even;
 -- Result: true
 ```
 
-### 🧱 2. Check for Values Above a Threshold
+### :material-toy-brick: 2. Check for Values Above a Threshold
 
 ```sql
 SELECT EXISTS(ARRAY(1, 2, 3, 4, 5), x -> x > 3) AS has_gt_three;
 -- Result: true
 ```
 
-### 🧱 3. Detect NULL Elements
+### :material-toy-brick: 3. Detect NULL Elements
 
 ```sql
 SELECT EXISTS(ARRAY(1, NULL, 3, NULL, 5), x -> x IS NULL) AS has_null;
 -- Result: true
 ```
 
-### 🧱 4. Search Inside Nested Arrays
+### :material-toy-brick: 4. Search Inside Nested Arrays
 
 ```sql
 SELECT EXISTS(
@@ -63,7 +63,7 @@ SELECT EXISTS(
 -- Result: true
 ```
 
-### 🧱 5. Check String Lengths
+### :material-toy-brick: 5. Check String Lengths
 
 ```sql
 SELECT EXISTS(
@@ -73,7 +73,7 @@ SELECT EXISTS(
 -- Result: true  (banana has 6 characters)
 ```
 
-### 🧱 6. Check Struct Fields
+### :material-toy-brick: 6. Check Struct Fields
 
 ```sql
 SELECT EXISTS(
@@ -86,7 +86,7 @@ SELECT EXISTS(
 -- Result: true
 ```
 
-### 🧱 7. Data Quality — Flag Rows with Invalid Entries
+### :material-toy-brick: 7. Data Quality — Flag Rows with Invalid Entries
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sensor_data AS
@@ -101,7 +101,7 @@ FROM sensor_data;
 -- device_1 → true, device_2 → false
 ```
 
-### 🧱 8. Combine with Other HOFs
+### :material-toy-brick: 8. Combine with Other HOFs
 
 ```sql
 -- Filter rows, then check existence
@@ -112,7 +112,7 @@ SELECT EXISTS(
 -- Result: true  (4 is even and > 3)
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `EXISTS`? |
 |----------|--------------|

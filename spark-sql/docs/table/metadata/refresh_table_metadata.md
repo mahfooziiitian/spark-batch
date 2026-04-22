@@ -5,7 +5,7 @@ This is useful when underlying data changes outside Spark.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 REFRESH TABLE table_name;
@@ -13,7 +13,7 @@ REFRESH TABLE table_name;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Clears cached metadata and file listings.
 2. Does not change data; it only refreshes Spark's view.
@@ -21,7 +21,7 @@ REFRESH TABLE table_name;
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 REFRESH TABLE sales;
@@ -29,7 +29,7 @@ REFRESH TABLE sales;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

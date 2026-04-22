@@ -28,7 +28,7 @@ graph TD
 
 ---
 
-## 🚀 BROADCAST Hint
+## :material-rocket-launch: BROADCAST Hint
 
 The `BROADCAST` hint tells Spark to broadcast the specified table to all worker nodes, enabling a broadcast join. This can significantly speed up joins when one table is small enough to fit in memory.
 
@@ -47,7 +47,7 @@ In this example, the `records` table (`r`) will be broadcasted to all nodes.
 
 ---
 
-## 📝 Hint Precedence
+## :material-pencil-outline: Hint Precedence
 
 When multiple join hints are specified on both sides of a join, Spark applies the following precedence:
 
@@ -60,7 +60,7 @@ If both sides use the same hint (e.g., both use `BROADCAST` or `SHUFFLE_HASH`), 
 
 ---
 
-## 📚 References
+## :material-bookshelf: References
 
 - [Spark SQL Join Hints Documentation](https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-hints.html)
 - [Spark SQL Performance Tuning](https://spark.apache.org/docs/latest/sql-performance-tuning.html)

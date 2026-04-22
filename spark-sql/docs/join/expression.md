@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 🔹 1. Equality Join (Equi-Join)
+## :material-circle-small: 1. Equality Join (Equi-Join)
 
 ```sql
 SELECT *
@@ -28,7 +28,7 @@ JOIN orders o
 
 ---
 
-## 🔹 2. Multiple Conditions
+## :material-circle-small: 2. Multiple Conditions
 
 ```sql
 SELECT *
@@ -42,7 +42,7 @@ JOIN departments d
 
 ---
 
-## 🔹 3. Non-Equality (Range) Join
+## :material-circle-small: 3. Non-Equality (Range) Join
 
 ```sql
 SELECT *
@@ -65,7 +65,7 @@ JOIN B
 
 ---
 
-## 🔹 4. Function-Based Expression
+## :material-circle-small: 4. Function-Based Expression
 
 ```sql
 SELECT *
@@ -78,7 +78,7 @@ JOIN users u
 
 ---
 
-## 🔹 5. OR Condition
+## :material-circle-small: 5. OR Condition
 
 ```sql
 SELECT *
@@ -92,7 +92,7 @@ JOIN routes r
 
 ---
 
-## 🔹 6. Cross Join (No Expression)
+## :material-circle-small: 6. Cross Join (No Expression)
 
 ```sql
 SELECT *
@@ -104,7 +104,7 @@ CROSS JOIN B;
 
 ---
 
-## 🔹 7. USING Clause
+## :material-circle-small: 7. USING Clause
 
 ```sql
 SELECT *
@@ -121,7 +121,7 @@ ON customers.id = orders.id
 
 ---
 
-## 💡 Best Practices
+## :material-lightbulb-outline: Best Practices
 
 - **Always use explicit `ON` conditions** (avoid just `WHERE`).
 - **Group multiple conditions** with `AND` / `OR` for clarity.
@@ -136,7 +136,7 @@ ON customers.id = orders.id
 
 ---
 
-## ✅ Summary
+## :material-check-circle-outline: Summary
 
 In Spark SQL, join expressions in the `ON` clause can be:
 

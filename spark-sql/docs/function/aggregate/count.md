@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Description | Returns |
 |----------|-------------|---------|
@@ -22,7 +22,7 @@ graph LR
 | `APPROX_COUNT_DISTINCT(expr)` | Approximate distinct count (faster, ~2% error) | `BIGINT` |
 | `APPROX_PERCENTILE(col, pct, accuracy)` | Approximate percentile value | Same as `col` |
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### COUNT Variants
 
@@ -85,7 +85,7 @@ GROUP BY region;
 | East | 3 | 2 | 1 |
 | West | 3 | 2 | 1 |
 
-## 🧠 COUNT vs APPROX_COUNT_DISTINCT
+## :material-brain: COUNT vs APPROX_COUNT_DISTINCT
 
 | Function | Exact | Speed | Use Case |
 |----------|-------|-------|----------|

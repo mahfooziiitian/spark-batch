@@ -21,7 +21,7 @@ graph LR
 
 ---
 
-## 📌 Algorithm Summary
+## :material-pin: Algorithm Summary
 
 For each `(original_key, value)` pair in `original_map`:
 
@@ -32,7 +32,7 @@ For each `(original_key, value)` pair in `original_map`:
 
 ---
 
-## 🧪 Behaviour Reference
+## :material-flask-outline: Behaviour Reference
 
 | Scenario | key_map | original_map | Expected output | Notes |
 |----------|---------|-------------|-----------------|-------|
@@ -55,7 +55,7 @@ For each `(original_key, value)` pair in `original_map`:
 
 ---
 
-## 🔍 SQL Implementation
+## :material-magnify: SQL Implementation
 
 ```sql
 --8<-- "src/application/map_key_replace/v5/map_key_replace_v5.sql"
@@ -63,7 +63,7 @@ For each `(original_key, value)` pair in `original_map`:
 
 ---
 
-## 🧠 Tips and Variations
+## :material-brain: Tips and Variations
 
 | Need | Approach |
 |------|----------|

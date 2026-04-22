@@ -6,7 +6,7 @@ and are not persisted in the metastore.
 
 ---
 
-## 📌 Key Characteristics
+## :material-pin: Key Characteristics
 
 | Feature | Behavior |
 |---------|----------|
@@ -17,7 +17,7 @@ and are not persisted in the metastore.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Create a Temporary View
 
@@ -41,7 +41,7 @@ DROP VIEW IF EXISTS recent_orders;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Temp views are **session-scoped** and disappear when the session ends.
 2. Temp views can shadow permanent tables with the same name.
@@ -49,7 +49,7 @@ DROP VIEW IF EXISTS recent_orders;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

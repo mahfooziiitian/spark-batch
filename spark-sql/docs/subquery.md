@@ -15,7 +15,7 @@ graph TD
 
 ---
 
-## 📌 Subquery Types
+## :material-pin: Subquery Types
 
 | Type | Syntax | Description |
 |------|--------|-------------|
@@ -27,7 +27,7 @@ graph TD
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Scalar subquery constraint**: must return at most one row and one column. A runtime error is raised if more than one row is returned.
 2. **IN with NULL**: if the subquery result contains any `NULL` values, `NOT IN` may produce unexpected `UNKNOWN` results for every outer row — use `NOT EXISTS` instead to handle NULLs safely.
@@ -36,7 +36,7 @@ graph TD
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -186,7 +186,7 @@ HAVING SUM(amount) > (SELECT AVG(amount) FROM orders);
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern | Performance Note |
 |----------|---------------------|-----------------|

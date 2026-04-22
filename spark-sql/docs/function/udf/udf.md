@@ -13,7 +13,7 @@ graph LR
 
 ---
 
-## 📌 Python Scalar UDFs
+## :material-pin: Python Scalar UDFs
 
 ### Registration via Decorator
 
@@ -90,7 +90,7 @@ SELECT safe_length(NULL);     -- NULL
 
 ---
 
-## 📌 Pandas UDFs (Vectorized)
+## :material-pin: Pandas UDFs (Vectorized)
 
 Pandas UDFs operate on **batches of rows** using Pandas Series/DataFrames, avoiding the
 per-row serialization overhead of regular UDFs. They are 3–100x faster for numeric operations.
@@ -147,7 +147,7 @@ SELECT amount, classify(amount) AS category FROM transactions;
 
 ---
 
-## 📌 Scala / Java UDFs
+## :material-pin: Scala / Java UDFs
 
 ### Scala UDF Registration
 
@@ -181,7 +181,7 @@ SELECT square(5);
 
 ---
 
-## 📌 User-Defined Aggregate Functions (UDAFs)
+## :material-pin: User-Defined Aggregate Functions (UDAFs)
 
 UDAFs compute a single result from a group of rows — like built-in `SUM` or `AVG` but with
 custom logic.
@@ -231,7 +231,7 @@ SELECT department, custom_avg(salary) FROM employees GROUP BY department;
 
 ---
 
-## 📌 SQL CREATE FUNCTION
+## :material-pin: SQL CREATE FUNCTION
 
 ### Temporary Function (Session-Scoped)
 
@@ -255,7 +255,7 @@ DROP FUNCTION IF EXISTS my_catalog.my_schema.my_func;
 
 ---
 
-## ⚠️ Performance Considerations
+## :material-alert:️ Performance Considerations
 
 | Factor | Impact | Mitigation |
 |--------|--------|------------|
@@ -273,7 +273,7 @@ Built-in Functions > SQL Macros > Pandas UDFs > Scala UDFs > Python Scalar UDFs
 
 ---
 
-## 🧪 Common Patterns
+## :material-flask-outline: Common Patterns
 
 ### Pattern 1: Lookup / Enrichment
 
@@ -335,17 +335,17 @@ SELECT customer_id, credit_score, risk_tier(credit_score) AS tier FROM accounts;
 
 ---
 
-## 🧠 When to Use UDFs
+## :material-brain: When to Use UDFs
 
 | Scenario | Recommended Approach |
 |----------|---------------------|
-| Simple math / string ops | ❌ Use built-in functions |
-| Reusable SQL expressions | ❌ Use SQL macros |
-| Numeric batch operations | ✅ Pandas UDF |
-| Complex business logic | ✅ Scalar UDF |
-| External API calls / lookups | ✅ Scalar UDF with broadcast |
-| Custom aggregation | ✅ Pandas grouped UDF or Scala UDAF |
-| Row generation (1→N rows) | ✅ UDTF |
+| Simple math / string ops | :material-close-circle-outline: Use built-in functions |
+| Reusable SQL expressions | :material-close-circle-outline: Use SQL macros |
+| Numeric batch operations | :material-check-circle-outline: Pandas UDF |
+| Complex business logic | :material-check-circle-outline: Scalar UDF |
+| External API calls / lookups | :material-check-circle-outline: Scalar UDF with broadcast |
+| Custom aggregation | :material-check-circle-outline: Pandas grouped UDF or Scala UDAF |
+| Row generation (1→N rows) | :material-check-circle-outline: UDTF |
 
 > **Tip:** Always benchmark UDF vs built-in alternatives. A chain of built-in functions
 > is almost always faster than a single UDF doing the same work.

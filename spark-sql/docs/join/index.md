@@ -20,7 +20,7 @@ graph TD
 
 ---
 
-## 📌 Join Types
+## :material-pin: Join Types
 
 | Join Type | Description |
 |-----------|-------------|
@@ -33,7 +33,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT o.order_id, c.customer_name
@@ -44,7 +44,7 @@ ON o.customer_id = c.customer_id;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Join condition should be selective to avoid large shuffles.
 2. Broadcast joins are faster for small dimension tables.

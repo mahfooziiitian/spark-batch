@@ -31,7 +31,7 @@ graph LR
 
 ---
 
-## ⚠️ Considerations
+## :material-alert:️ Considerations
 
 - **Performance:**  
     This strategy is **extremely expensive**:  

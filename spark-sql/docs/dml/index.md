@@ -25,7 +25,7 @@ graph TD
 | [MERGE INTO](table/merge.md) | Upsert — insert, update, or delete in a single atomic operation | Yes |
 | [COPY INTO](table/copy_into.md) | Bulk-load data from external files | Yes |
 
-## 🔍 Key Concepts
+## :material-magnify: Key Concepts
 
 1. **ACID Transactions** — Delta Lake wraps every DML statement in a transaction;
    failures leave the table unchanged.
@@ -37,7 +37,7 @@ graph TD
    concurrent writes to *different* partitions succeed, while conflicts on the
    same partition are retried or rejected.
 
-## 🧪 Quick Example
+## :material-flask-outline: Quick Example
 
 ```sql
 -- Insert new rows

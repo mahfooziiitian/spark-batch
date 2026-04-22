@@ -10,15 +10,15 @@ inline sample data, and expected output.
 
 ```mermaid
 graph LR
-    RAW["🗄️ Raw Data"] --> DQ["🔍 Data Quality\n(Duplicates · Nulls · Types)"]
-    DQ --> TRANSFORM["⚙️ Transform\n(Filter · Aggregate · Join)"]
-    TRANSFORM --> ENRICH["📊 Enrich\n(Window · Rank · CTE)"]
-    ENRICH --> SERVE["🚀 Serve\n(Dashboard · Export · Delta)"]
+    RAW[":material-database:️ Raw Data"] --> DQ[":material-magnify: Data Quality\n(Duplicates · Nulls · Types)"]
+    DQ --> TRANSFORM[":material-cog-outline:️ Transform\n(Filter · Aggregate · Join)"]
+    TRANSFORM --> ENRICH[":material-chart-bar: Enrich\n(Window · Rank · CTE)"]
+    ENRICH --> SERVE[":material-rocket-launch: Serve\n(Dashboard · Export · Delta)"]
 ```
 
 ---
 
-## 📌 Pattern Catalogue
+## :material-pin: Pattern Catalogue
 
 | Category | Description | Key Techniques |
 |----------|-------------|----------------|
@@ -43,7 +43,7 @@ graph LR
 
 ---
 
-## 🧪 Quick-Start Examples
+## :material-flask-outline: Quick-Start Examples
 
 ### De-duplicate with Window Function
 
@@ -94,7 +94,7 @@ FROM allsales;
 
 ---
 
-## 🧠 Decision Guide
+## :material-brain: Decision Guide
 
 | Need | Use |
 |------|-----|

@@ -6,7 +6,7 @@ three-level namespace: **catalog.schema.table**.
 
 ---
 
-## 📌 Core Concepts
+## :material-pin: Core Concepts
 
 | Concept | Description |
 |---------|-------------|
@@ -17,7 +17,7 @@ three-level namespace: **catalog.schema.table**.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Create and Use a Catalog
 
@@ -39,7 +39,7 @@ GRANT SELECT ON TABLE sales_catalog.analytics.orders TO `analyst_role`;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Unity Catalog enforces **centralized access control** via grants.
 2. Object names are fully qualified: `catalog.schema.table`.
@@ -47,7 +47,7 @@ GRANT SELECT ON TABLE sales_catalog.analytics.orders TO `analyst_role`;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

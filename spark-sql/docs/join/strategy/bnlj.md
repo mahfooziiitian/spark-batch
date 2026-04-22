@@ -17,7 +17,7 @@ graph LR
     E2 -->|nested loop| L2[Large DF Part 2]
 ```
 
-## ⚙️ When Spark Uses BNLJ
+## :material-cog-outline:️ When Spark Uses BNLJ
 
 1. Cross joins (without predicates)
 2. Join conditions with `non-equi logic` (e.g., <, !=, LIKE, BETWEEN)

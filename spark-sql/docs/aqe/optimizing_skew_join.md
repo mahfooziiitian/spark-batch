@@ -4,7 +4,7 @@ AQE can detect and split skewed shuffle partitions to reduce straggler tasks.
 
 ---
 
-## 📌 Key Settings
+## :material-pin: Key Settings
 
 ```sql
 SET spark.sql.adaptive.enabled = true;
@@ -13,7 +13,7 @@ SET spark.sql.adaptive.skewJoin.enabled = true;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Skew detection uses partition size thresholds.
 2. Skewed partitions are split into smaller tasks.
@@ -21,7 +21,7 @@ SET spark.sql.adaptive.skewJoin.enabled = true;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

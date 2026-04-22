@@ -13,7 +13,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SUM(expr)
@@ -29,7 +29,7 @@ SUM(expr) FILTER (WHERE condition)
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **NULL ignored** — `NULL` values are silently excluded; `SUM` over an all-NULL column returns `NULL`, not `0`.
 2. **Return type** — `BIGINT` input returns `BIGINT`; `DOUBLE` / `FLOAT` input returns `DOUBLE`; `DECIMAL` input preserves precision and scale.
@@ -40,7 +40,7 @@ SUM(expr) FILTER (WHERE condition)
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -168,7 +168,7 @@ ORDER BY order_date, order_id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

@@ -17,7 +17,7 @@ graph TD
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### LEFT OUTER JOIN
 
@@ -88,7 +88,7 @@ WHERE r.key IS NULL;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 | Join Type | Left Rows | Right Rows | NULLs Introduced |
 |-----------|-----------|------------|------------------|
@@ -104,7 +104,7 @@ WHERE r.key IS NULL;
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -271,7 +271,7 @@ LEFT ANTI JOIN orders AS o
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Join Type |
 |----------|-----------------------|

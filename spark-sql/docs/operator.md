@@ -5,7 +5,7 @@ comparison, logical, and string operators.
 
 ---
 
-## 📌 Operator Categories
+## :material-pin: Operator Categories
 
 | Category | Examples |
 |----------|----------|
@@ -17,7 +17,7 @@ comparison, logical, and string operators.
 
 ---
 
-## 🧪 Examples
+## :material-flask-outline: Examples
 
 ```sql
 SELECT 10 + 5 AS sum,
@@ -32,7 +32,7 @@ WHERE age >= 18 AND country = 'US';
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Operator |
 |----------|----------|

@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 Commands
+## :material-pin: Commands
 
 ```sql
 CACHE TABLE orders;
@@ -25,7 +25,7 @@ UNCACHE TABLE orders;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Cached data consumes memory; evictions happen under pressure.
 2. Use caching for datasets reused across multiple queries.
@@ -33,7 +33,7 @@ UNCACHE TABLE orders;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

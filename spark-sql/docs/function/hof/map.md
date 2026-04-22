@@ -13,7 +13,7 @@ graph LR
 
 ## :material-code-braces: MAP_FILTER
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 MAP_FILTER(map, (key, value) -> condition)
@@ -25,13 +25,13 @@ MAP_FILTER(map, (key, value) -> condition)
 | `(key, value)` | Lambda parameters for each map entry |
 | `condition` | Boolean expression; entries where this is `TRUE` are kept |
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns a new map containing only entries where the condition is `TRUE`.
 2. Returns an empty map if no entries match.
 3. Returns `NULL` if the input map is `NULL`.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
 ```sql
 -- Keep entries where the value length exceeds 1
@@ -47,7 +47,7 @@ SELECT MAP_FILTER(MAP('a', 1, 'b', 2, 'c', 3), (k, v) -> v % 2 = 0);
 
 ## :material-code-braces: MAP_ZIP_WITH
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 MAP_ZIP_WITH(map1, map2, (key, value1, value2) -> expression)
@@ -60,14 +60,14 @@ MAP_ZIP_WITH(map1, map2, (key, value1, value2) -> expression)
 | `(key, value1, value2)` | Lambda parameters: shared key and both values |
 | `expression` | Logic to produce the merged value |
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Merges two maps by key — for each key present in **either** map, calls the lambda.
 2. If a key exists in only one map, the other value is `NULL`.
 3. The output map has the union of all keys from both inputs.
 4. Returns `NULL` if either input map is `NULL`.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
 ```sql
 -- Sum values from two maps by shared key
@@ -91,19 +91,19 @@ SELECT MAP_ZIP_WITH(
 
 ## :material-code-braces: TRANSFORM_KEYS
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 TRANSFORM_KEYS(map, (key, value) -> new_key)
 ```
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns a new map with each key replaced by the result of the lambda.
 2. Values remain unchanged.
 3. If the lambda produces duplicate keys, later entries overwrite earlier ones.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
 ```sql
 -- Multiply keys by 10
@@ -119,18 +119,18 @@ SELECT TRANSFORM_KEYS(MAP('name', 'Alice', 'city', 'NYC'), (k, v) -> UPPER(k));
 
 ## :material-code-braces: TRANSFORM_VALUES
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 TRANSFORM_VALUES(map, (key, value) -> new_value)
 ```
 
-### 🔍 Behavior
+### :material-magnify: Behavior
 
 1. Returns a new map with each value replaced by the result of the lambda.
 2. Keys remain unchanged.
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
 ```sql
 -- Uppercase all values
@@ -147,7 +147,7 @@ SELECT TRANSFORM_VALUES(
 
 ---
 
-## 🏭 Real-World Applications
+## :material-factory: Real-World Applications
 
 ### Merge Feature Vectors
 
@@ -182,7 +182,7 @@ SELECT TRANSFORM_VALUES(
 -- Result: {ssn -> ***-**-****, name -> Alice}
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Function | Use Case | Returns |
 |----------|----------|---------|

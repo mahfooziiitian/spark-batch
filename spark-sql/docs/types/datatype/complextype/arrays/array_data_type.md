@@ -12,7 +12,7 @@ graph LR
     A --> E["TRANSFORM / FILTER HOF"]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 -- Type declaration
@@ -23,14 +23,14 @@ ARRAY(1, 2, 3)
 ARRAY('a', 'b', 'c')
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. All elements must be the same type (or implicitly castable).
 2. Arrays are **0-indexed** with `GET()`, **1-indexed** with `ELEMENT_AT()`.
 3. Arrays can contain NULLs.
 4. Supports nesting: `ARRAY<ARRAY<INT>>`, `ARRAY<STRUCT<...>>`.
 
-## 🧪 Examples
+## :material-flask-outline: Examples
 
 ```sql
 -- Create and access

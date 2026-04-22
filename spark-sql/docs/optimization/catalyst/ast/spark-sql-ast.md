@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Why It Matters
+## :material-pin: Why It Matters
 
 1. The parser produces an AST from the SQL string.
 2. The AST is converted into a logical plan for optimization.
@@ -22,7 +22,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 EXPLAIN PARSED SELECT * FROM orders WHERE amount > 100;
@@ -30,7 +30,7 @@ EXPLAIN PARSED SELECT * FROM orders WHERE amount > 100;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

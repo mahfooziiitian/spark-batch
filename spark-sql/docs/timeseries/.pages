@@ -4,3 +4,6 @@ nav:
   - Tumbling: tumbling.md
   - Hopping: hopping.md
   - Sliding: sliding.md
+  - Session: session.md
+  - Lag & Lead: lag_lead.md
+  - Gap Fill: gap_fill.md

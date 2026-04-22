@@ -15,14 +15,14 @@ graph LR
 
 ---
 
-## 🔎 What is a Left Anti Join?
+## :material-magnify: What is a Left Anti Join?
 
 - **Purpose:** Identify rows in the left table with **no match** in the right table.
 - **Common Use:** Data validation, finding "orphan" records, implementing `NOT IN`/`NOT EXISTS` logic.
 
 ---
 
-## 🔁 How Does It Work in Spark?
+## :material-repeat: How Does It Work in Spark?
 
 1. **Evaluate join condition** between left and right tables.
 2. **Identify unmatched rows** in the left table.
@@ -30,7 +30,7 @@ graph LR
 
 ---
 
-## 🗺️ Visual Flow
+## :material-map:️ Visual Flow
 
 ```mermaid
 flowchart TD
@@ -45,7 +45,7 @@ flowchart TD
 
 ---
 
-## ⚙️ Spark Join Strategies
+## :material-cog-outline:️ Spark Join Strategies
 
 | Condition                  | Spark Strategy             |
 |----------------------------|---------------------------|
@@ -55,7 +55,7 @@ flowchart TD
 
 ---
 
-## 🏗️ Example: Employees & Departments
+## :material-office-building-cog:️ Example: Employees & Departments
 
 ### Create Tables
 
@@ -90,7 +90,7 @@ INSERT INTO department (department_id, department_name) VALUES
 
 ---
 
-### 🔗 Find Employees Without a Matching Department
+### :material-link: Find Employees Without a Matching Department
 
 ```sql
 SELECT
@@ -103,7 +103,7 @@ LEFT ANTI JOIN department
 
 ---
 
-### 🟰 Equivalent SQL (NOT IN)
+### :material-equal: Equivalent SQL (NOT IN)
 
 ```sql
 SELECT *
@@ -115,7 +115,7 @@ WHERE o.customer_id NOT IN (
 
 ---
 
-## 💡 Use Cases
+## :material-lightbulb-outline: Use Cases
 
 | Use Case                        | Why Use Anti Join?                  |
 |----------------------------------|-------------------------------------|
@@ -125,7 +125,7 @@ WHERE o.customer_id NOT IN (
 
 ---
 
-## 🚀 Optimization Tips
+## :material-rocket-launch: Optimization Tips
 
 - **Broadcast hint** for small right tables:
 

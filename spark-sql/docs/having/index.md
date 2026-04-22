@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT group_cols, aggregate_exprs
@@ -27,7 +27,7 @@ HAVING aggregate_predicate;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Runs after aggregation** — `HAVING` is evaluated after `GROUP BY`.
 2. **Aggregate-only filters** — It can reference aggregate expressions like
@@ -48,7 +48,7 @@ HAVING aggregate_predicate;
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Filter by Total Count
 
@@ -82,7 +82,7 @@ HAVING AVG(price) > 100;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

@@ -5,7 +5,7 @@ It is cheaper than `REPARTITION` but can lead to uneven partition sizes.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT /*+ COALESCE(n) */ * FROM table;
@@ -13,7 +13,7 @@ SELECT /*+ COALESCE(n) */ * FROM table;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Coalesce avoids shuffle; it merges adjacent partitions.
 2. It can create skew if data is not evenly distributed.
@@ -21,7 +21,7 @@ SELECT /*+ COALESCE(n) */ * FROM table;
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT /*+ COALESCE(10) */ *
@@ -31,7 +31,7 @@ WHERE event_date = '2024-01-01';
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Use |
 |----------|-----|

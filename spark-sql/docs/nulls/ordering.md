@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 ORDER BY col ASC NULLS FIRST
@@ -25,7 +25,7 @@ ORDER BY col DESC NULLS LAST
 
 ---
 
-## 🧪 Examples
+## :material-flask-outline: Examples
 
 ```sql
 SELECT * FROM users
@@ -39,7 +39,7 @@ ORDER BY last_login DESC NULLS FIRST;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

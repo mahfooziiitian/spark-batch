@@ -13,7 +13,7 @@ graph LR
     B --> E[Row N]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ### Direct
 
@@ -37,7 +37,7 @@ FROM your_table t
 LATERAL VIEW INLINE_OUTER(struct_array_column) AS col1, col2;
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Each struct in the array produces one output row.
 2. Each field of the struct becomes a separate column (named `col1`, `col2`, … by default).
@@ -52,9 +52,9 @@ LATERAL VIEW INLINE_OUTER(struct_array_column) AS col1, col2;
 | `EXPLODE(array_of_structs)` | One column containing the whole struct → access fields via `item.field` |
 | `INLINE(array_of_structs)` | Multiple columns, one per struct field → fields are top-level columns |
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Flatten Order Line Items
+### :material-toy-brick: 1. Flatten Order Line Items
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -70,7 +70,7 @@ LATERAL VIEW INLINE(items) AS product, qty;
 -- (1001, book, 2), (1001, pen, 5), (1002, notebook, 1)
 ```
 
-### 🧱 2. INLINE_OUTER — Keep Rows with Empty Arrays
+### :material-toy-brick: 2. INLINE_OUTER — Keep Rows with Empty Arrays
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders_sparse AS
@@ -86,14 +86,14 @@ LATERAL VIEW INLINE_OUTER(items) AS product, qty;
 -- (1, pen, 3), (2, NULL, NULL), (3, NULL, NULL)
 ```
 
-### 🧱 3. Direct SELECT (No Table)
+### :material-toy-brick: 3. Direct SELECT (No Table)
 
 ```sql
 SELECT INLINE(ARRAY(STRUCT(1, 'a'), STRUCT(2, 'b')));
 -- (1, a), (2, b)
 ```
 
-### 🧱 4. Flatten Employee Skills
+### :material-toy-brick: 4. Flatten Employee Skills
 
 ```sql
 CREATE OR REPLACE TEMP VIEW employees AS
@@ -113,7 +113,7 @@ LATERAL VIEW INLINE(skills) AS skill, level;
 -- (Alice, Python, expert), (Alice, SQL, advanced), (Bob, Java, intermediate)
 ```
 
-### 🧱 5. Aggregate After Inline
+### :material-toy-brick: 5. Aggregate After Inline
 
 ```sql
 -- Count total items per order
@@ -124,7 +124,7 @@ GROUP BY order_id;
 -- (1001, 7), (1002, 1)
 ```
 
-### 🧱 6. Combine with FILTER HOF
+### :material-toy-brick: 6. Combine with FILTER HOF
 
 ```sql
 -- Inline only high-quantity items
@@ -136,7 +136,7 @@ LATERAL VIEW INLINE(
 -- (1001, pen, 5)
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `INLINE`? |
 |----------|--------------|

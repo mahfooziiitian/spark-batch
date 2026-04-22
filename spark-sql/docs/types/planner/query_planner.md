@@ -3,7 +3,7 @@
 The physical planner converts an optimized logical plan into an executable physical plan
 by selecting concrete algorithms for each operation.
 
-## 📌 Join Strategies
+## :material-pin: Join Strategies
 
 | Strategy | When Used | Broadcast? |
 |----------|-----------|------------|
@@ -13,7 +13,7 @@ by selecting concrete algorithms for each operation.
 | **Broadcast Nested Loop Join** | Non-equi joins with small table | Yes |
 | **Cartesian Product** | Cross joins | No |
 
-## 📌 Aggregation Strategies
+## :material-pin: Aggregation Strategies
 
 | Strategy | Description |
 |----------|-------------|
@@ -21,7 +21,7 @@ by selecting concrete algorithms for each operation.
 | **Sort Aggregate** | Sort-based; handles large groups with spilling |
 | **Object Hash Aggregate** | For complex types (structs, arrays) |
 
-## 🧪 Hint-Based Control
+## :material-flask-outline: Hint-Based Control
 
 ```sql
 -- Force broadcast join
@@ -40,7 +40,7 @@ FROM t1 JOIN t2 ON t1.id = t2.id;
 SELECT /*+ REPARTITION(10) */ * FROM large_table;
 ```
 
-## 📌 Key Configuration
+## :material-pin: Key Configuration
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -49,7 +49,7 @@ SELECT /*+ REPARTITION(10) */ * FROM large_table;
 | `spark.sql.adaptive.enabled` | `true` (3.x) | Enable Adaptive Query Execution |
 | `spark.sql.adaptive.coalescePartitions.enabled` | `true` | Auto-coalesce small partitions |
 
-## 🧠 When to Tune
+## :material-brain: When to Tune
 
 | Symptom | Possible Fix |
 |---------|-------------|

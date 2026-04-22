@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 :material-check-circle: Common Functions
+## :material-pin: :material-check-circle: Common Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🧪 :material-check-circle: Example
+## :material-flask-outline: :material-check-circle: Example
 
 ```sql
 SELECT * FROM metrics WHERE ISNAN(value) = false;
@@ -33,7 +33,7 @@ SELECT * FROM metrics WHERE ISNAN(value) = false;
 
 ---
 
-## 🧠 :material-check-circle: When to Use
+## :material-brain: :material-check-circle: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

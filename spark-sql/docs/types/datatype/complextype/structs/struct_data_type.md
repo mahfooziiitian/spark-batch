@@ -12,7 +12,7 @@ graph LR
     A --> D["struct() function"]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 -- Type declaration
@@ -25,14 +25,14 @@ SELECT NAMED_STRUCT('name', 'Alice', 'age', 30) AS person;
 SELECT STRUCT('Alice', 30) AS person;
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Fields are accessed with **dot notation**: `col.field_name`.
 2. Structs can be nested: `STRUCT<address: STRUCT<city: STRING>>`.
 3. Two structs are equal if all fields match.
 4. Structs map naturally to JSON objects and Parquet nested groups.
 
-## 🧪 Examples
+## :material-flask-outline: Examples
 
 ### Create and Access
 

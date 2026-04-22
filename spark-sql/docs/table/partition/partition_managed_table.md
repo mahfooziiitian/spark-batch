@@ -5,7 +5,7 @@ physically organized by partition columns.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 CREATE TABLE sales (
@@ -18,7 +18,7 @@ PARTITIONED BY (order_date);
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Spark manages data files under the warehouse path.
 2. Partitions are represented as folder paths (e.g., `order_date=2024-01-01`).
@@ -26,7 +26,7 @@ PARTITIONED BY (order_date);
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 INSERT INTO sales
@@ -35,7 +35,7 @@ SELECT * FROM staging_sales;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

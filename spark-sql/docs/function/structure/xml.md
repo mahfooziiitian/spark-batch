@@ -11,7 +11,7 @@ graph LR
     B --> C[Struct Column]
 ```
 
-## 📌 Available Functions
+## :material-pin: Available Functions
 
 | Function | Return Type | Description |
 |----------|------------|-------------|
@@ -25,7 +25,7 @@ graph LR
 | `XPATH_DOUBLE(xml, xpath)` | `DOUBLE` | Double value (NaN if non-numeric match) |
 | `XPATH_NUMBER(xml, xpath)` | `DOUBLE` | Alias for `XPATH_DOUBLE` |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. All functions take two arguments: an XML string and an XPath expression.
 2. Numeric functions return `0` if no match is found, or `NaN` for non-numeric matches.
@@ -34,9 +34,9 @@ graph LR
 5. `XPATH_BOOLEAN` returns `TRUE` if the XPath matches any node, or if the expression evaluates to true.
 6. All functions return `NULL` if the XML input is `NULL`.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Extract All Matching Values
+### :material-toy-brick: 1. Extract All Matching Values
 
 ```sql
 SELECT XPATH(
@@ -46,14 +46,14 @@ SELECT XPATH(
 -- Result: ['b1', 'b2', 'b3']
 ```
 
-### 🧱 2. Extract First String Value
+### :material-toy-brick: 2. Extract First String Value
 
 ```sql
 SELECT XPATH_STRING('<a><b>hello</b><c>world</c></a>', 'a/c') AS val;
 -- Result: world
 ```
 
-### 🧱 3. Check Node Existence
+### :material-toy-brick: 3. Check Node Existence
 
 ```sql
 SELECT XPATH_BOOLEAN('<a><b>1</b></a>', 'a/b') AS exists;
@@ -63,7 +63,7 @@ SELECT XPATH_BOOLEAN('<a><b>1</b></a>', 'a/x') AS exists;
 -- Result: false
 ```
 
-### 🧱 4. Sum Numeric Nodes
+### :material-toy-brick: 4. Sum Numeric Nodes
 
 ```sql
 SELECT XPATH_DOUBLE('<a><b>1</b><b>2</b><b>3</b></a>', 'sum(a/b)') AS total;
@@ -73,14 +73,14 @@ SELECT XPATH_INT('<prices><p>10</p><p>20</p></prices>', 'sum(prices/p)') AS tota
 -- Result: 30
 ```
 
-### 🧱 5. Count Matching Nodes
+### :material-toy-brick: 5. Count Matching Nodes
 
 ```sql
 SELECT XPATH_INT('<a><b>1</b><b>2</b><b>3</b></a>', 'count(a/b)') AS cnt;
 -- Result: 3
 ```
 
-### 🧱 6. Conditional XPath
+### :material-toy-brick: 6. Conditional XPath
 
 ```sql
 SELECT XPATH_STRING(
@@ -90,7 +90,7 @@ SELECT XPATH_STRING(
 -- Result: Alice
 ```
 
-### 🧱 7. Process XML Column
+### :material-toy-brick: 7. Process XML Column
 
 ```sql
 CREATE OR REPLACE TEMP VIEW xml_data AS
@@ -107,7 +107,7 @@ FROM xml_data;
 -- (book, 2, 15.99), (pen, 10, 1.50)
 ```
 
-### 🧱 8. Extract Attributes
+### :material-toy-brick: 8. Extract Attributes
 
 ```sql
 SELECT XPATH_STRING(
@@ -117,7 +117,7 @@ SELECT XPATH_STRING(
 -- Result: en
 ```
 
-## 📋 Numeric Function Comparison
+## :material-clipboard-list-outline: Numeric Function Comparison
 
 | Function | Return Type | No Match | Non-Numeric Match |
 |----------|------------|----------|-------------------|
@@ -128,7 +128,7 @@ SELECT XPATH_STRING(
 | `XPATH_DOUBLE` | DOUBLE | 0.0 | NaN |
 | `XPATH_NUMBER` | DOUBLE | 0.0 | NaN |
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function |
 |----------|----------|

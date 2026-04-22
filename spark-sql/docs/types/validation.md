@@ -3,7 +3,7 @@
 Spark SQL provides functions for **type validation**, **safe casting**, and **pattern matching**
 to ensure data quality before processing.
 
-## 📌 CAST & TRY_CAST
+## :material-pin: CAST & TRY_CAST
 
 ### CAST — Strict Type Conversion
 
@@ -42,7 +42,7 @@ string REGEXP pattern   -- alias
 REGEXP_LIKE(string, pattern)
 ```
 
-### 🧪 Practical Examples
+### :material-flask-outline: Practical Examples
 
 #### Validate Email Format
 
@@ -71,7 +71,7 @@ FROM VALUES ('2024-01-15'), ('15/01/2024'), ('not-a-date') AS t(dt);
 -- true, false, false
 ```
 
-## 📌 IS NULL / IS NOT NULL
+## :material-pin: IS NULL / IS NOT NULL
 
 ```sql
 SELECT * FROM data WHERE value IS NOT NULL;
@@ -80,7 +80,7 @@ SELECT * FROM data WHERE value IS NOT NULL;
 SELECT COUNT(*) - COUNT(col) AS null_count FROM data;
 ```
 
-## 📌 TYPEOF — Inspect Runtime Type
+## :material-pin: TYPEOF — Inspect Runtime Type
 
 ```sql
 SELECT TYPEOF(1);           -- int
@@ -89,7 +89,7 @@ SELECT TYPEOF('hello');     -- string
 SELECT TYPEOF(ARRAY(1, 2)); -- array<int>
 ```
 
-## 📌 Data Quality Patterns
+## :material-pin: Data Quality Patterns
 
 ### Flag Invalid Rows
 
@@ -117,7 +117,7 @@ SELECT
 FROM raw_data;
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function |
 |----------|----------|

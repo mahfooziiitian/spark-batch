@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 array_agg(expr)
@@ -21,13 +21,13 @@ array_agg(expr)
 - Includes duplicates and NULL values
 - Order of elements is non-deterministic after a shuffle
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Collects all values (including NULLs) from the group into an array.
 2. Equivalent to `COLLECT_LIST` but follows SQL standard naming.
 3. The result order is **non-deterministic** unless combined with `ORDER BY` in a window function.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Basic Aggregation
 
@@ -70,7 +70,7 @@ SELECT collect_set(col) FROM VALUES (1), (2), (1) AS tab(col);
 -- Result: [1, 2]
 ```
 
-## 🧠 array_agg vs collect_list vs collect_set
+## :material-brain: array_agg vs collect_list vs collect_set
 
 | Function | Duplicates | NULLs | Standard |
 |----------|-----------|-------|----------|

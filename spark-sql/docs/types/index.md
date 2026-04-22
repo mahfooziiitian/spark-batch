@@ -17,7 +17,7 @@ graph TD
 
 ---
 
-## 📌 Type Categories
+## :material-pin: Type Categories
 
 | Category | Examples |
 |----------|----------|
@@ -28,7 +28,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE TABLE demo (
@@ -40,7 +40,7 @@ CREATE TABLE demo (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

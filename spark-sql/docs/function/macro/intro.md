@@ -11,14 +11,14 @@ graph LR
     B --> C["SELECT name(col) FROM table"]
 ```
 
-## 📌 What's Available
+## :material-pin: What's Available
 
 | Feature | Description | Scope |
 |---------|-------------|-------|
 | `CREATE TEMPORARY MACRO` | Reusable SQL expression expanded inline at compile time | Session |
 | `identifier()` | Safe dynamic table/column name resolution | Databricks |
 
-## 🔍 SQL Macros Overview
+## :material-magnify: SQL Macros Overview
 
 SQL macros define parameterized expressions that the query planner **inlines** before execution.
 Unlike UDFs, macros have zero serialization overhead and are fully optimized by Catalyst.
@@ -32,12 +32,12 @@ See the [SQL Macros](macro.md) page for full syntax, examples, and comparison wi
 
 ---
 
-## 🔍 The `identifier()` Function (Databricks)
+## :material-magnify: The `identifier()` Function (Databricks)
 
 In Databricks, `identifier()` is a helper for safely injecting **table or column names** into
 dynamically constructed SQL — ensuring correct quoting and preventing SQL injection.
 
-### 📌 Syntax
+### :material-pin: Syntax
 
 ```sql
 identifier(string_expression)
@@ -49,7 +49,7 @@ identifier(string_expression)
 2. **Prevents SQL injection** when table/column names come from user input or parameters.
 3. **Maintains compatibility** across Databricks runtimes.
 
-### 🧪 Examples
+### :material-flask-outline: Examples
 
 #### Python Notebook — Dynamic Table Name
 
@@ -73,7 +73,7 @@ SELECT identifier('my_column') FROM my_table;
 SELECT identifier('order') FROM orders;
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Tool |
 |----------|------|

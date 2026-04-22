@@ -11,7 +11,7 @@ graph LR
     B --> C[Result Value]
 ```
 
-## 📌 :material-calendar-clock: Categories
+## :material-pin: :material-calendar-clock: Categories
 
 | Category | Description | Key Functions |
 |----------|-------------|---------------|
@@ -20,7 +20,7 @@ graph LR
 | **Interval** | Add or subtract time durations | `INTERVAL '1' DAY`, `INTERVAL '2' HOUR`, `MAKE_INTERVAL` |
 | **Timezone** | Convert between time zones | `FROM_UTC_TIMESTAMP`, `TO_UTC_TIMESTAMP`, `CONVERT_TIMEZONE` |
 
-## 🧪 :material-calendar-clock: Quick Examples
+## :material-flask-outline: :material-calendar-clock: Quick Examples
 
 ```sql
 -- Date arithmetic
@@ -40,7 +40,7 @@ SELECT CURRENT_TIMESTAMP() + INTERVAL '2' HOUR AS two_hours_later;
 SELECT FROM_UTC_TIMESTAMP(CURRENT_TIMESTAMP(), 'America/New_York') AS eastern_time;
 ```
 
-## 🧠 :material-calendar-clock: Type Overview
+## :material-brain: :material-calendar-clock: Type Overview
 
 | Type | Storage | Example | Precision |
 |------|---------|---------|-----------|

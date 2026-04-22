@@ -11,7 +11,7 @@ graph LR
     B --> C[Map Type]
 ```
 
-## 📌 Creating Maps
+## :material-pin: Creating Maps
 
 ### MAP — Build from Key-Value Pairs
 
@@ -41,7 +41,7 @@ SELECT MAP_FROM_ENTRIES(ARRAY(STRUCT(1, 'a'), STRUCT(2, 'b')));
 
 ---
 
-## 📌 Querying Maps
+## :material-pin: Querying Maps
 
 ### ELEMENT_AT — Get Value by Key
 
@@ -83,7 +83,7 @@ SELECT MAP_ENTRIES(MAP(1, 'a', 2, 'b'));
 
 ---
 
-## 📌 Merging Maps
+## :material-pin: Merging Maps
 
 ### MAP_CONCAT — Simple Merge (Later Wins)
 
@@ -151,7 +151,7 @@ SELECT MAP_FILTER(m, (k, v) -> v > 10) AS filtered FROM zipped;
 
 ---
 
-## 🔍 MAP_ZIP_WITH Behavior & Edge Cases
+## :material-magnify: MAP_ZIP_WITH Behavior & Edge Cases
 
 1. **Missing keys:** For a key in only one map, the other value is `NULL` — use `COALESCE` for arithmetic.
 2. **NULL maps:** If either input map is `NULL`, the result is `NULL`.
@@ -169,7 +169,7 @@ SELECT MAP_FILTER(m, (k, v) -> v > 10) AS filtered FROM zipped;
 
 ---
 
-## 🧪 Real-World Patterns
+## :material-flask-outline: Real-World Patterns
 
 ### Merge Partial Day Metrics
 
@@ -197,7 +197,7 @@ FROM zipped;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function(s) |
 |----------|------------|

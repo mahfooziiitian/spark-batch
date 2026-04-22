@@ -13,7 +13,7 @@ graph LR
 
 ---
 
-## 📌 Common Methods
+## :material-pin: Common Methods
 
 | Method | Example |
 |--------|---------|
@@ -23,7 +23,7 @@ graph LR
 
 ---
 
-## 🧪 Examples
+## :material-flask-outline: Examples
 
 ```sql
 LOAD DATA INPATH 's3://data/sales/' INTO TABLE hive_sales;
@@ -36,7 +36,7 @@ SELECT * FROM staging_sales;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

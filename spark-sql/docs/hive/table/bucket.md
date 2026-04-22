@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 CREATE TABLE bucketed_sales (
@@ -26,7 +26,7 @@ CLUSTERED BY (id) INTO 32 BUCKETS;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Bucketing writes data into fixed bucket files.
 2. Joins on bucketed keys can avoid shuffles in some cases.
@@ -34,7 +34,7 @@ CLUSTERED BY (id) INTO 32 BUCKETS;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

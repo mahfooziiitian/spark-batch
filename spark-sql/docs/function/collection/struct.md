@@ -11,7 +11,7 @@ graph LR
     B --> C[Struct Type]
 ```
 
-## 📌 Creating Structs
+## :material-pin: Creating Structs
 
 ### NAMED_STRUCT — Explicit Field Names
 
@@ -29,7 +29,7 @@ SELECT STRUCT('Alice', 30, 'NYC') AS person;
 
 > `STRUCT` auto-names fields as `col1`, `col2`, etc. Use `NAMED_STRUCT` for explicit names.
 
-## 📌 Accessing Struct Fields
+## :material-pin: Accessing Struct Fields
 
 ### Dot Notation (Most Common)
 
@@ -51,7 +51,7 @@ FROM (
 -- Result: Alice
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Structs enforce a fixed schema — each field has a name and type.
 2. Fields are accessed by name using dot notation (`col.field`).
@@ -59,9 +59,9 @@ FROM (
 4. Structs can contain any type: primitives, arrays, maps, or other structs.
 5. Two structs are equal if all their fields are equal (field-by-field comparison).
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Create and Query a Struct Column
+### :material-toy-brick: 1. Create and Query a Struct Column
 
 ```sql
 CREATE OR REPLACE TEMP VIEW employees AS
@@ -75,7 +75,7 @@ FROM employees;
 -- (1, Alice, Smith, 50000), (2, Bob, Jones, 60000)
 ```
 
-### 🧱 2. Nested Structs
+### :material-toy-brick: 2. Nested Structs
 
 ```sql
 SELECT NAMED_STRUCT(
@@ -94,7 +94,7 @@ FROM (
 -- Result: NYC
 ```
 
-### 🧱 3. Array of Structs
+### :material-toy-brick: 3. Array of Structs
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -111,7 +111,7 @@ FROM orders
 LATERAL VIEW EXPLODE(items) AS item;
 ```
 
-### 🧱 4. Build Structs in Aggregations
+### :material-toy-brick: 4. Build Structs in Aggregations
 
 ```sql
 SELECT department,
@@ -124,7 +124,7 @@ FROM employees
 GROUP BY department;
 ```
 
-### 🧱 5. Compare Structs
+### :material-toy-brick: 5. Compare Structs
 
 ```sql
 SELECT NAMED_STRUCT('a', 1, 'b', 2) = NAMED_STRUCT('a', 1, 'b', 2) AS eq;
@@ -134,7 +134,7 @@ SELECT NAMED_STRUCT('a', 1, 'b', 2) = NAMED_STRUCT('a', 1, 'b', 3) AS eq;
 -- Result: false
 ```
 
-### 🧱 6. Use with INLINE to Flatten
+### :material-toy-brick: 6. Use with INLINE to Flatten
 
 ```sql
 SELECT INLINE(ARRAY(
@@ -144,7 +144,7 @@ SELECT INLINE(ARRAY(
 -- (Alice, 95), (Bob, 87)
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why Structs? |
 |----------|-------------|

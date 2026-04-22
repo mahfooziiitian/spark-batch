@@ -10,7 +10,7 @@ graph LR
     B --> C[Transformed Array]
 ```
 
-## 📌 Creating Arrays
+## :material-pin: Creating Arrays
 
 ### ARRAY — Build from Expressions
 
@@ -45,7 +45,7 @@ SELECT SEQUENCE(DATE '2024-01-01', DATE '2024-01-03');
 
 ---
 
-## 📌 Adding & Removing Elements
+## :material-pin: Adding & Removing Elements
 
 ### ARRAY_APPEND — Add to End
 
@@ -88,7 +88,7 @@ SELECT ARRAY_COMPACT(ARRAY(1, NULL, 2, NULL, 3));
 
 ---
 
-## 📌 Querying & Searching
+## :material-pin: Querying & Searching
 
 ### ARRAY_CONTAINS — Check Membership
 
@@ -151,7 +151,7 @@ SELECT ARRAY_MIN(ARRAY(1, 20, NULL, 3));
 
 ---
 
-## 📌 Set Operations
+## :material-pin: Set Operations
 
 ### ARRAY_DISTINCT — Remove Duplicates
 
@@ -190,7 +190,7 @@ SELECT ARRAYS_OVERLAP(ARRAY(1, 2, 3), ARRAY(3, 4, 5));
 
 ---
 
-## 📌 Sorting & Transforming
+## :material-pin: Sorting & Transforming
 
 ### SORT_ARRAY / ARRAY_SORT — Sort Elements
 
@@ -244,7 +244,7 @@ SELECT ARRAY_JOIN(ARRAY('hello', NULL, 'world'), ' ');
 
 ---
 
-## 📌 Higher-Order Array Functions
+## :material-pin: Higher-Order Array Functions
 
 ### FILTER — Keep Matching Elements
 
@@ -269,7 +269,7 @@ SELECT FORALL(ARRAY(2, 4, 8), x -> x % 2 = 0);
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function(s) |
 |----------|------------|

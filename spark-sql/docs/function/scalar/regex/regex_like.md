@@ -12,7 +12,7 @@ graph LR
     C -->|No| E[NULL / Original]
 ```
 
-## 📌 :material-regex: Syntax
+## :material-pin: :material-regex: Syntax
 
 ```sql
 regexp_like(str, regexp)
@@ -22,14 +22,14 @@ regexp_like(str, regexp)
 - `regexp`: Java-style regular expression pattern
 - Returns: `BOOLEAN` — `true` if the pattern matches, `false` otherwise
 
-## 🔍 :material-regex: Behavior
+## :material-magnify: :material-regex: Behavior
 
 1. Returns `true` if the pattern matches **anywhere** within the string (partial match).
 2. To match the entire string, anchor with `^...$`.
 3. Equivalent to the `RLIKE` operator.
 4. NULL input returns NULL.
 
-## 🧪 :material-regex: Practical Examples
+## :material-flask-outline: :material-regex: Practical Examples
 
 ### Basic Pattern Match
 
@@ -73,7 +73,7 @@ AS logs(message);
 SELECT message FROM logs WHERE regexp_like(message, '^ERROR');
 ```
 
-## 🧠 :material-regex: regexp_like vs RLIKE vs LIKE
+## :material-brain: :material-regex: regexp_like vs RLIKE vs LIKE
 
 | Operator | Pattern Type | Case Sensitive |
 |----------|-------------|---------------|

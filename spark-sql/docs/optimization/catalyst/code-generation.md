@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Benefits
+## :material-pin: Benefits
 
 | Benefit | Description |
 |---------|-------------|
@@ -23,7 +23,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 EXPLAIN FORMATTED SELECT SUM(amount) FROM orders;
@@ -33,7 +33,7 @@ Look for `WholeStageCodegen` in the physical plan.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -11,7 +11,7 @@ graph LR
     B --> C[Output Array / Scalar]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 FILTER(array, element -> condition)
@@ -29,7 +29,7 @@ FILTER(array, (element, index) -> condition)
 | `index` | *(Optional)* Zero-based position of the element |
 | `condition` | Boolean expression; elements where this is `TRUE` are kept |
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Returns a new array containing only elements where the condition is `TRUE`.
 2. Preserves the original order of elements.
@@ -37,23 +37,23 @@ FILTER(array, (element, index) -> condition)
 4. Returns `NULL` if the input array is `NULL`.
 5. When using the two-parameter form `(element, index)`, the index is zero-based.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Keep Even Numbers
+### :material-toy-brick: 1. Keep Even Numbers
 
 ```sql
 SELECT FILTER(ARRAY(1, 2, 3, 4, 5), x -> x % 2 = 0) AS even_numbers;
 -- Result: [2, 4]
 ```
 
-### 🧱 2. Remove NULL Values
+### :material-toy-brick: 2. Remove NULL Values
 
 ```sql
 SELECT FILTER(ARRAY(1, NULL, 3, NULL, 5), x -> x IS NOT NULL) AS no_nulls;
 -- Result: [1, 3, 5]
 ```
 
-### 🧱 3. Filter by String Length
+### :material-toy-brick: 3. Filter by String Length
 
 ```sql
 SELECT FILTER(
@@ -63,7 +63,7 @@ SELECT FILTER(
 -- Result: ['apple', 'banana']
 ```
 
-### 🧱 4. Filter Structs by Field Value
+### :material-toy-brick: 4. Filter Structs by Field Value
 
 ```sql
 SELECT FILTER(
@@ -76,7 +76,7 @@ SELECT FILTER(
 -- Result: [{name: Bob, age: 30}]
 ```
 
-### 🧱 5. Keep Only Non-Empty Nested Arrays
+### :material-toy-brick: 5. Keep Only Non-Empty Nested Arrays
 
 ```sql
 SELECT FILTER(
@@ -86,7 +86,7 @@ SELECT FILTER(
 -- Result: [[1, 2], [3, 4]]
 ```
 
-### 🧱 6. Use Index to Keep Every Other Element
+### :material-toy-brick: 6. Use Index to Keep Every Other Element
 
 ```sql
 SELECT FILTER(
@@ -96,7 +96,7 @@ SELECT FILTER(
 -- Result: ['a', 'c', 'e']
 ```
 
-### 🧱 7. Unnamed Structs
+### :material-toy-brick: 7. Unnamed Structs
 
 ```sql
 SELECT FILTER(
@@ -106,7 +106,7 @@ SELECT FILTER(
 -- Result: [{col1: Bob, col2: 30}]
 ```
 
-## 🏭 Real-World Applications
+## :material-factory: Real-World Applications
 
 ### IoT: Filter Sensor Readings Within Range
 
@@ -180,7 +180,7 @@ FROM patient_monitoring;
 -- pat01 → [{130, 190}], pat02 → [{125, 160}]
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `FILTER`? |
 |----------|--------------|

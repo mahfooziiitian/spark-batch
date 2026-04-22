@@ -169,25 +169,154 @@ FROM ewma_cte
 ORDER BY region, sale_date;
 
 ---
--- 6. Rolling count of distinct values approximation
--- Exact DISTINCT in a window frame is not supported in Spark SQL.
--- Approximation: APPROX_COUNT_DISTINCT within a bounded ROWS frame.
+-- 7. Running cumulative sum (unbounded window)
 ---
 
 SELECT
     sale_date,
     region,
     amount,
-    COUNT(*) OVER (
+    SUM(amount) OVER (
         PARTITION BY region
         ORDER BY sale_date
-        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-    ) AS rolling_count,
-    -- Deduplicate-based distinct count via subquery (exact, but heavier)
-    COUNT(DISTINCT amount) OVER (
-        PARTITION BY region
-        ORDER BY sale_date
-        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-    ) AS rolling_distinct_count
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS cumulative_sum
 FROM daily_sales
 ORDER BY region, sale_date;
+
+---
+-- 8. Day-over-day change and percentage change
+---
+
+SELECT
+    sale_date,
+    region,
+    amount,
+    LAG(amount, 1) OVER (PARTITION BY region ORDER BY sale_date) AS prev_day_amount,
+    amount - LAG(amount, 1) OVER (PARTITION BY region ORDER BY sale_date) AS dod_change,
+    ROUND(
+        (amount - LAG(amount, 1) OVER (PARTITION BY region ORDER BY sale_date))
+        / NULLIF(LAG(amount, 1) OVER (PARTITION BY region ORDER BY sale_date), 0) * 100,
+        2
+    ) AS dod_pct_change
+FROM daily_sales
+ORDER BY region, sale_date;
+-- Result: NULLs on first row of each region (no prior day)
+
+---
+-- 9. Bollinger Bands — MA ± 2 × rolling standard deviation
+-- Standard finance signal for volatility bands.
+---
+
+SELECT
+    sale_date,
+    region,
+    amount,
+    ROUND(AVG(amount) OVER w, 2) AS ma_20,
+    ROUND(STDDEV(amount) OVER w, 2) AS std_20,
+    ROUND(AVG(amount) OVER w + 2 * STDDEV(amount) OVER w, 2) AS upper_band,
+    ROUND(AVG(amount) OVER w - 2 * STDDEV(amount) OVER w, 2) AS lower_band
+FROM daily_sales
+WINDOW w AS (
+    PARTITION BY region
+    ORDER BY sale_date
+    ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
+)
+ORDER BY region, sale_date;
+
+---
+-- 10. Rolling median approximation using PERCENTILE_APPROX
+-- Exact median requires sorting within a frame; PERCENTILE_APPROX is efficient.
+---
+
+SELECT
+    sale_date,
+    region,
+    amount,
+    ROUND(
+        AVG(amount) OVER (
+            PARTITION BY region
+            ORDER BY sale_date
+            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+        ),
+        2
+    ) AS ma_7,
+    PERCENTILE_APPROX(amount, 0.5) OVER (
+        PARTITION BY region
+        ORDER BY sale_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ) AS median_7d
+FROM daily_sales
+ORDER BY region, sale_date;
+
+---
+-- 11. Z-score normalisation over a rolling 7-day window
+-- z = (x - mean) / stddev — flags values far from the rolling mean.
+---
+
+SELECT
+    sale_date,
+    region,
+    amount,
+    ROUND(
+        (amount - AVG(amount) OVER w) / NULLIF(STDDEV(amount) OVER w, 0),
+        4
+    ) AS z_score_7d
+FROM daily_sales
+WINDOW w AS (
+    PARTITION BY region
+    ORDER BY sale_date
+    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+)
+ORDER BY region, sale_date;
+-- z_score > 2 or < -2 typically flags an outlier
+
+---
+-- 12. Rate of change (momentum) — slope approximation over N periods
+-- (current - N-periods-ago) / N  gives the average change per period.
+---
+
+SELECT
+    sale_date,
+    region,
+    amount,
+    ROUND(
+        (amount - LAG(amount, 3) OVER (PARTITION BY region ORDER BY sale_date)) / 3.0,
+        2
+    ) AS momentum_3d,
+    ROUND(
+        (amount - LAG(amount, 7) OVER (PARTITION BY region ORDER BY sale_date)) / 7.0,
+        2
+    ) AS momentum_7d
+FROM daily_sales
+ORDER BY region, sale_date;
+
+---
+-- 13. ROWS vs RANGE comparison on the same dataset
+-- ROWS counts physical rows; RANGE includes all rows with the same ORDER BY value.
+-- On a DATE column with no duplicates they are identical — add a duplicate to see
+-- the difference.
+---
+
+CREATE OR REPLACE TEMP VIEW sales_with_dup AS
+SELECT *
+FROM
+    VALUES
+    (DATE '2024-01-05', 'US', 100.0),
+    (DATE '2024-01-05', 'US', 200.0),   -- duplicate date
+    (DATE '2024-01-06', 'US', 150.0)
+        AS t (sale_date, region, amount);
+
+SELECT
+    sale_date,
+    amount,
+    SUM(amount) OVER (
+        ORDER BY sale_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS rows_sum,
+    SUM(amount) OVER (
+        ORDER BY sale_date
+        RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS range_sum    -- includes BOTH rows for 2024-01-05 even on the first one
+FROM sales_with_dup
+ORDER BY sale_date, amount;

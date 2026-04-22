@@ -10,7 +10,7 @@ graph LR
     C -->|Excluded| E["COUNT(col) result"]
 ```
 
-## 🔹 :material-counter: 1. COUNT(*) — Count All Rows
+## :material-circle-small: :material-counter: 1. COUNT(*) — Count All Rows
 
 Counts every row, including rows with NULL values.
 
@@ -20,9 +20,9 @@ SELECT COUNT(*) AS total_rows
 FROM your_table;
 ```
 
-✅ Returns total row count, regardless of column values.
+:material-check-circle-outline: Returns total row count, regardless of column values.
 
-## 🔹 :material-counter: 2. COUNT(column) — Count Non-Nulls Only
+## :material-circle-small: :material-counter: 2. COUNT(column) — Count Non-Nulls Only
 
 Counts only the non-null values in a specific column.
 
@@ -31,9 +31,9 @@ SELECT COUNT(salary) AS non_null_salaries
 FROM your_table;
 ```
 
-✅ Skips nulls. Useful when counting data completeness.
+:material-check-circle-outline: Skips nulls. Useful when counting data completeness.
 
-## 🔹 :material-counter: 3. COUNT(DISTINCT column) — Count Unique Non-Nulls
+## :material-circle-small: :material-counter: 3. COUNT(DISTINCT column) — Count Unique Non-Nulls
 
 Returns the count of distinct non-null values in a column.
 
@@ -42,9 +42,9 @@ SELECT COUNT(DISTINCT department) AS unique_departments
 FROM your_table;
 ```
 
-✅ Ignores nulls and returns count of unique values.
+:material-check-circle-outline: Ignores nulls and returns count of unique values.
 
-## 🔹 :material-counter: 4. COUNT(DISTINCT col1, col2) — Count Unique Combinations
+## :material-circle-small: :material-counter: 4. COUNT(DISTINCT col1, col2) — Count Unique Combinations
 
 Counts distinct combinations of multiple columns.
 
@@ -53,9 +53,9 @@ SELECT COUNT(DISTINCT department, role) AS unique_pairs
 FROM your_table;
 ```
 
-✅ Each unique (department, role) pair is counted once.
+:material-check-circle-outline: Each unique (department, role) pair is counted once.
 
-## 🔹 :material-counter: 5. Grouped Count — With GROUP BY
+## :material-circle-small: :material-counter: 5. Grouped Count — With GROUP BY
 
 Counts rows grouped by column(s).
 
@@ -65,9 +65,9 @@ FROM your_table
 GROUP BY department;
 ```
 
-✅ Shows row count per group.
+:material-check-circle-outline: Shows row count per group.
 
-## 🔹 :material-counter: 6. Conditional Count — With CASE WHEN
+## :material-circle-small: :material-counter: 6. Conditional Count — With CASE WHEN
 
 ### Case when
 
@@ -80,7 +80,7 @@ SELECT
 FROM your_table;
 ```
 
-✅ Great for counting specific conditions in one pass.
+:material-check-circle-outline: Great for counting specific conditions in one pass.
 
 ### count_if
 
@@ -97,7 +97,7 @@ SELECT count_if(col % 2 = 0) FROM VALUES (NULL), (0), (1), (2), (3) AS tab(col);
 SELECT count_if(col IS NULL) FROM VALUES (NULL), (0), (1), (2), (3) AS tab(col);
 ```
 
-## 🔹 :material-counter: 7. Window Count — With OVER()
+## :material-circle-small: :material-counter: 7. Window Count — With OVER()
 
 Counts rows in a partition using window functions.
 
@@ -107,9 +107,9 @@ SELECT name, department,
 FROM your_table;
 ```
 
-✅ Adds count as a new column without grouping the result.
+:material-check-circle-outline: Adds count as a new column without grouping the result.
 
-## 🔹 :material-counter: 8. Count + Filtering
+## :material-circle-small: :material-counter: 8. Count + Filtering
 
 ```sql
 SELECT COUNT(*) AS active_users
@@ -117,7 +117,7 @@ FROM users
 WHERE is_active = TRUE;
 ```
 
-✅ Simple conditional count using WHERE.
+:material-check-circle-outline: Simple conditional count using WHERE.
 
 ## :material-counter: count_min_sketch
 
@@ -131,13 +131,13 @@ The result is an array of bytes, which can be deserialized to a CountMinSketch b
 
 Count-min sketch is a probabilistic data structure used for cardinality estimation using sub-linear space.
 
-## ✅ :material-counter: Summary Table
+## :material-check-circle-outline: :material-counter: Summary Table
 
 Count Type |Description |Includes NULLs?
 ---|---|---
-COUNT(*) |Count all rows| ✅ Yes
-COUNT(column) |Count non-null values |❌ No
-COUNT(DISTINCT column) |Count unique non-null values |❌ No
-COUNT(DISTINCT col1, col2) |Count unique non-null combinations |❌ No
-COUNT(CASE WHEN ...) |Count rows matching a condition |❌ No
-COUNT(*) OVER (...) |Windowed count within partitions| ✅ Yes
+COUNT(*) |Count all rows| :material-check-circle-outline: Yes
+COUNT(column) |Count non-null values |:material-close-circle-outline: No
+COUNT(DISTINCT column) |Count unique non-null values |:material-close-circle-outline: No
+COUNT(DISTINCT col1, col2) |Count unique non-null combinations |:material-close-circle-outline: No
+COUNT(CASE WHEN ...) |Count rows matching a condition |:material-close-circle-outline: No
+COUNT(*) OVER (...) |Windowed count within partitions| :material-check-circle-outline: Yes

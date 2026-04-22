@@ -13,7 +13,7 @@ graph LR
     B --> E[Row N]
 ```
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT POSEXPLODE(array_or_map);
@@ -35,16 +35,16 @@ FROM your_table t
 LATERAL VIEW POSEXPLODE(map_column) AS pos, key, value;
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Produces one row per array element or map entry — identical to `EXPLODE`.
 2. Adds a `pos` column containing the zero-based index of each element.
 3. **Drops rows** where the array/map is `NULL` or empty — use `POSEXPLODE_OUTER` to retain them.
 4. Default column names: `pos`, `col` (array) or `pos`, `key`, `value` (map).
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
-### 🧱 1. Explode Array with Position
+### :material-toy-brick: 1. Explode Array with Position
 
 ```sql
 CREATE OR REPLACE TEMP VIEW people AS
@@ -59,7 +59,7 @@ LATERAL VIEW POSEXPLODE(names) AS pos, name;
 -- (1, 0, Alice), (1, 1, Bob), (1, 2, Charlie), (2, 0, Diana), (2, 1, Eve)
 ```
 
-### 🧱 2. Array of Structs with Index
+### :material-toy-brick: 2. Array of Structs with Index
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -74,7 +74,7 @@ LATERAL VIEW POSEXPLODE(products) AS pos, item;
 -- (1001, 0, book, 2), (1001, 1, pen, 5)
 ```
 
-### 🧱 3. Generate Dynamic Labels from Index
+### :material-toy-brick: 3. Generate Dynamic Labels from Index
 
 ```sql
 CREATE OR REPLACE TEMP VIEW survey AS
@@ -88,7 +88,7 @@ LATERAL VIEW POSEXPLODE(answers) AS pos, answer;
 -- (101, Q1, A), (101, Q2, B), (101, Q3, C)
 ```
 
-### 🧱 4. Generate Date Sequences
+### :material-toy-brick: 4. Generate Date Sequences
 
 ```sql
 SELECT DATE_ADD(DATE '2024-01-01', pos) AS date
@@ -98,7 +98,7 @@ FROM (
 -- 2024-01-01, 2024-01-02, 2024-01-03, 2024-01-04, 2024-01-05
 ```
 
-### 🧱 5. Compare EXPLODE vs POSEXPLODE
+### :material-toy-brick: 5. Compare EXPLODE vs POSEXPLODE
 
 ```sql
 -- EXPLODE: value only
@@ -110,7 +110,7 @@ SELECT pos, val FROM (SELECT 1) LATERAL VIEW POSEXPLODE(ARRAY('x', 'y')) AS pos,
 -- (0, x), (1, y)
 ```
 
-### 🧱 6. Rank Array Elements by Position
+### :material-toy-brick: 6. Rank Array Elements by Position
 
 ```sql
 CREATE OR REPLACE TEMP VIEW preferences AS
@@ -126,7 +126,7 @@ LATERAL VIEW POSEXPLODE(languages) AS pos, language;
 -- (user1, 1, Python), (user1, 2, SQL), (user1, 3, Java)
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Why `POSEXPLODE`? |
 |----------|------------------|

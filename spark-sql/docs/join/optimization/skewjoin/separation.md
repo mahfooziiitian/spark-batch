@@ -9,9 +9,9 @@ FROM transactions
 GROUP BY customer_id;
 
 
-👉 If 1 customer has 10M transactions, while most have ~100, Spark will put that skewed key into one task, creating a straggler.
+:material-arrow-right: If 1 customer has 10M transactions, while most have ~100, Spark will put that skewed key into one task, creating a straggler.
 
-🔹 Handling Skew in Spark SQL
+:material-circle-small: Handling Skew in Spark SQL
 1. Salting (Key Randomization)
 
 Duplicate skewed keys into multiple buckets by adding a random salt.
@@ -34,7 +34,7 @@ JOIN customers c
   ON t.customer_id = c.id;
 
 
-👉 Spark will split skewed keys into multiple partitions automatically.
+:material-arrow-right: Spark will split skewed keys into multiple partitions automatically.
 
 3. Broadcast Join (Small Table)
 
@@ -55,7 +55,7 @@ SET spark.sql.adaptive.skewJoin.skewedPartitionFactor = 5;
 SET spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 64MB;
 
 
-👉 Spark splits large skewed partitions into smaller ones at runtime.
+:material-arrow-right: Spark splits large skewed partitions into smaller ones at runtime.
 
 5. Repartition / Bucketing
 
@@ -68,7 +68,7 @@ CLUSTERED BY (customer_id) INTO 32 BUCKETS;
 
 This ensures skewed keys distribute better.
 
-🔹 Quick Comparison
+:material-circle-small: Quick Comparison
 Method	When to Use	Notes
 Salting	Extreme skew on a few keys	Manual, works well but needs re-aggregation
 SKEW hint	Large tables with known skew	Spark does partition splitting
@@ -76,7 +76,7 @@ Broadcast join	One side small (<10MB-100MB)	Avoids shuffle
 AQE Skew Handling	Spark 3+ with adaptive enabled	Automatic, best option
 Bucketing / Repartitioning	ETL pipelines with known skew	Preprocessing heavy but efficient
 
-✅ Summary:
+:material-check-circle-outline: Summary:
 In Spark SQL, skewed data can be handled using salting, skew hints, broadcast joins, AQE adaptive handling, or bucketing. Best approach is AQE + hints, but if skew is extreme → add salting.
 
 ### :material-sitemap: Overview

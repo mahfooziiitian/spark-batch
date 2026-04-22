@@ -12,7 +12,7 @@ graph LR
 
 ---
 
-## 📌 :material-shield-lock: Syntax
+## :material-pin: :material-shield-lock: Syntax
 
 ```sql
 MASK(str)
@@ -21,14 +21,14 @@ MASK(str, upper, lower, digit, other)
 
 ---
 
-## 🔍 :material-shield-lock: Behavior Notes
+## :material-magnify: :material-shield-lock: Behavior Notes
 
 1. Letters and digits are replaced by default mask characters.
 2. You can customize replacement characters for upper, lower, digits, and other.
 
 ---
 
-## 🧪 :material-shield-lock: Examples
+## :material-flask-outline: :material-shield-lock: Examples
 
 ```sql
 SELECT MASK('John.Doe@example.com') AS masked;
@@ -40,7 +40,7 @@ SELECT MASK('ABC123', 'X', 'x', '0', '*') AS masked;
 
 ---
 
-## 🧠 :material-shield-lock: When to Use
+## :material-brain: :material-shield-lock: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

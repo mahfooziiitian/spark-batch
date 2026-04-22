@@ -20,7 +20,7 @@ gantt
 
 ## :material-window-closed: Concept
 
-🔁 Tumbling Window Concept
+:material-repeat: Tumbling Window Concept
 
 1. Window size: 1 hour
 2. No overlap (non-overlapping, fixed-size intervals)
@@ -114,3 +114,10 @@ FROM TABLE(
 )
 GROUP BY window;
 ```
+
+## :material-animation-play: Interactive Demo
+
+> Hover any event dot to see its revenue and which window it belongs to.
+> Window totals are shown at the bottom of each bucket.
+
+<div id="viz-tumbling" class="ts-viz"></div>

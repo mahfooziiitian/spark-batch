@@ -31,7 +31,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT * FROM a
@@ -40,7 +40,7 @@ LEFT JOIN b ON a.id = b.id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Join Type |
 |----------|-----------|

@@ -1,4 +1,4 @@
-# 🧠 :material-calendar-clock: date Function in Spark SQL
+# :material-brain: :material-calendar-clock: date Function in Spark SQL
 
 The date function in Spark SQL is used to cast a value to a DATE type or extract the date part from a timestamp or string.
 

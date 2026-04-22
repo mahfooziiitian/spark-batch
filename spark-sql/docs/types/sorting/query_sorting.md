@@ -3,7 +3,7 @@
 Spark SQL provides several ways to sort query results — from simple `ORDER BY` to
 window-based and partition-level ordering.
 
-## 📌 ORDER BY — Global Sort
+## :material-pin: ORDER BY — Global Sort
 
 Sorts the entire result set. Produces a **single partition** of output.
 
@@ -14,7 +14,7 @@ SELECT * FROM employees ORDER BY salary DESC;
 SELECT * FROM employees ORDER BY department ASC, salary DESC;
 ```
 
-## 📌 SORT BY — Per-Partition Sort
+## :material-pin: SORT BY — Per-Partition Sort
 
 Sorts within each partition (no global ordering). Useful for optimizing downstream operations.
 
@@ -22,7 +22,7 @@ Sorts within each partition (no global ordering). Useful for optimizing downstre
 SELECT * FROM employees SORT BY salary DESC;
 ```
 
-## 📌 DISTRIBUTE BY + SORT BY — Partition Then Sort
+## :material-pin: DISTRIBUTE BY + SORT BY — Partition Then Sort
 
 Controls both partitioning and within-partition ordering.
 
@@ -32,7 +32,7 @@ DISTRIBUTE BY department
 SORT BY salary DESC;
 ```
 
-## 📌 CLUSTER BY — Distribute + Sort by Same Key
+## :material-pin: CLUSTER BY — Distribute + Sort by Same Key
 
 Shorthand for `DISTRIBUTE BY col SORT BY col`.
 
@@ -40,7 +40,7 @@ Shorthand for `DISTRIBUTE BY col SORT BY col`.
 SELECT * FROM employees CLUSTER BY department;
 ```
 
-## 🔍 NULL Ordering
+## :material-magnify: NULL Ordering
 
 ```sql
 -- NULLs first (default for DESC in Spark)
@@ -55,13 +55,13 @@ SELECT * FROM data ORDER BY col ASC NULLS FIRST;
 
 ## �� Practical Examples
 
-### 🧱 1. Top-N Query
+### :material-toy-brick: 1. Top-N Query
 
 ```sql
 SELECT * FROM employees ORDER BY salary DESC LIMIT 10;
 ```
 
-### 🧱 2. Ranking with Window Functions
+### :material-toy-brick: 2. Ranking with Window Functions
 
 ```sql
 SELECT name, department, salary,
@@ -69,7 +69,7 @@ SELECT name, department, salary,
 FROM employees;
 ```
 
-### 🧱 3. Sort Array Elements
+### :material-toy-brick: 3. Sort Array Elements
 
 ```sql
 SELECT SORT_ARRAY(ARRAY(3, 1, 4, 1, 5)) AS sorted;
@@ -79,7 +79,7 @@ SELECT SORT_ARRAY(ARRAY(3, 1, 4), FALSE) AS desc_sorted;
 -- Result: [4, 3, 1]
 ```
 
-### 🧱 4. Custom Sort with CASE
+### :material-toy-brick: 4. Custom Sort with CASE
 
 ```sql
 SELECT * FROM tasks
@@ -93,7 +93,7 @@ ORDER BY
   END;
 ```
 
-## 🧠 Comparison
+## :material-brain: Comparison
 
 | Clause | Scope | Guarantees |
 |--------|-------|-----------|

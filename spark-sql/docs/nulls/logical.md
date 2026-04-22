@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Truth Tables
+## :material-pin: Truth Tables
 
 ### AND
 
@@ -54,7 +54,7 @@ graph LR
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Short-circuit with AND** — if one operand is FALSE, the result is FALSE regardless of the other operand. `FALSE AND NULL` returns FALSE, not NULL.
 2. **Short-circuit with OR** — if one operand is TRUE, the result is TRUE regardless of the other operand. `TRUE OR NULL` returns TRUE, not NULL.
@@ -64,7 +64,7 @@ graph LR
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### AND — Short-Circuit on FALSE
 
@@ -119,7 +119,7 @@ SELECT name FROM person WHERE age > 0 OR age IS NULL;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

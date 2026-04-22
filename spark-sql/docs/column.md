@@ -5,7 +5,7 @@ derive new columns using expressions and functions.
 
 ---
 
-## 📌 Common Patterns
+## :material-pin: Common Patterns
 
 ```sql
 SELECT id, amount AS total_amount
@@ -19,7 +19,7 @@ FROM orders;
 
 ---
 
-## 🔍 Tips
+## :material-magnify: Tips
 
 1. Use aliases (`AS`) for readability.
 2. Expressions can reference multiple columns.
@@ -27,7 +27,7 @@ FROM orders;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

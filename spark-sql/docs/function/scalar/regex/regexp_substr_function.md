@@ -12,7 +12,7 @@ graph LR
     C -->|No| E[NULL / Original]
 ```
 
-## 📌 :material-regex: Syntax
+## :material-pin: :material-regex: Syntax
 
 ```sql
 regexp_substr(str, regexp)
@@ -22,14 +22,14 @@ regexp_substr(str, regexp)
 - `regexp`: Java-style regular expression pattern
 - Returns: `STRING` — the matched substring, or `NULL` if no match
 
-## 🔍 :material-regex: Behavior
+## :material-magnify: :material-regex: Behavior
 
 1. Scans the string for the **first** occurrence matching the pattern.
 2. Returns the entire matched substring (not a capturing group).
 3. Returns `NULL` if no match is found.
 4. Equivalent to `REGEXP_EXTRACT(str, regexp, 0)`.
 
-## 🧪 :material-regex: Practical Examples
+## :material-flask-outline: :material-regex: Practical Examples
 
 ### Basic Match
 
@@ -59,7 +59,7 @@ SELECT regexp_substr('Price: $99.50 USD', '\\$[\\d.]+');
 -- Result: '$99.50'
 ```
 
-## 🧠 :material-regex: regexp_substr vs regexp_extract
+## :material-brain: :material-regex: regexp_substr vs regexp_extract
 
 | Function | Returns | Capturing Groups |
 |----------|---------|-----------------|

@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT col1 [, col2, ...], agg_func(expr) [AS alias]
@@ -37,7 +37,7 @@ GROUP BY col1 [, col2, ...]
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Non-aggregated columns rule** — every column in `SELECT` that is not inside an aggregate must appear in `GROUP BY`; Spark raises an analysis error otherwise.
 2. **NULL grouping** — all `NULL` values in a grouping column are treated as equal and placed in one group together.
@@ -48,7 +48,7 @@ GROUP BY col1 [, col2, ...]
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Setup
 
@@ -194,7 +194,7 @@ ORDER BY tier_total DESC;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

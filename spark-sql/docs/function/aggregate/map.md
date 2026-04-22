@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Description | Returns |
 |----------|-------------|---------|
@@ -19,7 +19,7 @@ graph LR
 | `MAP_FROM_ARRAYS(keys, values)` | Create map from two arrays | `MAP<K,V>` |
 | `MAP(key1, val1, ...)` | Create map from literal key-value pairs | `MAP<K,V>` |
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 -- Literal map creation
@@ -32,14 +32,14 @@ MAP_FROM_ARRAYS(array_of_keys, array_of_values)
 MAP_FROM_ENTRIES(array_of_entries)
 ```
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. `MAP()` requires an **even number** of arguments (key-value pairs).
 2. Keys must be of the same type; values must be of the same type.
 3. Duplicate keys are allowed — the **last value wins**.
 4. NULL keys are not allowed; NULL values are permitted.
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Static Map Creation
 
@@ -95,7 +95,7 @@ SELECT
 -- name='Alice', role='engineer'
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Approach |
 |----------|----------|

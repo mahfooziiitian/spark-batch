@@ -11,7 +11,7 @@ graph LR
     B --> C[Output Array / Scalar]
 ```
 
-## 📌 Available Functions
+## :material-pin: Available Functions
 
 | Function | Description | Returns |
 |----------|-------------|---------|
@@ -25,7 +25,7 @@ graph LR
 | `TRANSFORM_KEYS(map, func)` | Transform map keys | Map with new keys |
 | `TRANSFORM_VALUES(map, func)` | Transform map values | Map with new values |
 
-## 🔍 Lambda Syntax
+## :material-magnify: Lambda Syntax
 
 ```sql
 -- Single parameter
@@ -35,7 +35,7 @@ element -> expression
 (x, i) -> expression
 ```
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ```sql
 -- TRANSFORM: double each element
@@ -59,7 +59,7 @@ SELECT MAP_FILTER(MAP('a', 1, 'b', 2, 'c', 3), (k, v) -> v > 1);
 -- Result: {b -> 2, c -> 3}
 ```
 
-## 🧠 When to Use HOFs
+## :material-brain: When to Use HOFs
 
 | Use Case | Why Use HOFs? |
 |----------|--------------|

@@ -15,14 +15,14 @@ graph LR
 
 ---
 
-## 🧪 Temporary View
+## :material-flask-outline: Temporary View
 
 ```sql
 CREATE OR REPLACE TEMP VIEW recent_orders AS
 SELECT * FROM orders WHERE order_date >= current_date() - 7;
 ```
 
-## 🧪 Permanent View
+## :material-flask-outline: Permanent View
 
 ```sql
 CREATE OR REPLACE VIEW active_customers AS
@@ -31,7 +31,7 @@ SELECT * FROM customers WHERE is_active = true;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

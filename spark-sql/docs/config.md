@@ -5,7 +5,7 @@ You can set options at session or cluster scope.
 
 ---
 
-## 📌 Common Commands
+## :material-pin: Common Commands
 
 ```sql
 SET spark.sql.adaptive.enabled = true;
@@ -16,7 +16,7 @@ SET -v; -- Show all settings
 
 ---
 
-## 🔍 Popular Settings
+## :material-magnify: Popular Settings
 
 | Setting | Purpose |
 |---------|---------|
@@ -27,7 +27,7 @@ SET -v; -- Show all settings
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

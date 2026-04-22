@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Example (Legacy)
+## :material-pin: Example (Legacy)
 
 ```python
 from pyspark.sql import HiveContext
@@ -23,14 +23,14 @@ hc = HiveContext(sc)
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Deprecated in favor of `SparkSession.builder.enableHiveSupport()`.
 2. Provides access to Hive UDFs and metastore.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

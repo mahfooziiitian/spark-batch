@@ -11,7 +11,7 @@ graph LR
     C --> D[One Row per Group]
 ```
 
-## 📌 Functions
+## :material-pin: Functions
 
 | Function | Description |
 |----------|-------------|
@@ -19,7 +19,7 @@ graph LR
 | `COLLECT_LIST(col)` | Collect values into a list (preserves duplicates), then use `ARRAY_JOIN` |
 | `LISTAGG` pattern | Simulate `LISTAGG` using `CONCAT_WS` + `COLLECT_LIST` |
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Concatenate Strings per Group
 
@@ -73,7 +73,7 @@ FROM tags
 GROUP BY id;
 ```
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

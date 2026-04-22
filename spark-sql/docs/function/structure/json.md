@@ -12,7 +12,7 @@ graph LR
     C --> D["col.field access"]
 ```
 
-## 📌 FROM_JSON — Parse JSON String
+## :material-pin: FROM_JSON — Parse JSON String
 
 ### Syntax
 
@@ -26,7 +26,7 @@ FROM_JSON(json_string, schema [, options])
 | `schema` | DDL schema string or `STRUCT` type |
 | `options` | *(Optional)* Map of parsing options |
 
-### 🧪 Examples
+### :material-flask-outline: Examples
 
 #### Basic Struct
 
@@ -68,7 +68,7 @@ FROM (
 
 ---
 
-## 📌 TO_JSON — Serialize to JSON String
+## :material-pin: TO_JSON — Serialize to JSON String
 
 ### Syntax
 
@@ -91,7 +91,7 @@ SELECT TO_JSON(ARRAY(1, 2, 3)) AS json;
 
 ---
 
-## 📌 GET_JSON_OBJECT — Extract by JSONPath
+## :material-pin: GET_JSON_OBJECT — Extract by JSONPath
 
 ### Syntax
 
@@ -117,7 +117,7 @@ SELECT GET_JSON_OBJECT('{"items":[{"name":"pen"},{"name":"book"}]}', '$.items[1]
 
 ---
 
-## 📌 JSON_TUPLE — Extract Multiple Keys
+## :material-pin: JSON_TUPLE — Extract Multiple Keys
 
 ### Syntax
 
@@ -136,7 +136,7 @@ SELECT JSON_TUPLE('{"a":1, "b":2, "c":3}', 'a', 'b') AS (val_a, val_b);
 
 ---
 
-## 📌 JSON_ARRAY_LENGTH — Count Array Elements
+## :material-pin: JSON_ARRAY_LENGTH — Count Array Elements
 
 ### Syntax
 
@@ -160,7 +160,7 @@ SELECT JSON_ARRAY_LENGTH('{"a":1}');
 
 ---
 
-## 📌 JSON_OBJECT_KEYS — List Object Keys
+## :material-pin: JSON_OBJECT_KEYS — List Object Keys
 
 ### Syntax
 
@@ -188,7 +188,7 @@ SELECT JSON_OBJECT_KEYS('[1,2]');
 
 ---
 
-## 📌 SCHEMA_OF_JSON — Infer Schema
+## :material-pin: SCHEMA_OF_JSON — Infer Schema
 
 ### Syntax
 
@@ -208,7 +208,7 @@ SELECT SCHEMA_OF_JSON('[{"col":01}]', MAP('allowNumericLeadingZeros', 'true'));
 
 ---
 
-## 🔍 Behavior Summary
+## :material-magnify: Behavior Summary
 
 | Function | Input | Output | NULL Handling |
 |----------|-------|--------|--------------|
@@ -220,7 +220,7 @@ SELECT SCHEMA_OF_JSON('[{"col":01}]', MAP('allowNumericLeadingZeros', 'true'));
 | `JSON_OBJECT_KEYS` | JSON object string | ARRAY\<STRING\> | NULL if not an object |
 | `SCHEMA_OF_JSON` | JSON string | DDL STRING | — |
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Function |
 |----------|----------|

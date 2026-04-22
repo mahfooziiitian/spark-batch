@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 MERGE INTO target_table [AS target_alias]
@@ -42,7 +42,7 @@ ON merge_condition
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **At most one match** — Each target row must match at most one source row.
    If multiple source rows match the same target row, Spark raises an error.
@@ -61,7 +61,7 @@ ON merge_condition
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Basic Upsert
 
@@ -160,7 +160,7 @@ WHEN MATCHED THEN
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

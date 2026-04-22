@@ -5,7 +5,7 @@ when runtime statistics show it will be faster.
 
 ---
 
-## 📌 Why It Happens
+## :material-pin: Why It Happens
 
 | Condition | Effect |
 |-----------|--------|
@@ -14,7 +14,7 @@ when runtime statistics show it will be faster.
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SET spark.sql.adaptive.enabled = true;
@@ -23,7 +23,7 @@ SET spark.sql.adaptive.shuffle.targetPostShuffleInputSize = 67108864;
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. Spark compares estimated costs at runtime.
 2. SHJ avoids sort cost but may use more memory.
@@ -31,7 +31,7 @@ SET spark.sql.adaptive.shuffle.targetPostShuffleInputSize = 67108864;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

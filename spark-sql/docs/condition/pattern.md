@@ -5,7 +5,7 @@ expressions.
 
 ---
 
-## 📌 Operators
+## :material-pin: Operators
 
 | Operator | Example | Description |
 |----------|---------|-------------|
@@ -15,7 +15,7 @@ expressions.
 
 ---
 
-## 🔍 Behavior Notes
+## :material-magnify: Behavior Notes
 
 1. `LIKE` is case-sensitive by default.
 2. Use `ESCAPE` to match literal `%` or `_` characters.
@@ -23,7 +23,7 @@ expressions.
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Prefix Match
 
@@ -55,7 +55,7 @@ WHERE event_id RLIKE '^[A-Z]{3}-[0-9]{4}$';
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|

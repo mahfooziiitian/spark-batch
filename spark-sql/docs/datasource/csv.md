@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 📌 Read CSV
+## :material-pin: Read CSV
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales_csv
@@ -31,7 +31,7 @@ OPTIONS (
 
 ---
 
-## 📌 Write CSV
+## :material-pin: Write CSV
 
 ```sql
 CREATE TABLE sales_export
@@ -41,7 +41,7 @@ AS SELECT * FROM sales;
 
 ---
 
-## 🔍 Common Options
+## :material-magnify: Common Options
 
 | Option | Description |
 |--------|-------------|
@@ -53,7 +53,7 @@ AS SELECT * FROM sales;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

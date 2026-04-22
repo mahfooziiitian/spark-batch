@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📍 Point-in-Interval Range Join
+## :material-map-marker: Point-in-Interval Range Join
 
 A *point-in-interval* range join matches a value from one relation that falls between two values from another relation.
 
@@ -60,7 +60,7 @@ WHERE points.symbol = ranges.symbol
 
 ---
 
-## 🔗 Interval-Overlap Range Join
+## :material-link: Interval-Overlap Range Join
 
 An *interval-overlap* range join matches rows where intervals from each relation overlap.
 
@@ -92,7 +92,7 @@ JOIN r2 ON r1.symbol = r2.symbol
 
 ---
 
-## ⚡ Range Join Optimization
+## :material-lightning-bolt: Range Join Optimization
 
 Range join optimization is applied when:
 
@@ -104,7 +104,7 @@ Range join optimization is applied when:
 
 ---
 
-## 🗃️ Bin Size
+## :material-file-cabinet:️ Bin Size
 
 The **bin size** is a numeric parameter that divides the value domain of the range condition into equal-sized bins.
 

@@ -15,9 +15,9 @@ graph LR
     D -->|Denied| F[Access Denied]
 ```
 
-## 🔐 :material-lock: ACL in Databricks – Overview
+## :material-lock-outline: :material-lock: ACL in Databricks – Overview
 
-### ✅ 1. Table ACLs (Legacy)
+### :material-check-circle-outline: 1. Table ACLs (Legacy)
 
 Databricks allows fine-grained access using SQL.
 
@@ -31,7 +31,7 @@ Enable via workspace admin settings:
 1. Enable Table Access Control
 2. Assign users/groups to allow SQL access
 
-### ✅ 2. Unity Catalog ACLs (Recommended)
+### :material-check-circle-outline: 2. Unity Catalog ACLs (Recommended)
 
 With Unity Catalog, you can manage ACLs at the catalog/schema/table/view/function level using SQL GRANT statements.
 
@@ -46,7 +46,7 @@ GRANT INSERT, UPDATE ON TABLE orders TO `data-engineers`;
 REVOKE ALL PRIVILEGES ON TABLE orders FROM `interns`;
 ```
 
-## 👥 :material-lock: ACL Roles
+## :material-account-group-outline: :material-lock: ACL Roles
 
 Common privileges you can grant:
 
@@ -61,7 +61,7 @@ EXECUTE| Functions
 MODIFY| Storage locations (Unity Catalog)
 ALL PRIVILEGES| All supported permissions
 
-## 🧪 :material-lock: Example: Managing ACLs in Unity Catalog
+## :material-flask-outline: :material-lock: Example: Managing ACLs in Unity Catalog
 
 ```sql
 -- Create schema and table
@@ -75,7 +75,7 @@ GRANT SELECT ON TABLE finance.budget TO `analyst@datacorp.com`;
 REVOKE ALL PRIVILEGES ON TABLE finance.budget FROM `old_user@datacorp.com`;
 ```
 
-## 🧠 :material-lock: Check ACLs
+## :material-brain: :material-lock: Check ACLs
 
 You can inspect privileges with:
 
@@ -89,12 +89,12 @@ Or check for a specific user:
 SHOW GRANTS TO USER `analyst@datacorp.com`;
 ```
 
-## 🛡️ :material-lock: Notes
+## :material-shield-outline:️ :material-lock: Notes
 
 1. Unity Catalog is recommended for enterprise-level governance.
 2. ACLs apply to SQL, notebooks, data access APIs, etc.
 3. ACLs work with groups, service principals, and users.
 
-### 🚫 No acl() Function in Spark SQL
+### :material-cancel: No acl() Function in Spark SQL
 
 1. If you're asking for a literal acl() function in SQL, no such function exists. ACLs are managed through SQL DDL statements (GRANT, REVOKE, SHOW GRANTS), not functions.

@@ -22,7 +22,7 @@ graph TD
 
 ---
 
-## 📌 Key Features
+## :material-pin: Key Features
 
 | Feature | Benefit |
 |---------|---------|
@@ -32,7 +32,7 @@ graph TD
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SET spark.sql.adaptive.enabled = true;
@@ -41,7 +41,7 @@ SELECT * FROM big_table JOIN small_dim USING (id);
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

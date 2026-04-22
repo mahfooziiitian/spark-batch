@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📌 When It Helps
+## :material-pin: When It Helps
 
 | Scenario | Why It Helps |
 |----------|--------------|
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🧪 Example Pattern
+## :material-flask-outline: Example Pattern
 
 ```sql
 SELECT /*+ BROADCAST(dim) */
@@ -36,14 +36,14 @@ JOIN dim ON f.key = dim.key;
 
 ---
 
-## 🔍 Notes
+## :material-magnify: Notes
 
 1. This is a pattern, not a distinct SQL syntax.
 2. Requires the broadcast side to fit in memory.
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

@@ -5,7 +5,7 @@ improve parallelism.
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 SELECT /*+ REBALANCE(n) */ * FROM table;
@@ -14,7 +14,7 @@ SELECT /*+ REBALANCE(col1, col2) */ * FROM table;
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. Triggers a shuffle to distribute data evenly.
 2. Can be used without a specific key for uniform distribution.
@@ -22,7 +22,7 @@ SELECT /*+ REBALANCE(col1, col2) */ * FROM table;
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 SELECT /*+ REBALANCE(200) */ *
@@ -31,7 +31,7 @@ FROM large_fact_table;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Use |
 |----------|-----|

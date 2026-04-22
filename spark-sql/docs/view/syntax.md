@@ -16,14 +16,14 @@ graph LR
 
 ---
 
-## 📌 Create View
+## :material-pin: Create View
 
 ```sql
 CREATE OR REPLACE VIEW my_view AS
 SELECT * FROM orders WHERE amount > 100;
 ```
 
-## 📌 Create Temp View
+## :material-pin: Create Temp View
 
 ```sql
 CREATE OR REPLACE TEMP VIEW my_temp_view AS
@@ -32,7 +32,7 @@ SELECT * FROM orders WHERE amount > 100;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

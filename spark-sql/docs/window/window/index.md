@@ -1,45 +1,61 @@
-# :material-window-shutter: Window Function Categories
+# :material-view-list: Window Function Types
 
-Window functions fall into three main categories.
+Window functions fall into three categories: **Ranking**, **Aggregate**, and **Navigation**. Each has distinct behaviour around `ORDER BY` requirements and frame support.
 
-### :material-sitemap: Overview
+---
+
+## :material-sitemap: Category Overview
 
 ```mermaid
 graph TD
-    A["Window Functions"] --> B["Aggregate"]
-    A --> C["Ranking"]
-    A --> D["Navigation"]
-    B --> B1["SUM, AVG, COUNT"]
-    C --> C1["ROW_NUMBER, RANK, DENSE_RANK"]
-    D --> D1["LAG, LEAD, NTH_VALUE"]
+    W[Window Functions] --> R[Ranking]
+    W --> A[Aggregate]
+    W --> N[Navigation]
+    R --> R1[ROW_NUMBER]
+    R --> R2[RANK / DENSE_RANK]
+    R --> R3[NTILE / PERCENT_RANK]
+    A --> A1[SUM / AVG / MIN / MAX / COUNT]
+    A --> A2[CUME_DIST]
+    N --> N1[LAG / LEAD]
+    N --> N2[FIRST_VALUE / LAST_VALUE / NTH_VALUE]
 ```
 
 ---
 
-## 📌 Categories
+## :material-table: Function Reference
 
-| Category | Examples |
-|----------|----------|
-| Aggregate | `SUM`, `AVG` over window |
-| Ranking | `ROW_NUMBER`, `RANK` |
-| Navigation | `LAG`, `LEAD` |
+| Category | Function | Requires ORDER BY | Ignores Frame | Short Description |
+|----------|----------|-------------------|---------------|-------------------|
+| Ranking | `ROW_NUMBER` | Yes | Yes | Unique sequential integer per partition |
+| Ranking | `RANK` | Yes | Yes | Rank with gaps on ties |
+| Ranking | `DENSE_RANK` | Yes | Yes | Rank without gaps on ties |
+| Ranking | `NTILE(n)` | Yes | Yes | Divides rows into n equal buckets |
+| Ranking | `PERCENT_RANK` | Yes | Yes | Relative rank in [0.0, 1.0] |
+| Aggregate | `SUM` / `AVG` | No (optional) | No | Running or partition sum / average |
+| Aggregate | `MIN` / `MAX` | No (optional) | No | Minimum or maximum over the frame |
+| Aggregate | `COUNT` | No (optional) | No | Row count over the frame |
+| Aggregate | `CUME_DIST` | Yes | No | Cumulative distribution in [0.0, 1.0] |
+| Navigation | `LAG` | Yes | Yes | Value from a preceding row |
+| Navigation | `LEAD` | Yes | Yes | Value from a following row |
+| Navigation | `FIRST_VALUE` | Yes | No | First value in the frame |
+| Navigation | `LAST_VALUE` | Yes | No | Last value in the frame (needs explicit full frame) |
+| Navigation | `NTH_VALUE` | Yes | No | N-th value in the frame (needs explicit full frame) |
 
 ---
 
-## 🧪 Example
+## :material-magnify: Key Differences
 
-```sql
-SELECT order_id,
-       SUM(amount) OVER (PARTITION BY customer_id) AS total
-FROM orders;
-```
+| Property | Ranking | Aggregate | Navigation |
+|----------|---------|-----------|------------|
+| Requires `ORDER BY` | Always | Optional | Always (LAG/LEAD); optional for FIRST/LAST |
+| Respects frame | Never | Yes | FIRST/LAST/NTH only |
+| Returns a value from another row | No | No | Yes (LAG/LEAD/NTH/FIRST/LAST) |
+| Can produce ties | RANK / DENSE_RANK | N/A | N/A |
 
 ---
 
-## 🧠 When to Use
+## :material-link: See Also
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Running totals | Aggregate windows |
-| Top-N per group | Ranking windows |
-| Compare rows | Navigation windows |
+- [Aggregate functions](aggregate.md) — SUM, AVG, MIN, MAX, COUNT, CUME_DIST with frame examples
+- [Navigation functions](navigation.md) — LAG, LEAD, FIRST_VALUE, LAST_VALUE, NTH_VALUE
+- [Ranking functions](ranking.md) — ROW_NUMBER, RANK, DENSE_RANK, NTILE, PERCENT_RANK

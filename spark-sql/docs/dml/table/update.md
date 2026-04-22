@@ -6,7 +6,7 @@ respective connectors).
 
 ---
 
-## 📌 Syntax
+## :material-pin: Syntax
 
 ```sql
 UPDATE table_name
@@ -21,7 +21,7 @@ SET col1 = expr1 [, col2 = expr2, ...]
 
 ---
 
-## 🔍 Behavior
+## :material-magnify: Behavior
 
 1. **Transactional** — The update is atomic; either all matching rows change or
    none do.
@@ -36,7 +36,7 @@ SET col1 = expr1 [, col2 = expr2, ...]
 
 ---
 
-## 🧪 Practical Examples
+## :material-flask-outline: Practical Examples
 
 ### Simple Update
 
@@ -92,7 +92,7 @@ WHERE payload.status = 'raw';
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommended Approach |
 |----------|---------------------|

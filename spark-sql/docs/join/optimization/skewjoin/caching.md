@@ -17,7 +17,7 @@ graph LR
 
 ---
 
-## 📌 Strategy
+## :material-pin: Strategy
 
 1. Cache the skewed dataset after filtering.
 2. Broadcast or repartition as needed.
@@ -25,7 +25,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CACHE TABLE filtered_orders;
@@ -36,7 +36,7 @@ JOIN dim_customer dim ON o.customer_id = dim.id;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

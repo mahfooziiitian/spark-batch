@@ -1,4 +1,5 @@
 title: Pivoting
 nav:
-  - pivot
-  - Unpivot: unpivot.md
+
+- pivot
+- Unpivot: unpivot.md

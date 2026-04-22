@@ -14,7 +14,7 @@ graph LR
 
 ---
 
-## 📌 Behavior
+## :material-pin: Behavior
 
 1. Spark manages data files and metadata.
 2. Dropping the table removes both data and metadata.
@@ -22,7 +22,7 @@ graph LR
 
 ---
 
-## 🧪 Example
+## :material-flask-outline: Example
 
 ```sql
 CREATE TABLE managed_sales (
@@ -33,7 +33,7 @@ CREATE TABLE managed_sales (
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Recommendation |
 |----------|----------------|

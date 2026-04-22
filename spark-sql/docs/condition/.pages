@@ -1,6 +1,6 @@
 title: Condition
 nav:
   - index.md
-  - ⚖️ Comparison: comparison.md
-  - 🔀 Logical: logical.md
-  - 🔍 Pattern Matching: pattern.md
+  - Comparison: comparison.md
+  - Logical: logical.md
+  - Pattern Matching: pattern.md

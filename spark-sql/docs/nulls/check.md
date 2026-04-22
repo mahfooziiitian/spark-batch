@@ -15,7 +15,7 @@ graph LR
 
 ---
 
-## 📌 Core Checks
+## :material-pin: Core Checks
 
 ```sql
 SELECT * FROM users WHERE email IS NULL;
@@ -24,7 +24,7 @@ SELECT * FROM users WHERE email IS NOT NULL;
 
 ---
 
-## 🔍 Useful Functions
+## :material-magnify: Useful Functions
 
 | Function | Purpose |
 |----------|---------|
@@ -35,7 +35,7 @@ SELECT * FROM users WHERE email IS NOT NULL;
 
 ---
 
-## 🧪 Practical Example
+## :material-flask-outline: Practical Example
 
 ```sql
 SELECT user_id,
@@ -46,7 +46,7 @@ WHERE email IS NOT NULL;
 
 ---
 
-## 🧠 When to Use
+## :material-brain: When to Use
 
 | Scenario | Pattern |
 |----------|---------|
