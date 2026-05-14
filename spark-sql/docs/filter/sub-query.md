@@ -168,3 +168,83 @@ WHERE amount > (SELECT AVG(amount) FROM orders);
 | Compare against a single computed value | Scalar subquery |
 | High-performance semi-join | `EXISTS` — Catalyst rewrites to left semi-join |
 | Anti-join with NULL-safe semantics | `NOT EXISTS` |
+
+---
+
+## :material-filter-plus: Advanced Patterns
+
+### IN with a literal VALUES list
+
+```sql
+-- Compact alternative to a long OR chain
+SELECT order_id, amount
+FROM orders
+WHERE status IN ('shipped', 'delivered', 'completed');
+```
+
+### Semi-join vs anti-join internal plans
+
+```sql
+-- EXISTS → left semi-join (keeps rows that match)
+EXPLAIN SELECT c.* FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+-- Plan: LeftSemi Join
+
+-- NOT EXISTS → left anti-join (keeps rows with NO match)
+EXPLAIN SELECT c.* FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id);
+-- Plan: LeftAnti Join
+```
+
+### LATERAL subquery (Spark 3.3+)
+
+A lateral subquery can reference columns from the outer `FROM` clause —
+useful for per-row top-N or unpacking.
+
+```sql
+-- For each customer, get their most recent order
+SELECT c.name, latest.order_id, latest.amount
+FROM customers AS c
+JOIN LATERAL (
+    SELECT order_id, amount
+    FROM orders
+    WHERE customer_id = c.id
+    ORDER BY order_date DESC
+    LIMIT 1
+) AS latest ON TRUE;
+```
+
+### Subquery in HAVING (post-aggregate filter)
+
+```sql
+-- Keep only regions whose total exceeds the overall average region total
+SELECT region, SUM(amount) AS total
+FROM orders
+GROUP BY region
+HAVING SUM(amount) > (
+    SELECT AVG(region_total)
+    FROM (SELECT region, SUM(amount) AS region_total FROM orders GROUP BY region)
+);
+```
+
+### NOT IN with explicit NULL guard
+
+```sql
+-- Safe NOT IN — filter NULLs from subquery to prevent zero-row result
+SELECT customer_id, name
+FROM customers
+WHERE customer_id NOT IN (
+    SELECT customer_id FROM blacklist WHERE customer_id IS NOT NULL
+);
+```
+
+---
+
+## :material-compare: IN vs EXISTS — When to Use Each
+
+| Aspect | `IN (subquery)` | `EXISTS (subquery)` |
+|--------|:---------------:|:-------------------:|
+| Materialises full result set | Yes | No (short-circuits) |
+| Safe with NULLs in subquery | No | Yes |
+| Correlated subquery | Possible | Natural fit |
+| Large inner table | Slower | Faster (stops early) |
+| Internal Spark plan | Left semi-join | Left semi-join |
+| `NOT` form with NULLs | Dangerous — use NOT EXISTS | Safe |

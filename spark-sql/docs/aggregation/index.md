@@ -94,9 +94,9 @@ GROUP BY product;
 | Scenario | Recommended Feature |
 |----------|---------------------|
 | Standard grouped metrics | [`GROUP BY`](group.md) |
-| Subtotals for a strict hierarchy | [`ROLLUP`](rollup.md) |
-| All combinations across dimensions | [`CUBE`](cube.md) |
-| Custom non-hierarchical combinations | [`GROUPING SETS`](group_set.md) |
+| Subtotals for a strict hierarchy | [`ROLLUP`](olap/rollup.md) |
+| All combinations across dimensions | [`CUBE`](olap/cube.md) |
+| Custom non-hierarchical combinations | [`GROUPING SETS`](olap/group_set.md) |
 | Rotate categories into columns | [`PIVOT`](pivoting/pivot/spark.md) |
 | Flatten wide columns into rows | [`UNPIVOT`](pivoting/unpivot.md) |
 | Dispersion, correlation, percentiles | [`Statistics`](stats.md) |
@@ -164,8 +164,8 @@ GROUP BY ROLLUP(region, product);
 ### :material-sigma: Related Guides
 
 - [Simple Aggregations](simple/index.md)
-- [Rollup](rollup.md)
-- [Cube](cube.md)
-- [Grouping Sets](group_set.md)
+- [Rollup](olap/rollup.md)
+- [Cube](olap/cube.md)
+- [Grouping Sets](olap/group_set.md)
 - [Stats](stats.md)
 - [Pivoting](pivoting/unpivot.md)

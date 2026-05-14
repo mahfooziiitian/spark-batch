@@ -1,4 +1,9 @@
+title: Data Sources
 nav:
   - index.md
   - CSV: csv.md
   - JSON: json.md
+  - Parquet: parquet.md
+  - Delta Lake: delta.md
+  - ORC: orc.md
+  - JDBC: jdbc.md

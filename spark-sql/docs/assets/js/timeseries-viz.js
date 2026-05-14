@@ -540,6 +540,144 @@
     });
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+   * 6. LAG & LEAD
+   *    Shows 7 daily revenue bars.  Highlight a bar to see the LAG
+   *    (previous row, amber arrow) and LEAD (next row, teal arrow)
+   *    values annotated on the chart.
+   * ══════════════════════════════════════════════════════════════════ */
+  function renderLagLead(el) {
+    const W = Math.min(el.clientWidth || 720, 720), H = 280;
+    const m = { t: 60, r: 140, b: 56, l: 52 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+
+    const data = [
+      { day: "Mon", rev: 120 },
+      { day: "Tue", rev: 95  },
+      { day: "Wed", rev: 160 },
+      { day: "Thu", rev: 140 },
+      { day: "Fri", rev: 200 },
+      { day: "Sat", rev: 175 },
+      { day: "Sun", rev: 90  },
+    ];
+    let active = 2; // Wed highlighted by default
+
+    const x = d3.scaleBand().domain(data.map(d => d.day)).range([0, iw]).padding(0.3);
+    const y = d3.scaleLinear().domain([0, 220]).range([ih, 0]);
+
+    const svg = d3.select(el).append("svg")
+      .attr("width", "100%").attr("height", H)
+      .attr("viewBox", `0 0 ${W} ${H}`).style("overflow", "visible");
+    const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
+
+    /* Axes */
+    g.append("g").attr("transform", `translate(0,${ih})`).call(d3.axisBottom(x));
+    g.append("g").call(d3.axisLeft(y).ticks(5).tickFormat(d => `$${d}`));
+
+    /* Y label */
+    g.append("text").attr("transform", "rotate(-90)").attr("x", -ih / 2)
+      .attr("y", -42).attr("text-anchor", "middle")
+      .attr("font-size", 11).attr("fill", FG).text("Revenue ($)");
+
+    /* Title */
+    svg.append("text").attr("x", W / 2).attr("y", 18)
+      .attr("text-anchor", "middle").attr("font-size", 13).attr("font-weight", 600)
+      .attr("fill", FG).text("Click a bar — see LAG (prev) and LEAD (next)");
+
+    /* Annotation layer (drawn behind bars) */
+    const annLayer = g.append("g");
+
+    /* Bars */
+    const bars = g.selectAll("rect.bar").data(data).join("rect")
+      .attr("class", "bar")
+      .attr("x", d => x(d.day))
+      .attr("width", x.bandwidth())
+      .attr("y", d => y(d.rev))
+      .attr("height", d => ih - y(d.rev))
+      .attr("rx", 3)
+      .attr("fill", (_, i) => i === active ? C[0] : "#b0bec5")
+      .attr("cursor", "pointer");
+
+    /* Value labels on bars */
+    const valLabels = g.selectAll("text.val").data(data).join("text")
+      .attr("class", "val")
+      .attr("x", d => x(d.day) + x.bandwidth() / 2)
+      .attr("y", d => y(d.rev) - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 11)
+      .attr("fill", FG)
+      .text(d => `$${d.rev}`);
+
+    /* Legend */
+    const legendData = [
+      { label: "LAG (prev day)",  color: C[1] },
+      { label: "LEAD (next day)", color: C[2] },
+      { label: "Current row",     color: C[0] },
+    ];
+    const lx = iw + 12, ly = 10;
+    legendData.forEach((ld, i) => {
+      g.append("rect").attr("x", lx).attr("y", ly + i * 22)
+        .attr("width", 14).attr("height", 14).attr("rx", 2).attr("fill", ld.color);
+      g.append("text").attr("x", lx + 18).attr("y", ly + i * 22 + 11)
+        .attr("font-size", 11).attr("fill", FG).text(ld.label);
+    });
+
+    function drawAnnotations(idx) {
+      annLayer.selectAll("*").remove();
+
+      const bw = x.bandwidth();
+      const cx = i => x(data[i].day) + bw / 2;
+
+      /* LAG arrow (current → prev) */
+      if (idx > 0) {
+        const x1 = cx(idx) - 2, x2 = cx(idx - 1) + 2;
+        const ay = y(data[idx].rev) - 18;
+        annLayer.append("line")
+          .attr("x1", x1).attr("y1", ay).attr("x2", x2).attr("y2", ay)
+          .attr("stroke", C[1]).attr("stroke-width", 2)
+          .attr("marker-end", "url(#arr-lag)");
+        annLayer.append("text")
+          .attr("x", (x1 + x2) / 2).attr("y", ay - 6)
+          .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", C[1])
+          .text(`LAG = $${data[idx - 1].rev}`);
+      }
+
+      /* LEAD arrow (current → next) */
+      if (idx < data.length - 1) {
+        const x1 = cx(idx) + 2, x2 = cx(idx + 1) - 2;
+        const ay = y(data[idx].rev) + 28;
+        annLayer.append("line")
+          .attr("x1", x1).attr("y1", ay).attr("x2", x2).attr("y2", ay)
+          .attr("stroke", C[2]).attr("stroke-width", 2)
+          .attr("marker-end", "url(#arr-lead)");
+        annLayer.append("text")
+          .attr("x", (x1 + x2) / 2).attr("y", ay - 6)
+          .attr("text-anchor", "middle").attr("font-size", 10).attr("fill", C[2])
+          .text(`LEAD = $${data[idx + 1].rev}`);
+      }
+
+      /* Highlight current bar in purple, others grey */
+      bars.attr("fill", (_, i) => i === idx ? C[0] : "#b0bec5");
+    }
+
+    /* Arrow markers */
+    const defs = svg.append("defs");
+    [["arr-lag", C[1]], ["arr-lead", C[2]]].forEach(([id, color]) => {
+      defs.append("marker").attr("id", id).attr("viewBox", "0 0 8 8")
+        .attr("refX", 6).attr("refY", 4)
+        .attr("markerWidth", 6).attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path").attr("d", "M0,0 L8,4 L0,8 Z").attr("fill", color);
+    });
+
+    bars.on("click", (_, d) => {
+      active = data.indexOf(d);
+      drawAnnotations(active);
+    });
+
+    drawAnnotations(active);
+  }
+
   /* ── Router ──────────────────────────────────────────────────────── */
   const VIZ_MAP = {
     "viz-tumbling" : renderTumbling,
@@ -547,6 +685,7 @@
     "viz-sliding"  : renderSliding,
     "viz-session"  : renderSession,
     "viz-gapfill"  : renderGapFill,
+    "viz-laglead"  : renderLagLead,
   };
 
   function init() {

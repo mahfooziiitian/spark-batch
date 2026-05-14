@@ -15,17 +15,17 @@ gantt
     dateFormat HH:mm
     axisFormat %H:%M
 
-    section Alice — Session 1
+    section Alice - Session 1
     page_view   :a1, 09:00, 5m
-    click       :a2, 09:05, 7m
+    btn_click   :a2, 09:05, 7m
     purchase    :a3, 09:12, 3m
 
-    section Gap (> 30 min)
+    section Gap over 30min
     idle        :crit, 09:15, 95m
 
-    section Alice — Session 2
+    section Alice - Session 2
     page_view   :a4, 10:50, 5m
-    click       :a5, 10:55, 5m
+    btn_click   :a5, 10:55, 5m
 ```
 
 ---

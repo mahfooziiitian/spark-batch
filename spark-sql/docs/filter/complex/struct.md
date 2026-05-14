@@ -116,3 +116,68 @@ WHERE profile.tier = 'gold';
 | Combine multiple nested field predicates | `AND` / `OR` with dot-notation fields |
 | Safely filter when struct may be NULL | `struct_col IS NOT NULL AND struct_col.field = value` |
 | Deep nesting | Chain dot notation: `a.b.c = value` |
+
+---
+
+## :material-layers: Deeply Nested Structs
+
+```sql
+CREATE OR REPLACE TEMP VIEW orders AS
+SELECT * FROM VALUES
+  (1, STRUCT(STRUCT('shipped', '2024-06-01') AS delivery, STRUCT('gold', 95) AS loyalty)),
+  (2, STRUCT(STRUCT('pending', NULL)          AS delivery, STRUCT('silver', 72) AS loyalty)),
+  (3, STRUCT(STRUCT('returned', '2024-05-20') AS delivery, STRUCT('bronze', 40) AS loyalty))
+AS t(order_id, meta);
+
+-- Access three-level nesting with chained dot notation
+SELECT order_id, meta.delivery.status AS del_status
+FROM orders
+WHERE meta.delivery.status = 'shipped'
+  AND meta.loyalty.score >= 80;
+```
+
+---
+
+## :material-function-variant: named_struct — Build Structs in Queries
+
+`named_struct` lets you construct or reconstruct struct values inline.
+
+```sql
+-- Assemble a new struct from scalar columns
+SELECT
+    id,
+    named_struct('tier', tier, 'region', region, 'score', score) AS profile
+FROM customer_flat;
+
+-- Filter on a computed struct field
+SELECT id,
+       named_struct('full_name', first_name || ' ' || last_name, 'age', age) AS person
+FROM people
+WHERE age >= 18;
+```
+
+---
+
+## :material-unfold-more-horizontal: Struct Wildcard Unpacking (`.*`)
+
+```sql
+-- Expand all struct fields into top-level columns
+SELECT order_id, profile.*
+FROM customers;
+-- Equivalent to: SELECT order_id, profile.tier, profile.region, profile.score FROM customers
+
+-- Unpack multiple nested structs
+SELECT order_id, meta.delivery.*, meta.loyalty.*
+FROM orders;
+```
+
+---
+
+## :material-alert-circle: Common Pitfalls
+
+| Mistake | Behaviour | Fix |
+|---------|-----------|-----|
+| `WHERE struct_col.field = val` when struct is NULL | NULL propagation → row excluded | Add `struct_col IS NOT NULL AND ...` |
+| Modifying a struct field (no update-in-place) | Struct is immutable | Rebuild with `named_struct` or `struct_col.* EXCEPT`-style CTE |
+| Pushdown blocked by function on struct field | e.g. `UPPER(profile.tier)` prevents pushdown | Filter on raw field value, transform in SELECT |
+| Accessing missing field after schema evolution | Analysis error | Confirm schema with `DESCRIBE table` before querying |

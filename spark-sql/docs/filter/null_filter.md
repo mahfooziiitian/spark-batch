@@ -177,3 +177,70 @@ ORDER BY score ASC NULLS FIRST;
 | Compare two columns that may both be NULL | `<=>` null-safe equality |
 | Replace NULL with a default for comparison | `COALESCE(col, default)` |
 | Exclude rows absent from a subquery with NULLs | `NOT EXISTS` (not `NOT IN`) |
+
+---
+
+## :material-compare: IS DISTINCT FROM / IS NOT DISTINCT FROM
+
+These operators provide NULL-aware comparison — unlike `=` and `!=` which return UNKNOWN for NULLs.
+
+| Expression | Equivalent to | NULL-safe? |
+|------------|---------------|:----------:|
+| `a IS DISTINCT FROM b` | `NOT (a <=> b)` | Yes |
+| `a IS NOT DISTINCT FROM b` | `a <=> b` | Yes |
+
+```sql
+-- Detect rows where status changed, including NULL ↔ non-NULL transitions
+SELECT id, name
+FROM users
+WHERE new_status IS DISTINCT FROM old_status;
+-- Catches: NULL → 'active', 'active' → NULL, 'pending' → 'active'
+-- Standard !=  would miss the NULL cases
+```
+
+---
+
+## :material-function-variant: NULLIF in Filters
+
+`NULLIF(expr, comparand)` returns NULL when both arguments are equal — useful for
+suppressing sentinel values (e.g., `'N/A'`, `0`) in filter logic.
+
+```sql
+-- Treat 'N/A' as NULL — rows with region='N/A' are excluded from IS NOT NULL check
+SELECT id, name
+FROM users
+WHERE NULLIF(region, 'N/A') IS NOT NULL;
+
+-- Divide-by-zero guard in a HAVING filter
+SELECT region, SUM(revenue) / NULLIF(SUM(cost), 0) AS margin
+FROM financials
+GROUP BY region
+HAVING SUM(revenue) / NULLIF(SUM(cost), 0) > 1.5;
+```
+
+---
+
+## :material-swap-horizontal: NVL2 in Filters
+
+`NVL2(expr, not_null_val, null_val)` returns different values based on NULLness —
+handy for flagging or substituting in filter expressions.
+
+```sql
+-- Flag rows by NULL status, then filter on the flag
+SELECT id, name, NVL2(region, 'has_region', 'no_region') AS region_flag
+FROM users
+WHERE NVL2(region, 'has_region', 'no_region') = 'no_region';
+-- Same as: WHERE region IS NULL
+```
+
+---
+
+## :material-alert-circle: Common Pitfalls Summary
+
+| Mistake | Behaviour | Fix |
+|---------|-----------|-----|
+| `WHERE col = NULL` | Always UNKNOWN → 0 rows | `WHERE col IS NULL` |
+| `WHERE col != NULL` | Always UNKNOWN → 0 rows | `WHERE col IS NOT NULL` |
+| `NOT IN (subquery with NULLs)` | Returns 0 rows | `NOT EXISTS` |
+| `col = 'N/A'` instead of NULL | Misses actual NULLs | Normalise data or use `NULLIF` |
+| `COALESCE(col, 0) != 0` | Hides NULLs as 0 | Use `IS NOT NULL` when NULLs are meaningful |

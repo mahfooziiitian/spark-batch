@@ -1,116 +1,93 @@
-# :material-code-braces: Control Structure
+# :material-code-braces: Control Flow in Databricks SQL
 
-`control structures` typically refer to conditional logic and flow control functions you can use inside SQL queries, views, and expressions.
+Databricks SQL supports **procedural SQL scripting** — a superset of standard SQL
+that adds statement-level control flow for building stored logic, multi-step pipelines,
+and data quality routines directly in SQL.
 
-While Databricks SQL doesn’t have procedural loops like traditional programming languages (unless you move to Databricks notebooks with PySpark or SQL procedural extensions), it does support CASE, IF, and related expressions to control the flow of logic.
+!!! note "Expression vs Statement control flow"
+    This section covers **statement-level** control (`IF … END IF`, `WHILE`, `FOR`).
+    For **expression-level** conditionals inside `SELECT`/`WHERE`
+    (`CASE WHEN`, `IF()`, `COALESCE`), see [Conditions & Predicates](../condition/index.md).
 
-## CASE Expression
+---
 
-Used for conditional branching inside SELECT, WHERE, GROUP BY, etc.
+## :material-table-of-contents: In This Section
 
-### Syntax
+| Page | What it covers |
+|------|----------------|
+| [Compound Statements](control.md) | `BEGIN … END`, `IF … END IF`, `CASE … END CASE` |
+| [Loops](loops.md) | `WHILE`, `FOR`, `REPEAT … UNTIL`, `LOOP`, `LEAVE`, `ITERATE` |
+| [Variables](variables.md) | `DECLARE`, `SET`, scope, parameter passing |
+| [Exception Handling](exceptions.md) | `DECLARE … HANDLER`, `SIGNAL`, `RESIGNAL` |
 
-```sql
-CASE 
-    WHEN condition1 THEN result1
-    WHEN condition2 THEN result2
-    ...
-    ELSE default_result
-END
+---
+
+## :material-sitemap: Procedural SQL Building Blocks
+
+```mermaid
+graph TD
+    A[Databricks SQL Script] --> B[Variables\nDECLARE / SET]
+    A --> C[Compound Block\nBEGIN ... END]
+    C --> D[Conditionals\nIF / CASE]
+    C --> E[Loops\nWHILE / FOR / REPEAT]
+    C --> F[Exception Handling\nDECLARE HANDLER]
+    C --> G[DML / DDL\nSELECT / INSERT / MERGE]
 ```
 
-```sql
-CREATE TABLE sales_table (
-    name STRING,
-    sales INT
-);
+---
 
-INSERT INTO sales_table VALUES
-('Alice', 120000),
-('Bob', 75000),
-('Charlie', 40000),
-('David', 25000),
-('Eva', 90000);
+## :material-flag: Where Procedural SQL Runs
 
-SELECT 
-    name,
-    sales,
-    CASE 
-        WHEN sales >= 100000 THEN 'High'
-        WHEN sales >= 50000 THEN 'Medium'
-        ELSE 'Low'
-    END AS sales_category
-FROM sales_table;
-```
+| Context | Supported |
+|---------|:---------:|
+| Databricks SQL Warehouse | :material-check: (Runtime 11.3+) |
+| Databricks Notebook (SQL) | :material-check: |
+| Standard Apache Spark SQL | :material-close: |
+| `spark.sql()` in PySpark | :material-close: |
 
-## IF Function
+!!! warning "Databricks-only feature"
+    Procedural SQL scripting (loops, IF statements, DECLARE) is a **Databricks extension**.
+    Use PySpark or Spark Scala for portable multi-step logic.
 
-A shorthand for simple conditional checks.
+---
 
-### Syntax IF
+## :material-play-circle: Minimal Working Script
 
 ```sql
-IF(condition, true_value, false_value)
+BEGIN
+  DECLARE total_rows BIGINT DEFAULT 0;
+
+  SET total_rows = (SELECT COUNT(*) FROM orders WHERE status = 'pending');
+
+  IF total_rows > 0 THEN
+    INSERT INTO audit_log (event, row_count, logged_at)
+    VALUES ('pending_orders_found', total_rows, current_timestamp());
+  END IF;
+END;
 ```
 
-### Example IF
+---
 
-```sql
-CREATE TABLE people (
-    name STRING,
-    age INT
-);
+## :material-compare: Procedural SQL vs PySpark
 
-INSERT INTO people VALUES
-('Alice', 25),
-('Bob', 17),
-('Charlie', 34),
-('David', 15),
-('Eva', 22);
+| Capability | Procedural SQL | PySpark |
+|-----------|:--------------:|:-------:|
+| Loops over SQL result sets | `FOR` loop | Python `for` |
+| Conditional branching | `IF … END IF` | Python `if` |
+| Variable state | `DECLARE` / `SET` | Python variables |
+| Exception handling | `DECLARE HANDLER` | Python `try/except` |
+| Portability across engines | Databricks-only | Any Spark |
+| Debugging tooling | Limited | Full IDE support |
+| Performance overhead | Low (SQL-native) | Low (JVM) |
 
-SELECT 
-    name,
-    IF(age >= 18, 'Adult', 'Minor') AS category
-FROM people;
-```
+---
 
-## NULLIF
+## :material-brain: When to Use Procedural SQL
 
-```sql
-NULLIF(expr1, expr2)
-```
-
-Returns NULL if both are equal.
-
-## Control Functions for Multi-Condition Logic
-
-1. IFF() → Equivalent to IF().
-2. CASE WHEN for multiple conditions.
-3. NVL() → Alias of COALESCE for two arguments.
-
-## Coalesce
-
-```sql
-COALESCE(expr1, expr2, ...)
-```
-
-Returns first non-null.
-
-```sql
-CREATE TABLE users (
-    name STRING,
-    email STRING
-);
-
-INSERT INTO users VALUES
-('Alice', 'alice@mail.com'),
-('Bob', NULL),
-('Charlie', 'charlie@mail.com'),
-('David', NULL),
-('Eva', 'eva@mail.com');
-
-SELECT 
-    name,
-    COALESCE(email, 'no_email@example.com') AS safe_email
-FROM users;
-```
+| Scenario | Use procedural SQL when… |
+|----------|--------------------------|
+| Multi-step ETL in one script | All steps are SQL; no Python/Scala needed |
+| Conditional table refresh | Skip processing if no new data |
+| Iterating over a small config set | `FOR` loop over parameter rows |
+| Centralised error handling | `DECLARE … HANDLER` for SQLSTATE |
+| Ad-hoc data patching | Quick conditional DML without a notebook |

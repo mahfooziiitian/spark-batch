@@ -141,3 +141,114 @@ WHERE tag = 'billing';
 | Access element position alongside value | `posexplode` |
 | Count or rank array element frequencies | `LATERAL VIEW explode` + `GROUP BY` |
 | Membership check without flattening | Prefer `array_contains` — avoids row explosion |
+
+---
+
+## :material-table-key: Explode a Map Column
+
+```sql
+CREATE OR REPLACE TEMP VIEW order_attrs AS
+SELECT * FROM VALUES
+  (1, MAP('priority', 'high', 'region', 'US', 'promo', 'true')),
+  (2, MAP('priority', 'low',  'region', 'EU'))
+AS t(order_id, attributes);
+
+-- Explode map → (key, value) rows
+SELECT order_id, attr_key, attr_val
+FROM order_attrs
+LATERAL VIEW explode(attributes) AS attr_key, attr_val;
+-- order_id | attr_key | attr_val
+-- ---------|----------|----------
+-- 1        | priority | high
+-- 1        | region   | US
+-- 1        | promo    | true
+-- 2        | priority | low
+-- 2        | region   | EU
+
+-- Filter to specific keys after explode
+SELECT order_id, attr_val AS priority
+FROM order_attrs
+LATERAL VIEW explode(attributes) AS attr_key, attr_val
+WHERE attr_key = 'priority';
+```
+
+---
+
+## :material-table-plus: Multiple LATERAL VIEW Clauses
+
+Each additional `LATERAL VIEW` applies a Cartesian product with the previous result.
+Use carefully — a 3-element array × 2-element array → 6 rows per original row.
+
+```sql
+CREATE OR REPLACE TEMP VIEW multi AS
+SELECT * FROM VALUES
+  (1, ARRAY('a', 'b'), ARRAY(1, 2))
+AS t(id, letters, numbers);
+
+SELECT id, letter, number
+FROM multi
+LATERAL VIEW explode(letters) AS letter
+LATERAL VIEW explode(numbers) AS number;
+-- id | letter | number
+-- ---|--------|-------
+-- 1  | a      | 1
+-- 1  | a      | 2
+-- 1  | b      | 1
+-- 1  | b      | 2
+```
+
+---
+
+## :material-table-row: inline() — Expand an Array of Structs
+
+`inline(array<struct>)` expands each struct element into a separate row with named columns.
+
+```sql
+CREATE OR REPLACE TEMP VIEW invoices AS
+SELECT * FROM VALUES
+  (1, ARRAY(STRUCT(101, 'widget', 9.99), STRUCT(102, 'gadget', 49.99))),
+  (2, ARRAY(STRUCT(201, 'thing',  1.00)))
+AS t(invoice_id, line_items);
+
+SELECT invoice_id, item_id, item_name, price
+FROM invoices
+LATERAL VIEW inline(line_items) AS item_id, item_name, price
+WHERE price > 5.00;
+-- invoice_id | item_id | item_name | price
+-- -----------|---------|-----------|------
+-- 1          | 101     | widget    | 9.99
+-- 1          | 102     | gadget    | 49.99
+```
+
+---
+
+## :material-stack-overflow: stack() — Generate Multiple Rows from Scalars
+
+`stack(n, col1, col2, ...)` generates `n` rows by distributing `2n` column arguments.
+
+```sql
+SELECT metric_name, metric_value
+FROM (SELECT 1) t
+LATERAL VIEW stack(3,
+    'min_score',   42,
+    'max_score',   99,
+    'avg_score',   71
+) AS metric_name, metric_value;
+-- metric_name | metric_value
+-- ------------|-------------
+-- min_score   | 42
+-- max_score   | 99
+-- avg_score   | 71
+```
+
+---
+
+## :material-compare: LATERAL VIEW vs Higher-Order Functions
+
+| Scenario | Prefer | Why |
+|----------|--------|-----|
+| Flatten array for aggregation (COUNT, SUM) | `LATERAL VIEW explode` | Produces rows for GROUP BY |
+| Check membership without flattening | `array_contains` / `exists` HOF | No row explosion |
+| Expand map to key-value rows | `LATERAL VIEW explode(map)` | HOF cannot do this easily |
+| Expand array-of-structs to named columns | `LATERAL VIEW inline` | Cleaner than transform + explode |
+| Generate synthetic rows from scalars | `LATERAL VIEW stack` | No source data needed |

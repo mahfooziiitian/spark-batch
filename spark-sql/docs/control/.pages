@@ -1,4 +1,7 @@
+title: Control Flow
 nav:
-
-- index.md
-- Control Statements: control.md
+  - index.md
+  - Compound Statements: control.md
+  - Loops: loops.md
+  - Variables: variables.md
+  - Exception Handling: exceptions.md

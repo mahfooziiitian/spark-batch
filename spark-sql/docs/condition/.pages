@@ -4,3 +4,5 @@ nav:
   - Comparison: comparison.md
   - Logical: logical.md
   - Pattern Matching: pattern.md
+  - CASE WHEN: case_when.md
+  - IF / IIF: if_iif.md

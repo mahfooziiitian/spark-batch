@@ -1,33 +1,38 @@
 # :material-file-tree: Subqueries
 
-Subqueries are queries nested inside another query, used to filter rows, compute values, or supply inline tables to the outer query.
-
-### :material-sitemap: Overview
-
-```mermaid
-graph TD
-    A[Outer Query] --> B{Subquery Type}
-    B --> C["Scalar: returns one value"]
-    B --> D["IN / NOT IN"]
-    B --> E["EXISTS / NOT EXISTS"]
-    B --> F["Lateral: correlated"]
-```
+A subquery is a `SELECT` statement nested inside another SQL statement. Subqueries
+filter rows, compute values, supply inline tables, or check existence — anywhere an
+expression or table reference is valid.
 
 ---
 
-## :material-pin: Subquery Types
+## :material-sitemap: In This Section
 
-| Type | Syntax | Description |
-|------|--------|-------------|
-| Scalar | `col = (SELECT single_value ...)` | Returns exactly one row and one column; used as a value expression |
-| `IN` / `NOT IN` | `col IN (SELECT ...)` | Filters rows where the column matches any value in the subquery result |
-| `EXISTS` / `NOT EXISTS` | `EXISTS (SELECT 1 FROM ...)` | Returns `TRUE` if the subquery produces at least one row |
-| Correlated | `WHERE col > (SELECT ... WHERE inner.id = outer.id)` | References a column from the outer query; logically re-evaluated per outer row |
-| Lateral / Derived table | `FROM (SELECT ...) AS alias` | Subquery in the `FROM` clause treated as an inline table |
+| Page | Covers |
+|------|--------|
+| [Scalar Subqueries](scalar.md) | Single-value subqueries in `SELECT`, `WHERE`, `HAVING`, `CASE` |
+| [IN / NOT IN](in_not_in.md) | Set membership tests and the NULL gotcha |
+| [EXISTS / NOT EXISTS](exists.md) | Existence checks, semi-joins, anti-joins |
+| [Correlated Subqueries](correlated.md) | Per-row subqueries referencing the outer query |
+| [Derived Tables](derived_table.md) | Inline views in the `FROM` clause |
+| [Subquery in HAVING](having_subquery.md) | Post-aggregation filters with subqueries |
+| [Subquery vs JOIN vs CTE](subquery_vs_join.md) | When each approach is best |
 
 ---
 
-## :material-magnify: Behavior
+## :material-code-tags: Subquery Types
+
+| Type | Syntax | Returns |
+|------|--------|---------|
+| Scalar | `(SELECT single_val FROM ...)` | Exactly 1 row × 1 column |
+| `IN` | `col IN (SELECT col FROM ...)` | A set of values |
+| `EXISTS` | `EXISTS (SELECT 1 FROM ...)` | Boolean (row found or not) |
+| Correlated | `WHERE col > (SELECT ... WHERE inner.id = outer.id)` | Any of the above, re-evaluated per outer row |
+| Derived table | `FROM (SELECT ...) AS alias` | An inline table |
+
+---
+
+## :material-information-outline: Behavior
 
 1. **Scalar subquery constraint**: must return at most one row and one column. A runtime error is raised if more than one row is returned.
 2. **IN with NULL**: if the subquery result contains any `NULL` values, `NOT IN` may produce unexpected `UNKNOWN` results for every outer row — use `NOT EXISTS` instead to handle NULLs safely.
@@ -186,7 +191,7 @@ HAVING SUM(amount) > (SELECT AVG(amount) FROM orders);
 
 ---
 
-## :material-brain: When to Use
+## :material-lightbulb-outline: When to Use
 
 | Scenario | Recommended Pattern | Performance Note |
 |----------|---------------------|-----------------|

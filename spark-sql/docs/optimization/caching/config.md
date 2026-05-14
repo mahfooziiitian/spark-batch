@@ -1,57 +1,93 @@
-# :material-lightning-bolt: Caching config
+# :material-wrench: Caching Configuration
 
-### :material-sitemap: Overview
+---
+
+## :material-sitemap: Config Flow
 
 ```mermaid
-graph LR
-    A[Config Setting] --> B[CacheManager]
-    B --> C[InMemoryRelation]
-    C --> D[Columnar Store]
+flowchart LR
+    SET["SET config"] --> CM["CacheManager"]
+    CM --> IMR["InMemoryRelation"]
+    IMR --> CS["Columnar Store\n(compressed batches)"]
+    CS --> SL{"Storage Level"}
+    SL --> MEM["MEMORY_ONLY"]
+    SL --> MD["MEMORY_AND_DISK"]
+    SL --> DISK["DISK_ONLY"]
 ```
 
-## :material-wrench: Common SQL Caching Configurations
+---
 
-Config                                       | Description                                                          | Default
----------------------------------------------|----------------------------------------------------------------------|------------------
-spark.sql.inMemoryColumnarStorage.compressed | Whether to compress cached data                                      | true
-spark.sql.inMemoryColumnarStorage.batchSize  | Batch size for columnar cache (in rows)                              | 10000
-spark.sql.cache.serializer                   | Serializer for cached tables (default is Kryo/Java based on context) | -
-spark.sql.autoBroadcastJoinThreshold         | Can interact with caching for joins                                  | 10MB
-spark.sql.cache.level                        | Set default cache storage level (since Spark 3.3+)                   | MEMORY_AND_DISK
-spark.sql.defaultSizeInBytes                 | Default size used when no stats are available                        | 1GB
+## :material-table: Configuration Reference
 
-## :material-check-circle-outline: How to Set Caching Configs in SQL
+| Property | Default | Description |
+|----------|---------|-------------|
+| `spark.sql.inMemoryColumnarStorage.compressed` | `true` | Auto-select compression codec per column based on data statistics |
+| `spark.sql.inMemoryColumnarStorage.batchSize` | `10000` | Rows per columnar batch — larger = better throughput, more memory |
+| `spark.sql.cache.level` | `MEMORY_AND_DISK` | Default storage level for `CACHE TABLE` (Spark 3.3+) |
+| `spark.sql.defaultSizeInBytes` | `1073741824` | Size estimate for tables with no statistics |
+| `spark.sql.autoBroadcastJoinThreshold` | `10485760` | Threshold below which cached tables may trigger broadcast |
+| `spark.sql.cache.serializer` | built-in | Serializer for cached data (rarely needs changing) |
 
-You can set these directly in a SQL notebook or script:
+---
+
+## :material-database: Storage Levels
+
+| Level | RAM | Disk | Serialized | Replicated | Use when |
+|-------|:---:|:----:|:----------:|:----------:|---------|
+| `MEMORY_ONLY` | Yes | No | No | No | Dataset fits comfortably in RAM |
+| `MEMORY_AND_DISK` | Yes | Yes (spill) | No | No | Dataset may exceed RAM |
+| `MEMORY_ONLY_SER` | Yes | No | Yes | No | RAM tight — accept CPU cost |
+| `MEMORY_AND_DISK_SER` | Yes | Yes | Yes | No | RAM tight + safety net |
+| `DISK_ONLY` | No | Yes | Yes | No | Dataset too large for RAM |
+| `MEMORY_AND_DISK_2` | Yes | Yes | No | Yes | Fault-tolerant pipelines |
+
+!!! note "SQL vs API"
+    `SET spark.sql.cache.level = MEMORY_ONLY` affects SQL `CACHE TABLE`.
+    The PySpark `.persist(StorageLevel.MEMORY_ONLY)` API sets the level directly
+    on the DataFrame.
+
+---
+
+## :material-code-braces: Applying Configuration in SQL
 
 ```sql
--- Enable compression for cached tables
+-- Enable compression (default: already true)
 SET spark.sql.inMemoryColumnarStorage.compressed = true;
 
--- Change batch size for caching
-SET spark.sql.inMemoryColumnarStorage.batchSize = 5000;
+-- Larger batches for better vectorised throughput (at the cost of memory)
+SET spark.sql.inMemoryColumnarStorage.batchSize = 20000;
 
--- Set default cache level (Spark 3.3+)
+-- Cache only in memory (evict rather than spill to disk)
 SET spark.sql.cache.level = MEMORY_ONLY;
+
+-- Now cache the table with the above settings in effect
+CACHE TABLE orders;
 ```
 
-## How Spark SQL Caching Works
+---
 
-When you run:
+## :material-tune: Tuning Guide
 
-```sql
-CACHE TABLE my_view;
-```
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| OOM during CACHE TABLE | Dataset too large for MEMORY_ONLY | Switch to `MEMORY_AND_DISK` |
+| Cache is evicted unexpectedly | Other cache entries pressure LRU | Cache only the most reused views |
+| Slow first query after CACHE LAZY | Cold materialisation | Use `CACHE TABLE` (eager) for critical paths |
+| High CPU on cache read | Decompression overhead | Set `compressed = false` if CPU is the bottleneck |
+| Many small batches | Low `batchSize` | Increase to 20000–50000 for analytical workloads |
 
-1. Spark stores the data in columnar format in memory.
-2. It only caches once a query triggers materialization (e.g., SELECT COUNT(*)).
-3. Compression saves memory at a slight CPU cost.
-4. Storage level controls whether Spark spills to disk if memory is insufficient.
+---
 
-## :material-magnify: Check Cache Status
-You can check what’s cached:
+## :material-check-circle-outline: How Columnar Compression Works
 
-```sql
--- List cached tables
-SHOW TABLES;
-```
+When `spark.sql.inMemoryColumnarStorage.compressed = true`, Catalyst inspects
+column statistics collected during caching and selects a codec per column:
+
+| Column type | Codec selected |
+|-------------|---------------|
+| Low cardinality (e.g., region) | Dictionary encoding |
+| Integer sequence | Run-length encoding (RLE) |
+| High cardinality string | LZ4 / Snappy |
+| Floating-point | Pass-through (no compression gain) |
+
+This means storage is often 3–10× smaller than raw row format.

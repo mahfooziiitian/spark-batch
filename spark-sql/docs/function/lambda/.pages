@@ -1,0 +1,8 @@
+title: Lambda
+nav:
+  - index.md
+  - Syntax: syntax.md
+  - Array HOFs: array_hof.md
+  - Map HOFs: map_hof.md
+  - Aggregate HOF: aggregate_hof.md
+  - Patterns: patterns.md

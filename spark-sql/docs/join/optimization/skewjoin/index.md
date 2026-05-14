@@ -97,5 +97,5 @@ WHERE o_custId = c_custId AND o_storeRegionId = c_regionId
 
 ---
 
-> ℹ️ **Tip:**  
-> Use skew hints only if you have disabled AQE or need fine-grained control over skew handling.
+!!! tip
+    Use skew hints only if you have disabled AQE or need fine-grained control over skew handling.

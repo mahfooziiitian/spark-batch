@@ -1,0 +1,10 @@
+title: Column Expressions
+nav:
+  - index.md
+  - Aliases: alias.md
+  - Casting: casting.md
+  - Derived Columns: derived.md
+  - Column Selection: selection.md
+  - Struct & Nested: nested.md
+  - Defaults & Generated: defaults.md
+  - Renaming & DDL: renaming.md

@@ -108,3 +108,110 @@ WHERE event_date = '2024-01-15'
 
 > **See also:** [MERGE INTO](merge.md) supports a `DELETE` action inside the
 > `WHEN MATCHED` clause for conditional row removal during upserts.
+
+---
+
+## :material-database-remove: Advanced Patterns
+
+### GDPR right-to-erasure (hard delete)
+
+```sql
+-- Step 1: delete matching rows
+DELETE FROM customers
+WHERE customer_id IN (
+    SELECT customer_id FROM erasure_requests WHERE fulfilled = FALSE
+);
+
+-- Step 2: mark requests as fulfilled
+UPDATE erasure_requests
+SET fulfilled = TRUE, fulfilled_at = current_timestamp()
+WHERE fulfilled = FALSE;
+
+-- Step 3: reclaim disk space (removes old data files)
+VACUUM customers RETAIN 0 HOURS;
+-- Note: disable retention check first:
+-- SET spark.databricks.delta.retentionDurationCheck.enabled = false;
+```
+
+### Age-out data beyond retention window
+
+```sql
+DELETE FROM event_logs
+WHERE event_date < date_sub(current_date(), 90);
+
+-- Then compact + reclaim space
+OPTIMIZE event_logs;
+VACUUM event_logs RETAIN 168 HOURS;
+```
+
+### Conditional delete from CDC feed
+
+```sql
+-- CDC records with op_type = 'D' should be deleted from the target
+DELETE FROM orders
+WHERE order_id IN (
+    SELECT order_id FROM cdc_feed WHERE op_type = 'D'
+);
+```
+
+### Delete orphaned child rows
+
+```sql
+DELETE FROM order_items
+WHERE order_id NOT IN (
+    SELECT order_id FROM orders WHERE order_id IS NOT NULL
+);
+```
+
+### Delete duplicate rows (keep latest)
+
+```sql
+-- Keep only the row with the highest updated_at per key
+DELETE FROM events
+WHERE event_id NOT IN (
+    SELECT event_id FROM (
+        SELECT event_id,
+               ROW_NUMBER() OVER (PARTITION BY session_id ORDER BY updated_at DESC) AS rn
+        FROM events
+    )
+    WHERE rn = 1
+);
+```
+
+---
+
+## :material-recycle: After Deleting — Maintenance Checklist
+
+```sql
+-- 1. Verify row count
+SELECT COUNT(*) FROM my_table;
+
+-- 2. Compact the newly sparse files
+OPTIMIZE my_table;
+
+-- 3. Z-ORDER if filtered by a specific column
+OPTIMIZE my_table ZORDER BY (customer_id);
+
+-- 4. Physically remove old file versions
+VACUUM my_table RETAIN 168 HOURS;
+
+-- 5. Check Delta history
+DESCRIBE HISTORY my_table;
+```
+
+!!! warning "VACUUM before confirming GDPR deletion"
+    Deleted rows remain in old Parquet files on disk until `VACUUM` runs.
+    For right-to-erasure compliance, run `VACUUM RETAIN 0 HOURS` after confirming
+    all downstream pipelines and consumers have been notified.
+
+---
+
+## :material-speedometer: Performance Tips
+
+| Tip | Reason |
+|-----|--------|
+| Include partition column in `WHERE` | Partition pruning — only matching files rewritten |
+| Use `NOT EXISTS` instead of `NOT IN` | Avoids NULL trap; often better plan |
+| Delete then `OPTIMIZE` | Compacts the many small files left after deletion |
+| Batch large deletes by date range | Prevents one huge rewrite transaction |
+| Prefer `TRUNCATE` for full-table wipe | Much faster than `DELETE FROM table` |

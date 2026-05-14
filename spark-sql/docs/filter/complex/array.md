@@ -159,3 +159,99 @@ WHERE size(tags) >= 2;
 | Access element at a known position | `element_at` |
 | Verify all elements meet a condition | `forall` HOF |
 | Filter rows by array length | `size(arr) >= N` in `WHERE` |
+
+---
+
+## :material-set-merge: Set Operations on Arrays
+
+```sql
+-- Keep only tags that appear in both arrays
+SELECT id, array_intersect(tags_a, tags_b) AS common_tags
+FROM tag_pairs
+WHERE size(array_intersect(tags_a, tags_b)) > 0;
+
+-- Tags in A but not in B
+SELECT id, array_except(tags_a, tags_b) AS unique_to_a
+FROM tag_pairs;
+
+-- Merge two arrays (union semantics, distinct values)
+SELECT id, array_union(tags_a, tags_b) AS all_tags
+FROM tag_pairs;
+```
+
+---
+
+## :material-transform: transform HOF
+
+`transform(arr, x -> expr)` maps each element through an expression, returning a new array.
+
+```sql
+-- Normalise all tags to uppercase
+SELECT event_id, transform(tags, t -> UPPER(t)) AS upper_tags
+FROM events;
+
+-- Score each tag: priority=3, alert=2, others=1
+SELECT event_id,
+       transform(tags, t ->
+           CASE t WHEN 'priority' THEN 3 WHEN 'alert' THEN 2 ELSE 1 END
+       ) AS tag_scores
+FROM events;
+```
+
+---
+
+## :material-calculator: aggregate HOF (fold / reduce)
+
+`aggregate(arr, start, (acc, x) -> merge, [finish])` performs a fold over array elements.
+
+```sql
+-- Sum all scores in the scores array
+SELECT event_id, aggregate(scores, 0, (acc, s) -> acc + s) AS total_score
+FROM events;
+
+-- Product of all scores
+SELECT event_id, aggregate(scores, 1, (acc, s) -> acc * s) AS score_product
+FROM events;
+
+-- Concatenate tags with a comma separator
+SELECT event_id,
+       aggregate(tags, '', (acc, t) -> CASE WHEN acc = '' THEN t ELSE acc || ',' || t END) AS csv_tags
+FROM events;
+```
+
+---
+
+## :material-layers-triple: flatten for Nested Arrays
+
+```sql
+CREATE OR REPLACE TEMP VIEW nested AS
+SELECT * FROM VALUES
+  (1, ARRAY(ARRAY(1,2), ARRAY(3,4))),
+  (2, ARRAY(ARRAY(5,6), ARRAY(7,8,9)))
+AS t(id, matrix);
+
+-- Flatten one level: array<array<int>> → array<int>
+SELECT id, flatten(matrix) AS flat
+FROM nested;
+-- id | flat
+-- ---|----------
+-- 1  | [1,2,3,4]
+-- 2  | [5,6,7,8,9]
+```
+
+---
+
+## :material-sort: sort_array and Combined HOF Patterns
+
+```sql
+-- Sort scores descending and keep top-2 (array slice)
+SELECT event_id,
+       slice(sort_array(scores, false), 1, 2) AS top2_scores
+FROM events
+WHERE size(scores) >= 2;
+
+-- Keep tags that start with 'p', then sort alphabetically
+SELECT event_id,
+       sort_array(filter(tags, t -> t LIKE 'p%')) AS sorted_p_tags
+FROM events;
+```

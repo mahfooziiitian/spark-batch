@@ -1,18 +1,11 @@
 # :material-lightbulb-on: Spark SQL Join Hint Operators
 
-Spark SQL provides several **join strategy hints** to influence the physical execution plan of joins. These hints allow you to guide Spark in choosing the most efficient join strategy for your data and workload.
+Spark SQL provides **join strategy hints** to override the planner's automatic choice.
+Each hint is placed in a `/*+ ... */` comment immediately after `SELECT`.
 
-Supported join hints include:
+---
 
-- `BROADCAST`
-- `MERGE`
-- `SHUFFLE_HASH`
-- `SHUFFLE_REPLICATE_NL`
-
-Each hint instructs Spark to use the specified strategy for the hinted relation when performing a join.
-
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph TD
@@ -28,43 +21,107 @@ graph TD
 
 ---
 
-## :material-rocket-launch: BROADCAST Hint
+## :material-rocket-launch: BROADCAST
 
-The `BROADCAST` hint tells Spark to broadcast the specified table to all worker nodes, enabling a broadcast join. This can significantly speed up joins when one table is small enough to fit in memory.
-
-> **Note:** Spark will prioritize a broadcast join for the hinted table, even if its size exceeds the `spark.sql.autoBroadcastJoinThreshold` configuration.
-
-**Example:**
+Broadcasts the hinted table to every executor so no shuffle is needed for the larger side.
 
 ```sql
-SELECT /*+ BROADCAST(r) */ *
-FROM records r
-JOIN src s
-  ON r.key = s.key
+-- Broadcast the small dimension table
+SELECT /*+ BROADCAST(dim) */
+    f.order_id, dim.region
+FROM fact_orders f
+JOIN dim_region dim ON f.region_id = dim.id;
+
+-- Broadcast a subquery alias
+SELECT /*+ BROADCAST(active_customers) */
+    t.transaction_id, active_customers.name
+FROM transactions t
+JOIN (SELECT id, name FROM customers WHERE active = true) active_customers
+    ON t.customer_id = active_customers.id;
 ```
 
-In this example, the `records` table (`r`) will be broadcasted to all nodes.
+!!! tip
+    Broadcasts below `spark.sql.autoBroadcastJoinThreshold` (default 10 MB) happen automatically.
+    Use this hint when the table is small but above the threshold.
+
+---
+
+## :material-sort: MERGE
+
+Forces a Sort-Merge Join regardless of table sizes.
+
+```sql
+-- Force sort-merge join for two large tables
+SELECT /*+ MERGE(orders) */
+    o.order_id, p.payment_status
+FROM orders o
+JOIN payments p ON o.order_id = p.order_id;
+```
+
+!!! note
+    Both join keys must be **sortable**. If not, Spark falls back to Shuffle Hash Join.
+
+---
+
+## :material-shuffle-variant: SHUFFLE_HASH
+
+Forces a Shuffle Hash Join. Both sides are shuffled, then the smaller (build) side is hashed in memory.
+
+```sql
+-- Force shuffle hash join
+SELECT /*+ SHUFFLE_HASH(dim) */
+    f.sale_id, dim.category
+FROM fact_sales f
+JOIN dim_product dim ON f.product_id = dim.product_id;
+```
+
+!!! warning
+    The build side (hinted table) must fit in executor memory. If it does not, the task may OOM.
+
+---
+
+## :material-grid: SHUFFLE_REPLICATE_NL
+
+Replicates one side and uses a nested loop. Use for **cross joins** or **non-equi conditions** when no other strategy applies.
+
+```sql
+-- Cross join with all date combinations
+SELECT /*+ SHUFFLE_REPLICATE_NL(dates) */
+    p.product_id, dates.date_value
+FROM products p
+CROSS JOIN dates;
+
+-- Non-equi join: match transactions to applicable tax slabs
+SELECT /*+ SHUFFLE_REPLICATE_NL(tax_slabs) */
+    t.transaction_id, t.amount, s.tax_rate
+FROM transactions t
+JOIN tax_slabs s ON t.amount BETWEEN s.min_amount AND s.max_amount;
+```
+
+!!! warning
+    Output size is `N × M` rows. Avoid for large inputs.
 
 ---
 
 ## :material-pencil-outline: Hint Precedence
 
-When multiple join hints are specified on both sides of a join, Spark applies the following precedence:
+When both sides of a join carry conflicting hints, the planner resolves them in order:
 
-1. **BROADCAST**
-2. **MERGE**
-3. **SHUFFLE_HASH**
-4. **SHUFFLE_REPLICATE_NL**
-
-If both sides use the same hint (e.g., both use `BROADCAST` or `SHUFFLE_HASH`), Spark selects the build side based on the join type and the relative sizes of the relations.
-
----
-
-## :material-bookshelf: References
-
-- [Spark SQL Join Hints Documentation](https://spark.apache.org/docs/latest/sql-ref-syntax-qry-select-hints.html)
-- [Spark SQL Performance Tuning](https://spark.apache.org/docs/latest/sql-performance-tuning.html)
+| Priority | Hint |
+|----------|------|
+| 1 (highest) | `BROADCAST` |
+| 2 | `MERGE` |
+| 3 | `SHUFFLE_HASH` |
+| 4 (lowest) | `SHUFFLE_REPLICATE_NL` |
 
 ---
 
-Enhance your Spark SQL queries by leveraging join hints to optimize performance for your specific data scenarios!
+## :material-code-tags: Verify the Plan
+
+```sql
+EXPLAIN
+SELECT /*+ BROADCAST(dim) */ f.order_id, dim.region
+FROM fact_orders f
+JOIN dim_region dim ON f.region_id = dim.id;
+-- Expected: BroadcastHashJoin in plan output
+```

@@ -68,3 +68,50 @@ SELECT MAP_FILTER(MAP('a', 1, 'b', 2, 'c', 3), (k, v) -> v > 1);
 | Validate array contents | `EXISTS` / `FORALL` for boolean checks |
 | Reduce arrays to a scalar | `AGGREGATE` replaces manual loop logic |
 | Process map key-value pairs | `MAP_FILTER`, `TRANSFORM_KEYS/VALUES` |
+
+---
+
+## :material-compare: HOF vs LATERAL VIEW
+
+Both HOFs and `LATERAL VIEW EXPLODE` can process array columns, but they serve different purposes:
+
+| Aspect | HOF (`TRANSFORM`, `FILTER`, ...) | `LATERAL VIEW EXPLODE` |
+|--------|:---------------------------------:|:----------------------:|
+| Row multiplication | No | Yes — one row per element |
+| Result type | Array / Boolean / Scalar | Multiple rows |
+| Used for aggregation | `AGGREGATE` HOF | `GROUP BY` after EXPLODE |
+| Membership check | `EXISTS` | `EXISTS` subquery / `EXPLODE` + `DISTINCT` |
+| Performance | Efficient — no shuffle | May require dedup / shuffle |
+| Pushdown | No | No |
+
+```sql
+-- HOF: check membership — no row explosion
+SELECT event_id FROM events WHERE EXISTS(tags, t -> t = 'critical');
+
+-- LATERAL VIEW: when you need to aggregate by tag
+SELECT tag, COUNT(*) AS cnt
+FROM events LATERAL VIEW EXPLODE(tags) AS tag
+GROUP BY tag;
+```
+
+---
+
+## :material-speedometer: Performance Tips
+
+1. **Pre-filter rows first** — use `array_contains` or `WHERE size(arr) > 0` before HOFs to reduce the number of rows processed.
+2. **Avoid HOFs in `WHERE` for large tables** — HOFs cannot be pushed to Parquet/Delta scans; apply cheap scalar predicates first.
+3. **Chain HOFs sparingly** — `TRANSFORM(FILTER(...))` is fine; deeply nested chains hurt readability and may generate complex plans.
+4. **Prefer built-in array functions over HOF equivalents** — `ARRAY_MAX`, `ARRAY_MIN`, `ARRAY_JOIN`, `SIZE` are implemented as native optimised functions.
+
+---
+
+## :material-book-open-variant: In This Section
+
+| Page | Contents |
+|------|----------|
+| [Array HOFs](array.md) | `TRANSFORM`, `FILTER`, `EXISTS`, `FORALL`, `ZIP_WITH` |
+| [Map HOFs](map.md) | `MAP_FILTER`, `TRANSFORM_KEYS`, `TRANSFORM_VALUES`, `MAP_ZIP_WITH` |
+| [Transform](transform.md) | `TRANSFORM` deep-dive |
+| [Filter](filter.md) | `FILTER` deep-dive |
+| [Exists](exists.md) | `EXISTS` / `FORALL` deep-dive |
+| [Aggregate](aggregate.md) | `AGGREGATE` fold/reduce deep-dive |

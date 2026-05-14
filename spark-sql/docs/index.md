@@ -40,7 +40,7 @@ GROUP BY region;
 | Section | What You'll Find |
 |---------|-------------------|
 | [Table](table/index.md) | Table creation and management |
-| [Column](column.md) | Column expressions and selection |
+| [Column](column/index.md) | Column expressions and selection |
 | [Data Types](types/index.md) | Type system and casting |
 | [DML](dml/index.md) | INSERT/UPDATE/DELETE/MERGE |
 | [Filter](filter/index.md) | WHERE, HAVING, NULL handling |

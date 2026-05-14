@@ -3,19 +3,19 @@ nav:
 - Home: index.md
 - SQL Basics:
   - Table: table
-  - Column: column.md
+  - Column: column
   - Data Types: types
   - DML: dml
-  - Key: key.md
-  - Operator: operator.md
+  - Key: key
+  - Operator: operator
   - Control Flow: control
   - Data Sources: datasource
 - Queries:
   - Filter: filter
   - Condition: condition
   - Join: join
-  - Subquery: subquery.md
-  - CTE: cte.md
+  - Subquery: subquery
+  - CTE: cte
   - Aggregation: aggregation
   - Having: having
   - NULL Handling: nulls
@@ -26,7 +26,7 @@ nav:
   - Window Functions: window
   - Optimization: optimization
   - AQE: aqe
-  - Execution: execution.md
+  - Execution: execution
   - Partitioning: partition
   - View: view
 - Data Engineering:
@@ -35,5 +35,5 @@ nav:
   - Applications: application
   - Catalog: catalog
   - Hive: hive
-  - CLI: cli.md
-  - Configuration: config.md
+  - CLI: cli
+  - Configuration: config

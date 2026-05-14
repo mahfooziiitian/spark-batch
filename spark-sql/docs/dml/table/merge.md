@@ -182,3 +182,125 @@ WHEN MATCHED THEN
 >     FROM source) WHERE rn = 1
 > ) AS s
 > ```
+
+---
+
+## :material-database-arrow-right: Advanced Patterns
+
+### Source deduplication before merge
+
+```sql
+-- Prevents "multiple source rows matched same target row" error
+MERGE INTO customers AS t
+USING (
+    SELECT * FROM (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY updated_at DESC) AS rn
+        FROM staging_customers
+    )
+    WHERE rn = 1
+) AS s
+ON t.customer_id = s.customer_id
+WHEN MATCHED AND t.row_hash <> s.row_hash THEN UPDATE SET *
+WHEN NOT MATCHED THEN INSERT *;
+```
+
+### Conditional delete inside MERGE (CDC pattern)
+
+```sql
+-- CDC feed with op_type: 'I'=insert, 'U'=update, 'D'=delete
+MERGE INTO orders AS t
+USING cdc_feed AS s
+ON t.order_id = s.order_id
+WHEN MATCHED AND s.op_type = 'D' THEN DELETE
+WHEN MATCHED AND s.op_type = 'U' THEN
+    UPDATE SET
+        status     = s.status,
+        amount     = s.amount,
+        updated_at = s.updated_at
+WHEN NOT MATCHED AND s.op_type = 'I' THEN
+    INSERT (order_id, customer_id, status, amount, created_at)
+    VALUES (s.order_id, s.customer_id, s.status, s.amount, s.created_at);
+```
+
+### Row-hash change detection (skip unchanged rows)
+
+```sql
+MERGE INTO dim_product AS t
+USING (
+    SELECT *,
+           md5(concat_ws('||', name, category, price, is_active)) AS row_hash
+    FROM staging_products
+) AS s
+ON t.product_id = s.product_id
+WHEN MATCHED AND t.row_hash <> s.row_hash THEN
+    UPDATE SET
+        name       = s.name,
+        category   = s.category,
+        price      = s.price,
+        is_active  = s.is_active,
+        row_hash   = s.row_hash,
+        updated_at = current_timestamp()
+WHEN NOT MATCHED THEN
+    INSERT (product_id, name, category, price, is_active, row_hash, created_at)
+    VALUES (s.product_id, s.name, s.category, s.price, s.is_active, s.row_hash, current_timestamp());
+```
+
+### Full-mirror sync (replace target to match source exactly)
+
+```sql
+-- After this merge, target contains exactly what source contains
+MERGE INTO active_subscriptions AS t
+USING current_subscriptions AS s
+ON t.subscription_id = s.subscription_id
+WHEN MATCHED AND (
+    t.plan      <> s.plan
+    OR t.status <> s.status
+) THEN UPDATE SET *
+WHEN NOT MATCHED THEN INSERT *
+WHEN NOT MATCHED BY SOURCE THEN DELETE;
+```
+
+### Insert-only merge (idempotent new-row load)
+
+```sql
+-- Only insert rows that don't already exist; never update
+MERGE INTO events AS t
+USING staged_events AS s
+ON t.event_id = s.event_id
+WHEN NOT MATCHED THEN INSERT *;
+```
+
+### Merge with a VALUES source (small lookup updates)
+
+```sql
+MERGE INTO config AS t
+USING (
+    SELECT col1 AS key, col2 AS value FROM VALUES
+        ('max_retries', '5'),
+        ('timeout_sec', '30'),
+        ('batch_size',  '1000')
+    AS v(col1, col2)
+) AS s
+ON t.key = s.key
+WHEN MATCHED THEN UPDATE SET t.value = s.value
+WHEN NOT MATCHED THEN INSERT (key, value) VALUES (s.key, s.value);
+```
+
+---
+
+## :material-speedometer: Performance Tips
+
+| Tip | Reason |
+|-----|--------|
+| Partition target by merge key | Prunes files during the scan phase |
+| `ZORDER BY` merge key | Row-group skipping for high-cardinality keys |
+| Deduplicate source before merge | Avoids runtime error + unnecessary file rewrites |
+| Use `row_hash` to skip unchanged rows | Avoids rewriting files when nothing changed |
+| Filter source to only changed rows | Smaller source = fewer target partitions touched |
+| Avoid `MERGE` on unpartitioned tables | Full table scan on both sides |
+| Run `OPTIMIZE` after large merges | Compacts small files created by the rewrite |
+
+!!! warning "One match per target row"
+    If multiple source rows match the same target row, Spark raises
+    `"MERGE_CARDINALITY_VIOLATION"`. Always deduplicate the source on the merge key first.

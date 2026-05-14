@@ -138,3 +138,121 @@ FORMAT_OPTIONS ('header' = 'false');
 > **Tip:** For high-volume streaming ingestion, consider
 > [Auto Loader](https://docs.databricks.com/ingestion/auto-loader/index.html)
 > which provides file notification mode and better scalability than `COPY INTO`.
+
+---
+
+## :material-table-refresh: COPY_OPTIONS Reference
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `mergeSchema` | `false` | Evolve target schema to accommodate new source columns |
+| `force` | `false` | Re-load files even if already tracked as ingested |
+
+---
+
+## :material-table-eye: FORMAT_OPTIONS Extended Reference
+
+| Option | Formats | Description |
+|--------|---------|-------------|
+| `header` | CSV | `true` if first row contains column names |
+| `delimiter` | CSV | Field separator (default `,`) |
+| `quote` | CSV | Quote character (default `"`) |
+| `escape` | CSV | Escape character (default `\`) |
+| `nullValue` | CSV | String representing NULL |
+| `multiLine` | JSON, CSV | Records can span multiple lines |
+| `inferSchema` | CSV, JSON | Infer types (slow — use explicit schema if possible) |
+| `dateFormat` | CSV, JSON | Date parsing pattern (e.g., `yyyy-MM-dd`) |
+| `timestampFormat` | CSV, JSON | Timestamp parsing pattern |
+| `recordDelimiter` | AVRO | Delimiter between Avro records |
+| `compression` | All | Override compression detection |
+
+---
+
+## :material-database-import: Advanced Patterns
+
+### Load AVRO from DBFS
+
+```sql
+COPY INTO telemetry
+FROM 'dbfs:/mnt/landing/telemetry/'
+FILEFORMAT = AVRO
+PATTERN = '*.avro';
+```
+
+### Load ORC from ADLS Gen2
+
+```sql
+COPY INTO fact_transactions
+FROM 'abfss://raw@storage.dfs.core.windows.net/transactions/'
+FILEFORMAT = ORC
+COPY_OPTIONS ('mergeSchema' = 'true');
+```
+
+### Type-cast on load with a SELECT wrapper
+
+```sql
+COPY INTO orders (order_id, customer_id, amount, order_date)
+FROM (
+    SELECT
+        CAST(_c0 AS INT)           AS order_id,
+        _c1                        AS customer_id,
+        CAST(_c2 AS DECIMAL(10,2)) AS amount,
+        CAST(_c3 AS DATE)          AS order_date
+    FROM 's3://landing/orders/'
+)
+FILEFORMAT = CSV
+FORMAT_OPTIONS ('header' = 'false');
+```
+
+### Incremental daily ingestion pattern
+
+```sql
+-- Run nightly; only new files in today's folder are loaded
+COPY INTO raw_events
+FROM CONCAT('s3://landing/events/', DATE_FORMAT(current_date(), 'yyyy/MM/dd'), '/')
+FILEFORMAT = JSON;
+```
+
+### Track load status
+
+```sql
+-- Check what has been loaded
+DESCRIBE HISTORY raw_events;
+
+-- Count ingested vs total files (approximate via table size)
+SELECT COUNT(*) AS rows_loaded, MAX(_metadata.file_modification_time) AS last_file_ts
+FROM raw_events;
+```
+
+---
+
+## :material-compare: COPY INTO vs Auto Loader vs INSERT INTO
+
+| Feature | `COPY INTO` | Auto Loader | `INSERT INTO … SELECT` |
+|---------|:-----------:|:-----------:|:----------------------:|
+| Idempotent | :material-check: | :material-check: | :material-close: |
+| Streaming ingestion | :material-close: | :material-check: | :material-close: |
+| File notification mode | :material-close: | :material-check: | :material-close: |
+| Throughput (files/s) | Medium | High | N/A |
+| Schema evolution | Via `mergeSchema` | Automatic | Manual |
+| SQL-only (no Spark job) | :material-check: | :material-close: | :material-check: |
+| Best for | Batch ingestion jobs | High-volume streaming | Ad-hoc or small loads |
+
+!!! tip "When to use Auto Loader instead"
+    Use [Auto Loader](https://docs.databricks.com/ingestion/auto-loader/index.html)
+    (`readStream.format("cloudFiles")`) when:
+    - You have **thousands of files per hour**
+    - You need **file notification mode** (S3 Events / Event Hubs) for low-latency ingestion
+    - You want **automatic schema evolution** without restarting the pipeline
+
+---
+
+## :material-speedometer: Performance Tips
+
+| Tip | Reason |
+|-----|--------|
+| Use `PATTERN` to scope to a date prefix | Avoids listing the entire bucket |
+| Set `inferSchema = 'false'` and provide schema | Skips the expensive schema-inference scan |
+| Use `FILES` for small known batches | Avoids directory listing overhead |
+| Run `OPTIMIZE` after large loads | Consolidates many small files written per batch |
+| Avoid `force = true` in production pipelines | Reloads already-ingested data, causing duplicates |

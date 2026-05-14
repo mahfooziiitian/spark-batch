@@ -1,90 +1,132 @@
-# :material-lightning-bolt: Caching
+# :material-table-refresh: Cache Commands
 
-In Spark SQL, CACHE is used to persist the results of a table or query in memory across multiple operations to improve performance — especially if the same data is accessed repeatedly.
+---
 
-### :material-sitemap: Overview
+## :material-sitemap: Cache Lifecycle
 
 ```mermaid
-graph LR
-    A[First Query] --> B[CACHE TABLE]
-    B --> C[In-Memory Store]
-    C --> D[Subsequent Queries]
-    D -->|Cache hit| C
-    D -->|Cache miss| E[Recompute]
+flowchart LR
+    TBL["Table / View"] --> CT["CACHE TABLE"]
+    CT --> EM["Eager\nmaterialisation"]
+    CT2["CACHE LAZY TABLE"] --> LM["Lazy\n(first query triggers)"]
+    EM --> IMR["InMemoryRelation"]
+    LM --> IMR
+    IMR -->|Query| SCAN["InMemoryTableScanExec"]
+    SCAN --> RESULT["Query Result"]
+    IMR -->|UNCACHE / CLEAR| GONE["Evicted"]
 ```
 
-1. SQL CACHE TABLE is eager
+---
 
-## Syntax
+## :material-code-braces: Syntax
 
-The following gives "In-memory table `hundred`"
+### Eager cache
 
 ```sql
-CACHE TABLE hundred
+-- Materialises the table immediately
+CACHE TABLE orders;
 ```
 
+### Lazy cache
+
 ```sql
-CACHE TABLE students;
-SELECT * FROM students WHERE age > 20;
+-- Registers the cache plan; data is loaded on first query
+CACHE LAZY TABLE orders;
 ```
 
-## :material-check-circle-outline: 2. Cache a Temporary View
+### Cache a query result
 
 ```sql
-CACHE TABLE my_temp_view;
+-- Create a named in-memory table from a query
+CACHE TABLE active_customers AS
+SELECT customer_id, name, region
+FROM customers
+WHERE status = 'active';
+
+-- Use it in subsequent queries — no re-read from storage
+SELECT region, COUNT(*) FROM active_customers GROUP BY region;
+SELECT * FROM active_customers WHERE region = 'US' LIMIT 10;
 ```
 
-You can also create and cache it inline:
+### Cache a temporary view
 
 ```sql
-CREATE OR REPLACE TEMP VIEW temp_students AS
-SELECT * FROM students WHERE age > 20;
+CREATE OR REPLACE TEMP VIEW monthly_summary AS
+SELECT
+    DATE_TRUNC('month', order_date) AS month,
+    region,
+    SUM(amount)                     AS total
+FROM orders
+GROUP BY 1, 2;
 
-CACHE TABLE temp_students;
+CACHE TABLE monthly_summary;
+
+-- Now used in multiple queries without recomputation
+SELECT * FROM monthly_summary WHERE region = 'US';
+SELECT month, SUM(total) FROM monthly_summary GROUP BY month;
 ```
 
-### :material-check-circle-outline: 4. Check What Is Cached
+---
+
+## :material-check-all: Checking Cache Status
 
 ```sql
+-- List all tables in the catalog (in-memory tables appear here)
 SHOW TABLES;
--- or specifically:
-SHOW TABLE EXTENDED LIKE 'students';
+
+-- Detailed view — look for "Is Temporary" and "Type: VIEW"
+DESCRIBE EXTENDED monthly_summary;
 ```
 
-### :material-check-circle-outline: 5. Uncache a Table
+!!! note "No built-in `IS CACHED` SQL function"
+    There is no SQL function like `IS_CACHED(table)`. Use the Spark UI
+    **Storage** tab to confirm what is cached and how much memory it occupies.
+
+---
+
+## :material-delete-sweep: Removing Caches
 
 ```sql
-UNCACHE TABLE students;
-```
+-- Remove a single table / view from cache
+UNCACHE TABLE orders;
+UNCACHE TABLE IF EXISTS orders;
 
-### :material-check-circle-outline: 6. Remove All Caches
-
-```sql
+-- Remove all caches in the current SparkSession
 CLEAR CACHE;
 ```
 
-## Configuration of in-memory caching
+---
 
-### spark.sql.inMemoryColumnarStorage.compressed
+## :material-refresh: Cache Invalidation
 
-When set to true, Spark SQL will automatically select a compression codec for each column based on statistics of the data.
+Spark **does not** automatically invalidate the cache when underlying data changes.
 
-### spark.sql.inMemoryColumnarStorage.batchSize
+```sql
+-- Pattern: refresh table metadata + re-cache after data change
+REFRESH TABLE orders;  -- clears file listing cache
+UNCACHE TABLE cached_orders;
+CACHE TABLE cached_orders AS SELECT ...;
+```
 
-Controls the size of batches for columnar caching.
+---
 
-Larger batch sizes can improve memory utilization and compression, but risk OOMs when caching data.
+## :material-compare: CACHE TABLE vs CACHE LAZY TABLE
 
-## When to Use Caching
+| Aspect | `CACHE TABLE` | `CACHE LAZY TABLE` |
+|--------|:-------------:|:------------------:|
+| Materialises on cache call | Yes | No |
+| Materialises on first query | — | Yes |
+| Suitable for startup script | No (adds latency) | Yes |
+| Guaranteed warm for next query | Yes | No |
 
-When to Use                              | Benefit
------------------------------------------|-------------------------------------
-Query uses same table/view repeatedly    | Saves time by avoiding recomputation
-Table fits in memory                     | Fastest access (memory vs. disk)
-Intermediate query reused multiple times | Great performance improvement
+---
 
-## :material-alert:️ Notes
+## :material-information: Behaviour Notes
 
-1. Lazy Evaluation: Cache is lazy. The first action (count, collect, show, etc.) triggers caching.
-2. Memory Sensitive: If the data doesn’t fit in memory, Spark may spill to disk or evict older cached data.
-3. CACHE TABLE persists in memory for the SparkSession only.
+1. `CACHE TABLE` is **eager** by default — it triggers a Spark job immediately.
+2. `CACHE LAZY TABLE` only stores the plan; the first downstream action caches the data.
+3. Cached data is stored in **columnar in-memory format** using `InMemoryRelation`.
+4. The cache is **session-scoped** — other sessions do not share it.
+5. If available memory is exceeded, Spark **evicts** older cache entries (LRU policy).
+6. Caching a large table that does not fit in executor memory causes **disk spill**
+   or silent eviction — cache selectively using a filtered query.

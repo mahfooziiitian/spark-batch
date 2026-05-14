@@ -1,35 +1,120 @@
-# :material-auto-fix: Coalescing Post Shuffle Partitions
+# :material-table-merge-cells: Coalescing Post-Shuffle Partitions
 
-This feature coalesces the post shuffle partitions based on the map output statistics when both `spark.sql.adaptive.enabled` and `spark.sql.adaptive.coalescePartitions.enabled` configurations are true.
+After a shuffle, Spark creates one output task per shuffle partition. With the
+default `spark.sql.shuffle.partitions = 200`, small datasets produce 200 tiny
+tasks and 200 tiny output files. **AQE partition coalescing** merges adjacent
+small partitions into fewer, right-sized ones automatically.
 
-This feature simplifies the `tuning of shuffle partition` number when running queries.
+---
 
-You do not need to set a proper shuffle partition number to fit your dataset.
+## :material-sitemap: Before and After
 
-Spark can pick the proper shuffle partition number at runtime once you set a large enough initial number of shuffle partitions.
+```mermaid
+flowchart LR
+    subgraph "Without Coalescing (200 partitions)"
+        P1["P0\n1 MB"] 
+        P2["P1\n0.5 MB"]
+        P3["P2\n0.8 MB"]
+        P4["..."]
+        P5["P199\n0.3 MB"]
+    end
+    subgraph "With AQE Coalescing (target 64 MB)"
+        C1["Coalesced P0\n~64 MB\n(80 original partitions)"]
+        C2["Coalesced P1\n~64 MB"]
+        C3["Coalesced P2\n~52 MB"]
+    end
+    P1 --> C1
+    P2 --> C1
+    P3 --> C1
+    P4 --> C1
+    P5 --> C3
+```
 
- spark.sql.adaptive.coalescePartitions.initialPartitionNum
+---
 
-## :material-auto-fix: spark.sql.adaptive.coalescePartitions.enabled
+## :material-cog: Configuration Reference
 
-When true and spark.sql.adaptive.enabled is true, Spark will coalesce contiguous shuffle partitions according to the target size (specified by `spark.sql.adaptive.advisoryPartitionSizeInBytes`), to avoid too many small tasks.
+| Property | Default | Description |
+|----------|---------|-------------|
+| `spark.sql.adaptive.coalescePartitions.enabled` | `true` | Enable coalescing (requires AQE master switch) |
+| `spark.sql.adaptive.advisoryPartitionSizeInBytes` | `64MB` | Target size for each coalesced partition |
+| `spark.sql.adaptive.coalescePartitions.parallelismFirst` | `true` | When `true`, ignores advisory size and maximises task count |
+| `spark.sql.adaptive.coalescePartitions.minPartitionSize` | `1MB` | Floor — no partition will be smaller than this after coalescing |
+| `spark.sql.adaptive.coalescePartitions.initialPartitionNum` | `spark.sql.shuffle.partitions` | Starting partition count before coalescing |
 
-## :material-auto-fix: spark.sql.adaptive.coalescePartitions.parallelismFirst
+---
 
-When true, Spark ignores the target size specified by `spark.sql.adaptive.advisoryPartitionSizeInBytes` (default 64MB) when coalescing contiguous shuffle partitions, and only respect the minimum partition size specified by `spark.sql.adaptive.coalescePartitions.minPartitionSize` (default 1MB), to maximize the parallelism.
+## :material-flask-outline: Examples
 
-This is to avoid performance regression when enabling adaptive query execution.
+### Recommended production settings
 
-It's recommended to set this config to false and respect the target size specified by `spark.sql.adaptive.advisoryPartitionSizeInBytes`.
+```sql
+-- Enable AQE and tune for balanced output files
+SET spark.sql.adaptive.enabled = true;
+SET spark.sql.adaptive.coalescePartitions.enabled = true;
 
-## :material-auto-fix: spark.sql.adaptive.coalescePartitions.minPartitionSize
+-- Disable parallelismFirst to honour the advisory size (recommended)
+SET spark.sql.adaptive.coalescePartitions.parallelismFirst = false;
 
-The minimum size of shuffle partitions after coalescing. Its value can be at most 20% of spark.sql.adaptive.advisoryPartitionSizeInBytes. This is useful when the target size is ignored during partition coalescing, which is the default case.
+-- Target 128 MB output files (tune to your storage block size)
+SET spark.sql.adaptive.advisoryPartitionSizeInBytes = 134217728;
+```
 
-## :material-auto-fix: spark.sql.adaptive.coalescePartitions.initialPartitionNum
+### Large initial partition count (reduces skew risk)
 
-The initial number of shuffle partitions before coalescing. If not set, it equals to spark.sql.shuffle.partitions. This configuration only has an effect when spark.sql.adaptive.enabled and spark.sql.adaptive.coalescePartitions.enabled are both enabled.
+```sql
+-- Start with 2000 partitions; AQE coalesces down to ~64 MB each
+SET spark.sql.shuffle.partitions = 2000;
+SET spark.sql.adaptive.enabled = true;
+SET spark.sql.adaptive.coalescePartitions.parallelismFirst = false;
+SET spark.sql.adaptive.advisoryPartitionSizeInBytes = 67108864;  -- 64 MB
 
-## :material-auto-fix: spark.sql.adaptive.advisoryPartitionSizeInBytes
+SELECT region, SUM(amount) AS revenue
+FROM orders
+GROUP BY region;
+-- AQE may reduce 2000 partitions to ~20 depending on data size
+```
 
-The advisory size in bytes of the shuffle partition during adaptive optimization (when spark.sql.adaptive.enabled is true). It takes effect when Spark coalesces small shuffle partitions or splits skewed shuffle partition.
+### Verify coalescing in EXPLAIN
+
+```sql
+EXPLAIN FORMATTED
+SELECT region, SUM(amount) FROM orders GROUP BY region;
+-- Look for: CustomShuffleReaderExec coalesced
+-- The isFinalPlan=true plan shows the reduced partition count
+```
+
+---
+
+## :material-compare: `parallelismFirst = true` vs `false`
+
+| Setting | Behaviour | Best for |
+|---------|-----------|----------|
+| `parallelismFirst = true` (default) | Keeps max parallelism; ignores advisory size | CPU-bound jobs, many small files acceptable |
+| `parallelismFirst = false` | Merges to advisory size; fewer, larger files | Storage-efficient writes, Delta table compaction avoidance |
+
+!!! tip "Set `parallelismFirst = false` for ETL writes"
+    The default `parallelismFirst = true` was chosen to avoid performance
+    regression for existing jobs. For ETL workloads that write to Delta or
+    Parquet, setting it to `false` produces better-sized output files and
+    reduces the need for `OPTIMIZE`.
+
+---
+
+## :material-magnify: Behavior Notes
+
+1. **Contiguous merging only** — AQE merges adjacent shuffle partitions; it does not rebalance across all partitions.
+2. **No data movement** — coalescing is a read-side operation; tasks read multiple consecutive map-output files without re-shuffling.
+3. **Works with `REBALANCE` hint** — `SELECT /*+ REBALANCE */` uses the same advisory size for its output partitions.
+4. **`initialPartitionNum` controls the ceiling** — set it high (1000–5000) for large datasets so AQE has fine-grained partitions to merge from.
+
+---
+
+## :material-brain: When to Tune
+
+| Symptom | Fix |
+|---------|-----|
+| Too many small output files | Set `parallelismFirst = false`, raise advisory size |
+| Jobs slower after enabling AQE | Set `parallelismFirst = true` (default) to restore parallelism |
+| Coalescing not reducing partitions enough | Raise `initialPartitionNum` so more merge candidates exist |
+| Coalescing producing uneven partitions | Lower advisory size; increase initial partition count |

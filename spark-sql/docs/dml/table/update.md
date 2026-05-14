@@ -106,3 +106,90 @@ WHERE payload.status = 'raw';
 
 > **See also:** [MERGE INTO](merge.md) for combining `UPDATE`, `INSERT`, and
 > `DELETE` in a single atomic statement.
+
+---
+
+## :material-database-arrow-up: Advanced Patterns
+
+### Correlated update via scalar subquery
+
+```sql
+-- Backfill total_orders on customers table from the orders table
+UPDATE customers AS c
+SET total_orders = (
+    SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.customer_id
+)
+WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id);
+```
+
+### Update from a staging join (MERGE preferred, but subquery works)
+
+```sql
+UPDATE products
+SET price      = s.new_price,
+    updated_at = current_timestamp()
+WHERE product_id IN (
+    SELECT product_id FROM price_updates s
+    WHERE s.effective_date = current_date()
+);
+```
+
+### Soft-delete pattern (mark instead of remove)
+
+```sql
+UPDATE customers
+SET is_deleted   = TRUE,
+    deleted_at   = current_timestamp(),
+    deleted_by   = 'gdpr_request'
+WHERE customer_id IN (
+    SELECT customer_id FROM gdpr_erasure_requests
+    WHERE processed = FALSE
+);
+
+-- Mark the requests as handled
+UPDATE gdpr_erasure_requests
+SET processed = TRUE, processed_at = current_timestamp()
+WHERE processed = FALSE;
+```
+
+### Backfill a new column after ALTER TABLE
+
+```sql
+ALTER TABLE orders ADD COLUMNS (order_year INT);
+
+UPDATE orders
+SET order_year = YEAR(order_date)
+WHERE order_year IS NULL;
+```
+
+### Partial string update using string functions
+
+```sql
+UPDATE events
+SET event_url = REGEXP_REPLACE(event_url, '^http://', 'https://')
+WHERE event_url LIKE 'http://%';
+```
+
+---
+
+## :material-compare: UPDATE vs MERGE
+
+| Scenario | Use `UPDATE` | Use `MERGE` |
+|----------|:------------:|:-----------:|
+| Fix values in the same table | :material-check: | Overkill |
+| Apply changes from another table | Via subquery (limited) | :material-check: |
+| Insert missing rows alongside update | :material-close: | :material-check: |
+| Delete some rows while updating others | :material-close: | :material-check: |
+| Complex conditional per-row logic | CASE in SET | :material-check: |
+
+---
+
+## :material-speedometer: Performance Tips
+
+| Tip | Reason |
+|-----|--------|
+| Filter with partition columns in `WHERE` | Enables partition pruning — rewrites fewer files |
+| Avoid full-table updates without a WHERE | Every data file gets rewritten |
+| Z-ORDER the table by update key | Clusters related rows into fewer files |
+| Run `OPTIMIZE` after large updates | Compacts the newly written small files |
+| Use `MERGE` for cross-table updates | More expressive and often better optimised |

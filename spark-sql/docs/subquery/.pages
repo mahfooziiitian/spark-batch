@@ -1,0 +1,10 @@
+title: Subqueries
+nav:
+  - index.md
+  - Scalar Subqueries: scalar.md
+  - IN / NOT IN: in_not_in.md
+  - EXISTS / NOT EXISTS: exists.md
+  - Correlated Subqueries: correlated.md
+  - Derived Tables: derived_table.md
+  - Subquery in HAVING: having_subquery.md
+  - Subquery vs JOIN vs CTE: subquery_vs_join.md

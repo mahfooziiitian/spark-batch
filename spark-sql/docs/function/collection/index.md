@@ -81,3 +81,31 @@ graph LR
 | Key-value lookup | `MAP` | O(1) access by key, natural for configs / metadata |
 | Fixed named fields | `STRUCT` | Schema-enforced, dot-notation access |
 | Aggregate rows into a collection | `COLLECT_LIST` / `COLLECT_SET` | Turn grouped rows into arrays |
+
+---
+
+## :material-compare-horizontal: Array vs Map vs Struct — When to Use Which
+
+| Need | Best type | Reason |
+|------|-----------|--------|
+| Ordered list of same-type values | `ARRAY` | Indexing, sorting, HOFs |
+| Key → value lookup | `MAP` | O(1) by key, dynamic keys |
+| Fixed, named heterogeneous fields | `STRUCT` | Schema-enforced, dot notation |
+| Aggregate rows into a list | `COLLECT_LIST` / `COLLECT_SET` | Row-to-array aggregation |
+| Metadata / config blob with unknown keys | `MAP<STRING,STRING>` | Flexible, parse-on-use |
+
+---
+
+## :material-speedometer: Performance Tips
+
+1. **`SIZE(arr)` is NULL-safe** — returns `-1` for NULL arrays in older modes; use `COALESCE(SIZE(arr), 0)` to be safe.
+2. **`ARRAY_CONTAINS` is pushed to scans** — unlike HOFs, it can be evaluated at the Parquet/Delta row-group level.
+3. **`FLATTEN` vs multiple `EXPLODE`** — `FLATTEN` collapses one nesting level in-place; chained `EXPLODE` creates a Cartesian product.
+4. **`SEQUENCE` for date ranges** — `SEQUENCE(start_date, end_date, INTERVAL 1 DAY)` generates a date array, useful for gap-fill with `LATERAL VIEW EXPLODE`.
+
+```sql
+-- Generate a calendar date array then expand to rows
+SELECT exploded_date
+FROM (SELECT SEQUENCE(DATE '2024-01-01', DATE '2024-01-07', INTERVAL 1 DAY) AS dates) t
+LATERAL VIEW EXPLODE(dates) AS exploded_date;
+```

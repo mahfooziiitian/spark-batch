@@ -1,10 +1,10 @@
+title: SCD
 nav:
-
-- index.md
-- Introduction: intro.md
-- 1️⃣ Type 1: type1
-- 2️⃣ Type 2: type2
-- 3️⃣ Type 3: type3
-- 4️⃣ Type 4: type4
-- 5️⃣ Type 5: type5
-- 6️⃣ Type 6: type6
+  - index.md
+  - Introduction: intro.md
+  - Type 1 — Overwrite: type1
+  - Type 2 — Full History: type2
+  - Type 3 — Extra Columns: type3
+  - Type 4 — History Table: type4
+  - Type 5 — Hybrid 1+4: type5
+  - Type 6 — Hybrid 1+2+3: type6

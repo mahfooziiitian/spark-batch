@@ -1,0 +1,10 @@
+title: Configuration
+nav:
+
+- index.md
+- Shuffle & Partitioning: shuffle.md
+- Adaptive Query Execution: aqe.md
+- Join Configuration: join.md
+- Memory & Spill: memory.md
+- File & I/O Settings: io.md
+- Session Management: session.md

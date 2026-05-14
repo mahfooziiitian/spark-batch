@@ -1,18 +1,60 @@
 # :material-recycle: Common Table Expressions (CTEs)
 
-CTEs define named temporary result sets that can be referenced multiple times within a single query statement.
-
-### :material-sitemap: Overview
-
-```mermaid
-graph LR
-    A["WITH cte1 AS (...)"] --> B["WITH cte2 AS (... cte1 ...)"]
-    B --> C["SELECT ... FROM cte2"]
-```
+A CTE (`WITH` clause) defines a named, temporary result set scoped to a single SQL
+statement. CTEs make complex queries readable, enable step-by-step data pipelines, and
+support recursion in Spark SQL 3.5+.
 
 ---
 
-## :material-pin: Syntax
+## :material-sitemap: In This Section
+
+| Page | Covers |
+|------|--------|
+| [Chained CTEs](chained.md) | Multi-step pipelines with sequential CTE dependencies |
+| [CTE in DML](cte_in_dml.md) | Using CTEs inside `INSERT`, `MERGE`, `UPDATE`, `DELETE` |
+| [Recursive CTE](recursive.md) | `WITH RECURSIVE` — sequences, hierarchies, graph traversal |
+| [CTE vs Temp View](cte_vs_temp_view.md) | When to use a CTE vs `CREATE TEMP VIEW` vs `CACHE TABLE` |
+| [CTE for Deduplication](deduplication.md) | Row deduplication patterns using CTEs and window functions |
+| [CTE for Pivoting](pivot.md) | Manual pivot / unpivot using CTEs |
+
+---
+
+## :material-code-tags: Syntax
+
+**Single CTE:**
+
+```sql
+WITH cte_name AS (
+    SELECT ...
+    FROM   ...
+    WHERE  ...
+)
+SELECT * FROM cte_name;
+```
+
+**Multiple chained CTEs:**
+
+```sql
+WITH cte1 AS (
+    SELECT ...
+),
+cte2 AS (
+    SELECT ...
+    FROM   cte1    -- later CTEs can reference earlier ones
+    WHERE  ...
+)
+SELECT * FROM cte2;
+```
+
+**CTE in DML (INSERT / MERGE):**
+
+```sql
+WITH prepared AS (
+    SELECT ...
+)
+INSERT INTO target_table
+SELECT * FROM prepared;
+```
 
 **Single CTE:**
 
@@ -51,7 +93,7 @@ SELECT * FROM prepared;
 
 ---
 
-## :material-magnify: Behavior
+## :material-information-outline: Behavior
 
 1. **No materialization by default** — Spark may inline a CTE at every reference site, re-evaluating it each time. Use a temp view or `CACHE TABLE` when the CTE is expensive and referenced multiple times.
 2. **Forward references are not allowed** — a CTE can only reference CTEs defined earlier in the same `WITH` block.
@@ -195,7 +237,7 @@ SELECT n FROM numbers;
 
 ---
 
-## :material-recycle: CTE vs Subquery
+## :material-swap-horizontal: CTE vs Subquery
 
 | Aspect | CTE | Subquery |
 |--------|-----|----------|
@@ -207,7 +249,7 @@ SELECT n FROM numbers;
 
 ---
 
-## :material-brain: When to Use
+## :material-lightbulb-outline: When to Use
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|

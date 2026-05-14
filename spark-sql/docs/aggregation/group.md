@@ -203,6 +203,6 @@ ORDER BY tier_total DESC;
 | Filter aggregated groups | `GROUP BY ... HAVING condition` |
 | Group by a computed value | `GROUP BY expression` (e.g., `YEAR(date)`) |
 | Partial aggregation per condition | `agg() FILTER (WHERE ...)` |
-| Hierarchical subtotals (year → month) | [`ROLLUP`](rollup.md) |
-| All combination subtotals | [`CUBE`](cube.md) |
-| Custom grouping combinations | [`GROUPING SETS`](group_set.md) |
+| Hierarchical subtotals (year → month) | [`ROLLUP`](olap/rollup.md) |
+| All combination subtotals | [`CUBE`](olap/cube.md) |
+| Custom grouping combinations | [`GROUPING SETS`](olap/group_set.md) |

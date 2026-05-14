@@ -1,0 +1,10 @@
+title: Operators
+nav:
+  - index.md
+  - Arithmetic: arithmetic.md
+  - Comparison: comparison.md
+  - Logical: logical.md
+  - String: string.md
+  - Set: set.md
+  - Null-Safe: null_safe.md
+  - Bitwise: bitwise.md

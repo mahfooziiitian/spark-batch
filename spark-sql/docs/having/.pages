@@ -1,3 +1,7 @@
 title: Having
 nav:
   - index.md
+  - WHERE vs HAVING: having_vs_where.md
+  - FILTER Modifier: having_filter.md
+  - Advanced HAVING: having_advanced.md
+  - HAVING Patterns: having_patterns.md

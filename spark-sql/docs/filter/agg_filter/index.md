@@ -212,3 +212,96 @@ GROUP BY region;
 | Post-aggregate group exclusion | No — use `HAVING` instead |
 | Conditional aggregation, cleaner syntax than CASE WHEN | Yes |
 | Combine scoped aggregate with group-level filter | Yes — `FILTER` + `HAVING` together |
+
+---
+
+## :material-percent: Rate and Ratio Patterns
+
+```sql
+-- Conversion rate per campaign
+SELECT
+    campaign_id,
+    COUNT(*) FILTER (WHERE event = 'impression') AS impressions,
+    COUNT(*) FILTER (WHERE event = 'click')      AS clicks,
+    ROUND(
+        COUNT(*) FILTER (WHERE event = 'click') * 100.0
+        / NULLIF(COUNT(*) FILTER (WHERE event = 'impression'), 0),
+        2
+    ) AS click_through_rate_pct
+FROM ad_events
+GROUP BY campaign_id;
+
+-- Revenue share: per-category revenue vs total
+SELECT
+    category,
+    SUM(revenue)                                    AS category_revenue,
+    SUM(SUM(revenue)) OVER ()                       AS total_revenue,
+    ROUND(SUM(revenue) * 100.0
+          / NULLIF(SUM(SUM(revenue)) OVER (), 0), 2) AS revenue_share_pct
+FROM sales
+GROUP BY category;
+```
+
+---
+
+## :material-window-restore: FILTER with Window Functions
+
+The `FILTER` clause works with window aggregates too.
+
+```sql
+-- Running count of completed orders only
+SELECT
+    order_id,
+    order_date,
+    COUNT(*) FILTER (WHERE status = 'completed')
+        OVER (PARTITION BY customer_id ORDER BY order_date) AS running_completed
+FROM orders;
+
+-- Trailing 30-day revenue for paid orders only
+SELECT
+    order_date,
+    SUM(amount) FILTER (WHERE payment_status = 'paid')
+        OVER (ORDER BY order_date ROWS BETWEEN 29 PRECEDING AND CURRENT ROW)
+        AS rolling_30d_paid_revenue
+FROM daily_orders;
+```
+
+---
+
+## :material-compare-horizontal: MAX(CASE) vs MAX FILTER
+
+Both patterns produce the same result; `FILTER` is cleaner and more readable.
+
+```sql
+-- Old CASE pattern
+SELECT
+    customer_id,
+    MAX(CASE WHEN channel = 'email' THEN amount END) AS max_email,
+    MAX(CASE WHEN channel = 'web'   THEN amount END) AS max_web
+FROM orders GROUP BY customer_id;
+
+-- Preferred: FILTER clause
+SELECT
+    customer_id,
+    MAX(amount) FILTER (WHERE channel = 'email') AS max_email,
+    MAX(amount) FILTER (WHERE channel = 'web')   AS max_web
+FROM orders GROUP BY customer_id;
+```
+
+!!! tip "FILTER is optimised"
+    Spark's Catalyst recognises `AGG FILTER (WHERE ...)` as a single pass over the data.
+    The `CASE` pattern may produce the same plan but is harder to read and maintain.
+
+---
+
+## :material-table-check: Aggregate FILTER Quick Reference
+
+| Pattern | Syntax |
+|---------|--------|
+| Conditional count | `COUNT(*) FILTER (WHERE cond)` |
+| Conditional sum | `SUM(col) FILTER (WHERE cond)` |
+| Conditional average | `AVG(col) FILTER (WHERE cond)` |
+| Conditional max/min | `MAX(col) FILTER (WHERE cond)` |
+| Conditional distinct count | `COUNT(DISTINCT col) FILTER (WHERE cond)` |
+| Rate (count / total count) | `COUNT(*) FILTER (WHERE cond) * 1.0 / COUNT(*)` |
+| Running conditional sum | `SUM(col) FILTER (WHERE cond) OVER (...)` |

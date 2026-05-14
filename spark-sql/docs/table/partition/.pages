@@ -1,3 +1,6 @@
 title: Partitioned Tables
 nav:
-  - partition_managed_table.md
+
+- Managed Tables: partition_managed_table.md
+- Partition Management: partition_management.md
+- Inserting Data: partition_insert.md

@@ -2,7 +2,26 @@
 
 NULL represents an unknown or missing value; most expressions propagate NULL when any input is NULL.
 
-### :material-sitemap: Overview
+---
+
+## :material-view-grid: In This Section
+
+| Page | What You Will Learn |
+|------|---------------------|
+| [Comparison](comparison.md) | How `=`, `<`, `<=>`, `IS NULL` behave with NULLs |
+| [Logical](logical.md) | Three-valued logic for AND / OR / NOT |
+| [Filter](filter.md) | WHERE, HAVING, JOIN ON — NULL rows are excluded |
+| [Aggregate](aggregate.md) | Which aggregates skip NULLs; `COUNT(*)` vs `COUNT(col)` |
+| [Expression](expression.md) | Null-intolerant vs null-tolerant functions |
+| [Check](check.md) | `IS NULL`, `IS NOT NULL`, `COALESCE`, `NULLIF` patterns |
+| [Operator](operator.md) | GROUP BY and DISTINCT NULL grouping rules |
+| [Ordering](ordering.md) | `NULLS FIRST` / `NULLS LAST` in ORDER BY and windows |
+| [Sets](sets.md) | NULL-safe equality in UNION / INTERSECT / EXCEPT |
+| [Subquery](subquery.md) | EXISTS vs IN / NOT IN — the NULL trap in NOT IN |
+
+---
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph TD

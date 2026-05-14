@@ -1,42 +1,147 @@
 # :material-map-legend: Logical Optimization
 
-Spark SQL optimization, the standard `rule-based optimization` is applied to the `logical plan`.
+After the Analyzer resolves column names and types, the Optimizer applies a set of
+**rule-based rewrites** to the logical plan. Each rule transforms the plan tree until
+no more rules can fire. The Catalyst framework makes it easy to add custom rules.
 
-### :material-sitemap: Overview
+---
+
+## :material-sitemap: Rule Application Flow
 
 ```mermaid
-graph TD
-    A[Logical Plan] --> B[Filter Pushdown]
-    B --> C[Column Pruning]
-    C --> D[Constant Folding]
-    D --> E[Optimized Logical Plan]
+flowchart TD
+    RLP["Resolved Logical Plan"]
+    RLP --> FP["Filter Pushdown\n(move filters closer to scan)"]
+    FP  --> CP["Column Pruning\n(drop unused projections)"]
+    CP  --> CF["Constant Folding\n(evaluate compile-time expressions)"]
+    CF  --> JR["Join Reorder\n(CBO — smallest first)"]
+    JR  --> NE["Null Elimination\n(simplify IS NULL / NOT NULL)"]
+    NE  --> OLP["Optimized Logical Plan"]
 ```
 
-It includes
+---
 
-1. constant folding
-2. predicate pushdown
-3. projection pruning
-4. other rules
+## :material-filter: Rule 1 — Predicate Pushdown
 
-It became extremely easy to add a rule for various situations.
+Moves filter conditions as close to the data source as possible.
 
-Once the AST representation is obtained, the Catalyst will transform that `AST` applying a `set of rules iteratively`, until no more rules can be applied.
+```sql
+-- Original query
+SELECT o.order_id, c.name
+FROM orders o JOIN customers c ON o.customer_id = c.id
+WHERE o.region = 'US' AND c.status = 'active';
 
-The rule set has been defined by the programmers behind Spark, however it can be expanded as needed in a relatively easy fashion.
+-- After pushdown (conceptual rewrite):
+-- filters applied to each side BEFORE the join
+SELECT o.order_id, c.name
+FROM (SELECT * FROM orders WHERE region = 'US') o
+JOIN (SELECT * FROM customers WHERE status = 'active') c
+  ON o.customer_id = c.id;
+```
 
-An example of rule that can be applied in this phase is the `filter pushdown`: if a filtering transformation is found it will be pushed as close to the data source as possible.
+!!! tip "Parquet benefit"
+    For Parquet/ORC/Delta, the filter is further pushed to the file reader
+    so unmatched row-groups are skipped before any deserialization.
 
-This way less data will be taken from `storage to memory` and, therefore, less data will have to be elaborated, lightening the workload.
+---
 
-An interesting thing to point out is how well this step and the lazy evaluation of transformations interact: were the evaluation eager some optimization opportunities might be missed.
+## :material-table-column-remove: Rule 2 — Column Pruning (Projection Pushdown)
 
-Let's consider a query that joins two dataframes and then filters the result:
+Removes columns that are not referenced anywhere in the query.
 
-    dfA.join(dfB, dfA.field===dfB.field,"INNER").filter(A_filtering_field==True)
+```sql
+-- Only order_id, amount, region are projected — all other columns dropped
+SELECT order_id, SUM(amount)
+FROM orders
+WHERE region = 'US'
+GROUP BY order_id;
+-- ReadSchema in EXPLAIN will list only: order_id, amount, region
+```
 
-With an eager evaluation first the join would be executed, then the result will be filtered, therefore wasting resources on data that will be filtered out.
+---
 
-With a lazy evaluation, instead, data will first be filtered and then joined, thus saving resources.
+## :material-calculator: Rule 3 — Constant Folding
 
-Another interesting thing to point out is that with `parquet files` `the filter` can be pushed down to the data before it is even serialized into memory, thus reading only what satisfies the filter.
+Evaluates constant expressions at compile time.
+
+```sql
+-- Written by developer
+SELECT * FROM orders WHERE amount > 500 * 2;
+
+-- Optimizer rewrites to
+SELECT * FROM orders WHERE amount > 1000;
+
+-- Similarly
+SELECT 1 + 1 AS two;         -- → literal 2
+SELECT UPPER('us') = 'US';   -- → literal true
+```
+
+---
+
+## :material-sort-variant: Rule 4 — Join Reorder (CBO)
+
+With `spark.sql.cbo.joinReorder.enabled = true` and collected stats, Catalyst reorders
+multi-way joins so the smallest intermediate result comes first.
+
+```sql
+-- Enable CBO
+SET spark.sql.cbo.enabled = true;
+SET spark.sql.cbo.joinReorder.enabled = true;
+
+-- Collect stats for all tables
+ANALYZE TABLE orders   COMPUTE STATISTICS FOR ALL COLUMNS;
+ANALYZE TABLE products COMPUTE STATISTICS FOR ALL COLUMNS;
+ANALYZE TABLE regions  COMPUTE STATISTICS FOR ALL COLUMNS;
+
+-- Catalyst reorders the three-way join based on estimated row counts
+SELECT o.order_id, p.name, r.region_name
+FROM orders o
+JOIN products p ON o.product_id = p.id
+JOIN regions  r ON o.region_id  = r.id
+WHERE p.category = 'electronics';
+```
+
+---
+
+## :material-null: Rule 5 — Null Propagation and Simplification
+
+```sql
+-- Optimizer eliminates always-false or always-true conditions
+SELECT * FROM orders WHERE NULL = NULL;    -- → always false → empty scan
+SELECT * FROM orders WHERE NULL IS NULL;   -- → always true → drop filter
+
+-- IS NOT NULL pulled from join condition
+SELECT * FROM a JOIN b ON a.id = b.id;
+-- Optimizer adds implicit IS NOT NULL(a.id) IS NOT NULL(b.id)
+```
+
+---
+
+## :material-table: Key Logical Optimization Rules
+
+| Rule | Transformation |
+|------|---------------|
+| `PushDownPredicate` | Move `Filter` below `Join`, `Aggregate`, `Project` |
+| `ColumnPruning` | Remove unused `Project` nodes |
+| `ConstantFolding` | Evaluate literals at plan time |
+| `NullPropagation` | Simplify IS NULL / NOT NULL conditions |
+| `BooleanSimplification` | `a AND true` → `a`, `a OR false` → `a` |
+| `CombineFilters` | Merge adjacent `Filter` nodes into one |
+| `CombineUnions` | Flatten nested `UNION` trees |
+| `ReorderJoin` (CBO) | Reorder multi-way joins by estimated row count |
+| `EliminateOuterJoin` | Convert LEFT JOIN to INNER when WHERE filters NULLs |
+
+---
+
+## :material-eye: Inspecting Logical Plans
+
+```sql
+-- Compare resolved vs optimized plan
+EXPLAIN EXTENDED
+SELECT SUM(amount * 1.0)
+FROM orders
+WHERE region = 'US' AND amount > 100 * 5;
+```
+
+Look at `== Analyzed Logical Plan ==` vs `== Optimized Logical Plan ==`
+to see which rules fired.

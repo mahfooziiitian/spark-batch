@@ -87,3 +87,37 @@ GROUP BY window;
 > Hover any window row to highlight the events it contains and see the event count.
 
 <div id="viz-hopping" class="ts-viz"></div>
+
+---
+
+## :material-table: Properties
+
+| Property | Value |
+|----------|-------|
+| Window size | Fixed (e.g., 1 hour) |
+| Slide interval | Fixed, smaller than window size (e.g., 30 min) |
+| Overlap | Yes — each event can appear in multiple windows |
+| Events per window | Bounded by data within the window duration |
+| Typical use | Near-real-time trend tracking, smoothed event counts |
+
+---
+
+## :material-compare: Hopping vs Tumbling vs Sliding
+
+| Factor | Hopping | Tumbling | Sliding (row-based) |
+|--------|---------|----------|---------------------|
+| Window size | Fixed time | Fixed time | Fixed row count |
+| Advances by | Slide interval < size | Size (no overlap) | 1 row at a time |
+| Overlap | Yes | No | Yes |
+| Event membership | Multiple windows | Exactly one window | One result per row |
+| SQL function | `window(ts, size, slide)` | `window(ts, size)` | `OVER (ROWS BETWEEN ...)` |
+
+---
+
+## :material-magnify: Behavior Notes
+
+1. The number of windows an event belongs to equals `CEIL(window_size / slide_interval)`. A 1-hour window with a 30-min slide means each event appears in up to 2 windows.
+2. Bucket boundaries are aligned to the Unix epoch by default — pass a `startTime` string to `window()` to shift alignment.
+3. The `hop()` TVF (Spark 3.4+) is the streaming-compatible equivalent of `window(ts, size, slide)`.
+4. Smaller slide intervals produce smoother trends but generate more output rows and require more computation.
+5. Use `EXPLAIN` to verify that Spark is using the `TimeWindowGroupLimit` optimisation for hopping window queries.

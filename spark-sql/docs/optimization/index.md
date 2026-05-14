@@ -1,50 +1,97 @@
 # :material-speedometer: Spark SQL Optimization
 
-1. **Data Partitioning**: Ensure that your data is properly partitioned based on the nature of your queries. Repartitioning the data can help in parallelizing the processing and reducing shuffling.
+Spark SQL optimization operates at multiple levels — from the Catalyst rule engine
+that rewrites logical plans, to AQE that adapts plans at runtime, to storage-level
+techniques like partitioning and Z-ORDER. This section covers them all.
 
-2. **Column Pruning**: Only select the columns you need in your query. This helps reduce the amount of data read from disk and improves query performance.
+---
 
-3. **Predicate Pushdown**: Take advantage of predicate pushdown, which allows Spark to apply filters early in the data source, minimizing data reading and processing.
-
-4. **Use Built-in Functions**: Utilize built-in functions provided by Spark SQL instead of custom UDFs (User-Defined Functions) whenever possible, as they are generally more optimized.
-
-5. **Broadcasting Small Tables**: For smaller tables, consider broadcasting them to all worker nodes to avoid shuffling.
-
-6. **Caching/Checkpointing**: Caching or checkpointing intermediate results can help avoid re-computation and improve query performance.
-
-7. **Avoid Using `*`**: Instead of using “*”, explicitly specify the columns needed in your SELECT statement.
-
-8. **Partition Pruning**: Leverage partition pruning by providing filters that match partitioning columns to reduce the amount of data scanned.
-
-9. **Adjusting Memory and Cores**: Tune Spark memory configurations and the number of cores to match your cluster’s resources.
-
-10. **Data Compression**: Compress your data files to reduce storage and improve read performance.
-
-11. **Hive Metastore**: Use Hive metastore for managing metadata to improve query optimization.
-
-12. **Shuffling Optimization**: Minimize data shuffling by using `repartition()` or `coalesce()` appropriately.
-
-13. **Avoid Cross Joins**: Be cautious with cross joins, as they can lead to huge intermediate data sets.
-
-14. **Sampling Data**: If applicable, you can use data sampling to test queries on smaller datasets before running them on the entire dataset.
-
-15. **Optimize Storage Formats**: Choose appropriate storage formats like Parquet or ORC, which are columnar and provide better performance.
-
-16. **Cluster Sizing**: Ensure your Spark cluster is appropriately sized to handle the workload.
-
-17. **Profiling and Monitoring**: Regularly profile and monitor your queries to identify bottlenecks and areas for improvement.
-
-### :material-sitemap: Overview
+## :material-sitemap: Optimization Layers
 
 ```mermaid
-graph LR
-    A[Query] --> B[Catalyst Optimizer]
-    B --> C[Physical Planning]
-    C --> D[Code Generation]
-    D --> E[Execution]
+flowchart TD
+    SQL["SQL Query"] --> CAT["Catalyst Optimizer\n(compile-time)"]
+    CAT --> L1["Logical rules\npredicate pushdown · column pruning\nconstant folding · join reorder"]
+    CAT --> L2["Physical planning\njoin strategy · agg strategy\nscan selection"]
+    CAT --> L3["Code generation\nWholeStageCodegen\nvectorised execution"]
+    L3 --> EX["Execution"]
+    EX --> AQE["AQE Re-optimiser\n(runtime)"]
+    AQE --> A1["Partition coalescing"]
+    AQE --> A2["SMJ → Broadcast"]
+    AQE --> A3["Skew join splitting"]
+    A1 --> OUT["Result"]
+    A2 --> OUT
+    A3 --> OUT
 ```
 
-## References
+---
 
-1. <https://www.linkedin.com/pulse/taming-slowdown-comprehensive-guide-optimizing-spark-queries-kedari-jocwe/>
-2. <https://onlinelibrary.wiley.com/doi/10.1155/2020/6364752>
+## :material-compare: Optimization Techniques at a Glance
+
+| Technique | Layer | Impact | Effort |
+|-----------|-------|:------:|:------:|
+| Predicate pushdown | Catalyst / storage | High | Zero — automatic |
+| Column pruning | Catalyst | Medium | Zero — automatic |
+| Partition pruning | Storage | High | Low — use partition column in WHERE |
+| Broadcast join | Catalyst / AQE | High | Low — hint or threshold config |
+| AQE partition coalescing | AQE | Medium | Zero — enabled by default |
+| AQE skew join | AQE | High | Zero — enabled by default |
+| CACHE TABLE | Memory | High (repeated queries) | Low |
+| Shuffle minimisation | Shuffle | High | Medium |
+| Z-ORDER (Delta) | Storage | High | Low — OPTIMIZE … ZORDER |
+| Statistics (`ANALYZE`) | Catalyst CBO | Medium | Low — run ANALYZE TABLE |
+| Bucketing | Storage / join | High | Medium — schema change |
+
+---
+
+## :material-flash: SQL Hints Reference
+
+```sql
+-- Broadcast: force small table to be broadcast
+SELECT /*+ BROADCAST(dim) */ f.*, dim.name
+FROM fact f JOIN dim ON f.id = dim.id;
+
+-- Sort-merge join: force SMJ even if broadcast threshold is met
+SELECT /*+ MERGE(orders, customers) */ *
+FROM orders JOIN customers ON orders.customer_id = customers.id;
+
+-- Shuffled hash join
+SELECT /*+ SHUFFLE_HASH(orders) */ *
+FROM orders JOIN customers ON orders.customer_id = customers.id;
+
+-- Repartition before write
+SELECT /*+ REPARTITION(200, region) */ * FROM sales;
+
+-- Rebalance (AQE-adaptive)
+SELECT /*+ REBALANCE */ * FROM staging;
+
+-- Coalesce output
+SELECT /*+ COALESCE(10) */ * FROM daily_agg;
+```
+
+---
+
+## :material-alert-circle: Top Performance Anti-Patterns
+
+| Anti-pattern | Problem | Fix |
+|--------------|---------|-----|
+| `SELECT *` | Reads all columns — wastes I/O | Select only needed columns |
+| UDF in `WHERE` | Blocks predicate pushdown | Rewrite as SQL expression |
+| High-cardinality `PARTITION BY` | Millions of tiny directories | Partition by date/region, not IDs |
+| Skipped `ANALYZE TABLE` | Catalyst makes wrong join choices | Run `ANALYZE TABLE … COMPUTE STATISTICS` |
+| Cross join | Cartesian explosion | Always specify join condition |
+| `NOT IN (subquery)` with NULLs | Returns 0 rows silently | Use `NOT EXISTS` |
+| Repeated identical subquery | Recomputed multiple times | Move to CTE or cached temp view |
+| Too many small files | Slow metadata listing | Run `OPTIMIZE` (Delta) or use `REBALANCE` |
+
+---
+
+## :material-book-open-variant: In This Section
+
+| Page | Contents |
+|------|----------|
+| [Techniques](optimization.md) | Full checklist — I/O, joins, aggregation, skew, storage |
+| [Catalyst](catalyst/index.md) | Parser → Analyzer → Optimizer → Planner → Codegen |
+| [Caching](caching/index.md) | `CACHE TABLE`, storage levels, config, eviction |
+| [Shuffling](shuffling.md) | Shuffle mechanics, cost, minimisation strategies |
+| [Profiling](profiling.md) | `EXPLAIN`, Spark UI, metrics, bottleneck identification |

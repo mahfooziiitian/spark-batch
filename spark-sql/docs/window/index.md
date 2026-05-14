@@ -1,62 +1,168 @@
 # :material-view-grid: Window Functions
 
-Window functions compute a value for each row using a sliding or bounded set of rows — the *window* — without collapsing the result into a single group.
+Window functions compute a value for each row using a **sliding or bounded set of rows
+— the *window* — without collapsing the result set** the way `GROUP BY` does.
+Every input row is preserved in the output.
 
 ---
 
-## :material-sitemap: Anatomy of a Window Function
+## :material-sitemap: How Window Functions Work
 
 ```mermaid
-graph LR
-    A[PARTITION BY] --> F[Window Frame]
-    B[ORDER BY] --> F
-    C[FRAME clause] --> F
-    F --> R[Ranking\nROW_NUMBER · RANK · DENSE_RANK · NTILE · PERCENT_RANK]
-    F --> G[Aggregate\nSUM · AVG · MIN · MAX · COUNT · CUME_DIST]
-    F --> N[Navigation\nLAG · LEAD · FIRST_VALUE · LAST_VALUE · NTH_VALUE]
+flowchart TD
+    INPUT["Input rows\n(all rows preserved)"] --> PART["PARTITION BY\nsplit into logical groups"]
+    PART --> SORT["ORDER BY\norder rows within each group"]
+    SORT --> FRAME["Frame clause\nROWS or RANGE\ndefines which rows to include"]
+    FRAME --> FUNC["Window function\nranking / aggregate / navigation"]
+    FUNC --> OUT["One output value\nper input row"]
 ```
 
 ---
 
-## :material-pin: Syntax
+## :material-code-braces: Full Syntax
 
 ```sql
 function_name([expression]) OVER (
-    [PARTITION BY partition_expression [, ...]]
-    [ORDER BY    sort_expression [ASC | DESC] [NULLS FIRST | NULLS LAST] [, ...]]
-    [frame_spec]
+    [PARTITION BY partition_col [, ...]]
+    [ORDER BY    sort_col [ASC | DESC] [NULLS FIRST | NULLS LAST] [, ...]]
+    [{ ROWS | RANGE } BETWEEN frame_start AND frame_end]
 )
 ```
 
-Where `frame_spec` is:
+Frame boundary keywords:
 
-```sql
-{ ROWS | RANGE } BETWEEN frame_start AND frame_end
+```
+UNBOUNDED PRECEDING   -- start of partition
+N PRECEDING           -- N rows / N value-units before current row
+CURRENT ROW           -- current row
+N FOLLOWING           -- N rows / N value-units after current row
+UNBOUNDED FOLLOWING   -- end of partition
 ```
 
 ---
 
-## :material-magnify: Clause Reference
+## :material-table: Clause Reference
 
-| Clause | Required | Purpose |
-|--------|----------|---------|
-| `PARTITION BY` | No | Resets the window for each distinct combination of the partition columns; omit to treat the entire result set as one partition |
-| `ORDER BY` | Depends on function | Defines the row sequence within each partition; required by ranking and navigation functions, optional for pure aggregates |
-| `FRAME` | No | Limits the aggregate to a sub-range of the partition; defaults to `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` when `ORDER BY` is present, or the full partition when `ORDER BY` is absent |
+| Clause | Required | Default | Purpose |
+|--------|----------|---------|---------|
+| `PARTITION BY` | No | Entire result set = one partition | Resets the window per distinct combination of partition columns |
+| `ORDER BY` | Depends | — | Defines row sequence within each partition; required for ranking and navigation |
+| `ROWS / RANGE BETWEEN` | No | See below | Limits which rows in the partition are included in the aggregate |
+
+**Default frame when `ORDER BY` is present:** `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`  
+**Default frame when `ORDER BY` is absent:** `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` (full partition)
 
 ---
 
-## :material-table: Function Categories
+## :material-compare: Function Categories
 
-| Category | Functions | Requires ORDER BY | Supports Frame |
-|----------|-----------|-------------------|---------------|
-| Ranking | `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE`, `PERCENT_RANK` | Yes | No — always uses full partition |
+| Category | Functions | Requires ORDER BY | Respects Frame |
+|----------|-----------|:-----------------:|:--------------:|
+| Ranking | `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `NTILE`, `PERCENT_RANK` | Yes | No — always full partition |
 | Aggregate | `SUM`, `AVG`, `MIN`, `MAX`, `COUNT`, `CUME_DIST` | Optional | Yes |
-| Navigation | `LAG`, `LEAD`, `FIRST_VALUE`, `LAST_VALUE`, `NTH_VALUE` | Yes (LAG/LEAD) | Yes (FIRST/LAST/NTH) |
+| Navigation | `LAG`, `LEAD` | Yes | No |
+| Navigation | `FIRST_VALUE`, `LAST_VALUE`, `NTH_VALUE` | Yes | Yes |
 
 ---
 
-## :material-flask-outline: Quick Example
+## :material-window-open: Named Windows (WINDOW Clause)
+
+When multiple window functions share the same `OVER (...)` specification,
+define the window once with a `WINDOW` clause and reference it by name.
+This avoids repetition and ensures consistency.
+
+```sql
+SELECT
+    region,
+    rep,
+    sale_date,
+    amount,
+    ROW_NUMBER()  OVER w       AS row_num,
+    SUM(amount)   OVER w       AS running_total,
+    AVG(amount)   OVER w       AS running_avg,
+    LAG(amount)   OVER w       AS prev_amount
+FROM sales
+WINDOW w AS (
+    PARTITION BY region
+    ORDER BY sale_date
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+)
+ORDER BY region, sale_date;
+```
+
+Named windows can also be inherited and extended:
+
+```sql
+SELECT
+    region,
+    rep,
+    sale_date,
+    amount,
+    -- Base window: partitioned by region
+    SUM(amount) OVER (w ORDER BY sale_date
+                      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running,
+    -- Full partition total (no ORDER BY)
+    SUM(amount) OVER w AS region_total
+FROM sales
+WINDOW w AS (PARTITION BY region)
+ORDER BY region, sale_date;
+```
+
+---
+
+## :material-check-all: QUALIFY — Filter on Window Results
+
+`QUALIFY` filters rows based on a window function result **without needing a subquery**.
+
+```sql
+-- Keep only the top sale per rep (equivalent to ROW_NUMBER subquery, but cleaner)
+SELECT region, rep, sale_date, amount
+FROM sales
+QUALIFY ROW_NUMBER() OVER (PARTITION BY rep ORDER BY amount DESC) = 1;
+
+-- Keep rows where the amount exceeds the partition average
+SELECT region, rep, sale_date, amount
+FROM sales
+QUALIFY amount > AVG(amount) OVER (PARTITION BY region);
+
+-- Keep the 3 most recent sales per region
+SELECT region, rep, sale_date, amount
+FROM sales
+QUALIFY ROW_NUMBER() OVER (PARTITION BY region ORDER BY sale_date DESC) <= 3;
+```
+
+!!! note "QUALIFY vs subquery"
+    `QUALIFY` is cleaner but requires Spark 3.3+ or Databricks Runtime. For older
+    versions, wrap the window function in a subquery and filter with `WHERE`.
+
+---
+
+## :material-speedometer: Performance Notes
+
+| Practice | Reason |
+|----------|--------|
+| Minimise distinct `OVER` clauses | Each unique `OVER` spec causes a separate shuffle stage |
+| Use named `WINDOW` for shared specs | Avoids duplicate shuffles for identical windows |
+| Prefer `ROWS` over `RANGE` | `ROWS` uses row position — faster; `RANGE` requires value comparison |
+| Add `PARTITION BY` when possible | Smaller partitions = less data per task, better parallelism |
+| Avoid window functions on raw large tables | Pre-filter / aggregate first, then apply window |
+| Check EXPLAIN for `Exchange` nodes | Each shuffle = one window stage; too many = slow |
+
+```sql
+-- Check how many Exchange nodes a windowed query generates
+EXPLAIN FORMATTED
+SELECT
+    region, rep, sale_date, amount,
+    SUM(amount) OVER (PARTITION BY region ORDER BY sale_date
+                      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running,
+    ROW_NUMBER() OVER (PARTITION BY region ORDER BY amount DESC) AS rnk
+FROM sales;
+-- Two different OVER specs → two separate Exchange (shuffle) stages
+```
+
+---
+
+## :material-flask-outline: Quick Example — All Three Categories
 
 ```sql
 CREATE OR REPLACE TEMP VIEW sales AS
@@ -69,41 +175,32 @@ SELECT * FROM VALUES
   ('South', 'Carol', '2024-01-03', 400),
   ('South', 'Carol', '2024-01-07', 500)
 AS sales(region, rep, sale_date, amount);
-```
 
-Combine ranking and aggregate in a single query:
-
-```sql
 SELECT
     region,
     rep,
     sale_date,
     amount,
-    ROW_NUMBER() OVER (PARTITION BY region ORDER BY amount DESC)          AS row_num,
+    -- Ranking
+    RANK()       OVER (PARTITION BY region ORDER BY amount DESC) AS rnk,
+    -- Aggregate
     SUM(amount)  OVER (PARTITION BY region ORDER BY sale_date
-                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total
+                       ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total,
+    ROUND(amount * 100.0 /
+          SUM(amount) OVER (PARTITION BY region), 1)             AS pct_of_region,
+    -- Navigation
+    LAG(amount)  OVER (PARTITION BY rep ORDER BY sale_date)       AS prev_amount
 FROM sales
 ORDER BY region, sale_date;
--- Result:
--- | region | rep   | sale_date  | amount | row_num | running_total |
--- |--------|-------|------------|--------|---------|---------------|
--- | North  | Alice | 2024-01-01 |    100 |       5 |           100 |
--- | North  | Bob   | 2024-01-02 |    150 |       3 |           250 |
--- | North  | Alice | 2024-01-05 |    200 |       3 |           450 |
--- | North  | Bob   | 2024-01-06 |    300 |       1 |           750 |
--- | North  | Alice | 2024-01-10 |    300 |       1 |          1050 |
--- | South  | Carol | 2024-01-03 |    400 |       2 |           400 |
--- | South  | Carol | 2024-01-07 |    500 |       1 |           900 |
 ```
 
 ---
 
-## :material-brain: When to Use
+## :material-book-open-variant: In This Section
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Rank rows within a group without losing rows | Ranking functions with `PARTITION BY` |
-| Compute a running total or moving average | Aggregate with `ORDER BY` and a frame clause |
-| Compare each row to its predecessor | `LAG` / `LEAD` |
-| Find first or last value in a group | `FIRST_VALUE` / `LAST_VALUE` with explicit frame |
-| Assign percentile buckets | `NTILE(n)` or `PERCENT_RANK` |
+| Page | Contents |
+|------|----------|
+| [Window Types](window/index.md) | Ranking, aggregate, navigation — full function reference |
+| [Frame](frame/index.md) | ROWS vs RANGE, boundary syntax, default frames |
+| [Application](application.md) | De-duplication, top-N, running balance, sessionisation, percentile |
+| [NULL Options](nulls/null_options_wf.md) | `IGNORE NULLS`, `RESPECT NULLS`, `NULLS FIRST / LAST` |

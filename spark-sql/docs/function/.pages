@@ -1,3 +1,4 @@
+title: Functions
 nav:
   - index.md
   - Aggregate: aggregate
@@ -6,6 +7,6 @@ nav:
   - Generator: generator
   - Higher-Order: hof
   - Structure: structure
-  - Lambda: lambda.md
+  - Lambda: lambda
   - Macro: macro
   - UDF: udf

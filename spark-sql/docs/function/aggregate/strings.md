@@ -81,3 +81,78 @@ GROUP BY id;
 | Deduplicated list | `CONCAT_WS(', ', COLLECT_SET(col))` |
 | Sorted list | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_LIST(col)))` |
 | Count + list | Combine `COUNT(col)` with string aggregation |
+
+---
+
+## :material-filter: Conditional String Aggregation with FILTER
+
+```sql
+-- Separate names by status in a single pass
+SELECT
+    department,
+    CONCAT_WS(', ', COLLECT_LIST(name) FILTER (WHERE status = 'active'))  AS active_members,
+    CONCAT_WS(', ', COLLECT_LIST(name) FILTER (WHERE status = 'inactive')) AS inactive_members
+FROM employees
+GROUP BY department;
+```
+
+---
+
+## :material-sort-descending: Top-N Names per Group
+
+```sql
+-- Keep only the top 3 earners' names per department
+SELECT
+    department,
+    CONCAT_WS(', ',
+        SLICE(
+            COLLECT_LIST(name),   -- non-deterministic order, use window + sort first
+            1, 3
+        )
+    ) AS top3_names
+FROM (
+    SELECT name, department,
+           ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS rn
+    FROM employees
+) t
+WHERE rn <= 3
+GROUP BY department;
+```
+
+---
+
+## :material-compare-horizontal: Ordered Aggregation Pattern
+
+`COLLECT_LIST` order is non-deterministic after a shuffle. For a deterministic order:
+
+```sql
+-- Deterministic: sort inside SELECT, then aggregate
+SELECT
+    department,
+    CONCAT_WS(' > ',
+        COLLECT_LIST(name)
+    ) AS name_chain
+FROM (
+    SELECT name, department
+    FROM employees
+    ORDER BY salary DESC   -- drive order before aggregate
+)
+GROUP BY department;
+```
+
+!!! warning "ORDER BY inside subquery"
+    Spark may re-order rows during shuffle. For guaranteed order use
+    `SORT_ARRAY(COLLECT_LIST(...))` or aggregate on a window-function rank column.
+
+---
+
+## :material-table: String Aggregation Quick Reference
+
+| Goal | Pattern |
+|------|---------|
+| Comma-separated list | `CONCAT_WS(', ', COLLECT_LIST(col))` |
+| Deduplicated list | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_SET(col)))` |
+| Sorted list | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_LIST(col)))` |
+| Filtered list | `CONCAT_WS(', ', COLLECT_LIST(col) FILTER (WHERE cond))` |
+| Top-N list | subquery rank + `COLLECT_LIST` |
+| Count + list | `CONCAT(CAST(COUNT(col) AS STRING), ': ', CONCAT_WS(', ', COLLECT_LIST(col)))` |

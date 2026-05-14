@@ -38,6 +38,7 @@ flowchart LR
 |--------|-------|---------------|-------------|
 | `WHERE` | Before aggregation | Yes | Row-level predicate |
 | `HAVING` | After aggregation | Yes | Post-aggregate predicate |
+| `QUALIFY` | After window functions | Yes | Window function result filter |
 | `FILTER` | Inside aggregate function | No (scopes aggregation) | Conditional aggregation |
 | `CASE WHEN` | Expression level | No | Value derivation / conditional logic |
 | Subquery (`IN`, `EXISTS`) | Correlated or scalar | Yes | Set membership, existence checks |
@@ -170,3 +171,42 @@ WHERE EXISTS (
 - [Map Filters](complex/map.md)
 - [Struct Filters](complex/struct.md)
 - [LATERAL VIEW](complex/lateral_view.md)
+
+---
+
+## :material-filter-check: QUALIFY — Filter Window Function Results
+
+`QUALIFY` filters rows based on window function output — no subquery needed.
+
+```sql
+-- Keep only the most recent order per customer (QUALIFY replaces a subquery wrapper)
+SELECT customer_id, order_id, order_date, amount
+FROM orders
+QUALIFY ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) = 1;
+
+-- Top-3 products by revenue per category
+SELECT category, product_id, revenue
+FROM products
+QUALIFY RANK() OVER (PARTITION BY category ORDER BY revenue DESC) <= 3;
+```
+
+!!! note "QUALIFY vs subquery"
+    `QUALIFY` avoids wrapping the entire query in a subquery just to filter on a window rank.
+    It is equivalent to:
+    ```sql
+    SELECT * FROM (
+        SELECT *, ROW_NUMBER() OVER (...) AS rn FROM orders
+    ) WHERE rn = 1
+    ```
+
+---
+
+## :material-speedometer: Performance Checklist
+
+| Check | Action |
+|-------|--------|
+| Filter on partition columns? | Move to `WHERE` — enables directory-level pruning |
+| Using a UDF in `WHERE`? | Push scalar predicates outside the UDF; consider rewriting as SQL |
+| Dynamic partition pruning active? | Confirm join + `WHERE` on dimension table; check `EXPLAIN FORMATTED` |
+| `NOT IN` with subquery? | Replace with `NOT EXISTS` to avoid NULL trap and improve plan |
+| HOF in `WHERE` (e.g. `exists()`)? | Cannot be pushed down — pre-filter with cheaper predicates first |

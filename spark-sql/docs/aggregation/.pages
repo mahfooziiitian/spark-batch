@@ -3,8 +3,6 @@ nav:
 - index.md
 - Simple: simple
 - GROUP BY: group.md
-- GROUP SET: group_set.md
-- CUBE: cube.md
-- ROLLUP: rollup.md
+- OLAP: olap
 - Statistics: stats.md
 - Pivoting: pivoting

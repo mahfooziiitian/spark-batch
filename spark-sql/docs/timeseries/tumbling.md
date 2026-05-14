@@ -121,3 +121,53 @@ GROUP BY window;
 > Window totals are shown at the bottom of each bucket.
 
 <div id="viz-tumbling" class="ts-viz"></div>
+
+---
+
+## :material-table: Properties
+
+| Property | Value |
+|----------|-------|
+| Window size | Fixed (e.g., 1 hour) |
+| Overlap | No — each event belongs to exactly one window |
+| Boundary alignment | Unix epoch (1970-01-01 00:00 UTC) by default |
+| SQL function | `window(timestamp, windowDuration)` or `tumble()` TVF (Spark 3.4+) |
+| Typical use | Hourly reports, batch aggregations, SLA monitoring |
+
+---
+
+## :material-flask-outline: Additional Patterns
+
+### Count by event type per window
+
+```sql
+SELECT
+    window(event_time, '1 hour').start AS hour_start,
+    event_type,
+    COUNT(*)                           AS cnt
+FROM events
+GROUP BY window(event_time, '1 hour'), event_type
+ORDER BY hour_start, event_type;
+```
+
+### Offset bucket start time
+
+```sql
+-- Align windows to 15-minute past the hour (e.g., 10:15, 11:15)
+SELECT
+    window(event_time, '1 hour', '1 hour', '15 minutes').start AS window_start,
+    COUNT(*) AS event_count
+FROM events
+GROUP BY window(event_time, '1 hour', '1 hour', '15 minutes')
+ORDER BY window_start;
+```
+
+---
+
+## :material-magnify: Behavior Notes
+
+1. `window(ts, size)` returns a struct — use `.start` and `.end` to extract boundary timestamps.
+2. Each event belongs to **exactly one** tumbling window — this is what distinguishes tumbling from hopping and sliding.
+3. Pass a `startTime` offset string (fourth parameter) to shift bucket alignment away from the Unix epoch.
+4. The `tumble()` TVF (Spark 3.4+) supports the same semantics but uses the `TABLE` / `DESCRIPTOR` syntax and works in streaming pipelines.
+5. Use tumbling windows for reports where double-counting across periods is not acceptable.

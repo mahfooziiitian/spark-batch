@@ -143,3 +143,105 @@ Z-ORDER is most effective when filtering on two or three high-cardinality column
 | Frequently filtered columns | Apply `OPTIMIZE ... ZORDER BY` on Delta |
 | UDF required in filter | Push additional bare-column predicates alongside the UDF |
 | Checking if pushdown is active | Use `EXPLAIN FORMATTED` and inspect `PushedFilters` |
+
+---
+
+## :material-folder-multiple: Partition Pruning
+
+Partition pruning is separate from row-group pushdown — it skips entire **directories**
+on storage rather than row groups within a file.
+
+```sql
+-- Table partitioned by (year, month)
+-- Spark reads ONLY the year=2024/month=6/ directory
+SELECT order_id, amount
+FROM orders
+WHERE year = 2024 AND month = 6;
+```
+
+!!! tip "Always filter on partition columns first"
+    Partition pruning eliminates I/O at the directory level — far cheaper than Parquet
+    row-group filtering. Add partition column predicates even when other filters are present.
+
+```sql
+-- Good: partition prune first, then row-group filter
+SELECT * FROM events
+WHERE event_date = '2024-06-01'   -- partition prune
+  AND event_type = 'click';       -- row-group filter within the partition
+
+-- Bad: year() function prevents partition pruning
+SELECT * FROM events WHERE YEAR(event_date) = 2024;
+-- Fix: use a range predicate
+SELECT * FROM events WHERE event_date >= '2024-01-01' AND event_date < '2025-01-01';
+```
+
+---
+
+## :material-lightning-bolt-circle: Dynamic Partition Pruning (DPP)
+
+DPP prunes partitions at **runtime** using values discovered during a broadcast join.
+Enabled by default in Spark 3.x (`spark.sql.optimizer.dynamicPartitionPruning.enabled = true`).
+
+```mermaid
+flowchart LR
+    A[dim_date\nbuild side] -->|broadcast| B[Bloom filter of date_keys]
+    B -->|injected at runtime| C[fact_orders scan]
+    C -->|prune partitions\nnot in filter| D[Read only matching partitions]
+```
+
+```sql
+-- DPP fires when joining a large partitioned fact table
+-- against a small dimension table filtered by a predicate
+SELECT f.order_id, f.amount, d.quarter
+FROM fact_orders f
+JOIN dim_date d ON f.order_date = d.date_key
+WHERE d.year = 2024 AND d.quarter = 'Q2';
+-- Spark broadcasts dim_date, then prunes fact_orders partitions at runtime
+```
+
+**Verify DPP in EXPLAIN:**
+
+```sql
+EXPLAIN FORMATTED
+SELECT f.order_id, d.quarter
+FROM fact_orders f
+JOIN dim_date d ON f.order_date = d.date_key
+WHERE d.year = 2024;
+-- Look for: DynamicPruningExpression in the scan node
+```
+
+---
+
+## :material-magnify-expand: Reading EXPLAIN FORMATTED Output
+
+| Section | What to look for |
+|---------|-----------------|
+| `PushedFilters` | Predicates pushed to storage scan |
+| `PartitionFilters` | Partition pruning predicates |
+| `DataFilters` | Row-level filters applied after read |
+| `DynamicPruningExpression` | Runtime DPP filter injected |
+| `ReadSchema` | Columns actually read (column pruning) |
+| `BatchScan` vs `FileScan` | Vectorised vs row-based read |
+
+```sql
+EXPLAIN FORMATTED
+SELECT order_id, amount
+FROM orders
+WHERE region = 'US' AND order_date = '2024-06-01' AND amount > 100;
+-- Expected:
+-- PartitionFilters: [order_date = '2024-06-01']      -- directory skip
+-- PushedFilters: [EqualTo(region,US), GreaterThan(amount,100.0)]  -- row-group skip
+-- ReadSchema: struct<order_id:int, amount:decimal>   -- only 2 cols read
+```
+
+---
+
+## :material-speedometer: Performance Checklist
+
+| Check | Command |
+|-------|---------|
+| Are predicates pushed? | `EXPLAIN FORMATTED` → `PushedFilters` not empty |
+| Is partition pruning active? | `EXPLAIN FORMATTED` → `PartitionFilters` not empty |
+| Is DPP firing? | `EXPLAIN FORMATTED` → `DynamicPruningExpression` present |
+| Are only needed columns read? | `EXPLAIN FORMATTED` → `ReadSchema` matches `SELECT` list |
+| Is Z-ORDER effective? | Check `numFilesSkipped` in `DESCRIBE HISTORY` after OPTIMIZE |

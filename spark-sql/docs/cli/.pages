@@ -1,0 +1,8 @@
+title: CLI
+nav:
+  - index.md
+  - Getting Started: getting_started.md
+  - Options Reference: options.md
+  - Scripting: scripting.md
+  - Configuration: configuration.md
+  - Beeline: beeline.md

@@ -1,0 +1,8 @@
+title: Execution
+nav:
+  - index.md
+  - Query Lifecycle: query_lifecycle.md
+  - EXPLAIN Plans: explain.md
+  - Predicate Pushdown: predicate_pushdown.md
+  - Broadcast Join: broadcast_join.md
+  - Shuffle & Exchange: shuffle_exchange.md

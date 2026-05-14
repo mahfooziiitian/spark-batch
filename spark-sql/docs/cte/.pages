@@ -1,0 +1,9 @@
+title: CTE
+nav:
+  - index.md
+  - Chained CTEs: chained.md
+  - CTE in DML: cte_in_dml.md
+  - Recursive CTE: recursive.md
+  - CTE vs Temp View: cte_vs_temp_view.md
+  - Deduplication: deduplication.md
+  - Pivot & Unpivot: pivot.md

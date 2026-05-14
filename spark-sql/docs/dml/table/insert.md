@@ -133,3 +133,95 @@ INSERT INTO view_events
 
 > **Tip:** Prefer `MERGE INTO` over `INSERT` + `UPDATE` when you need
 > upsert semantics on Delta tables.
+
+---
+
+## :material-compare: INSERT INTO vs INSERT OVERWRITE
+
+| Aspect | `INSERT INTO` | `INSERT OVERWRITE` |
+|--------|:-------------:|:------------------:|
+| Effect on existing rows | Appends — existing rows untouched | Replaces — existing rows removed |
+| Partition scope | All partitions | Targeted partitions (with `PARTITION` clause) |
+| Dynamic partition overwrite | N/A | Replaces only partitions present in source data |
+| Idempotent re-run | No — duplicates on re-run | Yes — safe to re-run with same data |
+| Delta transactional | :material-check: | :material-check: |
+
+---
+
+## :material-database-import: Advanced Patterns
+
+### INSERT with a CTE
+
+```sql
+WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY updated_at DESC) AS rn
+    FROM staging_customers
+)
+INSERT INTO dim_customers
+SELECT customer_id, name, email, city, updated_at
+FROM ranked
+WHERE rn = 1;
+```
+
+### Insert into a partitioned table (static)
+
+```sql
+INSERT INTO sales PARTITION (region = 'APAC', year = 2024)
+SELECT product_id, amount, sale_date
+FROM staging_sales
+WHERE region = 'APAC' AND YEAR(sale_date) = 2024;
+```
+
+### INSERT … SELECT with column reorder
+
+```sql
+-- Target: (id, name, ts)  Source columns in different order
+INSERT INTO audit_log (id, name, ts)
+SELECT event_id, event_name, occurred_at
+FROM incoming_events
+WHERE severity = 'HIGH';
+```
+
+### TRUNCATE TABLE (fastest full wipe)
+
+```sql
+-- Removes all rows; schema and partitions intact; resets Delta version
+TRUNCATE TABLE staging_events;
+
+-- TRUNCATE a single partition (Hive-style tables)
+ALTER TABLE events DROP PARTITION (event_date = '2024-01-01');
+```
+
+!!! note "TRUNCATE vs DELETE"
+    `TRUNCATE TABLE` is faster than `DELETE FROM table` (no WHERE) because it replaces the
+    data files in one operation. On Delta, `TRUNCATE` resets time-travel history.
+
+### Seed a lookup table
+
+```sql
+CREATE TABLE IF NOT EXISTS ref.status_codes (
+    code        STRING NOT NULL,
+    label       STRING,
+    is_active   BOOLEAN DEFAULT TRUE
+)
+USING delta;
+
+INSERT INTO ref.status_codes (code, label) VALUES
+    ('A', 'Active'),
+    ('I', 'Inactive'),
+    ('P', 'Pending'),
+    ('X', 'Cancelled');
+```
+
+---
+
+## :material-speedometer: Performance Tips
+
+| Tip | Reason |
+|-----|--------|
+| Use `INSERT OVERWRITE` for full-partition reloads | Avoids small-file accumulation from repeated appends |
+| Set `spark.sql.sources.partitionOverwriteMode = dynamic` | Safe for multi-partition rewrites without touching other partitions |
+| Coalesce source before insert | `SELECT /*+ COALESCE(8) */ ...` reduces output file count |
+| Batch large inserts with CTEs or temp views | Avoids driver OOM on huge `VALUES` lists |
+| Avoid `INSERT INTO ... VALUES` for bulk loads | Use `COPY INTO` or a temp view for large datasets |

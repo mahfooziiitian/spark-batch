@@ -1,95 +1,129 @@
-# :material-book-open-page-variant: Spark catalog
+# :material-book-open-page-variant: Catalog
 
-In Apache Spark, a catalog is a logical namespace or system that stores metadata about databases, tables, views, functions, and columns. It's like a directory of all available data objects in your Spark environment.
+A **catalog** in Spark SQL is the top-level metadata registry that tracks databases,
+tables, views, functions, and columns. Every Spark SQL statement resolves object names
+against the active catalog.
 
-The highest level abstraction in Spark SQL is the Catalog.
+---
 
-The Catalog is an abstraction for the storage of metadata about the data stored in your tables as well as other helpful things like
-databases, tables, functions, and views.
-
-The catalog is available in the `org.apache.spark.sql.catalog.Catalog` package and contains a number of helpful functions
-for doing things like listing tables, databases, and functions.
-
-### :material-sitemap: Overview
+## :material-sitemap: Architecture
 
 ```mermaid
-graph TD
-    A[":material-book-open-page-variant: Catalog"] --> B["Hive Metastore :material-bee:"]
-    A --> C["Unity Catalog :material-unity:"]
-    A --> D["In-Memory Session :material-clock-time-four:"]
-    B --> E["External :material-database-export:"]
-    C --> F["3-level namespace: catalog.schema.table"]
+flowchart TD
+    UC["Unity Catalog\n(Databricks)"] -->|three-level namespace| NS["catalog.schema.table"]
+    HC["Hive Metastore Catalog\n(spark_catalog)"] -->|two-level namespace| HS["schema.table"]
+    EC["External V2 Catalog\n(Iceberg, Delta, JDBC)"] -->|plugin-based| ES["catalog.schema.table"]
+    SC["Session Catalog\n(in-memory)"] -->|session-only| SS["temp view / temp function"]
+
+    NS --> DL["Delta Lake / Parquet / ORC"]
+    HS --> DL
+    ES --> DL
+    SS --> MEM["In-memory only"]
 ```
 
-## Types of Catalogs in Spark
+---
 
-### 1. Session Catalog (default)
+## :material-compare: Catalog Types at a Glance
 
-1. Managed by Spark internally.
-2. Includes temporary and permanent objects.
-3. Supports Hive Metastore if configured.
+| Catalog | Persistence | Namespace levels | Use case |
+|---------|:-----------:|:----------------:|----------|
+| **Session** | Session-only | 1 (temp objects) | Ad-hoc work, notebooks |
+| **Hive Metastore** (`spark_catalog`) | Persistent | 2 (schema.table) | Legacy Hive, on-prem clusters |
+| **External V2** (Iceberg, Delta, JDBC) | Persistent | 2–3 | Open table formats, multi-engine |
+| **Unity Catalog** (Databricks) | Persistent + governed | 3 (catalog.schema.table) | Multi-workspace governance |
+
+---
+
+## :material-console: Catalog SQL Commands Reference
+
+| Command | Description |
+|---------|-------------|
+| `SHOW CATALOGS` | List all registered catalogs (Spark 3.1+) |
+| `USE CATALOG catalog_name` | Switch active catalog |
+| `SHOW DATABASES` | List schemas in active catalog |
+| `CREATE DATABASE db` | Create a new schema/database |
+| `USE db` | Switch active schema |
+| `SHOW TABLES IN db` | List tables in a schema |
+| `DESCRIBE TABLE tbl` | Column metadata |
+| `DESCRIBE EXTENDED tbl` | Full metadata including storage info |
+| `SHOW FUNCTIONS` | List built-in and registered functions |
+| `SHOW VIEWS IN db` | List views |
+| `SHOW CATALOGS LIKE 'my_*'` | Filter by pattern (Spark 3.1+) |
+
+---
+
+## :material-lightning-bolt: Quick-Start Examples
 
 ```sql
+-- List all catalogs (Spark 3.1+ / Databricks)
+SHOW CATALOGS;
+
+-- Switch to a named catalog
+USE CATALOG my_delta_catalog;
+
+-- List schemas inside it
 SHOW DATABASES;
-SHOW TABLES IN default;
-DESCRIBE TABLE default.students;
-```
 
-### 2. Hive Catalog
+-- Create a schema with a comment
+CREATE DATABASE IF NOT EXISTS analytics
+COMMENT 'Analytics domain tables';
 
-1. Uses Hive Metastore for persistent storage.
-2. Enables cross-session sharing of metadata.
-3. Requires Hive support enabled in Spark (`spark.sql.catalogImplementation=hive`).
+-- Make it the active schema
+USE analytics;
 
-```ini
-# spark-defaults.conf
-spark.sql.catalogImplementation=hive
-```
-
-```sql
-USE database_name;
+-- See what tables exist
 SHOW TABLES;
 ```
 
-## 3. External Catalogs (v2 - plugin based)
+---
 
-1. Introduced in Spark 3.x as DataSourceV2 Catalogs
-2. Used for systems like Delta Lake, Iceberg, JDBC, etc.
-3. Pluggable using custom catalog plugins.
+## :material-compare-horizontal: Managed vs External Tables
 
-```ini
-# spark config
-spark.sql.catalog.my_delta=org.apache.spark.sql.delta.catalog.DeltaCatalog
-spark.sql.catalog.my_delta.type=hadoop
-spark.sql.catalog.my_delta.warehouse=/mnt/delta
-```
+| Aspect | Managed Table | External Table |
+|--------|:-------------:|:--------------:|
+| Data location | Controlled by catalog | User-specified path |
+| `DROP TABLE` behaviour | Deletes data + metadata | Deletes metadata only |
+| Default storage | Warehouse directory | Any accessible path |
+| Best for | ETL outputs, marts | Raw landing zones |
 
 ```sql
-USE my_delta.db1;
-SHOW TABLES;
+-- Managed table (data lives in catalog warehouse dir)
+CREATE TABLE analytics.orders (
+    order_id BIGINT,
+    amount   DOUBLE,
+    region   STRING
+) USING DELTA;
+
+-- External table (data lives at a user path)
+CREATE TABLE analytics.raw_events
+USING PARQUET
+LOCATION '/mnt/raw/events';
 ```
 
-## Catalog Commands (SQL)
+---
 
-Command                | Description
------------------------|-----------------------------------
-SHOW CATALOGS          | Lists all catalogs (Spark 3.1+)
-SHOW DATABASES         | Lists databases in current catalog
-SHOW TABLES IN db_name | Lists tables in a database
-DESCRIBE TABLE table   | Column info
-SHOW FUNCTIONS         | Lists functions
-SHOW VIEWS             | Lists views
+## :material-arrow-decision: Which Catalog to Choose
 
-## Unity Catalog (Databricks-specific)
-
-In Databricks, Unity Catalog is a governance layer on top of Spark catalogs. It organizes data as:
-
-```sql
-catalog.schema.table
+```mermaid
+flowchart TD
+    A{Is this Databricks?} -->|Yes| B{Need cross-workspace governance?}
+    A -->|No| C{Need persistence across sessions?}
+    B -->|Yes| UC[Unity Catalog]
+    B -->|No| HC[Hive Metastore on spark_catalog]
+    C -->|Yes| D{Using an open table format?}
+    C -->|No| SC[Session Catalog - temp views]
+    D -->|Yes| EC[External V2 Catalog - Iceberg/Delta]
+    D -->|No| HC
 ```
 
-Example:
+---
 
-```sql
-SELECT * FROM my_catalog.sales.orders;
-```
+## :material-book-open-variant: In This Section
+
+| Page | Contents |
+|------|----------|
+| [Database](database.md) | CREATE/ALTER/DROP DATABASE, location, properties |
+| [Session Catalog](session.md) | Temp views, global temp views, temp functions |
+| [External Catalog](external.md) | V2 catalog plugins, Iceberg, Delta, JDBC |
+| [Hive Catalog](hive.md) | Metastore config, managed/external, MSCK REPAIR |
+| [Unity Catalog](unity.md) | 3-level namespace, GRANT/REVOKE, volumes, lineage |

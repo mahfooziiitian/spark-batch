@@ -153,3 +153,63 @@ WHERE size(attributes) >= 3;
 | Filter map entries by condition | `map_filter` HOF |
 | Check if any value matches a condition | `array_contains(map_values(map), val)` |
 | Filter rows by number of map entries | `size(map) >= N` |
+
+---
+
+## :material-merge: map_concat — Merge Maps
+
+```sql
+-- Merge default attributes with override attributes (right map wins on duplicate keys)
+SELECT order_id,
+       map_concat(MAP('priority', 'low', 'region', 'US'), attributes) AS merged_attrs
+FROM orders;
+```
+
+---
+
+## :material-transform: transform_values and transform_keys HOFs
+
+```sql
+-- Uppercase all values in the map
+SELECT order_id, transform_values(attributes, (k, v) -> UPPER(v)) AS upper_attrs
+FROM orders;
+
+-- Add a prefix to all keys
+SELECT order_id, transform_keys(attributes, (k, v) -> 'attr_' || k) AS prefixed_attrs
+FROM orders;
+
+-- Numeric conversion: replace priority label with numeric score
+SELECT order_id,
+       transform_values(attributes, (k, v) ->
+           CASE WHEN k = 'priority' THEN
+               CASE v WHEN 'high' THEN '3' WHEN 'medium' THEN '2' ELSE '1' END
+           ELSE v END
+       ) AS scored_attrs
+FROM orders;
+```
+
+---
+
+## :material-text-box-search: str_to_map — Parse a Delimited String into a Map
+
+```sql
+-- Parse 'key1=val1,key2=val2' into a map
+SELECT str_to_map('priority=high,region=US,promo=true', ',', '=') AS parsed;
+-- Result: {priority -> high, region -> US, promo -> true}
+
+-- Practical: parse a config column stored as a string
+SELECT order_id,
+       element_at(str_to_map(config_string, ';', ':'), 'timeout') AS timeout_value
+FROM order_configs;
+```
+
+---
+
+## :material-alert-circle: Common Pitfalls
+
+| Mistake | Behaviour | Fix |
+|---------|-----------|-----|
+| `element_at(map, 'missing_key') = 'x'` | NULL comparison → UNKNOWN → row excluded | Guard with `map_contains_key` first |
+| Duplicate keys in `MAP(...)` literal | Last value wins (undefined in older versions) | Ensure unique keys |
+| `map_filter` returning empty map treated as false | `size({}) = 0` but map itself is not NULL | Use `size(map_filter(...)) > 0` explicitly |
+| Comparing map values with numeric ops without CAST | ClassCastException or wrong type coercion | `CAST(element_at(map,'score') AS INT)` |
