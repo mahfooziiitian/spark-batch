@@ -2,6 +2,7 @@ title: Aggregate
 nav:
   - index.md
   - Simple: simple.md
+  - Any Value: any_value.md
   - Count: count.md
   - First: first.md
   - Last: last.md

@@ -121,6 +121,7 @@ GROUP BY region;
 | Page | Contents |
 |------|----------|
 | [Simple](simple.md) | `SUM`, `AVG`, `MIN`, `MAX`, `MEAN` |
+| [Any Value](any_value.md) | `ANY_VALUE` — arbitrary value from a group |
 | [Count](count.md) | `COUNT`, `COUNT_IF`, `APPROX_COUNT_DISTINCT` |
 | [First / Last](first.md) | `FIRST`, `LAST`, ignoreNulls |
 | [Every / Some](every.md) | `EVERY`, `BOOL_AND`, `SOME`, `BOOL_OR` |
