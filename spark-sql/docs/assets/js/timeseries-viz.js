@@ -678,6 +678,96 @@
     drawAnnotations(active);
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+   * 7. DOCS OVERVIEW (Landing page)
+   *    Clickable bar chart summarizing topic coverage.
+   * ══════════════════════════════════════════════════════════════════ */
+  function renderDocsOverview(el) {
+    const W = Math.min(el.clientWidth || 760, 760), H = 300;
+    const m = { t: 28, r: 16, b: 88, l: 48 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+
+    const data = [
+      { section: "Table", count: 6 },
+      { section: "DML", count: 9 },
+      { section: "Filter", count: 8 },
+      { section: "Join", count: 7 },
+      { section: "Aggregation", count: 8 },
+      { section: "Window", count: 10 },
+      { section: "Optimization", count: 5 },
+      { section: "Functions", count: 12 },
+      { section: "Types", count: 7 },
+    ];
+
+    const x = d3.scaleBand()
+      .domain(data.map(d => d.section))
+      .range([0, iw])
+      .padding(0.24);
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.count) + 2])
+      .range([ih, 0]);
+
+    const svg = d3.select(el).append("svg")
+      .attr("width", "100%").attr("height", H)
+      .attr("viewBox", `0 0 ${W} ${H}`).style("overflow", "visible");
+    const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
+
+    g.selectAll(".gy").data(y.ticks(5)).join("line")
+      .attr("x1", 0).attr("x2", iw).attr("y1", d => y(d)).attr("y2", d => y(d))
+      .attr("stroke", "#e8e8e8");
+
+    g.append("g").attr("transform", `translate(0,${ih})`)
+      .call(d3.axisBottom(x))
+      .call(a => a.selectAll(".tick text")
+        .attr("transform", "rotate(-30)")
+        .style("text-anchor", "end")
+        .attr("dx", "-0.6em")
+        .attr("dy", "0.3em"))
+      .call(a => a.select(".domain").attr("stroke", "#ccc"))
+      .call(a => a.selectAll(".tick line").remove());
+    g.append("g").call(d3.axisLeft(y).ticks(5))
+      .call(a => a.select(".domain").remove())
+      .call(a => a.selectAll(".tick line").remove());
+
+    const tip = makeTooltip(el);
+    const bars = g.selectAll(".bar").data(data).join("rect")
+      .attr("x", d => x(d.section))
+      .attr("width", x.bandwidth())
+      .attr("y", d => y(d.count))
+      .attr("height", d => ih - y(d.count))
+      .attr("rx", 4)
+      .attr("fill", C[0])
+      .attr("opacity", 0.62)
+      .style("cursor", "pointer")
+      .on("mouseover", function (ev, d) {
+        d3.select(this).attr("fill", C[1]).attr("opacity", 0.82);
+        tip.show(
+          `<b>${d.section}</b><br>Starter examples: <b>${d.count}</b>`,
+          ev.offsetX + 12, ev.offsetY - 42
+        );
+      })
+      .on("mouseout", function () {
+        d3.select(this).attr("fill", C[0]).attr("opacity", 0.62);
+        tip.hide();
+      })
+      .on("click", (_, d) => {
+        bars.attr("fill", b => b.section === d.section ? C[1] : C[0])
+          .attr("opacity", b => b.section === d.section ? 0.88 : 0.38);
+      });
+
+    g.selectAll(".vl").data(data).join("text")
+      .attr("x", d => x(d.section) + x.bandwidth() / 2)
+      .attr("y", d => y(d.count) - 5)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 10)
+      .attr("fill", FG)
+      .text(d => d.count);
+
+    g.append("text").attr("x", iw / 2).attr("y", -8)
+      .attr("text-anchor", "middle").attr("font-size", 12).attr("font-weight", "700")
+      .attr("fill", FG).text("Spark SQL docs starter coverage by section");
+  }
+
   /* ── Router ──────────────────────────────────────────────────────── */
   const VIZ_MAP = {
     "viz-tumbling" : renderTumbling,
@@ -686,6 +776,7 @@
     "viz-session"  : renderSession,
     "viz-gapfill"  : renderGapFill,
     "viz-laglead"  : renderLagLead,
+    "viz-docs-overview": renderDocsOverview,
   };
 
   function init() {

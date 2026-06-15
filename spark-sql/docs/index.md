@@ -18,6 +18,15 @@ graph TD
     A --> J["Types :material-format-text:"]
 ```
 
+```mermaid
+flowchart LR
+    S["Source data"] --> Q["Spark SQL query"]
+    Q --> P["Logical plan"]
+    P --> O["Optimized plan"]
+    O --> E["Execution"]
+    E --> R["Result set / table"]
+```
+
 ---
 
 ## :material-pin: Quick Start
@@ -48,6 +57,14 @@ GROUP BY region;
 | [Aggregation](aggregation/index.md) | GROUP BY, rollup, cube |
 | [Window](window/index.md) | Window functions and frames |
 | [Optimization](optimization/index.md) | Performance tuning |
+
+---
+
+## :material-animation-play: Interactive Coverage Map
+
+Click a section bar to highlight how many starter examples are available in that area.
+
+<div id="viz-docs-overview" class="ts-viz"></div>
 
 ---
 
