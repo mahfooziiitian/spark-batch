@@ -1,0 +1,9 @@
+title: Query Patterns
+nav:
+  - index.md
+  - Pagination: pagination.md
+  - Gaps & Islands: gaps_islands.md
+  - Period Comparison: period_comparison.md
+  - String Aggregation: string_agg.md
+  - Conditional Aggregation: conditional_agg.md
+  - Hierarchy: hierarchy.md

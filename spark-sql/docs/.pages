@@ -37,3 +37,4 @@ nav:
   - Hive: hive
   - CLI: cli
   - Configuration: config
+  - Patterns: patterns
