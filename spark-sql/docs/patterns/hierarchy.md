@@ -4,6 +4,38 @@ Query parent-child structures — org charts, product categories, bill-of-materi
 
 ---
 
+## :material-sitemap: Org Chart Structure
+
+```mermaid
+graph TD
+    Eve["Eve · CEO"] --> Alice["Alice · VP Eng"]
+    Eve --> Bob["Bob · VP Sales"]
+    Alice --> Carol["Carol · Sr Eng"]
+    Alice --> Dave["Dave · Eng"]
+    Carol --> Hank["Hank · Jr Eng"]
+    Bob --> Frank["Frank · Acct Exec"]
+    Bob --> Grace["Grace · Sales Rep"]
+
+    style Eve   fill:#7c4dff,color:#fff,stroke:none
+    style Alice fill:#26a69a,color:#fff,stroke:none
+    style Bob   fill:#26a69a,color:#fff,stroke:none
+    style Carol fill:#ffa726,color:#fff,stroke:none
+    style Dave  fill:#ffa726,color:#fff,stroke:none
+    style Frank fill:#ffa726,color:#fff,stroke:none
+    style Grace fill:#ffa726,color:#fff,stroke:none
+    style Hank  fill:#ef5350,color:#fff,stroke:none
+```
+
+---
+
+## :material-animation-play: Interactive Demo
+
+> Hover any node to see the employee's full title, salary, direct-report count, and depth in the hierarchy.
+
+<div id="viz-hierarchy" class="ts-viz"></div>
+
+---
+
 ## :material-toy-brick: Sample Data
 
 ```sql

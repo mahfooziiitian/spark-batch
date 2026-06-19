@@ -4,6 +4,27 @@ Aggregate data conditionally — computing separate totals, counts, or averages 
 
 ---
 
+## :material-sitemap: Execution Flow
+
+```mermaid
+flowchart LR
+    ROWS["All sales rows"] --> GB["GROUP BY region"]
+    GB --> CE["SUM(CASE WHEN category='electronics'\n     THEN amount END)"]
+    GB --> CC["SUM(CASE WHEN category='clothing'\n     THEN amount END)"]
+    GB --> CB["SUM(CASE WHEN category='books'\n     THEN amount END)"]
+    CE & CC & CB --> OUT["One row per region\nwith category columns\n(manual pivot)"]
+```
+
+---
+
+## :material-animation-play: Interactive Demo
+
+> Hover any bar to see the exact revenue and its percentage share of that region's total.
+
+<div id="viz-conditional-agg" class="ts-viz"></div>
+
+---
+
 ## :material-toy-brick: Sample Data
 
 ```sql

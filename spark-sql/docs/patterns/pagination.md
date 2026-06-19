@@ -4,6 +4,32 @@ Page through large result sets efficiently — using `LIMIT`/`OFFSET` for simple
 
 ---
 
+## :material-sitemap: How It Works
+
+```mermaid
+flowchart LR
+    Q["SELECT … ORDER BY col"] --> SKIP["Skip OFFSET rows\n(scanned but discarded)"]
+    SKIP --> TAKE["Return next LIMIT rows"]
+    TAKE --> PAGE["Page N result set"]
+
+    CURSOR["Last seen key\n(cursor)"] --> PRED["WHERE col > cursor\nORDER BY col LIMIT N"]
+    PRED --> FAST["Keyset page — O(1) cost"]
+
+    style SKIP fill:#ef535018,stroke:#ef5350
+    style TAKE fill:#7c4dff18,stroke:#7c4dff
+    style FAST fill:#26a69a18,stroke:#26a69a
+```
+
+---
+
+## :material-animation-play: Interactive Demo
+
+> Click a page button to highlight the selected rows and see the generated `LIMIT … OFFSET` clause update live.
+
+<div id="viz-pagination" class="ts-viz"></div>
+
+---
+
 ## :material-toy-brick: Sample Data
 
 ```sql

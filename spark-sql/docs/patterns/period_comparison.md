@@ -4,6 +4,27 @@ Compare metrics across periods — year-over-year (YoY), month-over-month (MoM),
 
 ---
 
+## :material-sitemap: YoY Execution Flow
+
+```mermaid
+flowchart LR
+    DATA["monthly_revenue\nregion · month · revenue"] --> PART["PARTITION BY region\nORDER BY month"]
+    PART --> LAG["LAG(revenue, N)\nN = months between years"]
+    LAG --> DELTA["(current − prior)\n÷ prior × 100"]
+    DELTA --> YOY["YoY % change\nper region per month"]
+```
+
+---
+
+## :material-animation-play: Interactive Demo
+
+> Click **APAC** or **EMEA** to switch regions.  
+> Hover the large solid dots (2024) or small dashed dots (2023) to see the YoY change.
+
+<div id="viz-period-compare" class="ts-viz"></div>
+
+---
+
 ## :material-toy-brick: Sample Data
 
 ```sql

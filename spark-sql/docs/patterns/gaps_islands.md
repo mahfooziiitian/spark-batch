@@ -4,6 +4,28 @@ Detect **islands** (consecutive sequences of rows) and **gaps** (breaks in seque
 
 ---
 
+## :material-sitemap: The ROW_NUMBER Delta Trick
+
+```mermaid
+flowchart TD
+    RAW["Login rows\nuser · date"] --> RN["ROW_NUMBER()\nPARTITION BY user\nORDER BY date"]
+    RN --> DELTA["island_anchor =\nlogin_date − ROW_NUMBER()"]
+    DELTA --> NOTE["Consecutive dates → same anchor\nGap breaks → different anchor"]
+    NOTE --> GROUP["GROUP BY user, island_anchor"]
+    GROUP --> OUT["MIN / MAX date = streak start / end\nMAX − MIN + 1 = streak length"]
+```
+
+---
+
+## :material-animation-play: Interactive Demo
+
+> Hover any dot to see the date, user, and island assignment.  
+> Filled dots are login days (colored by island streak). Dashed rings are gap days.
+
+<div id="viz-gaps-islands" class="ts-viz"></div>
+
+---
+
 ## :material-toy-brick: Sample Data
 
 ```sql

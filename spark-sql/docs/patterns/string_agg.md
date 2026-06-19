@@ -4,6 +4,29 @@ Combine string values across rows into a single value — equivalent to `GROUP_C
 
 ---
 
+## :material-sitemap: Aggregation Flow
+
+```mermaid
+flowchart LR
+    ROWS["10 tag rows\none per tag"] --> GB["GROUP BY order_id"]
+    GB --> CL["COLLECT_LIST(tag)\n[t1, t2, t2]  ← duplicates kept"]
+    CL --> CS["COLLECT_SET(tag)\n{t1, t2}  ← auto-dedup"]
+    CS --> SA["SORT_ARRAY(…)\n[t1, t2]  ← deterministic"]
+    SA --> AJ["ARRAY_JOIN(arr, ', ')\n't1, t2'  ← string output"]
+    AJ --> OUT["5 grouped rows"]
+```
+
+---
+
+## :material-animation-play: Interactive Demo
+
+> Hover any row on the left to highlight the corresponding grouped result on the right (and vice versa).  
+> Duplicate tags (like `gift` on order #101) collapse into one entry in `COLLECT_SET`.
+
+<div id="viz-string-agg" class="ts-viz"></div>
+
+---
+
 ## :material-toy-brick: Sample Data
 
 ```sql
