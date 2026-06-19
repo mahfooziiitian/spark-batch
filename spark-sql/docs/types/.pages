@@ -4,4 +4,3 @@ nav:
   - Validation: validation.md
   - File Reader: filereader
   - Query Planner: planner
-  - Sorting: sorting

@@ -13,6 +13,7 @@ nav:
 - Queries:
   - Filter: filter
   - Condition: condition
+  - Sorting: types/sorting
   - Join: join
   - Subquery: subquery
   - CTE: cte
@@ -21,7 +22,6 @@ nav:
   - NULL Handling: nulls
 - Functions:
   - function
-  - UDF: udf.md
 - Advanced:
   - Window Functions: window
   - Optimization: optimization
