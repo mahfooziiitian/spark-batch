@@ -18,10 +18,7 @@ def test_map_element_at(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_map_keys_values(spark: SparkSession) -> None:
-    result = spark.sql(
-        "SELECT MAP_KEYS(MAP('a', 1, 'b', 2)) AS keys,"
-        "       MAP_VALUES(MAP('a', 1, 'b', 2)) AS vals"
-    )
+    result = spark.sql("SELECT MAP_KEYS(MAP('a', 1, 'b', 2)) AS keys,       MAP_VALUES(MAP('a', 1, 'b', 2)) AS vals")
     row = result.first()
     assert sorted(row["keys"]) == ["a", "b"]
     assert sorted(row["vals"]) == [1, 2]
@@ -30,8 +27,7 @@ def test_map_keys_values(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_map_contains_key(spark: SparkSession) -> None:
     result = spark.sql(
-        "SELECT MAP_CONTAINS_KEY(MAP('a', 1, 'b', 2), 'a') AS has_a,"
-        "       MAP_CONTAINS_KEY(MAP('a', 1, 'b', 2), 'z') AS has_z"
+        "SELECT MAP_CONTAINS_KEY(MAP('a', 1, 'b', 2), 'a') AS has_a,       MAP_CONTAINS_KEY(MAP('a', 1, 'b', 2), 'z') AS has_z"
     )
     row = result.first()
     assert row["has_a"] is True

@@ -7,7 +7,6 @@ previous_* column, and the new value becomes the current_* column.
 """
 
 import pytest
-from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import StringType, StructField, StructType

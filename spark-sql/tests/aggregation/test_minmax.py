@@ -3,7 +3,7 @@
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import SparkSession
-from pyspark.sql.types import DoubleType, LongType, StringType, StructField, StructType
+from pyspark.sql.types import LongType, StructField, StructType
 
 
 @pytest.mark.unit
@@ -58,9 +58,7 @@ def test_max_with_filter(spark: SparkSession) -> None:
         ["amount", "category"],
     ).createOrReplaceTempView("minmax_filter")
 
-    row = spark.sql(
-        "SELECT MAX(amount) FILTER (WHERE category = 'A') AS max_a FROM minmax_filter"
-    ).collect()[0]
+    row = spark.sql("SELECT MAX(amount) FILTER (WHERE category = 'A') AS max_a FROM minmax_filter").collect()[0]
     assert row["max_a"] == 30.0
 
 

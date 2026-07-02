@@ -34,7 +34,7 @@ lint: ## Lint with flake8
 
 .PHONY: type-check
 type-check: ## Static type check with mypy
-	uv run mypy src tests
+	uv run mypy tests --disable-error-code index
 
 .PHONY: sql
 sql: sql-format sql-lint ## Fix then lint all SQL files

@@ -41,20 +41,14 @@ def test_row_number_unique_per_partition(spark: SparkSession, sales_view: str):
         groups[(row.region, row.rep)].append(row.rn)
 
     for key, rns in groups.items():
-        assert sorted(rns) == list(range(1, len(rns) + 1)), (
-            f"ROW_NUMBER not unique/sequential for partition {key}: {rns}"
-        )
+        assert sorted(rns) == list(range(1, len(rns) + 1)), f"ROW_NUMBER not unique/sequential for partition {key}: {rns}"
 
 
 @pytest.mark.unit
 def test_rank_ties_produce_gaps(spark: SparkSession):
     tied_data = [("A", 100), ("A", 100), ("A", 200)]
-    spark.createDataFrame(tied_data, ["grp", "score"]).createOrReplaceTempView(
-        "tied_scores"
-    )
-    result = spark.sql(
-        "SELECT grp, score, RANK() OVER (PARTITION BY grp ORDER BY score) AS rnk FROM tied_scores"
-    )
+    spark.createDataFrame(tied_data, ["grp", "score"]).createOrReplaceTempView("tied_scores")
+    result = spark.sql("SELECT grp, score, RANK() OVER (PARTITION BY grp ORDER BY score) AS rnk FROM tied_scores")
     ranks = sorted([row.rnk for row in result.collect()])
     assert ranks == [1, 1, 3], f"Expected [1,1,3] with gap, got {ranks}"
 
@@ -62,13 +56,8 @@ def test_rank_ties_produce_gaps(spark: SparkSession):
 @pytest.mark.unit
 def test_dense_rank_no_gaps(spark: SparkSession):
     tied_data = [("A", 100), ("A", 100), ("A", 200)]
-    spark.createDataFrame(tied_data, ["grp", "score"]).createOrReplaceTempView(
-        "tied_scores_dense"
-    )
-    result = spark.sql(
-        "SELECT grp, score, DENSE_RANK() OVER (PARTITION BY grp ORDER BY score) AS drnk "
-        "FROM tied_scores_dense"
-    )
+    spark.createDataFrame(tied_data, ["grp", "score"]).createOrReplaceTempView("tied_scores_dense")
+    result = spark.sql("SELECT grp, score, DENSE_RANK() OVER (PARTITION BY grp ORDER BY score) AS drnk FROM tied_scores_dense")
     ranks = sorted([row.drnk for row in result.collect()])
     assert ranks == [1, 1, 2], f"Expected [1,1,2] with no gap, got {ranks}"
 
@@ -76,18 +65,12 @@ def test_dense_rank_no_gaps(spark: SparkSession):
 @pytest.mark.unit
 def test_ntile_distributes_evenly(spark: SparkSession):
     even_data = [("A", 1), ("A", 2), ("A", 3), ("A", 4)]
-    spark.createDataFrame(even_data, ["grp", "val"]).createOrReplaceTempView(
-        "even_rows"
-    )
-    result = spark.sql(
-        "SELECT grp, val, NTILE(2) OVER (PARTITION BY grp ORDER BY val) AS bucket FROM even_rows"
-    )
+    spark.createDataFrame(even_data, ["grp", "val"]).createOrReplaceTempView("even_rows")
+    result = spark.sql("SELECT grp, val, NTILE(2) OVER (PARTITION BY grp ORDER BY val) AS bucket FROM even_rows")
     from collections import Counter
 
     bucket_counts = Counter(row.bucket for row in result.collect())
-    assert bucket_counts[1] == 2 and bucket_counts[2] == 2, (
-        f"Expected 2 rows per bucket, got {dict(bucket_counts)}"
-    )
+    assert bucket_counts[1] == 2 and bucket_counts[2] == 2, f"Expected 2 rows per bucket, got {dict(bucket_counts)}"
 
 
 @pytest.mark.unit
@@ -108,11 +91,7 @@ def test_percent_rank_first_row_zero(spark: SparkSession, sales_view: str):
         assert count == 1, f"Partition {key} has {count} rows with pct_rnk=0.0"
 
     # Alice-North: 3 rows → second row = 0.5, third = 1.0
-    ordered = (
-        result.filter((F.col("region") == "North") & (F.col("rep") == "Alice"))
-        .orderBy("sale_date")
-        .collect()
-    )
+    ordered = result.filter((F.col("region") == "North") & (F.col("rep") == "Alice")).orderBy("sale_date").collect()
     assert ordered[0].pct_rnk == 0.0
 
 
@@ -132,9 +111,7 @@ def test_top_n_per_group(spark: SparkSession, sales_view: str):
     rows = result.collect()
     # One row per (region, rep) partition
     partitions = [(row.region, row.rep) for row in rows]
-    assert len(partitions) == len(set(partitions)), (
-        "More than one top row per partition"
-    )
+    assert len(partitions) == len(set(partitions)), "More than one top row per partition"
 
     expected = spark.createDataFrame(
         [
@@ -155,9 +132,7 @@ def test_deduplication_with_row_number(spark: SparkSession):
         ("cust1", "2024-01-05", 100),  # exact duplicate
         ("cust2", "2024-01-03", 200),
     ]
-    spark.createDataFrame(
-        dup_data, ["customer_id", "txn_date", "amount"]
-    ).createOrReplaceTempView("dup_txns")
+    spark.createDataFrame(dup_data, ["customer_id", "txn_date", "amount"]).createOrReplaceTempView("dup_txns")
     result = spark.sql(
         """
         SELECT customer_id, txn_date, amount

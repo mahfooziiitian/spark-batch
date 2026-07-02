@@ -17,9 +17,7 @@ CUSTOMERS_COLS = ["customer_id", "name", "country"]
 @pytest.mark.unit
 def test_inner_join_basic(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
-        "customers"
-    )
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
 
     actual = spark.sql("""
         SELECT o.order_id, o.customer_id, o.amount, o.status, c.name, c.country
@@ -43,9 +41,7 @@ def test_inner_join_basic(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_inner_join_row_count(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
-        "customers"
-    )
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
 
     actual = spark.sql("""
         SELECT o.order_id
@@ -61,9 +57,7 @@ def test_inner_join_row_count(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_inner_join_with_filter(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
-        "customers"
-    )
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
 
     actual = spark.sql("""
         SELECT o.order_id, o.amount, c.name
@@ -84,9 +78,7 @@ def test_inner_join_with_filter(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_inner_join_aggregation(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
-        "customers"
-    )
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
 
     actual = spark.sql("""
         SELECT c.name, SUM(o.amount) AS total_spend
@@ -129,14 +121,10 @@ def test_self_join(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_three_table_join(spark: SparkSession) -> None:
     spark.createDataFrame(ORDERS, ORDERS_COLS).createOrReplaceTempView("orders")
-    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView(
-        "customers"
-    )
+    spark.createDataFrame(CUSTOMERS, CUSTOMERS_COLS).createOrReplaceTempView("customers")
 
     order_items = [(1, "Widget", 2), (1, "Gadget", 1), (3, "Widget", 3)]
-    spark.createDataFrame(
-        order_items, ["order_id", "product", "qty"]
-    ).createOrReplaceTempView("order_items")
+    spark.createDataFrame(order_items, ["order_id", "product", "qty"]).createOrReplaceTempView("order_items")
 
     actual = spark.sql("""
         SELECT o.order_id, c.name, oi.product, oi.qty

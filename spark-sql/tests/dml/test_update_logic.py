@@ -53,9 +53,7 @@ def test_update_multiple_columns(spark: SparkSession) -> None:
         F.when(F.col("order_id") == to_cancel, "cancelled").otherwise(F.col("status")),
     ).withColumn(
         "cancelled_at",
-        F.when(F.col("order_id") == to_cancel, "2024-03-01").otherwise(
-            F.col("cancelled_at")
-        ),
+        F.when(F.col("order_id") == to_cancel, "2024-03-01").otherwise(F.col("cancelled_at")),
     )
 
     row_o1 = result.filter(F.col("order_id") == "o1").first()
@@ -105,9 +103,7 @@ def test_update_with_subquery_filter(spark: SparkSession) -> None:
     high_velocity = spark.createDataFrame([("p1",), ("p3",)], ["product_id"])
 
     result = (
-        products.join(
-            high_velocity.withColumn("_flag", F.lit(True)), on="product_id", how="left"
-        )
+        products.join(high_velocity.withColumn("_flag", F.lit(True)), on="product_id", how="left")
         .withColumn(
             "reorder_flag",
             F.when(F.col("_flag").isNotNull(), 1).otherwise(F.col("reorder_flag")),

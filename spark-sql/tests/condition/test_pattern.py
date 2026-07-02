@@ -87,9 +87,7 @@ def test_rlike_email_format(spark: SparkSession) -> None:
         ["email"],
     ).createOrReplaceTempView("emails_rlike")
 
-    actual = spark.sql(
-        r"SELECT email FROM emails_rlike WHERE email RLIKE '^[a-z]+@[a-z]+\.com$'"
-    )
+    actual = spark.sql(r"SELECT email FROM emails_rlike WHERE email RLIKE '^[a-z]+@[a-z]+\.com$'")
     expected = spark.createDataFrame(
         [("alice@example.com",), ("bob@test.com",)],
         ["email"],

@@ -66,8 +66,6 @@ def test_approx_count_distinct(spark: SparkSession) -> None:
         ["val"],
     ).createOrReplaceTempView("cnt_approx")
 
-    row = spark.sql(
-        "SELECT APPROX_COUNT_DISTINCT(val) AS approx FROM cnt_approx"
-    ).collect()[0]
+    row = spark.sql("SELECT APPROX_COUNT_DISTINCT(val) AS approx FROM cnt_approx").collect()[0]
     # Result should be within 10% of the exact count (1000)
     assert 900 <= row["approx"] <= 1100

@@ -90,9 +90,7 @@ def test_cte_replaces_subquery(spark: SparkSession) -> None:
             SELECT name, amount FROM orders_cte_subq WHERE amount > 100
         ) AS high_value
     """)
-    assert_df_equality(
-        cte_result, derived_result, ignore_row_order=True, ignore_nullable=True
-    )
+    assert_df_equality(cte_result, derived_result, ignore_row_order=True, ignore_nullable=True)
 
 
 @pytest.mark.unit

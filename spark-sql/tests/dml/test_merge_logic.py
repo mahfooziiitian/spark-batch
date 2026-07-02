@@ -8,7 +8,6 @@ The pattern mirrors MERGE INTO semantics:
 """
 
 import pytest
-from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import BooleanType, StringType, StructField, StructType
@@ -97,9 +96,7 @@ def test_conditional_update_only_when_changed(spark: SparkSession) -> None:
     joined = target_prep.join(source_prep, on="customer_id", how="left")
     result = joined.withColumn(
         "city",
-        F.when(
-            F.col("target_city") != F.col("source_city"), F.col("source_city")
-        ).otherwise(F.col("target_city")),
+        F.when(F.col("target_city") != F.col("source_city"), F.col("source_city")).otherwise(F.col("target_city")),
     ).select("customer_id", "name", "city")
 
     rows = {r["customer_id"]: r["city"] for r in result.collect()}
@@ -123,7 +120,7 @@ def test_delete_matched_rows(spark: SparkSession) -> None:
         [("c1", False), ("c2", True)],  # c2 is flagged for deletion
         schema,
     )
-    delete_keys = source.filter(F.col("_delete") == True).select("customer_id")
+    delete_keys = source.filter(F.col("_delete")).select("customer_id")
     result = target.join(delete_keys, on="customer_id", how="left_anti")
 
     assert result.count() == 2

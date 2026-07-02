@@ -34,9 +34,7 @@ def test_between_inclusive(spark: SparkSession) -> None:
         ["id", "score"],
     ).createOrReplaceTempView("scores_between")
 
-    actual = spark.sql(
-        "SELECT id, score FROM scores_between WHERE score BETWEEN 10 AND 20"
-    )
+    actual = spark.sql("SELECT id, score FROM scores_between WHERE score BETWEEN 10 AND 20")
     # Both endpoints 10 and 20 are inclusive
     expected = spark.createDataFrame(
         [(2, 10), (3, 15), (4, 20)],
@@ -52,9 +50,7 @@ def test_not_between(spark: SparkSession) -> None:
         ["id", "score"],
     ).createOrReplaceTempView("scores_not_between")
 
-    actual = spark.sql(
-        "SELECT id, score FROM scores_not_between WHERE score NOT BETWEEN 10 AND 20"
-    )
+    actual = spark.sql("SELECT id, score FROM scores_not_between WHERE score NOT BETWEEN 10 AND 20")
     expected = spark.createDataFrame(
         [(1, 5), (5, 25)],
         ["id", "score"],
@@ -69,9 +65,7 @@ def test_in_list(spark: SparkSession) -> None:
         ["id", "category"],
     ).createOrReplaceTempView("items_in_list")
 
-    actual = spark.sql(
-        "SELECT id, category FROM items_in_list WHERE category IN ('A', 'B')"
-    )
+    actual = spark.sql("SELECT id, category FROM items_in_list WHERE category IN ('A', 'B')")
     expected = spark.createDataFrame(
         [(1, "A"), (2, "B")],
         ["id", "category"],

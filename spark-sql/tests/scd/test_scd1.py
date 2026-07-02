@@ -51,6 +51,4 @@ def test_scd1():
         ["customer_id", "name", "state"],
     )
 
-    assert (
-        merged.select("customer_id", "name", "state").collect() == expected_df.collect()
-    )
+    assert merged.select("customer_id", "name", "state").collect() == expected_df.collect()

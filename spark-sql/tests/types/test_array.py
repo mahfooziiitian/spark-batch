@@ -2,7 +2,6 @@
 
 import pytest
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 
 
 @pytest.mark.unit
@@ -14,8 +13,7 @@ def test_array_size(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_array_contains(spark: SparkSession) -> None:
     result = spark.sql(
-        "SELECT ARRAY_CONTAINS(ARRAY(1, 2, 3), 2) AS has_two,"
-        "       ARRAY_CONTAINS(ARRAY(1, 2, 3), 9) AS has_nine"
+        "SELECT ARRAY_CONTAINS(ARRAY(1, 2, 3), 2) AS has_two,       ARRAY_CONTAINS(ARRAY(1, 2, 3), 9) AS has_nine"
     )
     row = result.first()
     assert row["has_two"] is True
@@ -54,9 +52,7 @@ def test_array_union(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_array_intersect(spark: SparkSession) -> None:
-    result = spark.sql(
-        "SELECT ARRAY_INTERSECT(ARRAY(1, 2, 3), ARRAY(2, 3, 4)) AS common"
-    )
+    result = spark.sql("SELECT ARRAY_INTERSECT(ARRAY(1, 2, 3), ARRAY(2, 3, 4)) AS common")
     assert sorted(result.first()["common"]) == [2, 3]
 
 
@@ -79,9 +75,7 @@ def test_collect_list_aggregation(spark: SparkSession) -> None:
         ["grp", "tag"],
     )
     tags.createOrReplaceTempView("arr_tags")
-    result = spark.sql(
-        "SELECT grp, COLLECT_LIST(tag) AS tags FROM arr_tags GROUP BY grp ORDER BY grp"
-    )
+    result = spark.sql("SELECT grp, COLLECT_LIST(tag) AS tags FROM arr_tags GROUP BY grp ORDER BY grp")
     rows = result.collect()
     assert len(rows) == 2
     assert sorted(rows[0]["tags"]) == ["x", "y"]  # group A

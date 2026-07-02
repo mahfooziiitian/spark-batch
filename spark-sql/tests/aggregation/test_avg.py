@@ -38,9 +38,7 @@ def test_avg_distinct(spark: SparkSession) -> None:
         ["amount"],
     ).createOrReplaceTempView("avg_distinct")
 
-    row = spark.sql(
-        "SELECT AVG(DISTINCT amount) AS avg_val FROM avg_distinct"
-    ).collect()[0]
+    row = spark.sql("SELECT AVG(DISTINCT amount) AS avg_val FROM avg_distinct").collect()[0]
     # Distinct values: 10, 20, 30 → avg = 20
     assert math.isclose(row["avg_val"], 20.0, rel_tol=1e-9)
 
@@ -52,9 +50,7 @@ def test_avg_per_group(spark: SparkSession) -> None:
         ["region", "amount"],
     ).createOrReplaceTempView("avg_group")
 
-    actual = spark.sql(
-        "SELECT region, AVG(amount) AS avg_amount FROM avg_group GROUP BY region"
-    )
+    actual = spark.sql("SELECT region, AVG(amount) AS avg_amount FROM avg_group GROUP BY region")
     expected = spark.createDataFrame(
         [("US", 150.0), ("CA", 100.0)],
         StructType(

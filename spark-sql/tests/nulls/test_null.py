@@ -77,9 +77,7 @@ def test_count_star_includes_nulls(spark: SparkSession) -> None:
         schema,
     ).createOrReplaceTempView("people_count_star")
 
-    result = spark.sql("SELECT COUNT(*) AS cnt FROM people_count_star").collect()[0][
-        "cnt"
-    ]
+    result = spark.sql("SELECT COUNT(*) AS cnt FROM people_count_star").collect()[0]["cnt"]
     assert result == 3
 
 
@@ -96,9 +94,7 @@ def test_count_col_excludes_nulls(spark: SparkSession) -> None:
         schema,
     ).createOrReplaceTempView("people_count_col")
 
-    result = spark.sql("SELECT COUNT(age) AS cnt FROM people_count_col").collect()[0][
-        "cnt"
-    ]
+    result = spark.sql("SELECT COUNT(age) AS cnt FROM people_count_col").collect()[0]["cnt"]
     # Only Alice has a non-NULL age
     assert result == 1
 
@@ -111,17 +107,13 @@ def test_sum_ignores_nulls(spark: SparkSession) -> None:
         schema,
     ).createOrReplaceTempView("vals_sum_null")
 
-    result = spark.sql("SELECT SUM(val) AS total FROM vals_sum_null").collect()[0][
-        "total"
-    ]
+    result = spark.sql("SELECT SUM(val) AS total FROM vals_sum_null").collect()[0]["total"]
     assert result == 4
 
 
 @pytest.mark.unit
 def test_coalesce_returns_first_non_null(spark: SparkSession) -> None:
-    result = spark.sql("SELECT COALESCE(NULL, NULL, 5) AS result").collect()[0][
-        "result"
-    ]
+    result = spark.sql("SELECT COALESCE(NULL, NULL, 5) AS result").collect()[0]["result"]
     assert result == 5
 
 
@@ -169,9 +161,7 @@ def test_nulls_last_ordering(spark: SparkSession) -> None:
         schema,
     ).createOrReplaceTempView("scored_nulls_last")
 
-    rows = spark.sql(
-        "SELECT score FROM scored_nulls_last ORDER BY score ASC NULLS LAST"
-    ).collect()
+    rows = spark.sql("SELECT score FROM scored_nulls_last ORDER BY score ASC NULLS LAST").collect()
     scores = [r["score"] for r in rows]
     assert scores[-1] is None
     non_null = [s for s in scores if s is not None]
@@ -191,9 +181,7 @@ def test_nulls_first_ordering(spark: SparkSession) -> None:
         schema,
     ).createOrReplaceTempView("scored_nulls_first")
 
-    rows = spark.sql(
-        "SELECT score FROM scored_nulls_first ORDER BY score ASC NULLS FIRST"
-    ).collect()
+    rows = spark.sql("SELECT score FROM scored_nulls_first ORDER BY score ASC NULLS FIRST").collect()
     scores = [r["score"] for r in rows]
     assert scores[0] is None
 

@@ -21,9 +21,7 @@ def test_named_struct_creation(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_nested_struct_access(spark: SparkSession) -> None:
-    result = spark.sql(
-        "SELECT STRUCT(1 AS id, STRUCT('NYC' AS city, '10001' AS zip) AS address) AS person"
-    )
+    result = spark.sql("SELECT STRUCT(1 AS id, STRUCT('NYC' AS city, '10001' AS zip) AS address) AS person")
     person = result.first()["person"]
     assert person["address"]["city"] == "NYC"
 

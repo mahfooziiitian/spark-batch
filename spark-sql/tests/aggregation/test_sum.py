@@ -1,9 +1,7 @@
 """Tests for SUM aggregation in Spark SQL."""
 
 import pytest
-from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import SparkSession
-from pyspark.sql.types import DoubleType, StringType, StructField, StructType
 
 
 @pytest.mark.unit
@@ -35,9 +33,7 @@ def test_sum_distinct(spark: SparkSession) -> None:
         ["amount"],
     ).createOrReplaceTempView("sum_distinct")
 
-    row = spark.sql("SELECT SUM(DISTINCT amount) AS total FROM sum_distinct").collect()[
-        0
-    ]
+    row = spark.sql("SELECT SUM(DISTINCT amount) AS total FROM sum_distinct").collect()[0]
     # Distinct values: 10, 20, 30 → 60
     assert row["total"] == 60.0
 
@@ -49,9 +45,7 @@ def test_sum_with_filter(spark: SparkSession) -> None:
         ["amount", "category"],
     ).createOrReplaceTempView("sum_filter")
 
-    row = spark.sql(
-        "SELECT SUM(amount) FILTER (WHERE category = 'A') AS total FROM sum_filter"
-    ).collect()[0]
+    row = spark.sql("SELECT SUM(amount) FILTER (WHERE category = 'A') AS total FROM sum_filter").collect()[0]
     assert row["total"] == 40.0
 
 

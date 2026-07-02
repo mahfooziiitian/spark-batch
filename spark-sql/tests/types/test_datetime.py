@@ -22,9 +22,7 @@ def test_date_sub(spark: SparkSession) -> None:
 
 @pytest.mark.unit
 def test_datediff(spark: SparkSession) -> None:
-    result = spark.sql(
-        "SELECT DATEDIFF(DATE '2024-01-15', DATE '2024-01-01') AS diff_days"
-    )
+    result = spark.sql("SELECT DATEDIFF(DATE '2024-01-15', DATE '2024-01-01') AS diff_days")
     assert result.first()["diff_days"] == 14
 
 
@@ -37,9 +35,7 @@ def test_date_format(spark: SparkSession) -> None:
 @pytest.mark.unit
 def test_year_month_day_extraction(spark: SparkSession) -> None:
     result = spark.sql(
-        "SELECT YEAR(DATE '2024-03-15') AS yr,"
-        "       MONTH(DATE '2024-03-15') AS mo,"
-        "       DAY(DATE '2024-03-15') AS dy"
+        "SELECT YEAR(DATE '2024-03-15') AS yr,       MONTH(DATE '2024-03-15') AS mo,       DAY(DATE '2024-03-15') AS dy"
     )
     row = result.first()
     assert row["yr"] == 2024

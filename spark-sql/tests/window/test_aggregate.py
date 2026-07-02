@@ -1,5 +1,4 @@
 import pytest
-from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
@@ -35,15 +34,9 @@ def test_running_total(spark: SparkSession, sales_view: str):
         FROM agg_sales
         """
     )
-    alice_north = (
-        result.filter((F.col("region") == "North") & (F.col("rep") == "Alice"))
-        .orderBy("sale_date")
-        .collect()
-    )
+    alice_north = result.filter((F.col("region") == "North") & (F.col("rep") == "Alice")).orderBy("sale_date").collect()
     totals = [row.running_total for row in alice_north]
-    assert totals == sorted(totals), (
-        f"Running total is not monotonically increasing: {totals}"
-    )
+    assert totals == sorted(totals), f"Running total is not monotonically increasing: {totals}"
     assert totals == [100, 300, 600]
 
 
@@ -73,9 +66,7 @@ def test_partition_total_same_per_group(spark: SparkSession, sales_view: str):
 @pytest.mark.unit
 def test_moving_average_3_rows(spark: SparkSession):
     seq_data = [("A", 1, 10), ("A", 2, 20), ("A", 3, 30), ("A", 4, 40), ("A", 5, 50)]
-    spark.createDataFrame(seq_data, ["grp", "pos", "val"]).createOrReplaceTempView(
-        "seq_data"
-    )
+    spark.createDataFrame(seq_data, ["grp", "pos", "val"]).createOrReplaceTempView("seq_data")
     result = spark.sql(
         """
         SELECT grp, pos, val,
@@ -139,9 +130,7 @@ def test_cumulative_pct(spark: SparkSession, sales_view: str):
         """
     ).collect()
     for row in last_rows:
-        assert row.cumulative_pct == 1.0, (
-            f"Last row cumulative_pct != 1.0 for {row.region}/{row.rep}: {row.cumulative_pct}"
-        )
+        assert row.cumulative_pct == 1.0, f"Last row cumulative_pct != 1.0 for {row.region}/{row.rep}: {row.cumulative_pct}"
 
 
 @pytest.mark.unit
@@ -153,12 +142,8 @@ def test_partition_count(spark: SparkSession, sales_view: str):
         FROM agg_sales
         """
     )
-    north_counts = {
-        row.region_count for row in result.filter(F.col("region") == "North").collect()
-    }
-    south_counts = {
-        row.region_count for row in result.filter(F.col("region") == "South").collect()
-    }
+    north_counts = {row.region_count for row in result.filter(F.col("region") == "North").collect()}
+    south_counts = {row.region_count for row in result.filter(F.col("region") == "South").collect()}
 
     # North has 5 rows (Alice×3 + Bob×2), South has 4 rows (Alice×2 + Bob×2)
     assert north_counts == {5}

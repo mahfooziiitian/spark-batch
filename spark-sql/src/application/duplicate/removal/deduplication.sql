@@ -1,12 +1,17 @@
+-- ============================================================
+-- Topic: Application — deduplication patterns
+-- Dialect: Databricks / Spark SQL 3.5
+-- Description: Demonstrates multiple strategies for removing duplicate rows.
+-- ============================================================
+
 -- Deduplication
--- ✅ 1. Remove Exact Duplicates (All Columns Match)
+-- 1. Remove Exact Duplicates (All Columns Match)
 WITH students AS (
     SELECT
         id,
         name,
         age
-    FROM
-        VALUES
+    FROM VALUES
         (1, 'Alice', 20),
         (2, 'Bob', 22),
         (1, 'Alice', 20),
@@ -14,19 +19,19 @@ WITH students AS (
         (2, 'Bob', 22),
         (6, 'Eve', 24),
         (1, 'Alice', 20)
-            AS students (id, name, age)
+    AS students (id, name, age)
 )
 
-SELECT DISTINCT *
+SELECT DISTINCT * --noqa: AM04
 FROM students;
--- ✅ 2. Remove Duplicates Based on Key Columns (Keep First)
+
+-- 2. Remove Duplicates Based on Key Columns (Keep First)
 WITH students AS (
     SELECT
         id,
         name,
         age
-    FROM
-        VALUES
+    FROM VALUES
         (1, 'Alice', 20),
         (2, 'Bob', 22),
         (1, 'Alice', 19),
@@ -34,13 +39,13 @@ WITH students AS (
         (2, 'Bob', 23),
         (6, 'Eve', 24),
         (1, 'Alice', 22)
-            AS students (id, name, age)
+    AS students (id, name, age)
 )
 
-SELECT *
+SELECT * --noqa: AM04
 FROM (
     SELECT
-        *,
+        *, --noqa: AM04
         ROW_NUMBER() OVER (
             PARTITION BY id
             ORDER BY age DESC
@@ -49,14 +54,13 @@ FROM (
 )
 WHERE rn = 1;
 
--- ✅ 3. Remove Duplicates Based on Key Columns (Keep Any Row)
+-- 3. Remove Duplicates Based on Key Columns (Keep Any Row)
 WITH students AS (
     SELECT
         id,
         name,
         age
-    FROM
-        VALUES
+    FROM VALUES
         (1, 'Alice', 20),
         (2, 'Bob', 22),
         (1, 'Alice', 19),
@@ -64,7 +68,7 @@ WITH students AS (
         (2, 'Bob', 23),
         (6, 'Eve', 24),
         (1, 'Alice', 22)
-            AS students (id, name, age)
+    AS students (id, name, age)
 )
 
 SELECT
@@ -72,15 +76,15 @@ SELECT
     FIRST(name) AS name
 FROM students
 GROUP BY id;
--- ✅ 4. Remove Duplicates and Keep the Latest Row (by timestamp)
+
+-- 4. Remove Duplicates and Keep the Latest Row (by timestamp)
 WITH students AS (
     SELECT
         id,
         name,
         age,
         create_datetime
-    FROM
-        VALUES
+    FROM VALUES
         (1, 'Alice', 20, '2023-08-01 10:00:00'),
         (2, 'Bob', 22, '2023-08-01 11:00:00'),
         (1, 'Alice', 19, '2023-08-02 10:00:00'),
@@ -88,13 +92,13 @@ WITH students AS (
         (2, 'Bob', 23, '2023-08-03 10:00:00'),
         (6, 'Eve', 24, '2023-08-03 11:00:00'),
         (1, 'Alice', 22, '2023-08-04 10:00:00')
-            AS students (id, name, age, create_datetime)
+    AS students (id, name, age, create_datetime)
 )
 
-SELECT *
+SELECT * --noqa: AM04
 FROM (
     SELECT
-        *,
+        *, --noqa: AM04
         ROW_NUMBER() OVER (
             PARTITION BY id
             ORDER BY create_datetime DESC
@@ -103,11 +107,11 @@ FROM (
 )
 WHERE rn = 1;
 
--- ✅ 5. Remove Duplicates with Conditional Logic
-SELECT *
+-- 5. Remove Duplicates with Conditional Logic
+SELECT * --noqa: AM04
 FROM (
     SELECT
-        *,
+        *, --noqa: AM04
         ROW_NUMBER() OVER (
             PARTITION BY id
             ORDER BY CASE
@@ -120,7 +124,7 @@ FROM (
 )
 WHERE rn = 1;
 
--- ✅ 7. Remove Duplicates with Window Functions (e.g., RANK, DENSE_RANK)
+-- 7. Remove Duplicates with Window Functions (e.g., RANK, DENSE_RANK)
 SELECT
     id,
     FIRST(name) AS name,
@@ -129,9 +133,12 @@ SELECT
         ORDER BY some_column
     ) AS rank
 FROM my_table
-GROUP BY id, name, some_column;
+GROUP BY
+    id,
+    name,
+    some_column;
 
--- ✅ 8. Remove Duplicates with Self-Join
+-- 8. Remove Duplicates with Self-Join
 WITH b AS (
     SELECT
         id,
@@ -140,14 +147,16 @@ WITH b AS (
     GROUP BY id
 )
 
-SELECT a.*
+SELECT a.* --noqa: AM04
 FROM my_table AS a
-INNER JOIN b ON a.id = b.id AND a.some_column = b.min_col;
+INNER JOIN b
+    ON a.id = b.id
+    AND a.some_column = b.min_col;
 
--- ✅ 9. Remove Duplicates with CTE (Common Table Expression)
+-- 9. Remove Duplicates with CTE (Common Table Expression)
 WITH cte AS (
     SELECT
-        *,
+        *, --noqa: AM04
         ROW_NUMBER() OVER (
             PARTITION BY id
             ORDER BY some_column
@@ -155,49 +164,49 @@ WITH cte AS (
     FROM my_table
 )
 
-SELECT *
+SELECT * --noqa: AM04
 FROM cte
 WHERE rn = 1;
 
--- ✅ 10. Remove Duplicates with Temporary Table
+-- 10. Remove Duplicates with Temporary Table
 CREATE TEMPORARY TABLE temp_table AS
 SELECT
-    *,
+    *, --noqa: AM04
     ROW_NUMBER() OVER (
         PARTITION BY id
         ORDER BY some_column
     ) AS rn
 FROM my_table;
-SELECT *
+
+SELECT * --noqa: AM04
 FROM temp_table
 WHERE rn = 1;
 
--- ✅ 11. Remove Duplicates with Subquery
-SELECT *
+-- 11. Remove Duplicates with Subquery
+SELECT * --noqa: AM04
 FROM my_table AS t1
 WHERE NOT EXISTS (
     SELECT 1
     FROM my_table AS t2
-    WHERE
-        t1.id = t2.id
+    WHERE t1.id = t2.id
         AND t1.some_column < t2.some_column
 );
 
--- ✅ 12. Remove Duplicates with JSON Functions (if applicable)
+-- 12. Remove Duplicates with JSON Functions (if applicable)
 SELECT
     id,
     JSON_AGG(DISTINCT name) AS names
 FROM my_table
 GROUP BY id;
 
--- ✅ 13. Remove Duplicates with XML Functions (if applicable)
+-- 13. Remove Duplicates with XML Functions (if applicable)
 SELECT
     id,
     XMLAGG(DISTINCT name) AS names
 FROM my_table
 GROUP BY id;
 
--- ✅ 14. Remove Duplicates with Array Functions (if applicable)
+-- 14. Remove Duplicates with Array Functions (if applicable)
 SELECT
     id,
     ARRAY_AGG(DISTINCT name) AS names

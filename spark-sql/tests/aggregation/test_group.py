@@ -25,9 +25,7 @@ def test_group_by_single_column(spark: SparkSession) -> None:
         ["region", "amount"],
     ).createOrReplaceTempView("orders_grp_single")
 
-    actual = spark.sql(
-        "SELECT region, SUM(amount) AS total FROM orders_grp_single GROUP BY region"
-    )
+    actual = spark.sql("SELECT region, SUM(amount) AS total FROM orders_grp_single GROUP BY region")
     expected = spark.createDataFrame(
         [("CA", 125.0), ("US", 300.0)],
         StructType(
@@ -153,9 +151,7 @@ def test_group_by_nulls_grouped_together(spark: SparkSession) -> None:
         ["region", "amount"],
     ).createOrReplaceTempView("orders_grp_nulls")
 
-    actual = spark.sql(
-        "SELECT region, SUM(amount) AS total FROM orders_grp_nulls GROUP BY region"
-    )
+    actual = spark.sql("SELECT region, SUM(amount) AS total FROM orders_grp_nulls GROUP BY region")
     # NULLs should collapse into one group with combined total
     rows = {r["region"]: r["total"] for r in actual.collect()}
     assert rows[None] == 50.0

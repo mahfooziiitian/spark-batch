@@ -6,7 +6,6 @@ record is closed (is_current=False) and a new record is opened (is_current=True)
 """
 
 import pytest
-from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import BooleanType, StringType, StructField, StructType
@@ -42,8 +41,8 @@ def _apply_scd2(target: DataFrame, source: DataFrame) -> DataFrame:
     - New source rows: insert as current records.
     - Pre-existing historical rows: preserved as-is.
     """
-    current = target.filter(F.col("is_current") == True)
-    historical = target.filter(F.col("is_current") == False)
+    current = target.filter(F.col("is_current"))
+    historical = target.filter(~F.col("is_current"))
 
     joined = current.alias("t").join(
         source.alias("s"),
@@ -53,9 +52,7 @@ def _apply_scd2(target: DataFrame, source: DataFrame) -> DataFrame:
 
     exists_in_current = F.col("t.customer_id").isNotNull()
     exists_in_source = F.col("s.customer_id").isNotNull()
-    changed = (F.col("t.name") != F.col("s.name")) | (
-        F.col("t.city") != F.col("s.city")
-    )
+    changed = (F.col("t.name") != F.col("s.name")) | (F.col("t.city") != F.col("s.city"))
 
     unchanged = joined.filter(exists_in_current & exists_in_source & ~changed).select(
         F.col("t.customer_id"),
@@ -93,9 +90,7 @@ def _apply_scd2(target: DataFrame, source: DataFrame) -> DataFrame:
         F.lit(None).cast("string").alias("effective_to"),
     )
 
-    return (
-        unchanged.union(closed).union(new_versions).union(new_records).union(historical)
-    )
+    return unchanged.union(closed).union(new_versions).union(new_records).union(historical)
 
 
 @pytest.mark.unit
@@ -125,9 +120,7 @@ def test_scd2_changed_rows_closed(spark: SparkSession) -> None:
     )
     result = _apply_scd2(target, source)
     # The original NY record must be closed
-    closed_row = result.filter(
-        (F.col("customer_id") == "c1") & (F.col("city") == "NY")
-    ).first()
+    closed_row = result.filter((F.col("customer_id") == "c1") & (F.col("city") == "NY")).first()
     assert closed_row is not None
     assert closed_row["is_current"] is False
     assert closed_row["effective_to"] == "2024-12-31"
@@ -145,9 +138,7 @@ def test_scd2_new_versions_inserted(spark: SparkSession) -> None:
     )
     result = _apply_scd2(target, source)
     # A new current record with the updated city must exist
-    new_row = result.filter(
-        (F.col("customer_id") == "c1") & (F.col("city") == "LA")
-    ).first()
+    new_row = result.filter((F.col("customer_id") == "c1") & (F.col("city") == "LA")).first()
     assert new_row is not None
     assert new_row["is_current"] is True
     assert new_row["effective_to"] is None
@@ -187,7 +178,7 @@ def test_scd2_current_snapshot(spark: SparkSession) -> None:
         SOURCE_SCHEMA,
     )
     result = _apply_scd2(target, source)
-    current_snapshot = result.filter(F.col("is_current") == True)
+    current_snapshot = result.filter(F.col("is_current"))
 
     # Current snapshot should have exactly one row per customer
     assert current_snapshot.count() == 2
@@ -214,8 +205,6 @@ def test_scd2_history_preserved(spark: SparkSession) -> None:
 
     # All three versions must be present: TX (hist), NY (closed), LA (new current)
     assert result.count() == 3
-    tx_row = result.filter(
-        (F.col("customer_id") == "c1") & (F.col("city") == "TX")
-    ).first()
+    tx_row = result.filter((F.col("customer_id") == "c1") & (F.col("city") == "TX")).first()
     assert tx_row is not None
     assert tx_row["is_current"] is False

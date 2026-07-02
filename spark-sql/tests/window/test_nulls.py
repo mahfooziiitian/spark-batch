@@ -19,32 +19,18 @@ def null_df(spark: SparkSession):
 @pytest.mark.unit
 def test_first_value_ignore_nulls(spark: SparkSession, null_df):
     """first() with ignorenulls=True skips null amounts and returns first non-null."""
-    w = (
-        Window.partitionBy("grp")
-        .orderBy("dt")
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-    )
-    result = null_df.withColumn(
-        "first_non_null", F.first(F.col("amount"), ignorenulls=True).over(w)
-    )
+    w = Window.partitionBy("grp").orderBy("dt").rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    result = null_df.withColumn("first_non_null", F.first(F.col("amount"), ignorenulls=True).over(w))
     rows = result.collect()
     for row in rows:
-        assert row.first_non_null == 100, (
-            f"first(ignorenulls=True) should be 100 for row {row.dt}, got {row.first_non_null}"
-        )
+        assert row.first_non_null == 100, f"first(ignorenulls=True) should be 100 for row {row.dt}, got {row.first_non_null}"
 
 
 @pytest.mark.unit
 def test_last_value_ignore_nulls_forward_fill(spark: SparkSession, null_df):
     """last() with ignorenulls=True over a running frame forward-fills non-null values."""
-    w = (
-        Window.partitionBy("grp")
-        .orderBy("dt")
-        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
-    )
-    result = null_df.withColumn(
-        "filled_amount", F.last(F.col("amount"), ignorenulls=True).over(w)
-    )
+    w = Window.partitionBy("grp").orderBy("dt").rowsBetween(Window.unboundedPreceding, Window.currentRow)
+    result = null_df.withColumn("filled_amount", F.last(F.col("amount"), ignorenulls=True).over(w))
     rows = result.orderBy("dt").collect()
     filled = [row.filled_amount for row in rows]
     # dt1=NULL→None, dt2=100→100, dt3=NULL→100(filled), dt4=200→200, dt5=NULL→200(filled)
@@ -55,14 +41,8 @@ def test_last_value_ignore_nulls_forward_fill(spark: SparkSession, null_df):
 def test_lag_ignore_nulls(spark: SparkSession, null_df):
     """last() with ignorenulls=True over a strictly-preceding frame simulates LAG IGNORE NULLS."""
     # LAG IGNORE NULLS = last non-null value strictly before the current row
-    w = (
-        Window.partitionBy("grp")
-        .orderBy("dt")
-        .rowsBetween(Window.unboundedPreceding, -1)
-    )
-    result = null_df.withColumn(
-        "prev_non_null", F.last(F.col("amount"), ignorenulls=True).over(w)
-    )
+    w = Window.partitionBy("grp").orderBy("dt").rowsBetween(Window.unboundedPreceding, -1)
+    result = null_df.withColumn("prev_non_null", F.last(F.col("amount"), ignorenulls=True).over(w))
     rows = result.orderBy("dt").collect()
     prev = [row.prev_non_null for row in rows]
     # dt1: no prior rows → None

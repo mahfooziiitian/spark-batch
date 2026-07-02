@@ -1,6 +1,5 @@
 import pytest
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 
 
 @pytest.fixture(scope="module")
@@ -11,9 +10,7 @@ def tied_view(spark: SparkSession):
         ("A", "2024-01-01", 200),
         ("A", "2024-01-03", 300),
     ]
-    spark.createDataFrame(tied_data, ["grp", "dt", "val"]).createOrReplaceTempView(
-        "tied_frame"
-    )
+    spark.createDataFrame(tied_data, ["grp", "dt", "val"]).createOrReplaceTempView("tied_frame")
     return "tied_frame"
 
 
@@ -27,9 +24,7 @@ def seq_view(spark: SparkSession):
         ("A", "2024-01-04", 40),
         ("A", "2024-01-05", 50),
     ]
-    spark.createDataFrame(seq_data, ["grp", "dt", "val"]).createOrReplaceTempView(
-        "seq_frame"
-    )
+    spark.createDataFrame(seq_data, ["grp", "dt", "val"]).createOrReplaceTempView("seq_frame")
     return "seq_frame"
 
 
@@ -94,6 +89,4 @@ def test_unbounded_following_suffix_sum(spark: SparkSession, seq_view: str):
     sums = [row.suffix_sum for row in result.collect()]
     # 10+20+30+40+50=150; 20+30+40+50=140; 30+40+50=120; 40+50=90; 50
     assert sums == [150, 140, 120, 90, 50]
-    assert sums == sorted(sums, reverse=True), (
-        "Suffix sum should be strictly descending"
-    )
+    assert sums == sorted(sums, reverse=True), "Suffix sum should be strictly descending"

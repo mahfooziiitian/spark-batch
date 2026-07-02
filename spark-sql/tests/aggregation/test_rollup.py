@@ -29,9 +29,7 @@ def test_rollup_hierarchical(spark: SparkSession) -> None:
 
     # Verify all three grouping levels exist
     has_detail = actual.filter("region IS NOT NULL AND product IS NOT NULL").count() > 0
-    has_region_subtotal = (
-        actual.filter("region IS NOT NULL AND product IS NULL").count() > 0
-    )
+    has_region_subtotal = actual.filter("region IS NOT NULL AND product IS NULL").count() > 0
     has_grand_total = actual.filter("region IS NULL AND product IS NULL").count() > 0
     assert has_detail
     assert has_region_subtotal

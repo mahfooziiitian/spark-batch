@@ -2,7 +2,7 @@
 
 import pytest
 from pyspark.sql import SparkSession
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import IntegerType, StructField, StructType
 
 
 @pytest.mark.unit
@@ -23,10 +23,7 @@ def test_any_value_per_group(spark: SparkSession) -> None:
         ["region", "name"],
     ).createOrReplaceTempView("av_group")
 
-    rows = spark.sql(
-        "SELECT region, ANY_VALUE(name) AS sample_name "
-        "FROM av_group GROUP BY region"
-    ).collect()
+    rows = spark.sql("SELECT region, ANY_VALUE(name) AS sample_name FROM av_group GROUP BY region").collect()
 
     lookup = {r["region"]: r["sample_name"] for r in rows}
     assert lookup["US"] in {"Alice", "Bob"}
@@ -51,9 +48,7 @@ def test_any_value_ignore_nulls(spark: SparkSession) -> None:
         StructType([StructField("amount", IntegerType())]),
     ).createOrReplaceTempView("av_ignore_nulls")
 
-    row = spark.sql(
-        "SELECT ANY_VALUE(amount, TRUE) AS val FROM av_ignore_nulls"
-    ).collect()[0]
+    row = spark.sql("SELECT ANY_VALUE(amount, TRUE) AS val FROM av_ignore_nulls").collect()[0]
     assert row["val"] in {5, 20}
 
 
@@ -64,9 +59,7 @@ def test_any_value_all_nulls(spark: SparkSession) -> None:
         StructType([StructField("amount", IntegerType())]),
     ).createOrReplaceTempView("av_all_nulls")
 
-    row = spark.sql(
-        "SELECT ANY_VALUE(amount, TRUE) AS val FROM av_all_nulls"
-    ).collect()[0]
+    row = spark.sql("SELECT ANY_VALUE(amount, TRUE) AS val FROM av_all_nulls").collect()[0]
     assert row["val"] is None
 
 
@@ -77,10 +70,7 @@ def test_any_value_single_value_group(spark: SparkSession) -> None:
         ["grp", "val"],
     ).createOrReplaceTempView("av_single")
 
-    row = spark.sql(
-        "SELECT grp, ANY_VALUE(val) AS sample_val "
-        "FROM av_single GROUP BY grp"
-    ).collect()[0]
+    row = spark.sql("SELECT grp, ANY_VALUE(val) AS sample_val FROM av_single GROUP BY grp").collect()[0]
     assert row["sample_val"] == 42
 
 

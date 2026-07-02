@@ -1,9 +1,14 @@
--- Step-by-Step Strategy
+-- ============================================================
+-- Topic: Application — map key replacement v3
+-- Dialect: Databricks / Spark SQL 3.5
+-- Description: Renames map keys while deduplicating colliding keys in-place.
+-- ============================================================
+
+-- Step-by-step strategy
 -- Explode the map into key-value pairs
 -- Apply the key replacement logic
 -- Group by the new key and take the last value
 -- Reconstruct the map
-
 WITH map_table AS (
     SELECT
         map('a', 'x', 'b', 'x', 'd', 'y') AS key_map,
@@ -14,19 +19,16 @@ SELECT
     map_from_entries(
         aggregate(
             transform(
-                map_entries(map_table.original_map),
-                map_table.kv -> struct(
-                    coalesce(
-                        map_table.key_map[kv.key], kv.key
-                    ) as map_table.new_key,
-                    kv.value as map_table.value
+                map_entries(original_map),
+                kv -> struct(
+                    coalesce(key_map[kv.key], kv.key) as new_key, --noqa: RF01
+                    kv.value as value --noqa: RF01
                 )
             ),
-            cast(array() AS ARRAY<map <string, string>>),
-            (map_table.acc, map_table.kv) -> map_filter(
-                map_from_entries(map_table.acc || array(map_table.kv)),
-                -- keep all, latest kv will override
-                (map_table.k, map_table.v) -> true
+            cast(array() AS ARRAY<STRUCT<new_key: string, value: string>>),
+            (acc, kv) -> filter(
+                acc || array(kv),
+                x -> x.new_key != kv.new_key OR x = kv --noqa: RF01
             )
         )
     ) AS final_map
