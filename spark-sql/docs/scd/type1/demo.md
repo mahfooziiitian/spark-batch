@@ -233,9 +233,9 @@ DESCRIBE HISTORY dim_customer;
 ## :material-cog-outline: Optimise After Load
 
 ```sql
--- Compact small files written by the MERGE
+-- [Databricks] Compact small files written by the MERGE
 OPTIMIZE dim_customer ZORDER BY (customer_id);
 
--- Remove old file versions (keep 7 days of time-travel)
+-- [Databricks] Remove old file versions (keep 7 days of time-travel)
 VACUUM dim_customer RETAIN 168 HOURS;
 ```

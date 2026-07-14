@@ -1,5 +1,8 @@
 # :material-table-minus: DELETE
 
+!!! note "[Databricks] Delta Lake Required"
+    `DELETE` requires Delta tables. Standard Hive/Parquet tables do not support row-level deletes.
+
 `DELETE` removes rows from a Delta Lake table that match a given condition.
 Like `UPDATE`, it requires a transactional table format — standard Hive or
 Parquet tables do not support row-level deletes.

@@ -1,5 +1,9 @@
 # :material-unity: Unity Catalog
 
+!!! note "[Databricks] Databricks-Only Feature"
+    Unity Catalog is exclusive to Databricks. Open-source Spark uses Hive Metastore
+    or third-party catalogs (e.g., Apache Polaris).
+
 **Unity Catalog** is Databricks's centralized governance layer that provides
 fine-grained access control, data lineage, and auditing across all workspaces in a
 Databricks account. It extends Spark SQL with a three-level namespace:

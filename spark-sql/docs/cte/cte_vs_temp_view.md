@@ -106,13 +106,13 @@ UNCACHE TABLE customer_ltv;
 ### CTE vs Temp View: same result set, different scope
 
 ```sql
--- ✅ CTE: works perfectly for a single INSERT pipeline
+-- GOOD: CTE: works perfectly for a single INSERT pipeline
 WITH prepared AS (
     SELECT customer_id, SUM(amount) AS total FROM orders GROUP BY customer_id
 )
 INSERT INTO customer_summary SELECT * FROM prepared;
 
--- ✅ Temp View: needed when a second INSERT also uses the same intermediate
+-- GOOD: Temp View: needed when a second INSERT also uses the same intermediate
 CREATE OR REPLACE TEMP VIEW prepared AS
 SELECT customer_id, SUM(amount) AS total FROM orders GROUP BY customer_id;
 

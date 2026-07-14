@@ -300,9 +300,11 @@ FROM dim_customer;
 DESCRIBE HISTORY dim_customer;
 
 -- Compact small files and co-locate versions by customer
+-- [Databricks]
 OPTIMIZE dim_customer ZORDER BY (customer_id);
 
 -- Remove file versions older than 7 days (keep time-travel window)
+-- [Databricks]
 VACUUM dim_customer RETAIN 168 HOURS;
 
 -- Health-check view — always query current state without the filter

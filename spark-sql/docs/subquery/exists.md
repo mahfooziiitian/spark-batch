@@ -72,7 +72,7 @@ WHERE NOT EXISTS (
 ### NOT EXISTS: NULL-safe country exclusion (vs NOT IN bug)
 
 ```sql
--- ✅ NULL-safe: even if country is NULL in blocked_countries, NOT EXISTS works correctly
+-- GOOD: NULL-safe: even if country is NULL in blocked_countries, NOT EXISTS works correctly
 SELECT c.customer_id, c.name
 FROM customers AS c
 WHERE NOT EXISTS (

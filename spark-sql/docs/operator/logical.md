@@ -88,12 +88,12 @@ WHERE category = 'Electronics'
 ### OR with parentheses (prevent precedence errors)
 
 ```sql
--- ✅ Correct: parentheses make the OR explicit
+-- GOOD: Correct: parentheses make the OR explicit
 SELECT * FROM orders
 WHERE status = 'PENDING'
   AND (region = 'EU' OR region = 'APAC');
 
--- ❌ Incorrect without parens: AND binds tighter than OR
+-- BAD: Incorrect without parens: AND binds tighter than OR
 -- Equivalent to: (status='PENDING' AND region='EU') OR region='APAC'
 SELECT * FROM orders
 WHERE status = 'PENDING'
@@ -116,7 +116,7 @@ SELECT * FROM products WHERE NOT (price < 10 OR stock_qty = 0);
 SELECT * FROM orders WHERE NOT (discount = 0);
 -- Rows where discount IS NULL are also excluded
 
--- ✅ Include NULL discount rows explicitly
+-- GOOD: Include NULL discount rows explicitly
 SELECT * FROM orders WHERE discount != 0 OR discount IS NULL;
 ```
 
@@ -161,10 +161,10 @@ FROM customer_summary;
 -- NOT (A AND B) ≡ NOT A OR NOT B
 -- NOT (A OR B)  ≡ NOT A AND NOT B
 
--- ❌ Hard to read
+-- BAD: Hard to read
 SELECT * FROM orders WHERE NOT (status = 'CANCELLED' AND region = 'EU');
 
--- ✅ Equivalent, clearer
+-- GOOD: Equivalent, clearer
 SELECT * FROM orders WHERE status != 'CANCELLED' OR region != 'EU';
 ```
 

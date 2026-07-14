@@ -130,7 +130,7 @@ WHERE rn = 1;
 ### Join on composite key — must include all columns
 
 ```sql
--- ✅ Correct: both PK columns in ON clause
+-- GOOD: Correct: both PK columns in ON clause
 SELECT
     ol.order_id,
     ol.line_id,
@@ -142,7 +142,7 @@ JOIN products    AS p  ON ol.product_id = p.product_id
 JOIN orders      AS o  ON ol.order_id   = o.order_id
 WHERE o.order_date >= '2024-01-01';
 
--- ❌ Incorrect: joining only on order_id creates a fan-out
+-- BAD: Incorrect: joining only on order_id creates a fan-out
 -- (every line for an order multiplied by every order row)
 SELECT ol.*, o.*
 FROM order_lines AS ol

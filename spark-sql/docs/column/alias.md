@@ -69,19 +69,19 @@ LIMIT 20;
 ### Alias NOT visible in WHERE — use a CTE
 
 ```sql
--- ❌ AnalysisException: alias not resolvable in WHERE
+-- BAD: AnalysisException: alias not resolvable in WHERE
 SELECT customer_id, SUM(amount) AS total
 FROM orders
 WHERE total > 1000    -- total is not defined yet at WHERE evaluation
 GROUP BY customer_id;
 
--- ✅ Fix 1: use HAVING (for aggregates)
+-- GOOD: Fix 1: use HAVING (for aggregates)
 SELECT customer_id, SUM(amount) AS total
 FROM orders
 GROUP BY customer_id
 HAVING SUM(amount) > 1000;
 
--- ✅ Fix 2: wrap in a CTE or subquery
+-- GOOD: Fix 2: wrap in a CTE or subquery
 WITH totals AS (
     SELECT customer_id, SUM(amount) AS total
     FROM orders

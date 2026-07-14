@@ -1,5 +1,8 @@
 # :material-content-copy: COPY INTO
 
+!!! note "[Databricks] Databricks Runtime Only"
+    `COPY INTO` is a Databricks-specific command not available in open-source Spark.
+
 `COPY INTO` bulk-loads data from external file locations into a Delta Lake
 table. It is **idempotent** — files that have already been loaded are
 automatically skipped on subsequent runs, making it ideal for incremental

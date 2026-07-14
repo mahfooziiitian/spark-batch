@@ -175,13 +175,13 @@ GROUP BY SPLIT(salted_key, '_')[0];
 ## :material-database-arrow-down: Storage Optimisations
 
 ```sql
--- Delta: compact small files in a partition
+-- [Databricks] Compact small files in a partition
 OPTIMIZE sales WHERE order_date >= '2024-01-01';
 
--- Delta: Z-ORDER for multi-column skipping within a partition
+-- [Databricks] Z-ORDER for multi-column skipping within a partition
 OPTIMIZE sales ZORDER BY (region, product_id);
 
--- Delta: remove old file versions
+-- [Databricks] Remove old file versions
 VACUUM sales RETAIN 168 HOURS;  -- keep 7 days
 
 -- Bucketing: co-locate join keys — eliminates shuffle for repeated joins

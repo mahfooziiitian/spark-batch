@@ -83,10 +83,10 @@ FROM raw_orders;
 ### Cast in a filter (avoid — prefer typed columns)
 
 ```sql
--- ❌ Cast in WHERE disables predicate pushdown
+-- BAD: Cast in WHERE disables predicate pushdown
 SELECT * FROM orders WHERE CAST(order_id AS STRING) = '1001';
 
--- ✅ Compare with the correct type
+-- GOOD: Compare with the correct type
 SELECT * FROM orders WHERE order_id = 1001;
 ```
 

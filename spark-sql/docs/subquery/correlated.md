@@ -159,14 +159,14 @@ HAVING SUM(amount) > (
 ### Rewrite correlated scalar as a JOIN (for performance)
 
 ```sql
--- ❌ Correlated scalar — may not decorrelate on complex expressions
+-- BAD: Correlated scalar — may not decorrelate on complex expressions
 SELECT
     o.order_id,
     o.amount,
     (SELECT AVG(amount) FROM orders WHERE customer_id = o.customer_id) AS customer_avg
 FROM orders AS o;
 
--- ✅ Explicit join — always efficient
+-- GOOD: Explicit join — always efficient
 SELECT
     o.order_id,
     o.amount,

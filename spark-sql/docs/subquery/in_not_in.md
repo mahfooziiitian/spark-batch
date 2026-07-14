@@ -84,19 +84,19 @@ WHERE region NOT IN (
 ### NOT IN NULL trap (and the fix)
 
 ```sql
--- ❌ country can be NULL — returns ZERO rows
+-- BAD: country can be NULL — returns ZERO rows
 SELECT customer_id
 FROM customers
 WHERE country NOT IN (SELECT country FROM blocked_countries);
 
--- ✅ Fix 1: filter NULLs from the subquery
+-- GOOD: Fix 1: filter NULLs from the subquery
 SELECT customer_id
 FROM customers
 WHERE country NOT IN (
     SELECT country FROM blocked_countries WHERE country IS NOT NULL
 );
 
--- ✅ Fix 2: use NOT EXISTS (always NULL-safe)
+-- GOOD: Fix 2: use NOT EXISTS (always NULL-safe)
 SELECT c.customer_id
 FROM customers AS c
 WHERE NOT EXISTS (

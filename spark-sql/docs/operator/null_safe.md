@@ -138,17 +138,17 @@ WHEN MATCHED AND t.row_hash <> s.row_hash THEN UPDATE SET ...
 ### NOT IN NULL trap and fix
 
 ```sql
--- ❌ Returns 0 rows because country column contains NULLs
+-- BAD: Returns 0 rows because country column contains NULLs
 SELECT customer_id FROM customers
 WHERE country NOT IN (SELECT country FROM blocked_countries);
 
--- ✅ Fix 1: exclude NULLs from the subquery
+-- GOOD: Fix 1: exclude NULLs from the subquery
 SELECT customer_id FROM customers
 WHERE country NOT IN (
     SELECT country FROM blocked_countries WHERE country IS NOT NULL
 );
 
--- ✅ Fix 2: use IS DISTINCT FROM logic via NOT EXISTS
+-- GOOD: Fix 2: use IS DISTINCT FROM logic via NOT EXISTS
 SELECT c.customer_id FROM customers AS c
 WHERE NOT EXISTS (
     SELECT 1 FROM blocked_countries bc WHERE c.country IS NOT DISTINCT FROM bc.country

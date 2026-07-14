@@ -56,7 +56,7 @@ FileScan parquet [order_id#1, amount#4, order_date#7, region#8]
 ### Pushdown-friendly filter (direct column comparison)
 
 ```sql
--- ✅ Predicate pushed to Parquet reader
+-- GOOD: Predicate pushed to Parquet reader
 SELECT *
 FROM orders
 WHERE order_date >= '2024-01-01'
@@ -66,7 +66,7 @@ WHERE order_date >= '2024-01-01'
 ### Partition pruning
 
 ```sql
--- ✅ Table is PARTITIONED BY (region, order_date)
+-- GOOD: Table is PARTITIONED BY (region, order_date)
 -- Spark skips all directories except region=EU/order_date=2024-06-01/
 SELECT order_id, amount
 FROM sales
@@ -77,10 +77,10 @@ WHERE region = 'EU'
 ### Function on column — pushdown disabled
 
 ```sql
--- ❌ YEAR() wraps the column — Spark cannot push this to the reader
+-- BAD: YEAR() wraps the column — Spark cannot push this to the reader
 SELECT * FROM orders WHERE YEAR(order_date) = 2024;
 
--- ✅ Rewrite as a range predicate — pushdown works
+-- GOOD: Rewrite as a range predicate — pushdown works
 SELECT * FROM orders
 WHERE order_date >= '2024-01-01'
   AND order_date <  '2025-01-01';
@@ -89,20 +89,20 @@ WHERE order_date >= '2024-01-01'
 ### LIKE pushdown (prefix only)
 
 ```sql
--- ✅ Prefix LIKE is pushed (GreaterThanOrEqual / LessThan on strings)
+-- GOOD: Prefix LIKE is pushed (GreaterThanOrEqual / LessThan on strings)
 SELECT * FROM customers WHERE name LIKE 'Sm%';
 
--- ❌ Infix LIKE is NOT pushed — full column scan required
+-- BAD: Infix LIKE is NOT pushed — full column scan required
 SELECT * FROM customers WHERE name LIKE '%smith%';
 ```
 
 ### IN list pushdown
 
 ```sql
--- ✅ Small IN list is pushed as EqualTo predicates
+-- GOOD: Small IN list is pushed as EqualTo predicates
 SELECT * FROM products WHERE category IN ('Electronics', 'Books', 'Toys');
 
--- ❌ Large IN lists (> spark.sql.optimizer.inSetConversionThreshold, default 10)
+-- BAD: Large IN lists (> spark.sql.optimizer.inSetConversionThreshold, default 10)
 -- are converted to a HashSet filter — still applied early but not pushed to file reader
 ```
 

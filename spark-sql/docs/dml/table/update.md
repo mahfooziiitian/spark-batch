@@ -1,5 +1,8 @@
 # :material-table-edit: UPDATE
 
+!!! note "[Databricks] Delta Lake Required"
+    `UPDATE` requires Delta tables. Not supported on Hive, Parquet, or CSV tables.
+
 `UPDATE` modifies existing rows in a Delta Lake table. It is **not** supported
 on Hive, Parquet, or CSV tables — only Delta (and Iceberg/Hudi with their
 respective connectors).

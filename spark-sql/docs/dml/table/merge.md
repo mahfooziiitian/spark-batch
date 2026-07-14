@@ -1,5 +1,8 @@
 # :material-merge: MERGE INTO (Upsert)
 
+!!! note "[Databricks] Delta Lake Required"
+    `MERGE INTO` requires Delta tables. Not supported on Hive/Parquet/CSV tables.
+
 `MERGE INTO` performs an atomic **upsert** — a single statement that can
 `INSERT`, `UPDATE`, and `DELETE` rows by comparing a target table against a
 source. It is the most powerful DML statement in Delta Lake.

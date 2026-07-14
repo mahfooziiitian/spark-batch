@@ -1,5 +1,10 @@
 # :material-delta: Delta Lake Data Source
 
+!!! note "[Databricks] Primary Format"
+    Delta Lake is Databricks' default table format. Open-source Spark supports Delta
+    via the `delta-spark` connector, but some features (liquid clustering, predictive I/O)
+    are Databricks-only.
+
 Delta Lake is the **recommended production format** on Databricks.
 It layers an **ACID transaction log** on top of Parquet files, enabling
 `MERGE`, `UPDATE`, `DELETE`, time travel, schema enforcement, and streaming upserts.

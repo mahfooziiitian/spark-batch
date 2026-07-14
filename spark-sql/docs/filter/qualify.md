@@ -127,7 +127,7 @@ ORDER BY month, monthly_rank;
 ## :material-swap-horizontal: QUALIFY vs Subquery
 
 ```sql
--- ❌ Subquery approach — verbose, extra shuffle
+-- BAD: Subquery approach — verbose, extra shuffle
 SELECT *
 FROM (
     SELECT customer_id, order_id, order_date,
@@ -135,7 +135,7 @@ FROM (
     FROM orders
 ) WHERE rn = 1;
 
--- ✅ QUALIFY — cleaner, same execution plan
+-- GOOD: QUALIFY — cleaner, same execution plan
 SELECT customer_id, order_id, order_date
 FROM orders
 QUALIFY ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) = 1;
