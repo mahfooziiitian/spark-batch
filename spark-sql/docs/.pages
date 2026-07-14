@@ -1,38 +1,39 @@
 nav:
 
 - Home: index.md
-- SQL Basics:
-  - Table: table
-  - Column: column
+- SQL Fundamentals:
+  - Tables & Schema: table
+  - Columns & Expressions: column
   - Data Types: types
-  - DML: dml
-  - Key: key
-  - Operator: operator
+  - Keys & Constraints: key
+  - Operators: operator
   - Control Flow: control
   - Data Sources: datasource
-- Queries:
-  - Filter: filter
-  - Condition: condition
-  - Sorting: types/sorting
-  - Join: join
-  - Subquery: subquery
-  - CTE: cte
-  - Aggregation: aggregation
-  - Having: having
+  - Data Manipulation (DML): dml
+- Querying Data:
+  - Filtering (WHERE): filter
+  - Conditions (CASE/IF): condition
+  - Sorting (ORDER BY): types/sorting
+  - Joins: join
+  - Subqueries: subquery
+  - Common Table Expressions (CTE): cte
+  - Aggregation (GROUP BY): aggregation
+  - Having (HAVING): having
   - NULL Handling: nulls
 - Functions:
   - function
-- Advanced:
+- Advanced SQL:
   - Window Functions: window
-  - Optimization: optimization
+  - Views: view
+  - Optimization & Performance: optimization
   - Partitioning: partition
-  - View: view
 - Data Engineering:
-  - SCD: scd
-  - Time Series: timeseries
-  - Applications: application
-  - Catalog: catalog
-  - Hive: hive
-  - CLI: cli
-  - Configuration: config
-  - Patterns: patterns
+  - Slowly Changing Dimensions (SCD): scd
+  - Time Series Analysis: timeseries
+  - Application Patterns: application
+  - Design Patterns: patterns
+- Infrastructure:
+  - Catalog & Metastore: catalog
+  - Hive Integration: hive
+  - Spark SQL CLI: cli
+  - Configuration & Tuning: config
