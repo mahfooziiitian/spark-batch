@@ -1,0 +1,5 @@
+title: Execution
+nav:
+  - index.md
+  - Query Lifecycle: query_lifecycle.md
+  - EXPLAIN Plans: explain.md

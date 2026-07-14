@@ -60,9 +60,9 @@ Each stage is described in detail in the companion pages:
 |------|--------|
 | [Query Lifecycle](query_lifecycle.md) | Parse → Analyze → Optimize → Physical Plan → Execute |
 | [EXPLAIN Plans](explain.md) | Reading `EXPLAIN` output at every verbosity level |
-| [Predicate Pushdown](predicate_pushdown.md) | Pushing filters to storage and partition pruning |
-| [Broadcast Join](broadcast_join.md) | Small-table broadcast vs sort-merge join |
-| [Shuffle & Exchange](shuffle_exchange.md) | Repartition, coalesce, and shuffle cost |
+| [Predicate Pushdown](../predicate_pushdown.md) | Pushing filters to storage and partition pruning |
+| [Broadcast Join](../../join/strategy/bhj.md) | Small-table broadcast vs sort-merge join |
+| [Shuffling](../shuffling.md) | Repartition, coalesce, and shuffle cost |
 
 ---
 

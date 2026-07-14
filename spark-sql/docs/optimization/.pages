@@ -3,6 +3,9 @@ nav:
   - index.md
   - Techniques: optimization.md
   - Catalyst: catalyst
+  - AQE: aqe
   - Caching: caching
   - Shuffling: shuffling.md
+  - Predicate Pushdown: predicate_pushdown.md
+  - Execution: execution
   - Profiling: profiling.md

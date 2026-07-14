@@ -1,7 +1,6 @@
 title: Skew Join
 nav:
   - index.md
-  - AQE: aqe.md
   - BMPJ: bmpj.md
   - Bucketing: bucketting.md
   - Caching: caching.md
