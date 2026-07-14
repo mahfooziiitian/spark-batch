@@ -37,13 +37,6 @@ Package manager: **uv** (`uv run task <name>` for all workflows).
 
 1. **`uv run task <name>`** — single entry point for quality, test, docs, build.
 2. **All config in `pyproject.toml`** — no standalone config files.
-3. **No side effects on import** — Python modules must not execute code at import time.
-4. **Spark 3.5 SQL dialect** — `spark.sql.ansi.enabled = true`. Target open-source Spark unless noted.
-5. **Label Databricks-only content** — prefix with `[Databricks]` in docs/comments when using Delta DML, Unity Catalog, `OPTIMIZE`, `ZORDER`, `COPY INTO`, or runtime-specific functions.
-6. **`:material-xxx:` icons only** — no Unicode emoji in docs.
-7. **Use lowercase fenced code blocks** — SQL examples should use ` ```sql ` fences, and other code samples should use the matching lowercase fence type.
-8. **Navigation is owned by awesome-pages** — use `.pages` files for section navigation and do not add `nav:` entries to `mkdocs.yml`.
-9. **Strict MkDocs build** — `uv run task docs_build` must pass with zero warnings.
-10. **Project tasks default to uv** — prefer `uv run task <name>` for quality, tests, docs, and build workflows; use direct commands only for one-off debugging or when no matching task exists.
-11. **Row hash**: `md5(concat_ws('||', col1, col2, ...))` for SCD change detection.
-12. **Two-step MERGE for SCD Type 2/6** — one MERGE cannot expire + insert for the same key. **[Databricks]**
+3. **Spark 3.5 SQL dialect** — `spark.sql.ansi.enabled = true`. Target open-source Spark unless noted.
+4. **Label Databricks-only content** — see [databricks.instructions.md](instructions/databricks.instructions.md).
+5. **No side effects on import** — Python modules must not execute code at import time.
