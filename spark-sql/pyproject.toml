@@ -35,10 +35,11 @@ dev = [
     # Tasks
     "taskipy>=1.14.1",
     # Docs
-    "sphinxcontrib-mermaid>=1.0.0",
-    "myst-parser>=4.0.1",
-    "sphinxawesome-theme>=5.3.2",
-    "furo>=2025.7.19",
+    "mkdocs>=1.6.0,<2",
+    "mkdocs-material>=9.7.4,<10",
+    "mkdocs-awesome-pages-plugin>=2.10.1",
+    "mkdocs-include-markdown-plugin>=6.0.0",
+    "mkdocs-mermaid2-plugin>=1.2.3",
     "linkify-it-py>=2.0.3",
     "pymarkdownlnt>=0.9.31",
     "ipytest>=0.14.2",
@@ -101,7 +102,7 @@ max-line-length = 128
 exclude = [
     ".git",
     "__pycache__",
-    "docs/source/conf.py",
+    "docs/",
     ".venv",
     "build",
     "dist",
@@ -150,13 +151,11 @@ report_cov_annotate = "uv run pytest --cov=. --cov-report=annotate --cov-config=
 # clean up
 remove_cache = "if test -e __pycache__;then rm -rf __pycache__;fi"
 remove_pytest_cache = "if test -e .pytest_cache; then rm -rf .pytest_cache pycache__;fi"
-remove_html_build = "if test -e docs/build; then rm -rf docs/build;fi"
+remove_html_build = "if test -e site; then rm -rf site;fi"
 clean = "task remove_cache && task remove_pytest_cache && task remove_html_build"
 
 # Documentation
 lint_md = "uv run pymarkdownlnt fix -r docs README.md"
-sphinx_qs = "uv run sphinx-quickstart docs"
-html = "uv run sphinx-build -b html docs/source docs/build/html/"
-single_html = "uv run sphinx-build -b singlehtml docs/source docs/build/singlehtml/"
-server = "uv run python -m http.server -d ./docs/build/html 8080"
-html_server = "task clean && task html && task server"
+docs_build = "NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict"
+docs_serve = "uv run mkdocs serve -a 0.0.0.0:8000 --livereload"
+docs = "task clean && task docs_build && task docs_serve"

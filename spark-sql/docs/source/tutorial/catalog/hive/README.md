@@ -1,1 +1,0 @@
-# hive compatible table

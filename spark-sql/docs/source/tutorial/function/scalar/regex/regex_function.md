@@ -1,3 +1,0 @@
-# Regex function
-
-Regex

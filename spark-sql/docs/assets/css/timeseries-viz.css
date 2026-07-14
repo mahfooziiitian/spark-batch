@@ -1,0 +1,67 @@
+/* ── Time-series interactive visualizations ─────────────────────────── */
+
+.ts-viz {
+  width: 100%;
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid var(--md-default-fg-color--lightest, #e0e0e0);
+  border-radius: 6px;
+  padding: 0.75rem 0.5rem 0.25rem;
+  background: var(--md-default-bg-color, #fff);
+  overflow: hidden;
+}
+
+/* Tooltip shared across all viz */
+.ts-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--md-default-bg-color, #fff);
+  border: 1px solid var(--md-default-fg-color--light, #ccc);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+}
+
+/* SVG typography inherits page font */
+.ts-viz svg text {
+  font-family: var(--md-text-font-family, -apple-system, BlinkMacSystemFont, sans-serif);
+}
+
+/* Axis lines match theme */
+.ts-viz .domain {
+  stroke: var(--md-default-fg-color--lighter, #ccc);
+}
+
+.ts-viz .tick line {
+  stroke: var(--md-default-fg-color--lightest, #e8e8e8);
+}
+
+.ts-viz .tick text {
+  fill: var(--md-default-fg-color--light, #666);
+}
+
+/* Strategy buttons in gap-fill viz */
+.ts-viz .ts-btn {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ts-viz .ts-btn:hover {
+  opacity: 0.85;
+}
+
+/* Dark-mode adjustments */
+[data-md-color-scheme="slate"] .ts-viz {
+  border-color: #374151;
+  background: #1e2129;
+}
+
+[data-md-color-scheme="slate"] .ts-tooltip {
+  background: #252830;
+  border-color: #374151;
+  color: #e0e0e0;
+}
