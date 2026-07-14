@@ -6,8 +6,7 @@
 
 -- Case: 1 One key with one key in source table
 -- Spark/Databricks SQL
-SELECT
-    map_from_entries(collect_list(struct(old_tag_key, new_tag_key))) AS key_map
+SELECT map_from_entries(collect_list(struct(old_tag_key, new_tag_key))) AS key_map    
 FROM
     mgmt_stg.metadata.old_custom_tags_key_mapping;
 

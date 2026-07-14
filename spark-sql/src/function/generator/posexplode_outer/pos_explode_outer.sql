@@ -8,13 +8,13 @@ FROM
     (1, ARRAY('A', 'B')),
     (2, ARRAY()),          -- empty array
     (3, NULL)              -- NULL array
-    AS demo (id, arr);
+        AS demo (id, arr);
 SELECT
     id,
     pos,
     val
 FROM demo
-    LATERAL VIEW POSEXPLODE(arr) as pos, val;
+    LATERAL VIEW POSEXPLODE(arr) AS pos, val;
 
 -- 🔍 Using posexplode_outer()
 
@@ -27,13 +27,13 @@ FROM
     (1, ARRAY('A', 'B')),
     (2, ARRAY()),          -- empty array
     (3, NULL)              -- NULL array
-    AS demo (id, arr);
+        AS demo (id, arr);
 SELECT
     id,
     pos,
     val
 FROM demo
-    LATERAL VIEW POSEXPLODE_OUTER(arr) as pos, val;
+    LATERAL VIEW POSEXPLODE_OUTER(arr) AS pos, val;
 
 -- With Array of Structs
 
@@ -45,14 +45,14 @@ FROM
     (101, ARRAY(NAMED_STRUCT('item', 'book', 'qty', 2))),
     (102, ARRAY()),            -- Empty array
     (103, NULL)                -- NULL array
-    AS orders (order_id, products);
+        AS orders (order_id, products);
 SELECT
     orders.order_id,
     orders.pos,
     p.item,
     p.qty
 FROM orders
-    LATERAL VIEW POSEXPLODE_OUTER(products) as pos, p;
+    LATERAL VIEW POSEXPLODE_OUTER(products) AS pos, p;
 
 -- 3. Labeling Array Entries Safely
 
@@ -63,10 +63,10 @@ FROM
     VALUES
     (1, ARRAY('Math', 'Physics')),
     (2, NULL)
-    AS students (id, subjects);
+        AS students (id, subjects);
 SELECT
     id,
     subject,
     CONCAT('Subject_', pos + 1) AS label
 FROM students
-    LATERAL VIEW POSEXPLODE_OUTER(subjects) as pos, subject;
+    LATERAL VIEW POSEXPLODE_OUTER(subjects) AS pos, subject;

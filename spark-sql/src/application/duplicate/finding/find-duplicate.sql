@@ -1,38 +1,46 @@
---  Finding Duplicate Rows
+-- ============================================================
+-- Topic: Application — finding duplicate rows
+-- Dialect: Databricks / Spark SQL 3.5
+-- Description: Shows several duplicate-detection patterns for rows and emails.
+-- ============================================================
 
+-- Finding duplicate rows
 SELECT
     name,
     age,
     COUNT(*) AS cnt
 FROM students
-GROUP BY name, age
+GROUP BY
+    name,
+    age
 HAVING COUNT(*) > 1;
 
 -- To get full duplicate records (with all columns)
-
 -- using a CTE (Common Table Expression)
 WITH duplicates AS (
     SELECT
         name,
         age
     FROM students
-    GROUP BY name, age
+    GROUP BY
+        name,
+        age
     HAVING COUNT(*) > 1
 )
 
-SELECT s.*
+SELECT s.* --noqa: AM04
 FROM students AS s
 INNER JOIN duplicates AS d
-    ON s.name = d.name AND s.age = d.age;
+    ON s.name = d.name
+    AND s.age = d.age;
 
 -- To get all rows with duplicate emails
-
-SELECT *
-FROM users
-WHERE email IN (
-    SELECT email
-    FROM users
-    GROUP BY email
+SELECT * --noqa: AM04
+FROM users AS outer_users
+WHERE outer_users.email IN (
+    SELECT inner_users.email
+    FROM users AS inner_users
+    GROUP BY inner_users.email
     HAVING COUNT(*) > 1
 );
 
@@ -43,7 +51,6 @@ SELECT
 FROM users
 GROUP BY email
 HAVING COUNT(*) > 1;
-
 
 -- Candidate Primary Key
 SELECT COUNT(DISTINCT column_name) = COUNT(*) AS is_candidate_pk

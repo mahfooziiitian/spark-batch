@@ -9,7 +9,7 @@ SELECT
     pos,
     name
 FROM people
-    LATERAL VIEW POSEXPLODE(names) as pos,
+    LATERAL VIEW POSEXPLODE(names) AS pos,
     name;
 -- With Array of Structs
 CREATE OR REPLACE TEMP VIEW orders AS
@@ -25,10 +25,10 @@ FROM
 SELECT
     orders.order_id,
     orders.pos,
-    item.product AS product,
-    item.qty AS qty
+    item.product,
+    item.qty
 FROM orders
-    LATERAL VIEW POSEXPLODE(products) as pos,
+    LATERAL VIEW POSEXPLODE(products) AS pos,
     item;
 -- Label Choices with Index
 CREATE OR REPLACE TEMP VIEW survey AS
@@ -40,7 +40,7 @@ SELECT
     answer,
     CONCAT('Q', pos + 1) AS question
 FROM survey
-    LATERAL VIEW POSEXPLODE(answers) as pos,
+    LATERAL VIEW POSEXPLODE(answers) AS pos,
     answer;
 
 -- Use with sequence()
@@ -61,7 +61,7 @@ WITH array_ds AS (
 
 SELECT val
 FROM array_ds
-    LATERAL VIEW EXPLODE(vals) as val;
+    LATERAL VIEW EXPLODE(vals) AS val;
 
 WITH array_ds AS (
     SELECT ARRAY('x', 'y') AS vals
@@ -72,5 +72,5 @@ SELECT
     val
 FROM
     array_ds
-        LATERAL VIEW POSEXPLODE(vals) as pos,
-        val;
+    LATERAL VIEW POSEXPLODE(vals) AS pos,
+    val;
