@@ -118,22 +118,24 @@ SELECT
 FROM sales
 GROUP BY CUBE (region, product)
 ORDER BY region NULLS LAST, product NULLS LAST;
--- Result (4 grouping combinations):
--- region | product | total_sales
--- --------|---------|------------
--- East    | Gadget  | 450.0       ← (region, product) detail
--- East    | Widget  | 200.0       ← (region, product) detail
--- East    | NULL    | 650.0       ← (region) subtotal
--- North   | Gadget  | 210.0
--- North   | Widget  | 90.0
--- North   | NULL    | 300.0       ← (region) subtotal
--- West    | Gadget  | 610.0
--- West    | Widget  | 150.0
--- West    | NULL    | 760.0       ← (region) subtotal
--- NULL    | Gadget  | 1270.0      ← (product) subtotal
--- NULL    | Widget  | 440.0       ← (product) subtotal
--- NULL    | NULL    | 1710.0      ← grand total ()
 ```
+
+??? success "Expected output"
+
+    | region | product | total_sales | Note |
+    |--------|---------|-------------|------|
+    | East | Gadget | 450.0 | (region, product) detail |
+    | East | Widget | 200.0 | (region, product) detail |
+    | East | NULL | 650.0 | (region) subtotal |
+    | North | Gadget | 210.0 |  |
+    | North | Widget | 90.0 |  |
+    | North | NULL | 300.0 | (region) subtotal |
+    | West | Gadget | 610.0 |  |
+    | West | Widget | 150.0 |  |
+    | West | NULL | 760.0 | (region) subtotal |
+    | NULL | Gadget | 1270.0 | (product) subtotal |
+    | NULL | Widget | 440.0 | (product) subtotal |
+    | NULL | NULL | 1710.0 | grand total () |
 
 ### 2 — Distinguish subtotals with `GROUPING()`
 
@@ -163,18 +165,20 @@ SELECT
 FROM sales
 GROUP BY CUBE (region, product)
 ORDER BY region_label, product_label;
--- Result:
--- region_label | product_label | total_sales
--- -------------|---------------|------------
--- All Regions  | All Products  | 1710.0      ← grand total
--- All Regions  | Gadget        | 1270.0      ← product subtotal
--- All Regions  | Widget        | 440.0       ← product subtotal
--- East         | All Products  | 650.0       ← region subtotal
--- East         | Gadget        | 450.0
--- East         | Widget        | 200.0
--- North        | All Products  | 300.0
--- ...
 ```
+
+??? success "Expected output"
+
+    | region_label | product_label | total_sales | Note |
+    |--------------|---------------|-------------|------|
+    | All Regions | All Products | 1710.0 | grand total |
+    | All Regions | Gadget | 1270.0 | product subtotal |
+    | All Regions | Widget | 440.0 | product subtotal |
+    | East | All Products | 650.0 | region subtotal |
+    | East | Gadget | 450.0 |  |
+    | East | Widget | 200.0 |  |
+    | North | All Products | 300.0 |  |
+    | ... |  |  |  |
 
 ### 4 — Filtering to only the grand total row
 
@@ -183,11 +187,13 @@ SELECT SUM(amount) AS grand_total
 FROM sales
 GROUP BY CUBE (region, product)
 HAVING GROUPING(region) = 1 AND GROUPING(product) = 1;
--- Result:
--- grand_total
--- -----------
--- 1710.0
 ```
+
+??? success "Expected output"
+
+    | grand_total |
+    |-------------|
+    | 1710.0 |
 
 ### 5 — Three-column CUBE (8 grouping combinations)
 
@@ -230,8 +236,10 @@ SELECT
 FROM sales
 GROUP BY CUBE (region, product)
 ORDER BY GROUPING_ID(region, product), region_label, product_label;
--- A single pass produces all rolled-up revenue KPIs at every dimension cross.
 ```
+
+!!! tip
+    A single pass produces all rolled-up revenue KPIs at every dimension cross.
 
 ### 8 — CTE + CUBE for clean BI reporting
 
@@ -282,8 +290,10 @@ FROM sales
 GROUP BY CUBE (region, product)
 HAVING GROUPING_ID(region, product) > 0   -- drop detail rows (grp_id = 0)
 ORDER BY GROUPING_ID(region, product) DESC, region_label, product_label;
--- Result contains only: region subtotals, product subtotals, and grand total.
 ```
+
+!!! tip
+    Result contains only region subtotals, product subtotals, and the grand total.
 
 ### 10 — Real-world use case: quarterly marketing spend analysis
 
@@ -316,9 +326,10 @@ SELECT
 FROM marketing_spend
 GROUP BY CUBE (campaign, channel, quarter)
 ORDER BY GROUPING_ID(campaign, channel, quarter), campaign_label, channel_label, quarter_label;
--- Produces 2³ = 8 grouping combinations in a single scan:
--- campaign+channel+quarter detail, every pairwise subtotal, and grand totals.
 ```
+
+!!! tip
+    Produces 2³ = 8 grouping combinations in a single scan: campaign + channel + quarter detail, every pairwise subtotal, and grand totals.
 
 ### 11 — CUBE vs UNION ALL: single scan vs four scans
 
@@ -342,8 +353,10 @@ SELECT
 FROM sales
 GROUP BY CUBE (region, product)
 ORDER BY GROUPING_ID(region, product), region NULLS LAST, product NULLS LAST;
--- Same 12 output rows. Query plan shows a single Exchange node instead of four.
 ```
+
+!!! tip
+    Same 12 output rows. The query plan shows a single Exchange node instead of four.
 
 ### 12 — HAVING threshold: keep all subtotals but prune low-value detail rows
 
@@ -359,8 +372,10 @@ HAVING
     GROUPING_ID(region, product) > 0      -- always include every subtotal and grand total
     OR SUM(amount) > 200                  -- detail rows: only high-revenue combinations
 ORDER BY grp_id, region_label, product_label;
--- East|Widget (200.0) is excluded; all subtotal and grand-total rows are retained.
 ```
+
+!!! tip
+    `East | Widget` (200.0) is excluded; all subtotal and grand-total rows are retained.
 
 ### 13 — Ranking within each grouping level using window functions
 
@@ -387,10 +402,10 @@ SELECT
     ) AS revenue_rank_within_level
 FROM cubed
 ORDER BY grp_id, revenue_rank_within_level;
--- grp_id=1: rank 1 = West (760.0) — top region
--- grp_id=2: rank 1 = Gadget (1270.0) — top product
--- grp_id=0: rank 1 = East|Gadget (450.0) — top region×product combination
 ```
+
+!!! tip
+    `grp_id=1`: rank 1 = West (760.0), `grp_id=2`: rank 1 = Gadget (1270.0), and `grp_id=0`: rank 1 = East | Gadget (450.0).
 
 ### 14 — Inventory analysis: warehouse × category × supplier
 
@@ -425,9 +440,10 @@ SELECT
 FROM inventory
 GROUP BY CUBE (warehouse, category, supplier)
 ORDER BY grp_id, warehouse_label, category_label, supplier_label;
--- 2³ = 8 sets: every warehouse×category×supplier cross plus all single-dimension
--- subtotals and one grand total — full inventory visibility in a single scan.
 ```
+
+!!! tip
+    2³ = 8 sets: every warehouse × category × supplier cross plus all single-dimension subtotals and one grand total.
 
 ### 15 — Pre-computing a CUBE into a Delta summary table
 

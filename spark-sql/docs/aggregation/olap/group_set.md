@@ -143,20 +143,22 @@ GROUP BY GROUPING SETS (
     ()
 )
 ORDER BY region NULLS LAST, product NULLS LAST;
--- Result:
--- region | product | total_sales
--- --------|---------|------------
--- East    | Gadget  | 450.0       ← (region, product)
--- East    | Widget  | 200.0       ← (region, product)
--- East    | NULL    | 650.0       ← (region)
--- North   | Gadget  | 210.0
--- North   | Widget  | 90.0
--- North   | NULL    | 300.0       ← (region)
--- West    | Gadget  | 610.0
--- West    | Widget  | 150.0
--- West    | NULL    | 760.0       ← (region)
--- NULL    | NULL    | 1710.0      ← grand total ()
 ```
+
+??? success "Expected output"
+
+    | region | product | total_sales | Note |
+    |--------|---------|-------------|------|
+    | East | Gadget | 450.0 | (region, product) |
+    | East | Widget | 200.0 | (region, product) |
+    | East | NULL | 650.0 | (region) |
+    | North | Gadget | 210.0 | |
+    | North | Widget | 90.0 | |
+    | North | NULL | 300.0 | (region) |
+    | West | Gadget | 610.0 | |
+    | West | Widget | 150.0 | |
+    | West | NULL | 760.0 | (region) |
+    | NULL | NULL | 1710.0 | grand total () |
 
 ### 2 — Equivalence to UNION ALL
 
@@ -192,15 +194,17 @@ GROUP BY GROUPING SETS (
     (product)
 )
 ORDER BY g_region, g_product, region NULLS LAST, product NULLS LAST;
--- Result:
--- region | product | total_sales | g_region | g_product
--- --------|---------|-------------|----------|----------
--- East    | NULL    | 650.0       | 0        | 1
--- North   | NULL    | 300.0       | 0        | 1
--- West    | NULL    | 760.0       | 0        | 1
--- NULL    | Gadget  | 1270.0      | 1        | 0
--- NULL    | Widget  | 440.0       | 1        | 0
 ```
+
+??? success "Expected output"
+
+    | region | product | total_sales | g_region | g_product |
+    |--------|---------|-------------|----------|-----------|
+    | East | NULL | 650.0 | 0 | 1 |
+    | North | NULL | 300.0 | 0 | 1 |
+    | West | NULL | 760.0 | 0 | 1 |
+    | NULL | Gadget | 1270.0 | 1 | 0 |
+    | NULL | Widget | 440.0 | 1 | 0 |
 
 ### 4 — Readable labels with `GROUPING()`
 

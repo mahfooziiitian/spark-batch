@@ -38,14 +38,53 @@ graph LR
 ### Sample data
 
 ```sql
+-- Multi-day event stream (spans 10 days, 3 users, 3 event types)
 CREATE OR REPLACE TEMP VIEW events AS
 SELECT * FROM VALUES
-  (1001, 1, TIMESTAMP('2025-07-20 10:00:00'), 'click',    50),
-  (1002, 2, TIMESTAMP('2025-07-20 11:05:00'), 'view',     30),
-  (1003, 1, TIMESTAMP('2025-07-20 10:10:00'), 'click',    70),
-  (1004, 3, TIMESTAMP('2025-07-20 11:15:00'), 'purchase', 90),
-  (1005, 2, TIMESTAMP('2025-07-20 10:20:00'), 'click',    20)
+  -- Day 1: Mon 2025-07-14
+  (1001, 1, TIMESTAMP('2025-07-14 08:12:00'), 'click',     50),
+  (1002, 2, TIMESTAMP('2025-07-14 09:30:00'), 'view',      10),
+  (1003, 1, TIMESTAMP('2025-07-14 08:45:00'), 'click',     35),
+  -- Day 2: Tue 2025-07-15
+  (1004, 3, TIMESTAMP('2025-07-15 10:05:00'), 'purchase', 200),
+  (1005, 2, TIMESTAMP('2025-07-15 10:22:00'), 'click',     40),
+  (1006, 1, TIMESTAMP('2025-07-15 14:00:00'), 'view',      15),
+  -- Day 3: Wed 2025-07-16
+  (1007, 2, TIMESTAMP('2025-07-16 11:10:00'), 'click',     60),
+  (1008, 3, TIMESTAMP('2025-07-16 11:45:00'), 'purchase', 150),
+  (1009, 1, TIMESTAMP('2025-07-16 16:30:00'), 'click',     25),
+  -- Day 5: Fri 2025-07-18 (gap on Thu)
+  (1010, 1, TIMESTAMP('2025-07-18 09:00:00'), 'purchase', 300),
+  (1011, 2, TIMESTAMP('2025-07-18 09:15:00'), 'click',     45),
+  (1012, 3, TIMESTAMP('2025-07-18 13:50:00'), 'view',      20),
+  -- Day 8: Mon 2025-07-21 (week 2)
+  (1013, 1, TIMESTAMP('2025-07-21 08:00:00'), 'click',     55),
+  (1014, 2, TIMESTAMP('2025-07-21 10:30:00'), 'purchase', 180),
+  (1015, 3, TIMESTAMP('2025-07-21 15:20:00'), 'view',      10),
+  -- Day 10: Wed 2025-07-23
+  (1016, 1, TIMESTAMP('2025-07-23 07:50:00'), 'click',     70),
+  (1017, 2, TIMESTAMP('2025-07-23 12:00:00'), 'purchase', 250),
+  (1018, 3, TIMESTAMP('2025-07-23 12:10:00'), 'click',     30)
 AS events(event_id, user_id, event_time, event_type, value);
+```
+
+```sql
+-- Sales data for Year-over-Year examples (2 years, monthly)
+CREATE OR REPLACE TEMP VIEW sales AS
+SELECT * FROM VALUES
+  (DATE('2023-01-15'), 'electronics', 12000),
+  (DATE('2023-02-10'), 'electronics', 14500),
+  (DATE('2023-03-22'), 'clothing',     8200),
+  (DATE('2023-04-05'), 'electronics', 11000),
+  (DATE('2023-05-18'), 'clothing',     9500),
+  (DATE('2023-06-30'), 'electronics', 15800),
+  (DATE('2024-01-12'), 'electronics', 13500),
+  (DATE('2024-02-08'), 'clothing',    16200),
+  (DATE('2024-03-19'), 'electronics',  9800),
+  (DATE('2024-04-25'), 'clothing',    12400),
+  (DATE('2024-05-14'), 'electronics', 10200),
+  (DATE('2024-06-28'), 'clothing',    17500)
+AS sales(sale_date, category, amount);
 ```
 
 ### Hourly aggregation
@@ -60,6 +99,17 @@ GROUP BY DATE_TRUNC('hour', event_time)
 ORDER BY hour_bucket;
 ```
 
+??? success "Expected output"
+
+    | hour_bucket         | event_count | total_value |
+    |---------------------|-------------|-------------|
+    | 2025-07-14 08:00:00 | 2           | 85          |
+    | 2025-07-14 09:00:00 | 1           | 10          |
+    | 2025-07-15 10:00:00 | 2           | 240         |
+    | 2025-07-15 14:00:00 | 1           | 15          |
+    | 2025-07-16 11:00:00 | 2           | 210         |
+    | ...                 | ...         | ...         |
+
 ### Daily total per user
 
 ```sql
@@ -72,6 +122,21 @@ FROM events
 GROUP BY user_id, TO_DATE(event_time)
 ORDER BY user_id, event_date;
 ```
+
+??? success "Expected output"
+
+    | user_id | event_date | daily_count | daily_value |
+    |---------|------------|-------------|-------------|
+    | 1       | 2025-07-14 | 2           | 85          |
+    | 1       | 2025-07-15 | 1           | 15          |
+    | 1       | 2025-07-16 | 1           | 25          |
+    | 1       | 2025-07-18 | 1           | 300         |
+    | 1       | 2025-07-21 | 1           | 55          |
+    | 1       | 2025-07-23 | 1           | 70          |
+    | 2       | 2025-07-14 | 1           | 10          |
+    | 2       | 2025-07-15 | 1           | 40          |
+    | 2       | 2025-07-16 | 1           | 60          |
+    | ...     | ...        | ...         | ...         |
 
 ### Weekly aggregation
 
@@ -86,6 +151,13 @@ GROUP BY DATE_TRUNC('week', event_time), WEEKOFYEAR(event_time)
 ORDER BY week_start;
 ```
 
+??? success "Expected output"
+
+    | week_start          | iso_week | event_count | weekly_value |
+    |---------------------|----------|-------------|--------------|
+    | 2025-07-14 00:00:00 | 29       | 12          | 950          |
+    | 2025-07-21 00:00:00 | 30       | 6           | 595          |
+
 ### Monthly aggregation
 
 ```sql
@@ -98,19 +170,34 @@ GROUP BY DATE_TRUNC('month', event_time)
 ORDER BY month_start;
 ```
 
+??? success "Expected output"
+
+    | month_start         | event_count | monthly_revenue |
+    |---------------------|-------------|-----------------|
+    | 2025-07-01 00:00:00 | 18          | 1545            |
+
 ### Weekly Active Users (WAU)
 
 ```sql
+-- Active days per user in the last 7 days from reference date
 SELECT
     user_id,
     COUNT(DISTINCT TO_DATE(event_time)) AS active_days,
     MIN(event_time)                     AS first_seen,
     MAX(event_time)                     AS last_seen
 FROM events
-WHERE event_time >= CURRENT_DATE() - INTERVAL 7 DAYS
+WHERE event_time >= DATE('2025-07-18') - INTERVAL 7 DAYS
 GROUP BY user_id
 ORDER BY active_days DESC;
 ```
+
+??? success "Expected output (reference: 2025-07-18)"
+
+    | user_id | active_days | first_seen          | last_seen           |
+    |---------|-------------|---------------------|---------------------|
+    | 1       | 4           | 2025-07-14 08:12:00 | 2025-07-18 09:00:00 |
+    | 2       | 4           | 2025-07-14 09:30:00 | 2025-07-18 09:15:00 |
+    | 3       | 3           | 2025-07-15 10:05:00 | 2025-07-18 13:50:00 |
 
 ### Year-over-Year comparison
 
@@ -131,6 +218,17 @@ GROUP BY MONTH(sale_date)
 ORDER BY month_num;
 ```
 
+??? success "Expected output"
+
+    | month_num | revenue_2024 | revenue_2023 | yoy_pct |
+    |-----------|--------------|--------------|---------|
+    | 1         | 13500        | 12000        | 12.5    |
+    | 2         | 16200        | 14500        | 11.7    |
+    | 3         | 9800         | 8200         | 19.5    |
+    | 4         | 12400        | 11000        | 12.7    |
+    | 5         | 10200        | 9500         | 7.4     |
+    | 6         | 17500        | 15800        | 10.8    |
+
 ### Rolling 7-day total (sliding window on aggregated daily data)
 
 ```sql
@@ -150,17 +248,39 @@ FROM daily
 ORDER BY day;
 ```
 
+??? success "Expected output"
+
+    | day        | daily_total | rolling_7d_total |
+    |------------|-------------|------------------|
+    | 2025-07-14 | 95          | 95               |
+    | 2025-07-15 | 255         | 350              |
+    | 2025-07-16 | 235         | 585              |
+    | 2025-07-18 | 365         | 950              |
+    | 2025-07-21 | 245         | 610              |
+    | 2025-07-23 | 350         | 960              |
+
 ### Custom N-minute buckets
 
 ```sql
 -- 15-minute buckets using integer arithmetic
 SELECT
     TIMESTAMP(FLOOR(UNIX_TIMESTAMP(event_time) / (15 * 60)) * (15 * 60)) AS bucket_15m,
-    COUNT(*) AS event_count
+    COUNT(*) AS event_count,
+    SUM(value) AS bucket_value
 FROM events
 GROUP BY FLOOR(UNIX_TIMESTAMP(event_time) / (15 * 60))
 ORDER BY bucket_15m;
 ```
+
+??? success "Expected output (first 5 rows)"
+
+    | bucket_15m          | event_count | bucket_value |
+    |---------------------|-------------|--------------|
+    | 2025-07-14 08:00:00 | 1           | 50           |
+    | 2025-07-14 08:45:00 | 1           | 35           |
+    | 2025-07-14 09:30:00 | 1           | 10           |
+    | 2025-07-15 10:00:00 | 1           | 200          |
+    | 2025-07-15 10:15:00 | 1           | 40           |
 
 ---
 

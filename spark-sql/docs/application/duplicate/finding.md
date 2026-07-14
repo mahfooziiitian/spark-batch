@@ -20,6 +20,38 @@ graph LR
 
 ---
 
+## :material-database: Sample Data
+
+```sql
+-- Students table with duplicate enrollments
+CREATE OR REPLACE TEMP VIEW students AS
+SELECT * FROM VALUES
+  (1,  'Alice',   20, 'CS',      DATE('2024-01-10')),
+  (2,  'Bob',     22, 'Math',    DATE('2024-01-12')),
+  (3,  'Alice',   20, 'CS',      DATE('2024-02-15')),
+  (4,  'Charlie', 21, 'Physics', DATE('2024-01-20')),
+  (5,  'Bob',     22, 'Math',    DATE('2024-03-01')),
+  (6,  'Alice',   20, 'CS',      DATE('2024-03-10')),
+  (7,  'Diana',   23, 'CS',      DATE('2024-01-18')),
+  (8,  'Charlie', 21, 'Physics', DATE('2024-02-28'))
+AS students(id, name, age, department, created_at);
+```
+
+```sql
+-- Users table with duplicate emails
+CREATE OR REPLACE TEMP VIEW users AS
+SELECT * FROM VALUES
+  (101, 'alice@example.com', 'Alice Smith',  'active',   TIMESTAMP('2024-01-10 09:00:00')),
+  (102, 'bob@example.com',   'Bob Jones',    'active',   TIMESTAMP('2024-01-12 10:30:00')),
+  (103, 'alice@example.com', 'Alice S.',     'pending',  TIMESTAMP('2024-02-15 14:00:00')),
+  (104, 'carol@example.com', 'Carol White',  'active',   TIMESTAMP('2024-01-20 08:00:00')),
+  (105, 'bob@example.com',   'Bob J.',       'inactive', TIMESTAMP('2024-03-01 11:00:00')),
+  (106, 'alice@example.com', 'Alice Smith',  'active',   TIMESTAMP('2024-03-10 16:00:00'))
+AS users(id, email, full_name, status, created_at);
+```
+
+---
+
 ## :material-pin: Approach Comparison
 
 | Approach | Returns | Best For |
@@ -47,6 +79,14 @@ HAVING COUNT(*) > 1
 ORDER BY duplicate_count DESC;
 ```
 
+??? success "Expected output"
+
+    | name    | age | duplicate_count |
+    |---------|-----|-----------------|
+    | Alice   | 20  | 3               |
+    | Bob     | 22  | 2               |
+    | Charlie | 21  | 2               |
+
 !!! note
     Returns only the key columns, not the full rows. Use this to audit which
     values are duplicated and how many times.
@@ -70,8 +110,21 @@ SELECT s.*
 FROM students AS s
 INNER JOIN duplicated_keys AS d
     ON s.name = d.name
-    AND s.age = d.age;
+    AND s.age = d.age
+ORDER BY s.name, s.id;
 ```
+
+??? success "Expected output"
+
+    | id | name    | age | department | created_at |
+    |----|---------|-----|------------|------------|
+    | 1  | Alice   | 20  | CS         | 2024-01-10 |
+    | 3  | Alice   | 20  | CS         | 2024-02-15 |
+    | 6  | Alice   | 20  | CS         | 2024-03-10 |
+    | 2  | Bob     | 22  | Math       | 2024-01-12 |
+    | 5  | Bob     | 22  | Math       | 2024-03-01 |
+    | 4  | Charlie | 21  | Physics    | 2024-01-20 |
+    | 8  | Charlie | 21  | Physics    | 2024-02-28 |
 
 ---
 
@@ -85,10 +138,10 @@ FROM (
     SELECT
         *,
         ROW_NUMBER() OVER (
-            PARTITION BY id           -- (1)!
-            ORDER BY created_at DESC  -- (2)!
+            PARTITION BY name, age    -- (1)!
+            ORDER BY created_at ASC   -- (2)!
         ) AS rn
-    FROM source_table
+    FROM students
 )
 WHERE rn > 1; -- (3)!
 ```
@@ -96,6 +149,15 @@ WHERE rn > 1; -- (3)!
 1. Partition by the key that defines a duplicate.
 2. The first row (`rn = 1`) is the one you want to **keep**; all others are duplicates.
 3. Return only the duplicate rows — invert to `rn = 1` to get de-duplicated output.
+
+??? success "Expected output"
+
+    | id | name    | age | department | created_at | rn |
+    |----|---------|-----|------------|------------|----|
+    | 3  | Alice   | 20  | CS         | 2024-02-15 | 2  |
+    | 6  | Alice   | 20  | CS         | 2024-03-10 | 3  |
+    | 5  | Bob     | 22  | Math       | 2024-03-01 | 2  |
+    | 8  | Charlie | 21  | Physics    | 2024-02-28 | 2  |
 
 ---
 
@@ -111,8 +173,19 @@ WHERE email IN (
     FROM users
     GROUP BY email
     HAVING COUNT(*) > 1
-);
+)
+ORDER BY email, id;
 ```
+
+??? success "Expected output"
+
+    | id  | email            | full_name   | status   | created_at          |
+    |-----|------------------|-------------|----------|---------------------|
+    | 101 | alice@example.com | Alice Smith | active   | 2024-01-10 09:00:00 |
+    | 103 | alice@example.com | Alice S.    | pending  | 2024-02-15 14:00:00 |
+    | 106 | alice@example.com | Alice Smith | active   | 2024-03-10 16:00:00 |
+    | 102 | bob@example.com   | Bob Jones   | active   | 2024-01-12 10:30:00 |
+    | 105 | bob@example.com   | Bob J.      | inactive | 2024-03-01 11:00:00 |
 
 !!! warning
     Avoid `IN` with multi-column composite keys — concatenation can cause false
@@ -126,11 +199,41 @@ Verify whether a column (or combination) could serve as a primary key.
 
 ```sql
 SELECT
-    COUNT(DISTINCT id) = COUNT(*) AS is_candidate_pk -- (1)!
-FROM your_table;
+    COUNT(DISTINCT id) = COUNT(*) AS id_is_unique,           -- (1)!
+    COUNT(DISTINCT email) = COUNT(*) AS email_is_unique      -- (2)!
+FROM users;
 ```
 
-1. Returns `true` if every `id` is unique; `false` if duplicates exist.
+1. `true` — `id` is unique across all rows.
+2. `false` — `email` has duplicates, cannot serve as primary key.
+
+??? success "Expected output"
+
+    | id_is_unique | email_is_unique |
+    |--------------|-----------------|
+    | true         | false           |
+
+---
+
+## :material-magnify: Approach 6 — Duplicate count summary
+
+Get a high-level view of data quality.
+
+```sql
+SELECT
+    COUNT(*) AS total_rows,
+    COUNT(*) - COUNT(DISTINCT name, age) AS duplicate_rows,
+    ROUND(
+        (COUNT(*) - COUNT(DISTINCT name, age)) * 100.0 / COUNT(*), 1
+    ) AS duplicate_pct
+FROM students;
+```
+
+??? success "Expected output"
+
+    | total_rows | duplicate_rows | duplicate_pct |
+    |------------|----------------|---------------|
+    | 8          | 4              | 50.0          |
 
 ---
 
@@ -151,6 +254,7 @@ FROM your_table;
 | Need to tag and review specific rows | `ROW_NUMBER() WHERE rn > 1` |
 | Single-column key, small table | `IN (subquery)` |
 | Validate uniqueness of a column | `COUNT(DISTINCT) = COUNT(*)` |
+| Data quality metrics | `COUNT(*) - COUNT(DISTINCT ...)` |
 
 !!! tip "Performance"
     `GROUP BY HAVING` is the fastest — it scans the table once.

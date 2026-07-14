@@ -4,6 +4,22 @@ nav:
   - Pagination: pagination.md
   - Gaps & Islands: gaps_islands.md
   - Period Comparison: period_comparison.md
+  - Running Total: running_total.md
+  - Moving Average: moving_average.md
+  - Top-N Per Group: top_n.md
+  - Sessionization: sessionization.md
+  - Funnel Analysis: funnel_analysis.md
+  - Retention Analysis: retention.md
+  - Change Detection: change_detection.md
+  - Outlier Detection: outlier_detection.md
+  - Nearest Neighbor (Time): nearest_time.md
+  - Slowly Growing Window: growing_window.md
+  - Interval Merging: interval_merge.md
+  - Slowly Changing Comparison: slowly_changing_comparison.md
+  - Pareto (80/20): pareto.md
+  - ABC Classification: abc_classification.md
+  - Pivot / Unpivot: pivot_unpivot.md
+  - Churn Detection: churn_detection.md
   - String Aggregation: string_agg.md
   - Conditional Aggregation: conditional_agg.md
   - Hierarchy: hierarchy.md

@@ -18,7 +18,7 @@ theme:
     - navigation.instant.prefetch
     - navigation.instant.progress
     - navigation.tracking
-    - toc.follow
+    - toc.integrate
     - search.suggest
     - search.highlight
     - search.share

@@ -119,14 +119,16 @@ SELECT
 FROM sales
 GROUP BY ROLLUP (region)
 ORDER BY region NULLS LAST;
--- Result:
--- region | total_sales
--- --------|------------
--- East    | 650.0       ← detail  (region)
--- North   | 300.0       ← detail  (region)
--- West    | 760.0       ← detail  (region)
--- NULL    | 1710.0      ← grand total  ()
 ```
+
+??? success "Expected output"
+
+    | region | total_sales | Note |
+    |--------|-------------|------|
+    | East | 650.0 | detail (region) |
+    | North | 300.0 | detail (region) |
+    | West | 760.0 | detail (region) |
+    | NULL | 1710.0 | grand total () |
 
 ### 2 — Two-column ROLLUP (region → product hierarchy)
 
@@ -138,20 +140,22 @@ SELECT
 FROM sales
 GROUP BY ROLLUP (region, product)
 ORDER BY region NULLS LAST, product NULLS LAST;
--- Result — groupings: (region, product), (region), ():
--- region | product | total_sales
--- --------|---------|------------
--- East    | Gadget  | 450.0       ← detail
--- East    | Widget  | 200.0       ← detail
--- East    | NULL    | 650.0       ← region subtotal
--- North   | Gadget  | 210.0
--- North   | Widget  | 90.0
--- North   | NULL    | 300.0       ← region subtotal
--- West    | Gadget  | 610.0
--- West    | Widget  | 150.0
--- West    | NULL    | 760.0       ← region subtotal
--- NULL    | NULL    | 1710.0      ← grand total
 ```
+
+??? success "Expected output"
+
+    | region | product | total_sales | Note |
+    |--------|---------|-------------|------|
+    | East | Gadget | 450.0 | detail |
+    | East | Widget | 200.0 | detail |
+    | East | NULL | 650.0 | region subtotal |
+    | North | Gadget | 210.0 | |
+    | North | Widget | 90.0 | |
+    | North | NULL | 300.0 | region subtotal |
+    | West | Gadget | 610.0 | |
+    | West | Widget | 150.0 | |
+    | West | NULL | 760.0 | region subtotal |
+    | NULL | NULL | 1710.0 | grand total |
 
 ### 3 — Three-level hierarchy (year → region → product)
 
@@ -165,12 +169,15 @@ SELECT
 FROM sales
 GROUP BY ROLLUP (YEAR(order_date), region, product)
 ORDER BY sale_year NULLS LAST, region NULLS LAST, product NULLS LAST;
--- Generates 4 grouping levels:
---   (year, region, product)  → detail rows
---   (year, region)           → region subtotal within each year
---   (year)                   → year subtotal
---   ()                       → grand total
 ```
+
+!!! tip
+    Generates 4 grouping levels:
+
+    - `(year, region, product)` → detail rows
+    - `(year, region)` → region subtotal within each year
+    - `(year)` → year subtotal
+    - `()` → grand total
 
 ### 4 — Using `GROUPING()` to identify subtotal rows
 
@@ -184,9 +191,10 @@ SELECT
 FROM sales
 GROUP BY ROLLUP (region, product)
 ORDER BY region NULLS LAST, product NULLS LAST;
--- GROUPING returns 1 for columns rolled up into the subtotal,
--- 0 for columns still present at that grouping level.
 ```
+
+!!! tip
+    `GROUPING()` returns `1` for columns rolled up into the subtotal and `0` for columns still present at that grouping level.
 
 ### 5 — Readable labels with `GROUPING()`
 
@@ -198,20 +206,22 @@ SELECT
 FROM sales
 GROUP BY ROLLUP (region, product)
 ORDER BY region_label, product_label;
--- Result:
--- region_label | product_label | total_sales
--- -------------|---------------|------------
--- All Regions  | All Products  | 1710.0      ← grand total
--- East         | All Products  | 650.0       ← region subtotal
--- East         | Gadget        | 450.0
--- East         | Widget        | 200.0
--- North        | All Products  | 300.0
--- North        | Gadget        | 210.0
--- North        | Widget        | 90.0
--- West         | All Products  | 760.0
--- West         | Gadget        | 610.0
--- West         | Widget        | 150.0
 ```
+
+??? success "Expected output"
+
+    | region_label | product_label | total_sales | Note |
+    |--------------|---------------|-------------|------|
+    | All Regions | All Products | 1710.0 | grand total |
+    | East | All Products | 650.0 | region subtotal |
+    | East | Gadget | 450.0 | |
+    | East | Widget | 200.0 | |
+    | North | All Products | 300.0 | |
+    | North | Gadget | 210.0 | |
+    | North | Widget | 90.0 | |
+    | West | All Products | 760.0 | |
+    | West | Gadget | 610.0 | |
+    | West | Widget | 150.0 | |
 
 ### 6 — Multiple aggregates in one pass
 
@@ -226,8 +236,10 @@ SELECT
 FROM sales
 GROUP BY ROLLUP (region, product)
 ORDER BY GROUPING_ID(region, product), region_label, product_label;
--- A single scan produces every subtotal level with all four KPIs.
 ```
+
+!!! tip
+    A single scan produces every subtotal level with all four KPIs.
 
 ### 7 — Year → Quarter → Month time hierarchy
 
@@ -264,12 +276,15 @@ SELECT
 FROM monthly_revenue
 GROUP BY ROLLUP (sale_year, quarter, month_name)
 ORDER BY GROUPING_ID(sale_year, quarter, month_name), yr, qtr, mth;
--- 4 grouping levels (GROUPING_ID values: 0, 1, 3, 7):
---   0 → monthly detail    (year, quarter, month)
---   1 → quarterly total   (year, quarter)
---   3 → annual total      (year)
---   7 → grand total       ()
 ```
+
+!!! tip
+    4 grouping levels (`GROUPING_ID` values: `0`, `1`, `3`, `7`):
+
+    - `0` → monthly detail `(year, quarter, month)`
+    - `1` → quarterly total `(year, quarter)`
+    - `3` → annual total `(year)`
+    - `7` → grand total `()`
 
 ### 8 — CTE + ROLLUP for clean hierarchical reporting
 
@@ -363,11 +378,15 @@ SELECT
 FROM product_sales
 GROUP BY ROLLUP (category, subcategory, product)
 ORDER BY grp_id, category_label, subcategory_label, product_label;
--- grp_id = 0 → product detail
--- grp_id = 1 → subcategory subtotal
--- grp_id = 3 → category subtotal
--- grp_id = 7 → grand total
 ```
+
+!!! tip
+    `grp_id` values identify each hierarchy level:
+
+    - `0` → product detail
+    - `1` → subcategory subtotal
+    - `3` → category subtotal
+    - `7` → grand total
 
 ---
 
