@@ -1,6 +1,6 @@
 # :material-code-block-braces: Compound Statements and Conditionals
 
-Databricks SQL procedural blocks use `BEGIN … END` to group statements and
+Spark SQL procedural blocks use `BEGIN … END` to group statements and
 `IF … END IF` / `CASE … END CASE` for statement-level branching.
 
 ---

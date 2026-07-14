@@ -1,6 +1,6 @@
 # :material-repeat: Loops
 
-Databricks SQL provides four loop constructs for iterating within procedural blocks.
+Spark SQL provides four loop constructs for iterating within procedural blocks.
 All loop bodies are compound statement sequences terminated by `;`.
 
 ---

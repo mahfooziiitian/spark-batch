@@ -1,6 +1,6 @@
 # :material-alert-circle-outline: Exception Handling
 
-Databricks SQL procedural blocks support structured exception handling via
+Spark SQL procedural blocks support structured exception handling via
 `DECLARE … HANDLER`, allowing scripts to catch SQL errors, log them, and either
 recover or propagate the failure.
 

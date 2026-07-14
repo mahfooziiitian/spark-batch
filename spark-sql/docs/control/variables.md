@@ -1,6 +1,6 @@
 # :material-variable: Variables
 
-Databricks SQL procedural blocks support local variables declared with `DECLARE`
+Spark SQL procedural blocks support local variables declared with `DECLARE`
 and mutated with `SET`. Variables are strongly typed and scoped to the enclosing `BEGIN … END` block.
 
 ---
@@ -164,9 +164,9 @@ BEGIN
 END;
 ```
 
-!!! warning "No global variables"
-    There are no session-level mutable variables in Databricks SQL.
-    To pass values between separate SQL cells in a notebook, use a Delta table or a temp view.
+!!! tip "Session Variables (Spark 4.0)"
+    Spark 4.0 adds session-level variables with `DECLARE` / `SET VAR` outside
+    `BEGIN...END` blocks. See [Session Variables](../variables/index.md).
 
 ---
 

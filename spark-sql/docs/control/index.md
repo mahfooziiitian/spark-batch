@@ -1,6 +1,10 @@
-# :material-code-braces: Control Flow in Databricks SQL
+# :material-code-braces: SQL Scripting & Control Flow
 
-Databricks SQL supports **procedural SQL scripting** — a superset of standard SQL
+!!! info "Spark 4.0"
+    SQL scripting with `BEGIN...END` blocks is now a core Apache Spark 4.0 feature.
+    Previously this was Databricks-only.
+
+Spark 4.0 supports **procedural SQL scripting** — a superset of standard SQL
 that adds statement-level control flow for building stored logic, multi-step pipelines,
 and data quality routines directly in SQL.
 
@@ -20,34 +24,35 @@ and data quality routines directly in SQL.
 | [Variables](variables.md) | `DECLARE`, `SET`, scope, parameter passing |
 | [Exception Handling](exceptions.md) | `DECLARE … HANDLER`, `SIGNAL`, `RESIGNAL` |
 
+!!! tip "Session Variables"
+    For session-scoped variables (`DECLARE` / `SET VAR` outside `BEGIN...END`),
+    see [Session Variables](../variables/index.md).
+
 ---
 
 ## :material-sitemap: Procedural SQL Building Blocks
 
 ```mermaid
 graph TD
-    A[Databricks SQL Script] --> B[Variables\nDECLARE / SET]
+    A[SQL Script] --> B[Variables\nDECLARE / SET]
     A --> C[Compound Block\nBEGIN ... END]
     C --> D[Conditionals\nIF / CASE]
     C --> E[Loops\nWHILE / FOR / REPEAT]
     C --> F[Exception Handling\nDECLARE HANDLER]
     C --> G[DML / DDL\nSELECT / INSERT / MERGE]
+    C --> H[Dynamic SQL\nEXECUTE IMMEDIATE]
 ```
 
 ---
 
-## :material-flag: Where Procedural SQL Runs
+## :material-flag: Where SQL Scripting Runs
 
 | Context | Supported |
 |---------|:---------:|
+| Apache Spark 4.0+ | :material-check: |
 | Databricks SQL Warehouse | :material-check: (Runtime 11.3+) |
 | Databricks Notebook (SQL) | :material-check: |
-| Standard Apache Spark SQL | :material-close: |
-| `spark.sql()` in PySpark | :material-close: |
-
-!!! warning "Databricks-only feature"
-    Procedural SQL scripting (loops, IF statements, DECLARE) is a **Databricks extension**.
-    Use PySpark or Spark Scala for portable multi-step logic.
+| `spark.sql()` in PySpark | :material-check: (Spark 4.0+) |
 
 ---
 
@@ -68,6 +73,31 @@ END;
 
 ---
 
+## :material-code-tags: Cursor Processing (Spark 4.0)
+
+```sql
+BEGIN
+  DECLARE x INT;
+  DECLARE done BOOLEAN DEFAULT false;
+  DECLARE total INT DEFAULT 0;
+  DECLARE my_cursor CURSOR FOR SELECT id FROM range(5);
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = true;
+
+  OPEN my_cursor;
+  REPEAT
+    FETCH my_cursor INTO x;
+    IF NOT done THEN
+      SET total = total + x;
+    END IF;
+  UNTIL done END REPEAT;
+  CLOSE my_cursor;
+
+  VALUES (total);  -- 10
+END;
+```
+
+---
+
 ## :material-compare: Procedural SQL vs PySpark
 
 | Capability | Procedural SQL | PySpark |
@@ -76,13 +106,14 @@ END;
 | Conditional branching | `IF … END IF` | Python `if` |
 | Variable state | `DECLARE` / `SET` | Python variables |
 | Exception handling | `DECLARE HANDLER` | Python `try/except` |
-| Portability across engines | Databricks-only | Any Spark |
+| Dynamic SQL | `EXECUTE IMMEDIATE` | `spark.sql()` |
+| Portability | Spark 4.0+ / Databricks | Any Spark |
 | Debugging tooling | Limited | Full IDE support |
 | Performance overhead | Low (SQL-native) | Low (JVM) |
 
 ---
 
-## :material-brain: When to Use Procedural SQL
+## :material-brain: When to Use SQL Scripting
 
 | Scenario | Use procedural SQL when… |
 |----------|--------------------------|
@@ -91,3 +122,4 @@ END;
 | Iterating over a small config set | `FOR` loop over parameter rows |
 | Centralised error handling | `DECLARE … HANDLER` for SQLSTATE |
 | Ad-hoc data patching | Quick conditional DML without a notebook |
+| Dynamic queries | `EXECUTE IMMEDIATE` with parameters |

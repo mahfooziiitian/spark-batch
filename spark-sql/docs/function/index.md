@@ -20,6 +20,7 @@ flowchart TD
     F --> LA["Lambda\nanonymous functions for HOFs"]
     F --> MC["Macro\nreusable SQL expression aliases"]
     F --> UD["UDF\nuser-defined Python/Scala/Java"]
+    F --> SU["SQL UDF :material-new-box:\nnative SQL functions"]
 ```
 
 ---
