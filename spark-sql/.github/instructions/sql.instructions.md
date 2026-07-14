@@ -28,12 +28,10 @@ uv run task sql_lint   # lint only
 -- ============================================================
 ```
 
-## Delta DML
+## Delta & SCD
 
-- **Deduplicate source before MERGE** — Delta errors on multiple source matches.
-- Use `MERGE INTO` for upserts over separate INSERT + UPDATE.
-
-## SCD Conventions
+See [databricks.instructions.md](databricks.instructions.md) for Delta DML rules, `OPTIMIZE`/`ZORDER`,
+and the `[Databricks]` labeling convention.
 
 - Row hash: `md5(concat_ws('||', col1, col2, ...))`.
 - Null-safe comparison: `<=>` operator.
@@ -45,7 +43,7 @@ uv run task sql_lint   # lint only
 - Filter on partition columns when available.
 - Use `/*+ BROADCAST(dim) */` for small dimensions (< 10 MB).
 - Avoid UDFs in `WHERE` — they disable predicate pushdown.
-- `OPTIMIZE ... ZORDER BY (col)` after bulk writes.
+- Prefer window functions over self-joins for row comparisons.
 
 ## Complex Types
 

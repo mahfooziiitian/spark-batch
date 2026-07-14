@@ -29,7 +29,6 @@ Package manager: **uv** (`uv run task <name>` for all workflows).
 | `docs/**/*.md`, `mkdocs.yml` | [docs.instructions.md](instructions/docs.instructions.md) |
 | `src/**/*.sql` | [sql.instructions.md](instructions/sql.instructions.md) |
 | `src/**/*.py`, `tests/**/*.py` | [python.instructions.md](instructions/python.instructions.md) |
-| `src/**/*.py`, `tests/**/*.py` | [pyspark.instructions.md](instructions/pyspark.instructions.md) |
 | `src/**/*.sql`, `docs/**/*.md` | [databricks.instructions.md](instructions/databricks.instructions.md) |
 | `**/test_*.py`, `**/*_test.py` | [testing.instructions.md](instructions/testing.instructions.md) |
 | `pyproject.toml`, `.github/**`, `src/**`, `tests/**` | [quality.instructions.md](instructions/quality.instructions.md) |
