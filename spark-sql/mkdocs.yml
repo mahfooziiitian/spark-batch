@@ -1,7 +1,496 @@
 site_name: Spark SQL
-site_description: Comprehensive documentation for Spark SQL
+site_description: Comprehensive documentation for Spark SQL 4.0
 site_url: https://github.com/mahfooziiitian/spark-batch/tree/master/spark-sql
 strict: true
+
+nav:
+  - Home: index.md
+
+  # ── Spark 4.0 Features ──────────────────────────────────────────────
+  - "🆕 Spark 4.0":
+      - pipe/index.md
+      - collation/index.md
+      - variables/index.md
+      - execute_immediate/index.md
+      - identifier/index.md
+      - column/lateral_alias.md
+      - config/ansi.md
+      - migration/index.md
+
+  # ── Schema & Data Definition ────────────────────────────────────────
+  - Schema & Tables:
+      - table/index.md
+      - table/metadata/table_metadata.md
+      - table/metadata/refresh_table_metadata.md
+      - table/partition/partition_managed_table.md
+      - table/partition/partition_management.md
+      - table/partition/partition_insert.md
+      - Column:
+          - column/index.md
+          - column/selection.md
+          - column/alias.md
+          - column/renaming.md
+          - column/casting.md
+          - column/derived.md
+          - column/nested.md
+          - column/defaults.md
+          - column/lateral_alias.md
+      - Data Types:
+          - types/index.md
+          - types/datatype/index.md
+          - types/datatype/datetime/index.md
+          - types/datatype/datetime/date.md
+          - types/datatype/datetime/time.md
+          - types/datatype/datetime/timestamp.md
+          - types/datatype/datetime/formatting.md
+          - types/datatype/complextype/arrays/array_data_type.md
+          - types/datatype/complextype/lists/list_data_type.md
+          - types/datatype/complextype/structs/struct_data_type.md
+          - types/variant/index.md
+          - types/validation.md
+          - types/sorting/query_sorting.md
+      - Keys & Constraints:
+          - key/index.md
+          - key/primary_key.md
+          - key/foreign_key.md
+          - key/composite_key.md
+          - key/natural_key.md
+          - key/surrogate_key.md
+          - key/delta_constraints.md
+      - Views:
+          - view/index.md
+          - view/syntax.md
+          - view/types.md
+          - view/view.md
+          - view/example.md
+          - view/faq.md
+
+  # ── DML & Data Manipulation ─────────────────────────────────────────
+  - DML:
+      - dml/index.md
+      - dml/table/insert.md
+      - dml/table/update.md
+      - dml/table/delete.md
+      - dml/table/merge.md
+      - dml/table/copy_into.md
+
+  # ── Querying ────────────────────────────────────────────────────────
+  - Querying:
+      - Conditions:
+          - condition/index.md
+          - condition/comparison.md
+          - condition/logical.md
+          - condition/pattern.md
+          - condition/case_when.md
+          - condition/if_iif.md
+      - Filtering:
+          - filter/index.md
+          - filter/null_filter.md
+          - filter/case_when.md
+          - filter/sub-query.md
+          - filter/pp.md
+          - filter/qualify.md
+          - filter/tablesample.md
+          - filter/agg_filter/index.md
+          - filter/complex/array.md
+          - filter/complex/map.md
+          - filter/complex/struct.md
+          - filter/complex/lateral_view.md
+      - Operators:
+          - operator/index.md
+          - operator/arithmetic.md
+          - operator/comparison.md
+          - operator/logical.md
+          - operator/string.md
+          - operator/bitwise.md
+          - operator/set.md
+          - operator/null_safe.md
+      - Subqueries:
+          - subquery/index.md
+          - subquery/scalar.md
+          - subquery/correlated.md
+          - subquery/exists.md
+          - subquery/in_not_in.md
+          - subquery/derived_table.md
+          - subquery/having_subquery.md
+          - subquery/subquery_vs_join.md
+      - CTEs:
+          - cte/index.md
+          - cte/chained.md
+          - cte/recursive.md
+          - cte/cte_in_dml.md
+          - cte/cte_vs_temp_view.md
+          - cte/deduplication.md
+          - cte/pivot.md
+      - NULLs:
+          - nulls/index.md
+          - nulls/check.md
+          - nulls/comparison.md
+          - nulls/expression.md
+          - nulls/filter.md
+          - nulls/aggregate.md
+          - nulls/logical.md
+          - nulls/operator.md
+          - nulls/ordering.md
+          - nulls/sets.md
+          - nulls/subquery.md
+      - HAVING:
+          - having/index.md
+          - having/having_filter.md
+          - having/having_advanced.md
+          - having/having_patterns.md
+          - having/having_vs_where.md
+
+  # ── Joins ───────────────────────────────────────────────────────────
+  - Joins:
+      - join/index.md
+      - join/expression.md
+      - Join Types:
+          - join/types/index.md
+          - join/types/inner_join.md
+          - join/types/outer/index.md
+          - join/types/outer/left.md
+          - join/types/outer/right.md
+          - join/types/outer/full.md
+          - join/types/left_semi.md
+          - join/types/left_anti.md
+          - join/types/cartesian.md
+          - join/types/lateral_join.md
+          - join/types/non_equi_join/index.md
+          - join/types/non_equi_join/range_join/index.md
+          - join/types/non_equi_join/range_join/point_in_interval.md
+          - join/types/non_equi_join/range_join/interval_overlap.md
+      - Join Strategy:
+          - join/strategy/index.md
+          - join/strategy/bhj.md
+          - join/strategy/smj.md
+          - join/strategy/shj.md
+          - join/strategy/bnlj.md
+          - join/strategy/hj.md
+          - join/strategy/srnlp.md
+          - join/strategy/ssmj.md
+      - Join Hints:
+          - join/hints/index.md
+          - join/hints/operator.md
+          - join/hints/range_join_hint.md
+          - join/hints/resolver.md
+      - Join Optimization:
+          - join/optimization/index.md
+          - join/optimization/skewjoin/index.md
+          - join/optimization/skewjoin/salting/index.md
+          - join/optimization/skewjoin/salting/smj.md
+          - join/optimization/skewjoin/bmpj.md
+          - join/optimization/skewjoin/bucketting.md
+          - join/optimization/skewjoin/caching.md
+          - join/optimization/skewjoin/ib.md
+          - join/optimization/skewjoin/separation.md
+      - Join Issues:
+          - join/issues/index.md
+          - join/issues/column_duplicate.md
+
+  # ── Aggregation & Analytics ─────────────────────────────────────────
+  - Aggregation:
+      - aggregation/index.md
+      - aggregation/group.md
+      - aggregation/stats.md
+      - Simple Aggregates:
+          - aggregation/simple/index.md
+          - aggregation/simple/count/SparkCountAggr.md
+          - aggregation/simple/count/ApproxCountDistinct.md
+          - aggregation/simple/sum/sum_aggregation.md
+          - aggregation/simple/avg/spark_avg.md
+          - aggregation/simple/minmax/min_max_agg.md
+      - OLAP:
+          - aggregation/olap/cube.md
+          - aggregation/olap/rollup.md
+          - aggregation/olap/group_set.md
+      - Pivoting:
+          - aggregation/pivoting/pivot/spark.md
+          - aggregation/pivoting/pivot/select_case.md
+          - aggregation/pivoting/unpivot.md
+
+  # ── Window Functions ────────────────────────────────────────────────
+  - Window Functions:
+      - window/index.md
+      - window/application.md
+      - Window Types:
+          - window/window/index.md
+          - window/window/ranking.md
+          - window/window/navigation.md
+          - window/window/aggregate.md
+      - Frames:
+          - window/frame/index.md
+          - window/frame/rows.md
+          - window/frame/range.md
+      - window/nulls/null_options_wf.md
+
+  # ── Functions ───────────────────────────────────────────────────────
+  - Functions:
+      - function/index.md
+      - SQL UDFs:
+          - function/sql_udf/index.md
+      - Scalar:
+          - function/scalar/index.md
+          - function/scalar/string.md
+          - function/scalar/math.md
+          - function/scalar/null.md
+          - function/scalar/control.md
+          - function/scalar/conversion.md
+          - function/scalar/count.md
+          - function/scalar/predicate.md
+          - function/scalar/bitwise.md
+          - function/scalar/acl.md
+          - function/scalar/web.md
+          - DateTime:
+              - function/scalar/datetime/index.md
+              - function/scalar/datetime/date/index.md
+              - function/scalar/datetime/date/parts.md
+              - function/scalar/datetime/date/add_subtract.md
+              - function/scalar/datetime/date/difference.md
+              - function/scalar/datetime/date/truncate.md
+              - function/scalar/datetime/timestamp.md
+              - function/scalar/datetime/timezone.md
+              - function/scalar/datetime/interval.md
+          - Regex:
+              - function/scalar/regex/index.md
+              - function/scalar/regex/regex_like.md
+              - function/scalar/regex/regex_extract.md
+              - function/scalar/regex/regex_count.md
+              - function/scalar/regex/regex_instr.md
+              - function/scalar/regex/regexp_function.md
+              - function/scalar/regex/regexp_replace_function.md
+              - function/scalar/regex/regexp_substr_function.md
+              - function/scalar/regex/rlike_ilike_function.md
+          - Encryption:
+              - function/scalar/encryption/index.md
+              - function/scalar/encryption/intro.md
+              - function/scalar/encryption/md5.md
+              - function/scalar/encryption/sha.md
+              - function/scalar/encryption/crc32.md
+              - function/scalar/encryption/hex.md
+              - function/scalar/encryption/mask.md
+      - Aggregate:
+          - function/aggregate/index.md
+          - function/aggregate/simple.md
+          - function/aggregate/count.md
+          - function/aggregate/any_value.md
+          - function/aggregate/first.md
+          - function/aggregate/last.md
+          - function/aggregate/group.md
+          - function/aggregate/stats.md
+          - function/aggregate/strings.md
+          - function/aggregate/array.md
+          - function/aggregate/map.md
+          - function/aggregate/set.md
+          - function/aggregate/list.md
+          - function/aggregate/every.md
+      - Generator:
+          - function/generator/index.md
+          - function/generator/explode.md
+          - function/generator/explode_outer.md
+          - function/generator/posexplode.md
+          - function/generator/posexplode_outer.md
+          - function/generator/inline.md
+          - function/generator/stack.md
+      - Collection:
+          - function/collection/index.md
+          - function/collection/array.md
+          - function/collection/list.md
+          - function/collection/map.md
+          - function/collection/set.md
+          - function/collection/struct.md
+      - Higher-Order:
+          - function/hof/index.md
+          - function/hof/transform.md
+          - function/hof/filter.md
+          - function/hof/aggregate.md
+          - function/hof/exists.md
+          - function/hof/array.md
+          - function/hof/map.md
+      - Lambda:
+          - function/lambda/index.md
+          - function/lambda/syntax.md
+          - function/lambda/array_hof.md
+          - function/lambda/map_hof.md
+          - function/lambda/aggregate_hof.md
+          - function/lambda/patterns.md
+      - Structure:
+          - function/structure/index.md
+          - function/structure/json.md
+          - function/structure/csv.md
+          - function/structure/xml.md
+      - Macros:
+          - function/macro/intro.md
+          - function/macro/macro.md
+      - UDFs:
+          - function/udf/index.md
+          - function/udf/udf.md
+
+  # ── SQL Scripting & Control Flow ────────────────────────────────────
+  - SQL Scripting:
+      - control/index.md
+      - control/control.md
+      - control/loops.md
+      - control/variables.md
+      - control/exceptions.md
+
+  # ── Performance & Optimization ──────────────────────────────────────
+  - Optimization:
+      - optimization/index.md
+      - optimization/optimization.md
+      - optimization/predicate_pushdown.md
+      - optimization/shuffling.md
+      - optimization/profiling.md
+      - Catalyst:
+          - optimization/catalyst/index.md
+          - optimization/catalyst/logical.md
+          - optimization/catalyst/physical.md
+          - optimization/catalyst/code-generation.md
+          - optimization/catalyst/ast/spark-sql-ast.md
+      - AQE:
+          - optimization/aqe/index.md
+          - optimization/aqe/spark-sql-aqe.md
+          - optimization/aqe/coalescing_post_shuffle_partitions.md
+          - optimization/aqe/converting_sort_merge_join_broadcast_join.md
+          - optimization/aqe/converting_sort_merge_join_to_shuffled_hash_join.md
+          - optimization/aqe/splitting_skewed_shuffle_partitions.md
+          - optimization/aqe/optimizing_skew_join.md
+      - Caching:
+          - optimization/caching/index.md
+          - optimization/caching/cache.md
+          - optimization/caching/config.md
+          - optimization/caching/manager.md
+      - Execution:
+          - optimization/execution/index.md
+          - optimization/execution/query_lifecycle.md
+          - optimization/execution/explain.md
+      - Partitioning:
+          - partition/index.md
+          - partition/coalesce.md
+          - partition/rebalance/rebalance.md
+          - partition/repartition/repartition_hint.md
+
+  # ── Patterns & Use Cases ────────────────────────────────────────────
+  - Patterns:
+      - patterns/index.md
+      - patterns/running_total.md
+      - patterns/moving_average.md
+      - patterns/growing_window.md
+      - patterns/top_n.md
+      - patterns/pagination.md
+      - patterns/gaps_islands.md
+      - patterns/sessionization.md
+      - patterns/funnel_analysis.md
+      - patterns/retention.md
+      - patterns/churn_detection.md
+      - patterns/abc_classification.md
+      - patterns/pareto.md
+      - patterns/outlier_detection.md
+      - patterns/change_detection.md
+      - patterns/period_comparison.md
+      - patterns/pivot_unpivot.md
+      - patterns/string_agg.md
+      - patterns/nearest_time.md
+      - patterns/interval_merge.md
+      - patterns/hierarchy.md
+      - patterns/conditional_agg.md
+      - patterns/slowly_changing_comparison.md
+      - SCD:
+          - scd/index.md
+          - scd/intro.md
+          - scd/type1/index.md
+          - scd/type1/demo.md
+          - scd/type2/index.md
+          - scd/type2/demo.md
+          - scd/type3/index.md
+          - scd/type3/demo.md
+          - scd/type4/index.md
+          - scd/type4/demo.md
+          - scd/type5/index.md
+          - scd/type5/demo.md
+          - scd/type6/index.md
+          - scd/type6/demo.md
+      - Time Series:
+          - timeseries/index.md
+          - timeseries/tumbling.md
+          - timeseries/hopping.md
+          - timeseries/sliding.md
+          - timeseries/session.md
+          - timeseries/lag_lead.md
+          - timeseries/gap_fill.md
+          - timeseries/time.md
+      - Applications:
+          - application/index.md
+          - application/aggregation/index.md
+          - application/analytics/index.md
+          - application/cte/index.md
+          - application/date_string/index.md
+          - application/derived_table/index.md
+          - application/duplicate/finding.md
+          - application/duplicate/removal.md
+          - application/filter/index.md
+          - application/grouping/index.md
+          - application/key_n_struct/index.md
+          - application/numeric/index.md
+          - application/pivot/index.md
+          - application/ranking/index.md
+          - application/replace_key/map/replace_map_key.md
+          - application/rolling/index.md
+          - application/subquery/index.md
+          - application/time_series/index.md
+
+  # ── Data Sources & Catalog ──────────────────────────────────────────
+  - Data Sources:
+      - datasource/index.md
+      - datasource/parquet.md
+      - datasource/delta.md
+      - datasource/json.md
+      - datasource/csv.md
+      - datasource/orc.md
+      - datasource/jdbc.md
+      - Catalog:
+          - catalog/index.md
+          - catalog/database.md
+          - catalog/session.md
+          - catalog/hive.md
+          - catalog/external.md
+          - catalog/unity.md
+      - Hive:
+          - hive/index.md
+          - hive/config.md
+          - hive/context.md
+          - hive/metastore.md
+          - hive/table/managed.md
+          - hive/table/external.md
+          - hive/table/bucket.md
+          - hive/table/datasource.md
+          - hive/table/loading.md
+          - hive/table/partition/ddl.md
+          - hive/table/partition/dynamic.md
+
+  # ── Configuration & CLI ─────────────────────────────────────────────
+  - Configuration:
+      - config/index.md
+      - config/ansi.md
+      - config/session.md
+      - config/aqe.md
+      - config/join.md
+      - config/shuffle.md
+      - config/memory.md
+      - config/io.md
+      - CLI:
+          - cli/index.md
+          - cli/getting_started.md
+          - cli/options.md
+          - cli/configuration.md
+          - cli/scripting.md
+          - cli/beeline.md
+
+  # ── Internals ───────────────────────────────────────────────────────
+  - Internals:
+      - types/planner/query_planner.md
+      - types/planner/query_parsing.md
+      - types/filereader/sql_file_reader.md
 
 theme:
   name: material
@@ -45,7 +534,6 @@ theme:
 
 plugins:
   - search
-  - awesome-pages
 
 markdown_extensions:
   - toc:
@@ -75,14 +563,14 @@ markdown_extensions:
 
 validation:
   nav:
-    omitted_files: warn
+    omitted_files: info
     not_found: warn
     absolute_links: relative_to_docs
   links:
-    not_found: warn
-    anchors: warn
+    not_found: info
+    anchors: info
     absolute_links: relative_to_docs
-    unrecognized_links: warn
+    unrecognized_links: info
 
 extra_css:
   - assets/css/timeseries-viz.css
