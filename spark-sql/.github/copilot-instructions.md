@@ -29,6 +29,8 @@ Package manager: **uv** (`uv run task <name>` for all workflows).
 | `docs/**/*.md`, `mkdocs.yml` | [docs.instructions.md](instructions/docs.instructions.md) |
 | `src/**/*.sql` | [sql.instructions.md](instructions/sql.instructions.md) |
 | `src/**/*.py`, `tests/**/*.py` | [python.instructions.md](instructions/python.instructions.md) |
+| `src/**/*.py`, `tests/**/*.py` | [pyspark.instructions.md](instructions/pyspark.instructions.md) |
+| `src/**/*.sql`, `docs/**/*.md` | [databricks.instructions.md](instructions/databricks.instructions.md) |
 | `**/test_*.py`, `**/*_test.py` | [testing.instructions.md](instructions/testing.instructions.md) |
 | `pyproject.toml`, `.github/**`, `src/**`, `tests/**` | [quality.instructions.md](instructions/quality.instructions.md) |
 
@@ -40,7 +42,9 @@ Package manager: **uv** (`uv run task <name>` for all workflows).
 4. **Spark 3.5 SQL dialect** — `spark.sql.ansi.enabled = true`. Target open-source Spark unless noted.
 5. **Label Databricks-only content** — prefix with `[Databricks]` in docs/comments when using Delta DML, Unity Catalog, `OPTIMIZE`, `ZORDER`, `COPY INTO`, or runtime-specific functions.
 6. **`:material-xxx:` icons only** — no Unicode emoji in docs.
-7. **`.pages` owns navigation** — never add `nav:` to `mkdocs.yml`.
-8. **Strict MkDocs build** — `uv run task docs_build` must pass with zero warnings.
-9. **Row hash**: `md5(concat_ws('||', col1, col2, ...))` for SCD change detection.
-10. **Two-step MERGE for SCD Type 2/6** — one MERGE cannot expire + insert for the same key. **[Databricks]**
+7. **Use lowercase fenced code blocks** — SQL examples should use ` ```sql ` fences, and other code samples should use the matching lowercase fence type.
+8. **Navigation is owned by awesome-pages** — use `.pages` files for section navigation and do not add `nav:` entries to `mkdocs.yml`.
+9. **Strict MkDocs build** — `uv run task docs_build` must pass with zero warnings.
+10. **Project tasks default to uv** — prefer `uv run task <name>` for quality, tests, docs, and build workflows; use direct commands only for one-off debugging or when no matching task exists.
+11. **Row hash**: `md5(concat_ws('||', col1, col2, ...))` for SCD change detection.
+12. **Two-step MERGE for SCD Type 2/6** — one MERGE cannot expire + insert for the same key. **[Databricks]**
