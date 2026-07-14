@@ -1,59 +1,34 @@
 # GitHub Copilot Instructions — spark-sql
 
-This repository is a **Spark SQL knowledge base** with:
+## Repository Overview
 
-- `src/` — Spark SQL files (`.sql`) and PySpark scripts (`.py`), organised by topic
-- `tests/` — pytest test suite using PySpark and chispa
-- `docs/` — MkDocs Material site, navigation driven by `.pages` files
-- `pyproject.toml` — single config file for all tools and tasks
-- Package manager: **uv** (`uv run <tool>`)
+| Directory | Content |
+|-----------|---------|
+| `src/` | Spark SQL (`.sql`) and PySpark (`.py`) examples by topic |
+| `tests/` | pytest + chispa test suite |
+| `docs/` | MkDocs Material site (`.pages`-driven navigation) |
+| `pyproject.toml` | Single config for all tools |
+
+Package manager: **uv** (`uv run task <name>` for all workflows).
 
 ## Modular Instructions
 
-| Topic | Applies To | File |
-|-------|-----------|------|
-| MkDocs documentation | `docs/**/*.md`, `mkdocs.yml` | [docs.instructions.md](instructions/docs.instructions.md) |
-| Spark SQL / SQL files | `src/**/*.sql` | [sql.instructions.md](instructions/sql.instructions.md) |
-| Python / PySpark | `src/**/*.py` | [python.instructions.md](instructions/python.instructions.md) |
-| Testing | `tests/**/*.py` | [testing.instructions.md](instructions/testing.instructions.md) |
-| Quality & CI | `pyproject.toml`, workflows | [quality.instructions.md](instructions/quality.instructions.md) |
-
-## Source Layout
-
-```
-src/
-  aggregation/    # GROUP BY, ROLLUP, CUBE, GROUPING SETS
-  application/    # end-to-end application queries
-  column/         # column expressions, aliases, casting
-  condition/      # CASE WHEN, IF, IFF
-  control/        # flow control, LOOP, IF blocks
-  cte/            # WITH clause patterns
-  dml/            # INSERT, UPDATE, DELETE, MERGE, CREATE TABLE
-  filter/         # WHERE, HAVING, QUALIFY
-  function/       # built-in functions by category
-  having/         # HAVING clause patterns
-  join/           # all join types
-  nulls/          # NULL handling
-  operator/       # arithmetic, comparison, logical
-  optimization/   # AQE, hints, partitioning, Z-ordering
-  partition/      # PARTITION BY, window specs
-  scd/            # Slowly Changing Dimensions (Type 1–6)
-  subquery/       # correlated/uncorrelated subqueries
-  timeseries/     # tumbling, hopping, sliding, session, gap-fill
-  types/          # data type examples and casting
-  view/           # CREATE VIEW, TEMP VIEW
-  window/         # window functions
-```
+| Scope | File |
+|-------|------|
+| `docs/**/*.md`, `mkdocs.yml` | [docs.instructions.md](instructions/docs.instructions.md) |
+| `src/**/*.sql` | [sql.instructions.md](instructions/sql.instructions.md) |
+| `src/**/*.py`, `tests/**/*.py` | [python.instructions.md](instructions/python.instructions.md) |
+| `**/test_*.py`, `**/*_test.py` | [testing.instructions.md](instructions/testing.instructions.md) |
+| `pyproject.toml`, `.github/**`, `src/**`, `tests/**` | [quality.instructions.md](instructions/quality.instructions.md) |
 
 ## Core Conventions
 
-1. **Package manager is `uv`** — always prefix tool invocations with `uv run`.
-2. **All config lives in `pyproject.toml`** — never create `.flake8`, `setup.cfg`, `.mypy.ini`, `.bandit`, `.isort.cfg`, or `ruff.toml`.
-3. **Taskipy tasks are the entry points** — use `uv run task <name>` for quality, testing, docs, and builds.
-4. **No side effects on import** — Python modules must not execute code at import time.
-5. **Databricks Spark dialect** — SQL targets Databricks Runtime / Spark 3.5 with `ansi.enabled = true`.
-6. **Material icons only** — use `:material-xxx:` icons in all docs; never use Unicode emoji.
-7. **No `nav:` in `mkdocs.yml`** — navigation is owned entirely by `.pages` files in each directory.
-8. **Strict MkDocs build** — `NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict` must always pass with zero warnings.
-9. **Row hash pattern** — use `md5(concat_ws('||', col1, col2, ...))` for SCD change detection.
-10. **Two-step MERGE for SCD Type 2/6** — a single MERGE cannot both expire and insert a new version row for the same key; always use two separate statements.
+1. **`uv run task <name>`** — single entry point for quality, test, docs, build.
+2. **All config in `pyproject.toml`** — no standalone config files.
+3. **No side effects on import** — Python modules must not execute code at import time.
+4. **Databricks Spark 3.5 dialect** — `ansi.enabled = true`.
+5. **`:material-xxx:` icons only** — no Unicode emoji in docs.
+6. **`.pages` owns navigation** — never add `nav:` to `mkdocs.yml`.
+7. **Strict MkDocs build** — `uv run task docs_build` must pass with zero warnings.
+8. **Row hash**: `md5(concat_ws('||', col1, col2, ...))` for SCD change detection.
+9. **Two-step MERGE for SCD Type 2/6** — one MERGE cannot expire + insert for the same key.
