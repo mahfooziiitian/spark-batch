@@ -171,3 +171,8 @@ d
 databricks/
 databricks.yml
 
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
