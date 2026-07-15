@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - syntax.md
+  - array_hof.md
+  - map_hof.md
+  - aggregate_hof.md
+  - patterns.md

@@ -1,0 +1,10 @@
+nav:
+  - index.md
+  - regex_like.md
+  - regex_extract.md
+  - regex_count.md
+  - regex_instr.md
+  - regexp_function.md
+  - regexp_replace_function.md
+  - regexp_substr_function.md
+  - rlike_ilike_function.md

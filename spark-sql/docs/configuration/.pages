@@ -1,0 +1,11 @@
+title: Configuration
+nav:
+  - index.md
+  - ansi.md
+  - session.md
+  - aqe.md
+  - join.md
+  - shuffle.md
+  - memory.md
+  - io.md
+  - CLI: cli

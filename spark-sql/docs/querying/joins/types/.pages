@@ -1,0 +1,9 @@
+nav:
+  - index.md
+  - inner_join.md
+  - outer
+  - left_semi.md
+  - left_anti.md
+  - cartesian.md
+  - lateral_join.md
+  - non_equi_join

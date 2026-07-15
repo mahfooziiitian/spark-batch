@@ -1,36 +1,56 @@
 [project]
 name = "spark-sql"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "Spark SQL learning resource — tutorials, demos, architecture deep-dives, and performance optimization for Apache Spark 4 and Databricks Runtime"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
+license = "MIT"
+authors = [{ name = "Mahfooz Alam" }]
+keywords = ["spark", "sql", "pyspark", "databricks", "data-engineering"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: SQL",
+    "Framework :: Pytest",
+]
+
+[project.urls]
+Repository = "https://github.com/mahfooziiitian/spark-batch/tree/master/spark-sql"
+Documentation = "https://github.com/mahfooziiitian/spark-batch/tree/master/spark-sql/docs"
+Issues = "https://github.com/mahfooziiitian/spark-batch/issues"
 
 dependencies = [
     "graphviz>=0.21",
     "ipykernel>=6.30.0",
     "pyspark>=4.0.0",
-    "pytest-sugar>=1.0.0",
     "sqlalchemy>=2.0.43",
 ]
 
 [dependency-groups]
 dev = [
     # Code quality
-    "black[jupyter]>=25.1.0",
-    "isort>=6.0.1",
-    "mypy>=1.17.1",
     "ruff>=0.12.8",
-    "flake8-pyproject>=1.2.3",
+    "mypy>=1.17.1",
     "radon>=6.0.1",
     # Testing
+    "pytest>=8.4.1",
     "pytest-sugar>=1.0.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
-    "pytest==8.4.1",
+    "pytest-xdist>=3.5.0",
+    "pytest-datadir>=1.8.0",
     "chispa>=0.11.1",
+    "ipytest>=0.14.2",
     # Security
-    "bandit>=1.8.6",
+    "bandit[toml]>=1.8.6",
     "safety>=3.6.0",
+    # SQL linting
+    "sqlfluff>=3.3.1",
     # Tasks
     "taskipy>=1.14.1",
     # Docs
@@ -41,14 +61,35 @@ dev = [
     "mkdocs-mermaid2-plugin>=1.2.3",
     "linkify-it-py>=2.0.3",
     "pymarkdownlnt>=0.9.31",
-    "ipytest>=0.14.2",
-    "pytest-datadir>=1.8.0",
 ]
 
+# ─── Ruff (replaces black, isort, flake8) ────────────────────────────────────
+
+[tool.ruff]
+target-version = "py311"
+line-length = 128
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "TCH", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["spark_sql"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+# ─── SQLFluff ─────────────────────────────────────────────────────────────────
+
 [tool.sqlfluff.core]
-dialect = "databricks"
+dialect = "sparksql"
 templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+max_line_length = 120
+large_file_skip_byte_limit = 25000
 
 [tool.sqlfluff.indentation]
 indented_joins = false
@@ -64,97 +105,116 @@ apply_dbt_builtins = true
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "upper"
 
+[tool.sqlfluff.rules.capitalisation.identifiers]
+capitalisation_policy = "lower"
+
+[tool.sqlfluff.rules.capitalisation.functions]
+capitalisation_policy = "upper"
+
+[tool.sqlfluff.rules.capitalisation.literals]
+capitalisation_policy = "upper"
+
+# ─── Pytest ───────────────────────────────────────────────────────────────────
+
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"
-pythonpath = ["src"]
-testpaths = ["tests", "integration"]
-markers = [
-    "login: mark test as login related",
-    "signup: mark test as signup related",
-    "smoke: mark test as smoke test",
-    "ui: mark test as UI related",
-    "slow: mark test as slow",
-    "integration: mark test as integration",
-    "unit: mark test as unit",
-    "network: mark test that requires network access",
-    "db: mark test that requires database access",
-    "performance: mark test for performance testing",
-    "regression: mark test for regression testing",
+minversion = "8.0"
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
 ]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "smoke: quick sanity checks",
+    "slow: tests that take >10s",
+    "integration: requires external services (Spark cluster, DB)",
+    "unit: isolated unit tests",
+    "spark: requires a SparkSession",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:pyspark.*",
+]
+
+# ─── Coverage ─────────────────────────────────────────────────────────────────
 
 [tool.coverage.run]
 branch = true
+source = ["src"]
+omit = ["tests/*", "*/__pycache__/*"]
 
 [tool.coverage.report]
-ignore_errors = true
+fail_under = 60
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+]
 
 [tool.coverage.html]
-directory = "htmlcov"
+directory = "reports/htmlcov"
+
+# ─── MyPy ─────────────────────────────────────────────────────────────────────
 
 [tool.mypy]
+python_version = "3.11"
 ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
 
-[tool.flake8]
-extend-ignore = "E203"
-max-line-length = 128
-exclude = [
-    ".git",
-    "__pycache__",
-    "docs/",
-    ".venv",
-    "build",
-    "dist",
-]
-max-complexity = 10
+# ─── Bandit ───────────────────────────────────────────────────────────────────
 
 [tool.bandit]
-targets = ["."]
-exclude_dirs = ["tests", "migrations", ".venv"]
+targets = ["src"]
+exclude_dirs = ["tests", ".venv", "docs"]
 severity = "medium"
 confidence = "high"
-format = "json"
+
+# ─── Taskipy ─────────────────────────────────────────────────────────────────
 
 [tool.taskipy.tasks]
-# test
+# Testing
 test = "uv run pytest -vv tests"
+test_fast = "uv run pytest -x -q tests"
+test_cov = "uv run pytest --cov=src --cov-report=term-missing --cov-report=html:reports/htmlcov tests"
+test_parallel = "uv run pytest -n auto tests"
 
-# quality
-sql_format = "uv run sqlfluff fix src"
+# Code quality
+format = "uv run ruff format src tests"
+format_check = "uv run ruff format --check src tests"
+lint = "uv run ruff check src tests"
+lint_fix = "uv run ruff check --fix src tests"
+type_check = "uv run mypy src"
+quality = "task format && task lint && task type_check && task sql_lint"
+
+# SQL
+sql_format = "uv run sqlfluff fix src --force"
 sql_lint = "uv run sqlfluff lint src"
 sql = "task sql_format && task sql_lint"
-import = "uv run isort --profile black src tests"
-lint = "uv run flake8 -v src tests"
-type_check = "uv run mypy src tests"
-format = "uv run ruff format src tests"
-format_check = "uv run ruff check src tests"
-quality = "task import && task format && task format_check && task lint && task type_check && task sql"
 
 # Security
 bandit = "uv run bandit -c pyproject.toml -r src"
-safety = "uv run safety check --policy-file .safety-policy.yml"
+safety = "uv run safety check"
 secure = "task bandit && task safety"
 
-# Build
-build = "uv build"
-
-# Reporting
-report_html = "uv run pytest --html=reports/reports.html --self-contained-html"
-report_xml = "uv run pytest --junitxml=reports/report.xml"
-report_json = "uv run pytest --json-report  --json-report-file=reports/report.json --cov-report=term-missing"
-report_json2 = "uv run pytest --cov-report=json:reports/report.json --cov-report=term-missing"
-report_cov_html = "uv run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing"
-report_cov_xml = "uv run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing"
-report_cov_annotate = "uv run pytest --cov=. --cov-report=annotate --cov-config=.coveragerc --cov-report=term-missing"
-
-# clean up
-remove_cache = "if test -e __pycache__;then rm -rf __pycache__;fi"
-remove_pytest_cache = "if test -e .pytest_cache; then rm -rf .pytest_cache pycache__;fi"
-remove_html_build = "if test -e site; then rm -rf site;fi"
-clean = "task remove_cache && task remove_pytest_cache && task remove_html_build"
-
 # Documentation
-lint_md = "uv run pymarkdownlnt fix -r docs README.md"
-docs_build = "NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict"
+docs_build = "uv run mkdocs build --strict"
 docs_serve = "uv run mkdocs serve -a 0.0.0.0:8000 --livereload"
-docs = "task clean && task docs_build && task docs_serve"
+docs_lint = "uv run pymarkdownlnt fix -r docs README.md"
+docs = "task docs_build && task docs_serve"
+
+# Reports
+report_xml = "uv run pytest --junitxml=reports/report.xml tests"
+report_cov = "uv run pytest --cov=src --cov-report=xml:reports/coverage.xml --cov-report=term-missing tests"
+
+# Housekeeping
+clean = "rm -rf __pycache__ .pytest_cache .mypy_cache .ruff_cache site reports/htmlcov"
+
+# CI pipeline (run all checks)
+ci = "task format_check && task lint && task type_check && task sql_lint && task test_cov && task docs_build"

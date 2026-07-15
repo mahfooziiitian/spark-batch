@@ -1,0 +1,28 @@
+title: Patterns
+nav:
+  - index.md
+  - running_total.md
+  - moving_average.md
+  - growing_window.md
+  - top_n.md
+  - pagination.md
+  - gaps_islands.md
+  - sessionization.md
+  - funnel_analysis.md
+  - retention.md
+  - churn_detection.md
+  - abc_classification.md
+  - pareto.md
+  - outlier_detection.md
+  - change_detection.md
+  - period_comparison.md
+  - pivot_unpivot.md
+  - string_agg.md
+  - nearest_time.md
+  - interval_merge.md
+  - hierarchy.md
+  - conditional_agg.md
+  - slowly_changing_comparison.md
+  - SCD: scd
+  - Time Series: timeseries
+  - Applications: application

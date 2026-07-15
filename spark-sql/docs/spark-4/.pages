@@ -1,0 +1,10 @@
+title: 🆕 Spark 4.0
+nav:
+
+- index.md
+- pipe
+- collation
+- variables
+- execute_immediate
+- identifier
+- migration

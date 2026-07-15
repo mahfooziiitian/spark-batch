@@ -1,0 +1,15 @@
+nav:
+  - index.md
+  - simple.md
+  - count.md
+  - any_value.md
+  - first.md
+  - last.md
+  - group.md
+  - stats.md
+  - strings.md
+  - array.md
+  - map.md
+  - set.md
+  - list.md
+  - every.md

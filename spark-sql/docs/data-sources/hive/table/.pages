@@ -1,0 +1,7 @@
+nav:
+  - managed.md
+  - external.md
+  - bucket.md
+  - datasource.md
+  - loading.md
+  - partition

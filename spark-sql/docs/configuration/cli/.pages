@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - getting_started.md
+  - options.md
+  - configuration.md
+  - scripting.md
+  - beeline.md

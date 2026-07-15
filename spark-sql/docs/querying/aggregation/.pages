@@ -1,0 +1,8 @@
+nav:
+
+- index.md
+- group.md
+- stats.md
+- Simple Aggregates: simple
+- OLAP: olap
+- Pivoting: pivoting

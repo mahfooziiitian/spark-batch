@@ -104,4 +104,12 @@ build: ## Build the package
 # ── Clean ─────────────────────────────────────────────────────────────────────
 .PHONY: clean
 clean: ## Remove caches and build artefacts
-	rm -rf __pycache__ .pytest_cache site
+	rm -rf site dist build
+	rm -rf reports
+	rm -rf .pytest_cache .mypy_cache .ruff_cache
+	rm -rf htmlcov .coverage .coverage.*
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type f -name "*.pyo" -delete 2>/dev/null || true
+	@echo "✓ Clean complete"

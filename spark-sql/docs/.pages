@@ -1,0 +1,13 @@
+nav:
+  - Home: index.md
+  - spark-4
+  - schema-tables
+  - querying
+  - window-functions
+  - functions
+  - sql-scripting
+  - optimization
+  - patterns
+  - data-sources
+  - configuration
+  - internals

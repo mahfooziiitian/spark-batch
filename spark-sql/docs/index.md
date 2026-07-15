@@ -43,17 +43,17 @@ flowchart LR
 
 | Feature | Description |
 |---------|-------------|
-| [Pipe Syntax `\|>`](pipe/index.md) | Chain query operations in a readable pipeline |
-| [VARIANT Type](types/variant/index.md) | Semi-structured data without fixed schema |
-| [String Collation](collation/index.md) | ICU-backed case/accent-insensitive comparisons |
-| [SQL Scripting](control/index.md) | `BEGIN...END` blocks with variables, loops, cursors |
-| [SQL UDFs](function/sql_udf/index.md) | Native scalar and table-valued functions in pure SQL |
-| [Session Variables](variables/index.md) | `DECLARE` / `SET VAR` for session-scoped state |
-| [EXECUTE IMMEDIATE](execute_immediate/index.md) | Dynamic SQL with parameterized queries |
-| [IDENTIFIER Clause](identifier/index.md) | Safe SQL identifier templating |
-| [ANSI Mode Default](config/ansi.md) | ANSI compliance enabled by default |
-| [Lateral Column Alias](column/lateral_alias.md) | Reference earlier aliases in the same SELECT |
-| [Migration Guide](migration/index.md) | Breaking changes from Spark 3.5 → 4.0 |
+| [Pipe Syntax `\|>`](spark-4/pipe/index.md) | Chain query operations in a readable pipeline |
+| [VARIANT Type](schema-tables/types/variant/index.md) | Semi-structured data without fixed schema |
+| [String Collation](spark-4/collation/index.md) | ICU-backed case/accent-insensitive comparisons |
+| [SQL Scripting](sql-scripting/index.md) | `BEGIN...END` blocks with variables, loops, cursors |
+| [SQL UDFs](functions/sql_udf/index.md) | Native scalar and table-valued functions in pure SQL |
+| [Session Variables](spark-4/variables/index.md) | `DECLARE` / `SET VAR` for session-scoped state |
+| [EXECUTE IMMEDIATE](spark-4/execute_immediate/index.md) | Dynamic SQL with parameterized queries |
+| [IDENTIFIER Clause](spark-4/identifier/index.md) | Safe SQL identifier templating |
+| [ANSI Mode Default](configuration/ansi.md) | ANSI compliance enabled by default |
+| [Lateral Column Alias](schema-tables/column/lateral_alias.md) | Reference earlier aliases in the same SELECT |
+| [Migration Guide](spark-4/migration/index.md) | Breaking changes from Spark 3.5 → 4.0 |
 
 ---
 
@@ -82,22 +82,20 @@ FROM orders
 
 | Section | What You'll Find |
 |---------|-------------------|
-| [Tables & Schema](table/index.md) | Table creation, metadata, partitioning |
-| [Columns & Expressions](column/index.md) | Aliases, casting, derived columns, lateral alias |
-| [Data Types](types/index.md) | Type system, complex types, VARIANT, validation |
-| [Data Manipulation](dml/index.md) | INSERT, UPDATE, DELETE, MERGE |
-| [Filtering](filter/index.md) | WHERE, QUALIFY, TABLESAMPLE |
-| [Joins](join/index.md) | Join types, strategies, hints, skew handling |
-| [Aggregation](aggregation/index.md) | GROUP BY, ROLLUP, CUBE, GROUPING SETS |
-| [Window Functions](window/index.md) | Window frames, ranking, navigation |
-| [Pipe Syntax](pipe/index.md) | `\|>` operator for readable query pipelines |
-| [SQL Scripting](control/index.md) | Variables, loops, cursors, exception handling |
-| [Functions](function/index.md) | Scalar, aggregate, generator, HOF, SQL UDFs |
-| [Collation](collation/index.md) | String comparison, case/accent sensitivity |
-| [Optimization](optimization/index.md) | AQE, Catalyst, caching, shuffling |
-| [SCD Patterns](scd/intro.md) | Slowly Changing Dimensions (Types 1–6) |
-| [Time Series](timeseries/index.md) | Tumbling, hopping, sliding, gap-fill |
-| [Migration Guide](migration/index.md) | Spark 3.5 → 4.0 breaking changes |
+| :material-new-box: [Spark 4.0](spark-4/pipe/index.md) | Pipe syntax, collation, variables, EXECUTE IMMEDIATE |
+| :material-table: [Schema & Tables](schema-tables/table/index.md) | Table creation, metadata, partitioning, columns, keys, DML |
+| :material-format-text: [Data Types](schema-tables/types/index.md) | Type system, complex types, VARIANT, validation |
+| :material-filter: [Querying, Joins & Aggregation](querying/filter/index.md) | Conditions, filtering, operators, subqueries, CTEs, NULLs, joins, GROUP BY, pivoting |
+| :material-window-shutter: [Window Functions](window-functions/index.md) | Window frames, ranking, navigation, aggregate |
+| :material-function: [Functions](functions/index.md) | Scalar, aggregate, generator, HOF, lambda, SQL UDFs |
+| :material-script: [SQL Scripting](sql-scripting/index.md) | Variables, loops, control flow, exception handling |
+| :material-speedometer: [Optimization](optimization/index.md) | AQE, Catalyst, caching, partitioning, execution plans |
+| :material-chart-timeline: [Patterns](patterns/index.md) | Running totals, top-N, gaps & islands, sessionization |
+| :material-clock-outline: [Time Series](patterns/timeseries/index.md) | Tumbling, hopping, sliding, gap-fill windows |
+| :material-swap-vertical: [SCD](patterns/scd/intro.md) | Slowly Changing Dimensions (Types 1–6) |
+| :material-database-outline: [Data Sources](data-sources/index.md) | Parquet, Delta, JSON, CSV, JDBC, Hive, Catalog |
+| :material-cog: [Configuration](configuration/index.md) | Session config, AQE, joins, shuffle, CLI |
+| :material-chip: [Internals](internals/planner/query_planner.md) | Query planner, parsing, file reader |
 
 ---
 

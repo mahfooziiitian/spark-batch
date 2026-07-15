@@ -1,0 +1,13 @@
+title: Functions
+nav:
+  - index.md
+  - SQL UDFs: sql_udf
+  - Scalar: scalar
+  - Aggregate: aggregate
+  - Generator: generator
+  - Collection: collection
+  - Higher-Order: hof
+  - Lambda: lambda
+  - Structure: structure
+  - Macros: macro
+  - UDFs: udf

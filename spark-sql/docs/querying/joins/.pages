@@ -1,0 +1,9 @@
+title: Joins
+nav:
+  - index.md
+  - expression.md
+  - Join Types: types
+  - Join Strategy: strategy
+  - Join Hints: hints
+  - Join Optimization: optimization
+  - Join Issues: issues

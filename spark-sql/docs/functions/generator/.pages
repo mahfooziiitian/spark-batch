@@ -1,0 +1,8 @@
+nav:
+  - index.md
+  - explode.md
+  - explode_outer.md
+  - posexplode.md
+  - posexplode_outer.md
+  - inline.md
+  - stack.md

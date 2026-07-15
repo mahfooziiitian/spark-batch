@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - comparison.md
+  - logical.md
+  - pattern.md
+  - case_when.md
+  - if_iif.md

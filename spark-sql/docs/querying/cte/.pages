@@ -1,0 +1,8 @@
+nav:
+  - index.md
+  - chained.md
+  - recursive.md
+  - cte_in_dml.md
+  - cte_vs_temp_view.md
+  - deduplication.md
+  - pivot.md

@@ -1,0 +1,12 @@
+title: Optimization
+nav:
+  - index.md
+  - optimization.md
+  - predicate_pushdown.md
+  - shuffling.md
+  - profiling.md
+  - Catalyst: catalyst
+  - AQE: aqe
+  - Caching: caching
+  - Execution: execution
+  - Partitioning: partition

@@ -649,7 +649,7 @@ ORDER BY emp_id, effective_date;
     Use the row hash for fast filtering (`WHERE hash != prev_hash`), then apply column-level `LAG` comparisons only on the changed rows to identify *which* columns changed. This two-pass approach is efficient at scale.
 
 !!! tip "SCD Type 2 integration"
-    Change detection is the first step of the [SCD Type 2](../scd/index.md) pattern. After detecting changes, expire the current row and insert a new version with updated effective dates.
+    Change detection is the first step of the [SCD Type 2](scd/index.md) pattern. After detecting changes, expire the current row and insert a new version with updated effective dates.
 
 ---
 
