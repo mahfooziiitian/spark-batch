@@ -16,13 +16,13 @@ Click each **Type** button below to see how Alice's dimension record looks after
 
 | Page | Description |
 |------|-------------|
-| [Introduction](intro.md) | Core concepts, table templates, and the MERGE foundation |
-| [Type 1 — Overwrite](type1/index.md) | Overwrite in place — no history. Simplest, lowest storage. |
-| [Type 2 — Full History](type2/index.md) | New row per change — full point-in-time history. Most common. |
-| [Type 3 — Extra Columns](type3/index.md) | Previous + current value columns — one level of history. |
-| [Type 4 — History Table](type4/index.md) | Separate history table — lean current dim + full history. |
-| [Type 5 — Hybrid 1+4](type5/index.md) | Type 4 with embedded current snapshot on the current dim. |
-| [Type 6 — Hybrid 1+2+3](type6/index.md) | Rows per version AND a `current_value` column on every row. |
+| [Introduction](concepts.md) | Core concepts, table templates, and the MERGE foundation |
+| [Type 1 — Overwrite](overwrite/index.md) | Overwrite in place — no history. Simplest, lowest storage. |
+| [Type 2 — Full History](full_history/index.md) | New row per change — full point-in-time history. Most common. |
+| [Type 3 — Extra Columns](extra_columns/index.md) | Previous + current value columns — one level of history. |
+| [Type 4 — History Table](history_table/index.md) | Separate history table — lean current dim + full history. |
+| [Type 5 — Hybrid 1+4](hybrid_1_4/index.md) | Type 4 with embedded current snapshot on the current dim. |
+| [Type 6 — Hybrid 1+2+3](hybrid_1_2_3/index.md) | Rows per version AND a `current_value` column on every row. |
 
 ---
 

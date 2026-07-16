@@ -1,0 +1,10 @@
+title: Sequence
+nav:
+  - gaps_islands.md
+  - sessionization.md
+  - interval_merge.md
+  - period_comparison.md
+  - nearest_time.md
+  - event_stream_analytics.md
+  - sequence_mining.md
+  - state_machine.md

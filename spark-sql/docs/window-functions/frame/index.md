@@ -241,4 +241,4 @@ ORDER BY event_date;
 - [ROWS frame](rows.md) — physical row offset examples and edge cases
 - [RANGE frame](range.md) — value-based and interval offset examples
 - [Aggregate functions](../window/aggregate.md) — SUM, AVG, MIN, MAX with frames
-- [Application patterns](../application.md) — running totals, moving averages, forward-fill
+- [Application patterns](../application/index.md) — running totals, moving averages, forward-fill

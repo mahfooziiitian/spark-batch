@@ -92,7 +92,7 @@ FROM orders
 | :material-speedometer: [Optimization](optimization/index.md) | AQE, Catalyst, caching, partitioning, execution plans |
 | :material-chart-timeline: [Patterns](patterns/index.md) | Running totals, top-N, gaps & islands, sessionization |
 | :material-clock-outline: [Time Series](patterns/timeseries/index.md) | Tumbling, hopping, sliding, gap-fill windows |
-| :material-swap-vertical: [SCD](patterns/scd/intro.md) | Slowly Changing Dimensions (Types 1–6) |
+| :material-swap-vertical: [SCD](patterns/scd/concepts.md) | Slowly Changing Dimensions (Types 1–6) |
 | :material-database-outline: [Data Sources](data-sources/index.md) | Parquet, Delta, JSON, CSV, JDBC, Hive, Catalog |
 | :material-cog: [Configuration](configuration/index.md) | Session config, AQE, joins, shuffle, CLI |
 | :material-chip: [Internals](internals/planner/query_planner.md) | Query planner, parsing, file reader |

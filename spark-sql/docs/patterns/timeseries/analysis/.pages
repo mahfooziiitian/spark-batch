@@ -1,0 +1,23 @@
+title: Analysis
+nav:
+  - time_aggregation.md
+  - lag_and_lead.md
+  - gap_filling.md
+  - forecast_features.md
+  - feature_engineering.md
+  - seasonality_detection.md
+  - rolling_statistics.md
+  - peak_detection.md
+  - trend_detection.md
+  - utilization_analysis.md
+  - queue_analysis.md
+  - capacity_planning.md
+  - inventory_analytics.md
+  - interval_analytics.md
+  - time_allocation.md
+  - resource_contention.md
+  - reliability_metrics.md
+  - workload_classification.md
+  - cost_attribution.md
+  - idle_time_analysis.md
+  - resource_efficiency.md

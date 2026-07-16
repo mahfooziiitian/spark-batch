@@ -1,0 +1,6 @@
+title: Data Quality
+nav:
+  - change_detection.md
+  - outlier_detection.md
+  - slowly_changing_comparison.md
+  - fraud_detection.md

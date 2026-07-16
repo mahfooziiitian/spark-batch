@@ -1,0 +1,5 @@
+title: Data Quality
+nav:
+  - index.md
+  - Finding Duplicates: duplicate/finding.md
+  - Deduplication: duplicate/removal.md

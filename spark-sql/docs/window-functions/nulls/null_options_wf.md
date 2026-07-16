@@ -360,5 +360,5 @@ and `ROW_NUMBER` assignments.
 
 - [ROWS frame](../frame/rows.md) — physical row offset examples
 - [RANGE frame](../frame/range.md) — value-based offset examples
-- [Application patterns](../application.md) — forward-fill, gap-filling patterns
+- [Application patterns](../application/index.md) — forward-fill, gap-filling patterns
 - [Aggregate functions](../window/aggregate.md) — how SUM/AVG handle NULLs natively

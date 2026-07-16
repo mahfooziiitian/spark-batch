@@ -472,4 +472,4 @@ The shaded region shows which values fall inside the `RANGE` frame.
 - [ROWS frame](rows.md) — physical row offset examples and edge cases
 - [Frame overview](index.md) — syntax, defaults, and ROWS vs RANGE comparison
 - [Aggregate functions](../window/aggregate.md) — SUM, AVG, MIN, MAX with frames
-- [Application patterns](../application.md) — running totals, moving averages, forward-fill
+- [Application patterns](../application/index.md) — running totals, moving averages, forward-fill

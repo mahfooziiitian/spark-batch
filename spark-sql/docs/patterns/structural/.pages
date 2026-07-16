@@ -1,0 +1,5 @@
+title: Structural
+nav:
+  - hierarchy.md
+  - graph_analytics.md
+  - network_analysis.md

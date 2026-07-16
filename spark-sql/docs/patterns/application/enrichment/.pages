@@ -1,0 +1,9 @@
+title: Enrichment
+nav:
+  - index.md
+  - Ranking: ranking/index.md
+  - Rolling Analysis: rolling/index.md
+  - Analytics: analytics/index.md
+  - CTE: cte/index.md
+  - Subqueries: subquery/index.md
+  - Derived Tables: derived_table/index.md

@@ -94,3 +94,6 @@ extra_javascript:
   - assets/js/patterns-viz.js
   - assets/js/window-frame-viz.js
   - assets/js/window-nulls-viz.js
+  - assets/js/window-overview-viz.js
+  - assets/js/application-patterns-viz.js
+  - assets/js/patterns-overview-viz.js

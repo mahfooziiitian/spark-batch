@@ -37,6 +37,24 @@ flowchart TD
 
 ---
 
+## :material-animation-play: Interactive Demo
+
+### Row-by-Row Computation
+
+Select a window function and click any row to see how it computes a result
+using its partition and ordering context.
+
+<div id="viz-window-concept" class="ts-viz"></div>
+
+### PARTITION BY Visualizer
+
+Each partition is processed independently — the animation highlights how the
+window scans rows within each group.
+
+<div id="viz-partition-demo" class="ts-viz"></div>
+
+---
+
 ## :material-code-braces: Full Syntax
 
 ```sql
@@ -220,7 +238,7 @@ ORDER BY region, sale_date;
 |------|----------|
 | [Window Types](window/index.md) | Ranking, aggregate, navigation — full function reference |
 | [Frame](frame/index.md) | ROWS vs RANGE, boundary syntax, default frames |
-| [Application](application.md) | De-duplication, top-N, running balance, sessionisation, percentile |
+| [Application](application/index.md) | De-duplication, top-N, running balance, sessionisation, percentile |
 | [NULL Options](nulls/null_options_wf.md) | `IGNORE NULLS`, `RESPECT NULLS`, `NULLS FIRST / LAST` |
 
 ---

@@ -18,28 +18,23 @@ graph LR
 
 ---
 
+## :material-animation-play: Interactive Pipeline
+
+Click a stage to explore its patterns.
+
+<div id="viz-app-pipeline" class="ts-viz"></div>
+
+---
+
 ## :material-pin: Pattern Catalogue
 
-| Category | Description | Key Techniques |
-|----------|-------------|----------------|
-| **Duplicate Handling** | Find and remove repeated rows | `GROUP BY HAVING`, `ROW_NUMBER()`, `DISTINCT` |
-| **Key Replacement** | Remap or substitute map keys | `MAP_ENTRIES`, `TRANSFORM`, `AGGREGATE` |
-| **Aggregation** | Totals, averages, counts, booleans | `GROUP BY`, `HAVING`, `FILTER()` |
-| **Filtering** | AND/OR logic, wildcards, NULLs, regex | `WHERE`, `LIKE`, `RLIKE`, `IS NULL` |
-| **Rolling Analysis** | Running totals, averages, comparisons | `OVER()`, `ROWS BETWEEN`, `LAG`/`LEAD` |
-| **Ranking** | Dense rank, percentile, NTILE bins | `RANK()`, `DENSE_RANK()`, `NTILE()`, `PERCENT_RANK()` |
-| **Grouping Sets** | Hierarchical and cross-dimensional totals | `ROLLUP`, `CUBE`, `GROUPING SETS` |
-| **Pivot / Unpivot** | Rotate rows to columns and back | `PIVOT`, `UNPIVOT`, `COALESCE` |
-| **CTEs** | Reusable named query blocks | `WITH`, chained CTEs, nested CTEs |
-| **Subqueries** | Correlated lookups and filters | Correlated, `EXISTS`, scalar subqueries |
-| **Derived Tables** | Intermediate aggregation layers | Inline views, multi-level aggregation |
-| **Numeric** | Rounding, modulo, random sampling | `ROUND`, `MOD`, `TABLESAMPLE`, `SEQUENCE` |
-| **Time Series** | Date hierarchies and time patterns | `YEAR`, `QUARTER`, `WEEKDAY`, `LAST_DAY` |
-| **Date Strings** | Parse and format date text | `TO_DATE`, `TO_TIMESTAMP`, `DATE_FORMAT` |
-| **Analytics** | KPIs, alerts, classification | `CASE`, `GROUPING()`, NULLS FIRST/LAST |
-| **String Ops** | Replace acronyms, text truncation | `REPLACE`, `REGEXP_REPLACE`, `LEFT` |
-| **Joins** | All join types plus self and range joins | `INNER/LEFT/RIGHT/FULL/CROSS JOIN` |
-| **Sampling** | Random subsets for exploration | `TABLESAMPLE`, `RAND()`, `ORDER BY RAND()` |
+| Group | Description | Contents |
+|-------|-------------|----------|
+| [:material-magnify: Data Quality](data_quality/index.md) | Find and resolve duplicate rows | Finding duplicates, deduplication strategies |
+| [:material-cog-outline: Transformation](transformation/index.md) | Shape, filter, aggregate, and pivot data | Filter, aggregation, grouping sets, pivot |
+| [:material-chart-bar: Enrichment](enrichment/index.md) | Add rankings, running calculations, derived context | Ranking, rolling analysis, analytics, CTE, subqueries |
+| [:material-format-text: Types & Formats](types_and_formats/index.md) | Type conversions, date parsing, struct operations | Numeric, date strings, keys & structs, map key replacement |
+| [:material-clock-time-four: Temporal](temporal/index.md) | Date hierarchies, time bands, seasonal patterns | Time series analysis |
 
 ---
 

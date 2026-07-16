@@ -255,9 +255,305 @@
     update(active);
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+   * PER-TYPE — Before / After interactive transition
+   *
+   * Shows the dimension table BEFORE and AFTER a change event.
+   * A toggle button switches between the two states with a highlight
+   * on changed cells.
+   * ══════════════════════════════════════════════════════════════════ */
+
+  function renderTypeViz(el, config) {
+    const isDark = document.documentElement.getAttribute("data-md-color-scheme") === "slate";
+    const TEXT   = isDark ? "#eceff1" : FG;
+    const ROWBG  = isDark ? "#263238" : "#fff";
+    const HEADBG = isDark ? "#37474f" : "#eceff1";
+    const STRIPE = isDark ? "#2e3c43" : "#fafafa";
+    const CHANGE_BG = isDark ? "rgba(124, 77, 255, 0.18)" : "rgba(124, 77, 255, 0.08)";
+    const NEW_BG    = isDark ? "rgba(38, 166, 154, 0.18)" : "rgba(38, 166, 154, 0.08)";
+    const EXPIRED_BG = isDark ? "rgba(144, 164, 174, 0.15)" : "rgba(144, 164, 174, 0.08)";
+
+    let showAfter = false;
+    const container = d3.select(el).style("font-family", "inherit").style("font-size", "13px");
+
+    // Change event banner
+    container.append("div")
+      .style("background", isDark ? "#1b2a30" : "#e8f5e9")
+      .style("border-left", "4px solid " + C[2])
+      .style("padding", "8px 14px")
+      .style("margin-bottom", "12px")
+      .style("border-radius", "4px")
+      .html('<strong style="color:' + C[2] + '">Incoming change</strong><br>' +
+        '<span style="color:' + TEXT + '">Customer <strong>Alice</strong> — city: ' +
+        '<strong style="color:' + C[3] + '">NY</strong> → <strong style="color:' + C[2] + '">TX</strong></span>');
+
+    // Toggle button
+    const btnWrap = container.append("div")
+      .style("display", "flex").style("gap", "8px").style("margin-bottom", "14px");
+
+    const btnBefore = btnWrap.append("button").text("Before")
+      .style("padding", "5px 16px").style("border-radius", "16px")
+      .style("border", "2px solid " + GRAY).style("cursor", "pointer")
+      .style("font-size", "12px").style("font-weight", "600");
+
+    const btnAfter = btnWrap.append("button").text("After")
+      .style("padding", "5px 16px").style("border-radius", "16px")
+      .style("border", "2px solid " + config.color).style("cursor", "pointer")
+      .style("font-size", "12px").style("font-weight", "600");
+
+    const tableArea = container.append("div");
+    const noteDiv = container.append("div")
+      .style("margin-top", "8px").style("padding", "6px 12px")
+      .style("border-radius", "4px").style("font-size", "12px");
+
+    function renderRows(parent, title, titleColor, cols, rows, highlights) {
+      const wrap = parent.append("div").style("margin-bottom", "8px");
+      if (title) {
+        wrap.append("div")
+          .style("font-weight", "700").style("margin-bottom", "4px")
+          .style("color", titleColor || TEXT).style("font-size", "12px")
+          .text(title);
+      }
+      const tbl = wrap.append("div").style("overflow-x", "auto")
+        .append("table")
+        .style("width", "100%").style("border-collapse", "collapse").style("font-size", "12px");
+
+      const hrow = tbl.append("thead").append("tr").style("background", HEADBG);
+      cols.forEach(function(c) {
+        hrow.append("th")
+          .style("padding", "4px 8px").style("text-align", "left")
+          .style("border-bottom", "1px solid " + GRAY).style("color", TEXT)
+          .text(c);
+      });
+
+      const tbody = tbl.append("tbody");
+      rows.forEach(function(row, ri) {
+        var rowMeta = highlights && highlights[ri] ? highlights[ri] : {};
+        var bg = rowMeta.type === "new" ? NEW_BG
+               : rowMeta.type === "expired" ? EXPIRED_BG
+               : rowMeta.type === "changed" ? CHANGE_BG
+               : ri % 2 === 0 ? ROWBG : STRIPE;
+        var borderColor = rowMeta.type === "new" ? C[2]
+                        : rowMeta.type === "expired" ? GRAY
+                        : rowMeta.type === "changed" ? C[1]
+                        : "transparent";
+
+        var tr = tbody.append("tr")
+          .style("background", bg)
+          .style("border-left", "4px solid " + borderColor)
+          .style("transition", "background 0.3s");
+
+        row.forEach(function(val, ci) {
+          var changedCells = rowMeta.cells || [];
+          var isChanged = changedCells.indexOf(ci) >= 0;
+          var td = tr.append("td")
+            .style("padding", "4px 8px")
+            .style("color", TEXT);
+          if (isChanged) td.style("font-weight", "700").style("color", C[2]);
+          if (val === "NULL") td.style("color", GRAY).style("font-style", "italic");
+          if (val === "false") td.style("color", C[3]);
+          if (val === "true") td.style("color", C[2]);
+          td.text(val);
+        });
+      });
+    }
+
+    function update() {
+      tableArea.html("");
+      noteDiv.html("");
+
+      btnBefore
+        .style("background", !showAfter ? GRAY : "transparent")
+        .style("color", !showAfter ? "#fff" : TEXT);
+      btnAfter
+        .style("background", showAfter ? config.color : "transparent")
+        .style("color", showAfter ? "#fff" : TEXT);
+
+      var state = showAfter ? config.after : config.before;
+      state.tables.forEach(function(t) {
+        renderRows(tableArea, t.title, t.titleColor, t.cols, t.rows, showAfter ? t.highlights : null);
+      });
+
+      var note = showAfter ? config.afterNote : config.beforeNote;
+      noteDiv
+        .style("background", isDark ? "#1b2a30" : (showAfter ? config.color + "18" : GRAY + "18"))
+        .style("border-left", "4px solid " + (showAfter ? config.color : GRAY))
+        .style("color", TEXT)
+        .html(note);
+    }
+
+    btnBefore.on("click", function() { showAfter = false; update(); });
+    btnAfter.on("click", function() { showAfter = true; update(); });
+
+    update();
+  }
+
+  /* ── Type 1 config ─────────────────────────────────────────────── */
+  function renderSCDType1(el) {
+    renderTypeViz(el, {
+      color: C[0],
+      before: { tables: [{ title: "dim_customer", titleColor: C[0],
+        cols: ["customer_id", "name", "city"],
+        rows: [["cust1", "Alice", "NY"], ["cust2", "Bob", "SF"]]
+      }]},
+      after: { tables: [{ title: "dim_customer", titleColor: C[0],
+        cols: ["customer_id", "name", "city"],
+        rows: [["cust1", "Alice", "TX"], ["cust2", "Bob", "SF"]],
+        highlights: { 0: { type: "changed", cells: [2] } }
+      }]},
+      beforeNote: "Alice is in NY. The dimension has one row per customer.",
+      afterNote: '<strong style="color:' + C[0] + '">Overwritten.</strong> Alice\'s city updated from NY → TX. Previous value is lost permanently.',
+    });
+  }
+
+  /* ── Type 2 config ─────────────────────────────────────────────── */
+  function renderSCDType2(el) {
+    renderTypeViz(el, {
+      color: C[2],
+      before: { tables: [{ title: "dim_customer", titleColor: C[2],
+        cols: ["surr_key", "customer_id", "name", "city", "start_date", "end_date", "is_current"],
+        rows: [["sk1", "cust1", "Alice", "NY", "2024-01-01", "9999-12-31", "true"],
+               ["sk2", "cust2", "Bob",   "SF", "2024-01-01", "9999-12-31", "true"]]
+      }]},
+      after: { tables: [{ title: "dim_customer", titleColor: C[2],
+        cols: ["surr_key", "customer_id", "name", "city", "start_date", "end_date", "is_current"],
+        rows: [["sk1", "cust1", "Alice", "NY", "2024-01-01", "2024-06-15", "false"],
+               ["sk3", "cust1", "Alice", "TX", "2024-06-15", "9999-12-31", "true"],
+               ["sk2", "cust2", "Bob",   "SF", "2024-01-01", "9999-12-31", "true"]],
+        highlights: {
+          0: { type: "expired", cells: [5, 6] },
+          1: { type: "new", cells: [0, 3, 4] }
+        }
+      }]},
+      beforeNote: "One active row per customer, all with is_current = true.",
+      afterNote: '<strong style="color:' + C[2] + '">Expired + inserted.</strong> Old row closed (end_date set, is_current = false). New row inserted with TX.',
+    });
+  }
+
+  /* ── Type 3 config ─────────────────────────────────────────────── */
+  function renderSCDType3(el) {
+    renderTypeViz(el, {
+      color: C[5],
+      before: { tables: [{ title: "dim_customer", titleColor: C[5],
+        cols: ["customer_id", "name", "city", "prev_city", "changed_at"],
+        rows: [["cust1", "Alice", "NY", "NULL", "NULL"],
+               ["cust2", "Bob",   "SF", "NULL", "NULL"]]
+      }]},
+      after: { tables: [{ title: "dim_customer", titleColor: C[5],
+        cols: ["customer_id", "name", "city", "prev_city", "changed_at"],
+        rows: [["cust1", "Alice", "TX", "NY", "2024-06-15"],
+               ["cust2", "Bob",   "SF", "NULL", "NULL"]],
+        highlights: { 0: { type: "changed", cells: [2, 3, 4] } }
+      }]},
+      beforeNote: "One row per customer. prev_city and changed_at are NULL (no prior change).",
+      afterNote: '<strong style="color:' + C[5] + '">Updated in place.</strong> city → TX, prev_city ← NY, changed_at ← 2024-06-15. Only one level of history.',
+    });
+  }
+
+  /* ── Type 4 config ─────────────────────────────────────────────── */
+  function renderSCDType4(el) {
+    renderTypeViz(el, {
+      color: C[3],
+      before: { tables: [
+        { title: "dim_customer (current)", titleColor: C[0],
+          cols: ["customer_id", "name", "city"],
+          rows: [["cust1", "Alice", "NY"], ["cust2", "Bob", "SF"]]
+        },
+        { title: "dim_customer_history", titleColor: GRAY,
+          cols: ["hist_sk", "customer_id", "name", "city", "valid_from"],
+          rows: [["1", "cust1", "Alice", "NY", "2024-01-01"],
+                 ["2", "cust2", "Bob",   "SF", "2024-01-01"]]
+        }
+      ]},
+      after: { tables: [
+        { title: "dim_customer (current)", titleColor: C[0],
+          cols: ["customer_id", "name", "city"],
+          rows: [["cust1", "Alice", "TX"], ["cust2", "Bob", "SF"]],
+          highlights: { 0: { type: "changed", cells: [2] } }
+        },
+        { title: "dim_customer_history", titleColor: GRAY,
+          cols: ["hist_sk", "customer_id", "name", "city", "valid_from"],
+          rows: [["1", "cust1", "Alice", "NY", "2024-01-01"],
+                 ["2", "cust2", "Bob",   "SF", "2024-01-01"],
+                 ["3", "cust1", "Alice", "TX", "2024-06-15"]],
+          highlights: { 2: { type: "new", cells: [0, 3, 4] } }
+        }
+      ]},
+      beforeNote: "Current table has latest values. History table has one row per initial load.",
+      afterNote: '<strong style="color:' + C[3] + '">Current overwritten, history appended.</strong> Main dim updated like Type 1. New row archived in history.',
+    });
+  }
+
+  /* ── Type 5 config ─────────────────────────────────────────────── */
+  function renderSCDType5(el) {
+    renderTypeViz(el, {
+      color: C[4],
+      before: { tables: [
+        { title: "dim_customer (+ hist_key FK)", titleColor: C[0],
+          cols: ["customer_id", "name", "city", "hist_key"],
+          rows: [["cust1", "Alice", "NY", "h1"], ["cust2", "Bob", "SF", "h2"]]
+        },
+        { title: "dim_customer_history", titleColor: GRAY,
+          cols: ["hist_key", "customer_id", "name", "city", "valid_from", "valid_to"],
+          rows: [["h1", "cust1", "Alice", "NY", "2024-01-01", "9999-12-31"],
+                 ["h2", "cust2", "Bob",   "SF", "2024-01-01", "9999-12-31"]]
+        }
+      ]},
+      after: { tables: [
+        { title: "dim_customer (+ hist_key FK)", titleColor: C[0],
+          cols: ["customer_id", "name", "city", "hist_key"],
+          rows: [["cust1", "Alice", "TX", "h3"], ["cust2", "Bob", "SF", "h2"]],
+          highlights: { 0: { type: "changed", cells: [2, 3] } }
+        },
+        { title: "dim_customer_history", titleColor: GRAY,
+          cols: ["hist_key", "customer_id", "name", "city", "valid_from", "valid_to"],
+          rows: [["h1", "cust1", "Alice", "NY", "2024-01-01", "2024-06-15"],
+                 ["h2", "cust2", "Bob",   "SF", "2024-01-01", "9999-12-31"],
+                 ["h3", "cust1", "Alice", "TX", "2024-06-15", "9999-12-31"]],
+          highlights: {
+            0: { type: "expired", cells: [5] },
+            2: { type: "new", cells: [0, 3, 4] }
+          }
+        }
+      ]},
+      beforeNote: "Current dim has hist_key pointing to the latest history row. History has one row per load.",
+      afterNote: '<strong style="color:' + C[4] + '">Current overwritten + FK updated.</strong> hist_key now points to new history row h3. Old history row expired.',
+    });
+  }
+
+  /* ── Type 6 config ─────────────────────────────────────────────── */
+  function renderSCDType6(el) {
+    renderTypeViz(el, {
+      color: "#ff7043",
+      before: { tables: [{ title: "dim_customer (single table)", titleColor: "#ff7043",
+        cols: ["surr_key", "customer_id", "name", "city", "current_city", "prev_city", "start_date", "end_date", "is_current"],
+        rows: [["sk1", "cust1", "Alice", "NY", "NY", "NULL", "2024-01-01", "9999-12-31", "true"],
+               ["sk2", "cust2", "Bob",   "SF", "SF", "NULL", "2024-01-01", "9999-12-31", "true"]]
+      }]},
+      after: { tables: [{ title: "dim_customer (single table)", titleColor: "#ff7043",
+        cols: ["surr_key", "customer_id", "name", "city", "current_city", "prev_city", "start_date", "end_date", "is_current"],
+        rows: [["sk1", "cust1", "Alice", "NY", "TX", "NULL", "2024-01-01", "2024-06-15", "false"],
+               ["sk3", "cust1", "Alice", "TX", "TX", "NY",   "2024-06-15", "9999-12-31", "true"],
+               ["sk2", "cust2", "Bob",   "SF", "SF", "NULL", "2024-01-01", "9999-12-31", "true"]],
+        highlights: {
+          0: { type: "expired", cells: [4, 7, 8] },
+          1: { type: "new", cells: [0, 3, 4, 5, 6] }
+        }
+      }]},
+      beforeNote: "Single table with current_city and prev_city columns. All rows reflect current values.",
+      afterNote: '<strong style="color:#ff7043">Expire + insert + backfill.</strong> Old row expired. New row inserted. current_city updated on ALL rows (Type 1). prev_city set on new row (Type 3).',
+    });
+  }
+
   /* ── Router ──────────────────────────────────────────────────────── */
   const VIZ_MAP = {
     "viz-scd-overview": renderSCDOverview,
+    "viz-scd-type1": renderSCDType1,
+    "viz-scd-type2": renderSCDType2,
+    "viz-scd-type3": renderSCDType3,
+    "viz-scd-type4": renderSCDType4,
+    "viz-scd-type5": renderSCDType5,
+    "viz-scd-type6": renderSCDType6,
   };
 
   function init() {

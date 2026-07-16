@@ -1,9 +1,5 @@
+title: Time Series
 nav:
   - index.md
-  - tumbling.md
-  - hopping.md
-  - sliding.md
-  - session.md
-  - lag_lead.md
-  - gap_fill.md
-  - time.md
+  - Windowing: windowing
+  - Analysis: analysis

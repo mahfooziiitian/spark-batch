@@ -9,13 +9,13 @@ Every row is associated with a timestamp and queries typically involve windowed 
 
 | Page | What You Will Learn |
 |------|---------------------|
-| [Time](time.md) | Date truncation, daily/weekly/monthly aggregation, YoY comparison |
-| [Tumbling Windows](tumbling.md) | Fixed non-overlapping time buckets — hourly reports, batch aggregation |
-| [Hopping Windows](hopping.md) | Fixed-size overlapping windows that advance at a smaller interval |
-| [Sliding Windows](sliding.md) | Row-based rolling windows — moving averages, smoothing |
-| [Session Windows](session.md) | Variable-length gap-based windows — user sessions, clickstreams |
-| [LAG & LEAD](lag_lead.md) | Period-over-period comparisons, state transitions, streak counting |
-| [Gap Fill](gap_fill.md) | Date spines, zero-fill, forward-fill, interpolation |
+| [Time Aggregation](analysis/time_aggregation.md) | Date truncation, daily/weekly/monthly aggregation, YoY comparison |
+| [Tumbling Windows](windowing/tumbling_window.md) | Fixed non-overlapping time buckets — hourly reports, batch aggregation |
+| [Hopping Windows](windowing/hopping_window.md) | Fixed-size overlapping windows that advance at a smaller interval |
+| [Sliding Windows](windowing/sliding_window.md) | Row-based rolling windows — moving averages, smoothing |
+| [Session Windows](windowing/session_window.md) | Variable-length gap-based windows — user sessions, clickstreams |
+| [LAG & LEAD](analysis/lag_and_lead.md) | Period-over-period comparisons, state transitions, streak counting |
+| [Gap Fill](analysis/gap_filling.md) | Date spines, zero-fill, forward-fill, interpolation |
 
 ---
 
@@ -28,6 +28,12 @@ graph LR
     A --> D["Sliding\nrow-based rolling frame"]
     A --> E["Session\nvariable-length gap-based"]
 ```
+
+---
+
+## :material-animation-play: Interactive Overview
+
+<div id="viz-docs-overview" class="ts-viz"></div>
 
 ---
 
@@ -58,7 +64,7 @@ Correct window calculations depend on deterministic ordering — always specify 
 
 ### 3 — Sparse Data
 
-Real-world series often have missing intervals. See [Gap Fill](gap_fill.md) for strategies to generate a complete time spine before aggregating.
+Real-world series often have missing intervals. See [Gap Fill](analysis/gap_filling.md) for strategies to generate a complete time spine before aggregating.
 
 ---
 

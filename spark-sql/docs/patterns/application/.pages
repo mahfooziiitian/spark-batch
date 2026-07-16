@@ -1,18 +1,8 @@
+title: Applications
 nav:
   - index.md
-  - aggregation
-  - analytics
-  - cte
-  - date_string
-  - derived_table
-  - duplicate
-  - filter
-  - grouping
-  - key_n_struct
-  - numeric
-  - pivot
-  - ranking
-  - replace_key
-  - rolling
-  - subquery
-  - time_series
+  - Data Quality: data_quality
+  - Transformation: transformation
+  - Enrichment: enrichment
+  - Types & Formats: types_and_formats
+  - Temporal: temporal

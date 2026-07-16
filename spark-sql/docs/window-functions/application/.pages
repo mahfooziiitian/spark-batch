@@ -1,0 +1,14 @@
+title: Application
+nav:
+
+- index.md
+- deduplication.md
+- top_n.md
+- running_balance.md
+- period_comparison.md
+- sessionisation.md
+- percentile.md
+- forward_fill.md
+- gap_detection.md
+- median.md
+- yoy_comparison.md

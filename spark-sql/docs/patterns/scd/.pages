@@ -1,9 +1,10 @@
+title: SCD
 nav:
   - index.md
-  - intro.md
-  - type1
-  - type2
-  - type3
-  - type4
-  - type5
-  - type6
+  - concepts.md
+  - Type 1 — Overwrite: overwrite
+  - Type 2 — Full History: full_history
+  - Type 3 — Extra Columns: extra_columns
+  - Type 4 — History Table: history_table
+  - Type 5 — Hybrid 1+4: hybrid_1_4
+  - Type 6 — Hybrid 1+2+3: hybrid_1_2_3

@@ -194,7 +194,7 @@ SET spark.sql.catalog.spark_catalog = 'org.apache.spark.sql.delta.catalog.DeltaC
 | Mistake | Problem | Fix |
 |---------|---------|-----|
 | `VACUUM` with `RETAIN 0 HOURS` | Deletes all history — time travel broken | Keep at least 168 hours (7 days) |
-| Single MERGE for SCD Type 2 | Cannot expire and insert same key in one pass | Use two-step MERGE (see [SCD Type 2](../patterns/scd/type2/index.md)) |
+| Single MERGE for SCD Type 2 | Cannot expire and insert same key in one pass | Use two-step MERGE (see [SCD Type 2](../patterns/scd/full_history/index.md)) |
 | Writing to Delta without `OPTIMIZE` | Thousands of tiny files degrade performance | Schedule `OPTIMIZE` after bulk loads |
 | Reading stale cache | `REFRESH TABLE` needed after external writes | `REFRESH TABLE table_name` |
 | Dropping `_delta_log/` manually | Breaks the table — Spark can't recover | Use `DROP TABLE` or `VACUUM` |
