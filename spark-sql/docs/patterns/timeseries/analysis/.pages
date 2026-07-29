@@ -14,6 +14,7 @@ nav:
   - capacity_planning.md
   - inventory_analytics.md
   - interval_analytics.md
+  - time_binning.md
   - time_allocation.md
   - resource_contention.md
   - reliability_metrics.md
