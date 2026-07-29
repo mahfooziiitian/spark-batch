@@ -379,5 +379,5 @@ Click any bar to set **CURRENT ROW**. Use the sliders to adjust
 
 - [RANGE frame](range.md) — value-based offset examples and tied-value handling
 - [Frame overview](index.md) — syntax, defaults, and ROWS vs RANGE comparison
-- [Aggregate functions](../window/aggregate.md) — SUM, AVG, MIN, MAX with frames
+- [Aggregate functions](../functions/aggregate.md) — SUM, AVG, MIN, MAX with frames
 - [Application patterns](../application/index.md) — running totals, moving averages, forward-fill

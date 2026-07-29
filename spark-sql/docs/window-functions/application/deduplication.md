@@ -62,4 +62,4 @@ Remove duplicate rows by keeping the most recent sale per rep using `ROW_NUMBER`
 ## :material-arrow-right: Related
 
 - [Top-N Per Group](top_n.md) — extend this pattern to keep N rows per key
-- [Window Types — Ranking](../window/ranking.md) — `ROW_NUMBER`, `RANK`, `DENSE_RANK`
+- [Window Types — Ranking](../functions/ranking.md) — `ROW_NUMBER`, `RANK`, `DENSE_RANK`

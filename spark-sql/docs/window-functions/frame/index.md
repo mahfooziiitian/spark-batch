@@ -49,18 +49,36 @@ UNBOUNDED FOLLOWING   -- last row of partition
 
 ## :material-table: Frame Boundaries Visualised
 
-For a partition with 7 rows, here's what each boundary means relative to row 4 (current):
+For a partition with 7 rows, here's what each boundary means relative to **row 4** (current):
 
 ```text
-Row:     1       2       3      [4]      5       6       7
-         ↑                       ↑                       ↑
-    UNBOUNDED              CURRENT ROW              UNBOUNDED
-    PRECEDING                                      FOLLOWING
+Position:  1       2       3      [4]      5       6       7
+           │                       │                       │
+           ▼                       ▼                       ▼
+      UNBOUNDED               CURRENT ROW            UNBOUNDED
+      PRECEDING                                      FOLLOWING
 
-         |←─── 2 PRECEDING ───→|
-                                |←── 2 FOLLOWING ──→|
-         |←──────── UNBOUNDED PRECEDING ──────────→|
+      ├─── 3 PRECEDING ──────┤
+                              ├────── 3 FOLLOWING ───────────┤
+      ├───── UNBOUNDED PRECEDING ─┤
+                              ├── UNBOUNDED FOLLOWING ───────┤
+                    ├ 1 PREC ─┤── 1 FOL ─┤
 ```
+
+| Frame Example | Included Rows (when current = row 4) |
+|---------------|--------------------------------------|
+| `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` | 1, 2, 3, **4** |
+| `ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING` | **4**, 5, 6, 7 |
+| `ROWS BETWEEN 2 PRECEDING AND 1 FOLLOWING` | 2, 3, **4**, 5 |
+| `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | 1, 2, 3, **4**, 5, 6, 7 (full partition) |
+| `ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING` | 3 (just the previous row) |
+
+### :material-animation-play: Interactive Frame Boundaries
+
+Drag the **CURRENT ROW** marker to any position. Adjust the preceding/following
+offsets to see which rows fall within the frame and how the aggregate changes.
+
+<div id="viz-frame-boundaries" class="ts-viz"></div>
 
 ### :material-animation-play: Interactive Frame Explorer
 
@@ -240,5 +258,5 @@ ORDER BY event_date;
 
 - [ROWS frame](rows.md) — physical row offset examples and edge cases
 - [RANGE frame](range.md) — value-based and interval offset examples
-- [Aggregate functions](../window/aggregate.md) — SUM, AVG, MIN, MAX with frames
+- [Aggregate functions](../functions/aggregate.md) — SUM, AVG, MIN, MAX with frames
 - [Application patterns](../application/index.md) — running totals, moving averages, forward-fill

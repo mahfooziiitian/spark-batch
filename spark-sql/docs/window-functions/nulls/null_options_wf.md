@@ -56,7 +56,7 @@ flowchart TD
     A([Column has<br>NULL values?]) --> B{Which problem?}
     B -- "Skip NULLs in<br>LAG/LEAD/FIRST/LAST" --> C{Function supports<br>IGNORE NULLS?}
     B -- "Control NULL<br>sort position" --> D["Use<br><code>NULLS FIRST</code> /<br><code>NULLS LAST</code>"]
-    B -- "Both" --> E["Combine both:<br><code>LAG(col IGNORE NULLS)</code><br><code>ORDER BY col NULLS LAST</code>"]
+    B -- "Both" --> E["Combine both:<br><code>LAG(col) IGNORE NULLS</code><br><code>ORDER BY col NULLS LAST</code>"]
     C -- Yes --> F["✅ <code>IGNORE NULLS</code>"]
     C -- "No (SUM, AVG, RANK)" --> G["NULLs already excluded<br>from aggregates.<br>Use <code>COALESCE</code> if needed"]
 
@@ -132,9 +132,9 @@ SELECT
     rep,
     reading_date,
     amount,
-    FIRST_VALUE(amount IGNORE NULLS)  OVER (PARTITION BY rep ORDER BY reading_date
+    FIRST_VALUE(amount) IGNORE NULLS  OVER (PARTITION BY rep ORDER BY reading_date
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS first_non_null,
-    FIRST_VALUE(amount RESPECT NULLS) OVER (PARTITION BY rep ORDER BY reading_date
+    FIRST_VALUE(amount) RESPECT NULLS OVER (PARTITION BY rep ORDER BY reading_date
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS first_any
 FROM readings
 ORDER BY reading_date;
@@ -162,7 +162,7 @@ SELECT
     rep,
     reading_date,
     amount,
-    LAST_VALUE(amount IGNORE NULLS) OVER (
+    LAST_VALUE(amount) IGNORE NULLS OVER (
         PARTITION BY rep ORDER BY reading_date
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW  -- (1)!
     ) AS forward_filled
@@ -185,7 +185,7 @@ ORDER BY reading_date;
     | Alice | 2024-01-07   |    150 |            150 |
 
 !!! tip "Forward-fill is the #1 use case"
-    `LAST_VALUE(col IGNORE NULLS)` with a frame ending at `CURRENT ROW` is the
+    `LAST_VALUE(col) IGNORE NULLS` with a frame ending at `CURRENT ROW` is the
     standard way to fill gaps in time-series data — no self-joins needed.
 
 ### Example 3 — LAG IGNORE NULLS
@@ -197,8 +197,8 @@ SELECT
     rep,
     reading_date,
     amount,
-    LAG(amount IGNORE NULLS)  OVER w AS prev_non_null,
-    LAG(amount RESPECT NULLS) OVER w AS prev_any
+    LAG(amount) IGNORE NULLS  OVER w AS prev_non_null,
+    LAG(amount) RESPECT NULLS OVER w AS prev_any
 FROM readings
 WINDOW w AS (PARTITION BY rep ORDER BY reading_date)
 ORDER BY reading_date;
@@ -228,8 +228,8 @@ SELECT
     rep,
     reading_date,
     amount,
-    LEAD(amount IGNORE NULLS)  OVER w AS next_non_null,
-    LEAD(amount RESPECT NULLS) OVER w AS next_any
+    LEAD(amount) IGNORE NULLS  OVER w AS next_non_null,
+    LEAD(amount) RESPECT NULLS OVER w AS next_any
 FROM readings
 WINDOW w AS (PARTITION BY rep ORDER BY reading_date)
 ORDER BY reading_date;
@@ -336,10 +336,10 @@ and `ROW_NUMBER` assignments.
 
 | Scenario | Recommended Pattern |
 |----------|---------------------|
-| Forward-fill missing values | `LAST_VALUE(col IGNORE NULLS) OVER (ORDER BY date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` |
-| Backward-fill missing values | `FIRST_VALUE(col IGNORE NULLS) OVER (ORDER BY date DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` |
-| Get previous non-null reading | `LAG(col IGNORE NULLS) OVER (...)` |
-| Get next non-null forecast | `LEAD(col IGNORE NULLS) OVER (...)` |
+| Forward-fill missing values | `LAST_VALUE(col) IGNORE NULLS OVER (ORDER BY date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` |
+| Backward-fill missing values | `FIRST_VALUE(col) IGNORE NULLS OVER (ORDER BY date DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` |
+| Get previous non-null reading | `LAG(col) IGNORE NULLS OVER (...)` |
+| Get next non-null forecast | `LEAD(col) IGNORE NULLS OVER (...)` |
 | Place NULLs at beginning of ranking | `ORDER BY col ASC NULLS FIRST` |
 | Treat NULLs as low values (sort last) | `ORDER BY col ASC NULLS LAST` (default for ASC) |
 
@@ -361,4 +361,4 @@ and `ROW_NUMBER` assignments.
 - [ROWS frame](../frame/rows.md) — physical row offset examples
 - [RANGE frame](../frame/range.md) — value-based offset examples
 - [Application patterns](../application/index.md) — forward-fill, gap-filling patterns
-- [Aggregate functions](../window/aggregate.md) — how SUM/AVG handle NULLs natively
+- [Aggregate functions](../functions/aggregate.md) — how SUM/AVG handle NULLs natively

@@ -59,4 +59,4 @@ Return the top 2 sales per region, ranked by amount descending.
 ## :material-arrow-right: Related
 
 - [De-duplication](deduplication.md) — special case where N = 1
-- [Window Types — Ranking](../window/ranking.md) — full ranking function reference
+- [Window Types — Ranking](../functions/ranking.md) — full ranking function reference

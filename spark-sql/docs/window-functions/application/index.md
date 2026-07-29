@@ -99,6 +99,6 @@ AS sales(region, rep, sale_date, amount);
 
 ## :material-arrow-right: Related
 
-- [Window Types](../window/index.md) — full function reference (ranking, aggregate, navigation)
+- [Window Types](../functions/index.md) — full function reference (ranking, aggregate, navigation)
 - [Frame Specification](../frame/index.md) — ROWS vs RANGE deep dive
 - [NULL Handling in Windows](../nulls/null_options_wf.md) — `IGNORE NULLS`, `RESPECT NULLS`

@@ -139,20 +139,30 @@ FROM daily_sales
 ORDER BY sale_date;
 ```
 
-??? example "Output — 7-Day Rolling Total"
+??? success "Expected Output"
 
     | sale_date  | region | rep   | amount | rolling_7d | Window covers |
-    |------------|--------|-------|-------:|:----------:|---------------|
-    | 2024-01-01 | North  | Alice |    100 | 100 | Jan 01 |
-    | 2024-01-02 | North  | Bob   |    175 | 275 | Jan 01–02 |
-    | 2024-01-03 | South  | Carol |    200 | 475 | Jan 01–03 |
-    | 2024-01-04 | South  | Dave  |    120 | 595 | Jan 01–04 |
-    | 2024-01-05 | North  | Alice |    150 | 1045 | Jan 01–05 |
-    | 2024-01-05 | South  | Carol |    300 | 1045 | Jan 01–05 (tied — same frame) |
-    | 2024-01-07 | North  | Bob   |    400 | 1345 | Jan 01–07 (Jan 01 is exactly 6 days back) |
-    | 2024-01-10 | South  | Dave  |    250 | 1400 | Jan 05–10 (Jan 04 drops out) |
-    | 2024-01-12 | North  | Alice |    180 | 1280 | Jan 07–12 |
-    | 2024-01-14 | South  | Carol |    350 | 1180 | Jan 10–14 |
+    |------------|--------|-------|-------:|-----------:|---------------|
+    | 2024-01-01 | North  | Alice |    100 |        100 | Jan 01 only |
+    | 2024-01-02 | North  | Bob   |    175 |        275 | Jan 01–02 |
+    | 2024-01-03 | South  | Carol |    200 |        475 | Jan 01–03 |
+    | 2024-01-04 | South  | Dave  |    120 |        595 | Jan 01–04 |
+    | 2024-01-05 | North  | Alice |    150 |       1045 | Jan 01–05 (all 6 rows) |
+    | 2024-01-05 | South  | Carol |    300 |       1045 | Jan 01–05 (tied — same frame) |
+    | 2024-01-07 | North  | Bob   |    400 |       1445 | Jan 01–07 (Jan 01 = 6 days back, included) |
+    | 2024-01-10 | South  | Dave  |    250 |       1220 | Jan 04–10 (Jan 03 = 7 days back, excluded) |
+    | 2024-01-12 | North  | Alice |    180 |        830 | Jan 07–12 (Jan 05 = 7 days back, excluded) |
+    | 2024-01-14 | South  | Carol |    350 |        780 | Jan 10–14 (Jan 07 = 7 days back, excluded) |
+
+    **Step-by-step for Jan 10 (rolling_7d = 1220):**
+
+    1. Current row value: `2024-01-10`
+    2. Lower bound: `2024-01-10 - 6 days = 2024-01-04`
+    3. Include all rows where `sale_date >= '2024-01-04' AND sale_date <= '2024-01-10'`
+    4. Matching: Jan 04 (120) + Jan 05 (150) + Jan 05 (300) + Jan 07 (400) + Jan 10 (250)
+    5. SUM = **1220**
+
+    Note: Jan 01, 02, 03 are more than 6 days before Jan 10, so they're excluded.
 
 !!! tip "Why INTERVAL '6' DAY for a 7-day window?"
     The current row is day 0. Going back 6 days covers 7 calendar days total
@@ -180,7 +190,7 @@ FROM daily_sales
 ORDER BY region, sale_date;
 ```
 
-??? example "Output — 3-Day Rolling Average"
+??? success "Expected Output — 3-Day Rolling Average"
 
     **North region:**
 
@@ -232,7 +242,7 @@ WINDOW w AS (
 ORDER BY score;
 ```
 
-??? example "Output — Peer Tolerance Band"
+??? success "Expected Output — Peer Tolerance Band"
 
     | name  | score | peer_count | peer_avg | peer_min | peer_max | peer_names |
     |-------|------:|:----------:|:--------:|:--------:|:--------:|------------|
@@ -271,7 +281,7 @@ WHERE sale_date <= CAST('2024-01-07' AS DATE)
 ORDER BY sale_date, amount;
 ```
 
-??? example "Output — ROWS vs RANGE on Tied Dates"
+??? success "Expected Output — ROWS vs RANGE on Tied Dates"
 
     | sale_date  | rep   | amount | rows_sum | range_sum | Difference? |
     |------------|-------|-------:|:--------:|:---------:|:-----------:|
@@ -317,20 +327,26 @@ FROM daily_sales
 ORDER BY sale_date;
 ```
 
-??? example "Output — Forward-Looking 3-Day Window"
+??? success "Expected Output"
 
     | sale_date  | rep   | amount | next_3d_total | sales_next_3d | max_next_3d | Window covers |
-    |------------|-------|-------:|:-------------:|:-------------:|:-----------:|---------------|
-    | 2024-01-01 | Alice |    100 | 595 | 4 | 200 | Jan 01–04 |
-    | 2024-01-02 | Bob   |    175 | 945 | 5 | 300 | Jan 02–05 |
-    | 2024-01-03 | Carol |    200 | 770 | 4 | 300 | Jan 03–05 (incl. both Jan 05) |
-    | 2024-01-04 | Dave  |    120 | 570 | 3 | 300 | Jan 04–07 |
-    | 2024-01-05 | Alice |    150 | 850 | 3 | 400 | Jan 05–07 (ties grouped) |
-    | 2024-01-05 | Carol |    300 | 850 | 3 | 400 | Jan 05–07 |
-    | 2024-01-07 | Bob   |    400 | 650 | 2 | 400 | Jan 07–10 |
-    | 2024-01-10 | Dave  |    250 | 430 | 2 | 350 | Jan 10–12 |
-    | 2024-01-12 | Alice |    180 | 530 | 2 | 350 | Jan 12–14 |
-    | 2024-01-14 | Carol |    350 | 350 | 1 | 350 | Jan 14 only |
+    |------------|-------|-------:|--------------:|--------------:|------------:|---------------|
+    | 2024-01-01 | Alice |    100 |           595 |             4 |         200 | Jan 01–04 |
+    | 2024-01-02 | Bob   |    175 |           945 |             5 |         300 | Jan 02–05 (incl. both Jan 05) |
+    | 2024-01-03 | Carol |    200 |           770 |             4 |         300 | Jan 03–06 (both Jan 05 included) |
+    | 2024-01-04 | Dave  |    120 |           970 |             4 |         400 | Jan 04–07 |
+    | 2024-01-05 | Alice |    150 |           850 |             3 |         400 | Jan 05–08 (ties grouped) |
+    | 2024-01-05 | Carol |    300 |           850 |             3 |         400 | Jan 05–08 (same frame) |
+    | 2024-01-07 | Bob   |    400 |           650 |             2 |         400 | Jan 07–10 |
+    | 2024-01-10 | Dave  |    250 |           430 |             2 |         250 | Jan 10–13 |
+    | 2024-01-12 | Alice |    180 |           530 |             2 |         350 | Jan 12–15 |
+    | 2024-01-14 | Carol |    350 |           350 |             1 |         350 | Jan 14–17 |
+
+    **Step-by-step for Jan 04:**
+
+    1. Frame: `[Jan 04, Jan 04 + 3 days]` = `[Jan 04, Jan 07]`
+    2. Rows in range: Jan 04 (120), Jan 05 (150), Jan 05 (300), Jan 07 (400)
+    3. SUM = 970, COUNT = 4, MAX = 400
 
 ### Example 6 — Month-over-Month with RANGE INTERVAL
 
@@ -364,23 +380,29 @@ FROM daily_sales
 ORDER BY sale_date;
 ```
 
-??? example "Output — Rolling 7d vs 30d"
+??? success "Expected Output"
 
     | sale_date  | rep   | amount | rolling_30d | rolling_7d | week_pct_of_month |
-    |------------|-------|-------:|:-----------:|:----------:|:-----------------:|
-    | 2024-01-01 | Alice |    100 | 100 | 100 | 100.0 |
-    | 2024-01-02 | Bob   |    175 | 275 | 275 | 100.0 |
-    | 2024-01-03 | Carol |    200 | 475 | 475 | 100.0 |
-    | 2024-01-04 | Dave  |    120 | 595 | 595 | 100.0 |
-    | 2024-01-05 | Alice |    150 | 1045 | 1045 | 100.0 |
-    | 2024-01-05 | Carol |    300 | 1045 | 1045 | 100.0 |
-    | 2024-01-07 | Bob   |    400 | 1445 | 1345 | 93.1 |
-    | 2024-01-10 | Dave  |    250 | 1695 | 1400 | 82.6 |
-    | 2024-01-12 | Alice |    180 | 1875 | 1280 | 68.3 |
-    | 2024-01-14 | Carol |    350 | 2225 | 1180 | 53.0 |
+    |------------|-------|-------:|------------:|-----------:|------------------:|
+    | 2024-01-01 | Alice |    100 |         100 |        100 |             100.0 |
+    | 2024-01-02 | Bob   |    175 |         275 |        275 |             100.0 |
+    | 2024-01-03 | Carol |    200 |         475 |        475 |             100.0 |
+    | 2024-01-04 | Dave  |    120 |         595 |        595 |             100.0 |
+    | 2024-01-05 | Alice |    150 |        1045 |       1045 |             100.0 |
+    | 2024-01-05 | Carol |    300 |        1045 |       1045 |             100.0 |
+    | 2024-01-07 | Bob   |    400 |        1445 |       1445 |             100.0 |
+    | 2024-01-10 | Dave  |    250 |        1695 |       1220 |              72.0 |
+    | 2024-01-12 | Alice |    180 |        1875 |        830 |              44.3 |
+    | 2024-01-14 | Carol |    350 |        2225 |        780 |              35.1 |
 
     As data accumulates beyond 7 days, `week_pct_of_month` decreases — showing
     what fraction of the trailing month's revenue came from the last 7 days.
+
+    **Jan 10 breakdown:**
+
+    - `rolling_30d` (Jan 01–10): all 8 rows = 100+175+200+120+150+300+400+250 = 1695
+    - `rolling_7d` (Jan 04–10): 120+150+300+400+250 = 1220
+    - `week_pct_of_month`: 1220/1695 × 100 = 72.0%
 
 ### Example 7 — Invalid: String Column with RANGE Offset
 
@@ -429,6 +451,98 @@ FROM scores;
 
 ---
 
+## :material-flask-outline: Real-World Scenarios
+
+### Scenario 1 — SLA Compliance: Incidents Per Rolling 24 Hours
+
+```sql
+CREATE OR REPLACE TEMP VIEW incidents AS
+SELECT * FROM VALUES
+  (CAST('2024-01-01 08:00:00' AS TIMESTAMP), 'P1', 'Database timeout'),
+  (CAST('2024-01-01 14:30:00' AS TIMESTAMP), 'P2', 'Slow API'),
+  (CAST('2024-01-01 22:00:00' AS TIMESTAMP), 'P1', 'Connection pool'),
+  (CAST('2024-01-02 06:00:00' AS TIMESTAMP), 'P3', 'Disk warning'),
+  (CAST('2024-01-02 10:00:00' AS TIMESTAMP), 'P1', 'Memory leak'),
+  (CAST('2024-01-02 23:00:00' AS TIMESTAMP), 'P2', 'Timeout spike'),
+  (CAST('2024-01-03 12:00:00' AS TIMESTAMP), 'P1', 'Deadlock')
+AS incidents(incident_ts, severity, description);
+
+SELECT
+    incident_ts,
+    severity,
+    description,
+    COUNT(*) OVER (
+        ORDER BY incident_ts
+        RANGE BETWEEN INTERVAL '24' HOUR PRECEDING AND CURRENT ROW
+    ) AS incidents_24h,
+    COUNT(*) OVER (
+        ORDER BY incident_ts
+        RANGE BETWEEN INTERVAL '24' HOUR PRECEDING AND CURRENT ROW
+    ) > 3 AS sla_breach
+FROM incidents
+ORDER BY incident_ts;
+```
+
+??? success "Expected Output"
+
+    | incident_ts         | severity | description     | incidents_24h | sla_breach |
+    |---------------------|----------|-----------------|:-------------:|:----------:|
+    | 2024-01-01 08:00:00 | P1       | Database timeout |            1 | false      |
+    | 2024-01-01 14:30:00 | P2       | Slow API         |            2 | false      |
+    | 2024-01-01 22:00:00 | P1       | Connection pool  |            3 | false      |
+    | 2024-01-02 06:00:00 | P3       | Disk warning     |            3 | false      |
+    | 2024-01-02 10:00:00 | P1       | Memory leak      |            4 | true       |
+    | 2024-01-02 23:00:00 | P2       | Timeout spike    |            4 | true       |
+    | 2024-01-03 12:00:00 | P1       | Deadlock         |            2 | false      |
+
+    The 24-hour RANGE window naturally handles timestamps — no need to truncate
+    to dates. At `2024-01-02 10:00:00`, it looks back to `2024-01-01 10:00:00`
+    and counts 4 incidents (all of Jan 01 afternoon + Jan 02 morning).
+
+### Scenario 2 — Price Volatility: Range Within ±10% of Current Value
+
+```sql
+CREATE OR REPLACE TEMP VIEW stock_trades AS
+SELECT * FROM VALUES
+  ('2024-01-01', 100), ('2024-01-02', 105), ('2024-01-03', 98),
+  ('2024-01-04', 110), ('2024-01-05', 102), ('2024-01-06', 115),
+  ('2024-01-07', 108), ('2024-01-08', 120), ('2024-01-09', 130)
+AS stock_trades(trade_date, price);
+
+SELECT
+    trade_date,
+    price,
+    COUNT(*) OVER (
+        ORDER BY price
+        RANGE BETWEEN 10 PRECEDING AND 10 FOLLOWING
+    ) AS similar_count,
+    ROUND(AVG(price) OVER (
+        ORDER BY price
+        RANGE BETWEEN 10 PRECEDING AND 10 FOLLOWING
+    ), 1) AS nearby_avg
+FROM stock_trades
+ORDER BY price;
+```
+
+??? success "Expected Output"
+
+    | trade_date | price | similar_count | nearby_avg |
+    |------------|------:|--------------:|-----------:|
+    | 2024-01-03 |    98 |             3 |      101.7 |
+    | 2024-01-01 |   100 |             4 |      101.3 |
+    | 2024-01-05 |   102 |             4 |      103.8 |
+    | 2024-01-02 |   105 |             4 |      103.8 |
+    | 2024-01-07 |   108 |             3 |      107.7 |
+    | 2024-01-04 |   110 |             4 |      113.3 |
+    | 2024-01-06 |   115 |             3 |      115.0 |
+    | 2024-01-08 |   120 |             3 |      121.7 |
+    | 2024-01-09 |   130 |             2 |      125.0 |
+
+    Each row sees its "neighbourhood" — all prices within ±10. Useful for identifying
+    clustering and outliers in numeric distributions.
+
+---
+
 ## :material-brain: When to Use
 
 | Scenario | Recommended Pattern |
@@ -471,5 +585,5 @@ The shaded region shows which values fall inside the `RANGE` frame.
 
 - [ROWS frame](rows.md) — physical row offset examples and edge cases
 - [Frame overview](index.md) — syntax, defaults, and ROWS vs RANGE comparison
-- [Aggregate functions](../window/aggregate.md) — SUM, AVG, MIN, MAX with frames
+- [Aggregate functions](../functions/aggregate.md) — SUM, AVG, MIN, MAX with frames
 - [Application patterns](../application/index.md) — running totals, moving averages, forward-fill

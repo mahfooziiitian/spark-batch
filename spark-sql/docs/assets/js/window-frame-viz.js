@@ -756,6 +756,146 @@
         "<span style='color:#e0e0e0'>■</span> outside");
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+   * 5. FRAME BOUNDARIES — Visual diagram showing all boundary types
+   *    Drag the current row indicator; shows multiple frame spans
+   *    overlaid on a row strip with labeled boundaries.
+   * ══════════════════════════════════════════════════════════════════ */
+  function renderFrameBoundaries(el) {
+    const W = Math.min(el.clientWidth || 720, 720), H = 320;
+    const m = { t: 20, r: 30, b: 20, l: 30 };
+    const iw = W - m.l - m.r;
+
+    const data = [
+      { row: 1, amount: 100 },
+      { row: 2, amount: 200 },
+      { row: 3, amount: 150 },
+      { row: 4, amount: 300 },
+      { row: 5, amount: 250 },
+      { row: 6, amount: 400 },
+      { row: 7, amount: 180 },
+    ];
+
+    let currentIdx = 3; // row 4 (0-indexed)
+
+    const container = d3.select(el);
+    container.selectAll("*").remove();
+
+    const svg = container.append("svg")
+      .attr("width", "100%").attr("height", H)
+      .attr("viewBox", `0 0 ${W} ${H}`).style("overflow", "visible");
+    const g = svg.append("g").attr("transform", `translate(${m.l},${m.t})`);
+
+    const cellW = iw / data.length;
+    const rowY = 60;
+    const cellH = 44;
+
+    // Frame definitions to visualise
+    const frames = [
+      { label: "UNBOUNDED PRECEDING → CURRENT ROW", color: "#7c4dff", getRange: (ci) => [0, ci] },
+      { label: "CURRENT ROW → UNBOUNDED FOLLOWING", color: "#26a69a", getRange: (ci) => [ci, data.length - 1] },
+      { label: "2 PRECEDING → 2 FOLLOWING", color: "#ffa726", getRange: (ci) => [Math.max(0, ci - 2), Math.min(data.length - 1, ci + 2)] },
+      { label: "UNBOUNDED PRECEDING → UNBOUNDED FOLLOWING", color: "#ef5350", getRange: () => [0, data.length - 1] },
+    ];
+
+    function update() {
+      g.selectAll("*").remove();
+
+      // Row cells
+      data.forEach((d, i) => {
+        const x = i * cellW;
+        const isCurrent = i === currentIdx;
+
+        // Cell background
+        g.append("rect")
+          .attr("x", x + 2).attr("y", rowY).attr("width", cellW - 4).attr("height", cellH)
+          .attr("rx", 6)
+          .attr("fill", isCurrent ? "rgba(255, 167, 38, 0.22)" : "#f5f5f5")
+          .attr("stroke", isCurrent ? CURRENT_COLOR : "#e0e0e0")
+          .attr("stroke-width", isCurrent ? 2.5 : 1)
+          .style("cursor", "pointer")
+          .on("click", () => { currentIdx = i; update(); });
+
+        // Row number
+        g.append("text")
+          .attr("x", x + cellW / 2).attr("y", rowY - 8)
+          .attr("text-anchor", "middle").attr("font-size", "0.68rem")
+          .attr("fill", isCurrent ? CURRENT_COLOR : GRAY)
+          .attr("font-weight", isCurrent ? "700" : "400")
+          .text(isCurrent ? `[Row ${d.row}]` : `Row ${d.row}`);
+
+        // Amount
+        g.append("text")
+          .attr("x", x + cellW / 2).attr("y", rowY + cellH / 2 + 5)
+          .attr("text-anchor", "middle").attr("font-size", "0.78rem")
+          .attr("fill", isCurrent ? CURRENT_COLOR : FG)
+          .attr("font-weight", isCurrent ? "700" : "400")
+          .text(d.amount)
+          .style("cursor", "pointer")
+          .on("click", () => { currentIdx = i; update(); });
+      });
+
+      // Current row label
+      g.append("text")
+        .attr("x", currentIdx * cellW + cellW / 2).attr("y", rowY + cellH + 16)
+        .attr("text-anchor", "middle").attr("font-size", "0.7rem")
+        .attr("fill", CURRENT_COLOR).attr("font-weight", "700")
+        .text("▲ CURRENT ROW");
+
+      // Frame spans (drawn below the row strip)
+      const spanY = rowY + cellH + 36;
+      const spanH = 22;
+      const spanGap = 6;
+
+      frames.forEach((frame, fi) => {
+        const [start, end] = frame.getRange(currentIdx);
+        const x1 = start * cellW + 4;
+        const x2 = (end + 1) * cellW - 4;
+        const y = spanY + fi * (spanH + spanGap);
+
+        // Span bar
+        g.append("rect")
+          .attr("x", x1).attr("y", y)
+          .attr("width", x2 - x1).attr("height", spanH)
+          .attr("rx", 4)
+          .attr("fill", frame.color).attr("opacity", 0.15)
+          .attr("stroke", frame.color).attr("stroke-width", 1.5);
+
+        // Left cap
+        g.append("line")
+          .attr("x1", x1).attr("y1", y).attr("x2", x1).attr("y2", y + spanH)
+          .attr("stroke", frame.color).attr("stroke-width", 2.5);
+
+        // Right cap
+        g.append("line")
+          .attr("x1", x2).attr("y1", y).attr("x2", x2).attr("y2", y + spanH)
+          .attr("stroke", frame.color).attr("stroke-width", 2.5);
+
+        // Label
+        g.append("text")
+          .attr("x", (x1 + x2) / 2).attr("y", y + spanH / 2 + 4)
+          .attr("text-anchor", "middle").attr("font-size", "0.62rem")
+          .attr("fill", frame.color).attr("font-weight", "600")
+          .text(frame.label);
+
+        // SUM value at end
+        const frameSum = data.slice(start, end + 1).reduce((s, d) => s + d.amount, 0);
+        g.append("text")
+          .attr("x", x2 + 6).attr("y", y + spanH / 2 + 4)
+          .attr("text-anchor", "start").attr("font-size", "0.62rem")
+          .attr("fill", frame.color).attr("font-weight", "700")
+          .text(`Σ${frameSum}`);
+      });
+    }
+
+    update();
+
+    container.append("div")
+      .style("text-align", "center").style("font-size", "0.68rem")
+      .style("color", GRAY).style("margin-top", "0.5rem")
+      .text("Click any cell to move CURRENT ROW. Frame spans and SUM values update automatically.");
+  }
+
   /* ── Bootstrap ───────────────────────────────────────────────────── */
   function init() {
     const r = document.getElementById("viz-frame-rows");
@@ -766,6 +906,8 @@
     if (t && !t.dataset.rendered) { renderRangeTimeline(t); t.dataset.rendered = "1"; }
     const b = document.getElementById("viz-rows-bars");
     if (b && !b.dataset.rendered) { renderRowsBarChart(b); b.dataset.rendered = "1"; }
+    const fb = document.getElementById("viz-frame-boundaries");
+    if (fb && !fb.dataset.rendered) { renderFrameBoundaries(fb); fb.dataset.rendered = "1"; }
   }
 
   if (typeof document$ !== "undefined") {
