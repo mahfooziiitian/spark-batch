@@ -75,10 +75,11 @@ markdown_extensions:
 ### Code annotations
 
 ```python
-spark = (SparkSession.builder
-         .master("local[*]")                          # (1)!
-         .config("spark.sql.shuffle.partitions", "4") # (2)!
-         .getOrCreate())
+spark = (
+    SparkSession.builder.master("local[*]")  # (1)!
+    .config("spark.sql.shuffle.partitions", "4")  # (2)!
+    .getOrCreate()
+)
 ```
 1. Use all available CPU cores.
 2. Default 200 is too high for small local datasets.

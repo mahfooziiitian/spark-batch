@@ -5,7 +5,7 @@ DataFrame sorting and comparison utilities for validating data quality.
 ## Source
 
 ```python title="src/data_frame/equality/df_equality.py"
---8<-- "src/data_frame/equality/df_equality.py"
+--8 < --"src/data_frame/equality/df_equality.py"
 ```
 
 ## Functions
@@ -17,7 +17,7 @@ Reorders DataFrame columns alphabetically in ascending or descending order.
 ```python
 from data_frame.equality.df_equality import sort_columns
 
-sorted_df = sort_columns(df, "asc")   # columns A → Z
+sorted_df = sort_columns(df, "asc")  # columns A → Z
 sorted_df = sort_columns(df, "desc")  # columns Z → A
 ```
 

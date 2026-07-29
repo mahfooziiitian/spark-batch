@@ -4,30 +4,35 @@ applyTo: "spark-python/pyspark-test/pyspark-deepu/src/**/*.py"
 
 # PyDeequ Source Code Instructions
 
-## Imports
+## SPARK_VERSION Environment Variable
+
+PyDeequ reads `SPARK_VERSION` at import time. Always set it at module level
+**before** any pydeequ import:
 
 ```python
 import os
-import pydeequ
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
+os.environ["SPARK_VERSION"] = "3.5"
+
+import pydeequ  # noqa: E402
+from pyspark.sql import SparkSession  # noqa: E402
 ```
 
-Avoid `from pydeequ.analyzers import *` — use explicit imports:
+## Imports
+
+Use explicit imports — never `from pydeequ.analyzers import *`:
 
 ```python
 from pydeequ.analyzers import AnalysisRunner, Size, Completeness, Mean
 from pydeequ.checks import Check, CheckLevel
 from pydeequ.verification import VerificationSuite, VerificationResult
+from pyspark.sql import functions as F
 ```
 
 ## SparkSession
 
-Always configure the PyDeequ JAR and set the Spark version:
+Always configure the PyDeequ JAR and use SPARK_MASTER env var:
 
 ```python
-os.environ["SPARK_VERSION"] = "3.0.2"
-
 spark = (SparkSession.builder
          .appName("descriptive-name")
          .master(os.environ.get("SPARK_MASTER", "local[*]"))
@@ -39,19 +44,33 @@ spark.sparkContext.setLogLevel("WARN")
 
 ## Script Structure
 
-Each source file is a runnable demo script:
+Each source file is a runnable demo with extractable functions:
 
 ```python
 """Module docstring describing the PyDeequ feature demonstrated."""
 
 import os
-import pydeequ
-from pyspark.sql import SparkSession
+os.environ["SPARK_VERSION"] = "3.5"
 
-def main():
+import pydeequ  # noqa: E402
+from pyspark.sql import DataFrame, SparkSession  # noqa: E402
+
+
+def run_demo(spark: SparkSession, df: DataFrame) -> DataFrame:
+    """Run the PyDeequ feature and return results.
+
+    Args:
+        spark: Active SparkSession.
+        df: Input DataFrame.
+
+    Returns:
+        DataFrame containing results.
+    """
+    ...
+
+
+def main() -> None:
     """Run the PyDeequ demo."""
-    os.environ["SPARK_VERSION"] = "3.0.2"
-
     spark = (SparkSession.builder
              .appName("demo-name")
              .master(os.environ.get("SPARK_MASTER", "local[*]"))
@@ -70,7 +89,7 @@ if __name__ == "__main__":
 
 ## Type Hints
 
-Add type hints to function signatures where practical:
+Add type hints to function signatures:
 
 ```python
 from pyspark.sql import DataFrame

@@ -1,0 +1,98 @@
+[project]
+name = "pyspark-chispa"
+version = "0.1.0"
+description = "PySpark testing reference project with chispa DataFrame quality assertions"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark>=3.5,<5.0",
+    "pandas>=2.0",
+    "numpy>=1.24",
+]
+
+[dependency-groups]
+dev = [
+    "chispa>=0.12.0",
+    "pytest>=8.0",
+    "pytest-mock>=3.15",
+    "pytest-sugar>=1.1",
+    "pytest-xdist>=3.5",
+    "pytest-cov>=6.0",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "bandit>=1.8",
+    "safety>=3.0",
+    "pre-commit>=4.0",
+    "taskipy>=1.14",
+    "mkdocs-material>=9.7",
+    "pymdown-extensions>=10.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = [
+    "slow: marks tests that require significant processing time",
+    "integration: marks tests that require external resources",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:pyspark",
+    "ignore:DataFrame constructor is internal:UserWarning:pyspark",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "if __name__ == .__main__.",
+    "pragma: no cover",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "PT", "S"]
+ignore = ["E501", "S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["data_frame"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.taskipy.tasks]
+test = "pytest -x --tb=short"
+test_parallel = "pytest -n auto --tb=short"
+test_verbose = "pytest -v --tb=long"
+test_cov = "pytest --cov --cov-report=term-missing"
+lint = "ruff check src tests examples"
+lint_fix = "ruff check --fix src tests examples"
+format = "ruff format src tests examples"
+format_check = "ruff format --check src tests examples"
+typecheck = "mypy src"
+docs = "mkdocs build --strict"
+docs_serve = "mkdocs serve"
+security = "bandit -r src -c pyproject.toml"
+security_deps = "safety check"
+check = "task lint && task format_check && task typecheck && task security && task test"
+clean = "rm -rf .pytest_cache .mypy_cache .ruff_cache .coverage htmlcov __pycache__ dist build *.egg-info src/**/__pycache__ tests/**/__pycache__"

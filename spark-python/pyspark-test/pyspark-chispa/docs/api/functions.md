@@ -6,7 +6,7 @@ objects and returns a `Column`, suitable for use with `df.withColumn()`.
 ## Source
 
 ```python title="src/data_frame/functions/functions.py"
---8<-- "src/data_frame/functions/functions.py"
+--8 < --"src/data_frame/functions/functions.py"
 ```
 
 ## Functions

@@ -6,7 +6,7 @@ returns a transformed `Column`, making them composable inside `withColumn` calls
 ## Source
 
 ```python title="src/data_frame/columns/column_equality.py"
---8<-- "src/data_frame/columns/column_equality.py"
+--8 < --"src/data_frame/columns/column_equality.py"
 ```
 
 ## Functions

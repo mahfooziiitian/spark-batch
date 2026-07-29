@@ -66,7 +66,7 @@ src/data_frame/columns/column_equality.py
 All test files share a single `SparkSession` fixture defined in `tests/conftest.py`:
 
 ```python title="tests/conftest.py"
---8<-- "tests/conftest.py"
+--8 < --"tests/conftest.py"
 ```
 
 1. `local[2]` — two threads, deterministic and fast.

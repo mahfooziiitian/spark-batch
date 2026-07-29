@@ -1,5 +1,5 @@
 ---
-applyTo: "spark-python/pyspark-test/**/src/**/*.py"
+applyTo: "**/src/**/*.py"
 ---
 
 # PySpark Source Code Instructions (Root-Level Defaults)
@@ -62,7 +62,37 @@ def my_function(col: Column) -> Column:
     """
 ```
 
+## DataFrame Transformations
+
+Prefer method chaining for readability:
+
+```python
+result = (df
+    .filter(F.col("status").isNotNull())
+    .withColumn("clean", F.regexp_replace(F.col("text"), "\\s+", " "))
+    .select("id", "clean"))
+```
+
+## Error Handling
+
+Raise `ValueError` with descriptive messages for invalid arguments:
+
+```python
+if sort_order not in ("asc", "desc"):
+    raise ValueError(
+        f"['asc', 'desc'] are the only valid sort orders and you entered '{sort_order}'"
+    )
+```
+
 ## Output
 
 - Prefer Parquet: `df.write.mode("overwrite").parquet(path)`
+- Use environment variables for output paths: `os.environ.get("OUTPUT_PATH", "/tmp/output")`
 - Always call `spark.stop()` at the end of standalone scripts.
+
+## Performance Best Practices
+
+- Use `spark.sql.adaptive.enabled=true` for Adaptive Query Execution.
+- Set `spark.sql.shuffle.partitions` appropriately (default 200 is often too high for local mode).
+- Avoid `collect()` on large DataFrames — use aggregations or `take(n)` instead.
+- Prefer `F.col("name")` over `df["name"]` for column references in transformations.

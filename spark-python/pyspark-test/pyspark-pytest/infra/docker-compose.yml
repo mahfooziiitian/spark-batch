@@ -1,0 +1,19 @@
+services:
+  test:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    environment:
+      - PYTHONPATH=/app/src
+      - SPARK_MASTER=local[*]
+      - SPARK_LOCAL_IP=127.0.0.1
+    volumes:
+      - ../src:/app/src:ro
+      - ../tests:/app/tests:ro
+    command: python3 -m pytest tests/ -v --tb=short
+
+  lint:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    command: python3 -m ruff check src tests

@@ -6,7 +6,7 @@ Schema inspection and comparison utilities for working with PySpark's
 ## Source
 
 ```python title="src/data_frame/schema/schema_utils.py"
---8<-- "src/data_frame/schema/schema_utils.py"
+--8 < --"src/data_frame/schema/schema_utils.py"
 ```
 
 ## Functions
@@ -19,8 +19,8 @@ all string or numeric columns dynamically.
 ```python
 from data_frame.schema.schema_utils import get_column_names_by_type
 
-string_cols = get_column_names_by_type(df, "string")   # ["name", "city"]
-long_cols   = get_column_names_by_type(df, "long")     # ["id", "count"]
+string_cols = get_column_names_by_type(df, "string")  # ["name", "city"]
+long_cols = get_column_names_by_type(df, "long")  # ["id", "count"]
 ```
 
 ### schema_to_dict

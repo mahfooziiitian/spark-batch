@@ -17,9 +17,9 @@ graph TD
 
 | Project | Testing Library | Focus | Package Manager |
 | --- | --- | --- | --- |
-| [**pyspark-chispa**](pyspark-chispa/index.md) | pytest + chispa | DataFrame quality testing with rich error output | uv |
-| [**pyspark-deepu**](pyspark-deepu/index.md) | pytest + PyDeequ | Data quality checks, profiling, constraint suggestions | uv |
-| [**pyspark-pytest**](pyspark-pytest/index.md) | pytest + pyspark.testing | General testing patterns, mocking, Faker data generation | uv |
+| **pyspark-chispa** | pytest + chispa | DataFrame quality testing with rich error output | uv |
+| **pyspark-deepu** | pytest + PyDeequ | Data quality checks, profiling, constraint suggestions | uv |
+| **pyspark-pytest** | pytest + pyspark.testing | General testing patterns, mocking, Faker data generation | uv |
 
 ## Quick Start
 

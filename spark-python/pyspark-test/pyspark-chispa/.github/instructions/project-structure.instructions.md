@@ -1,5 +1,5 @@
 ---
-applyTo: "{**/pyproject.toml,**/requirements.txt,**/uv.lock}"
+applyTo: "{**/pyproject.toml,**/uv.lock}"
 ---
 
 # Project Structure & Configuration Instructions
@@ -14,7 +14,7 @@ All configuration lives in `pyproject.toml`:
 - **mypy** — `[tool.mypy]`
 - **taskipy** — `[tool.taskipy.tasks]`
 
-Do not create standalone config files (`.flake8`, `mypy.ini`, `setup.cfg`, etc.).
+Do not create standalone config files (`.flake8`, `mypy.ini`, `setup.cfg`, `setup.py`, etc.).
 
 ## Dependency Management
 
@@ -29,24 +29,31 @@ uv lock                       # regenerate uv.lock
 
 ### Dependency groups
 
-| Group     | Contents                                               |
-| --------- | ------------------------------------------------------ |
-| runtime   | `pyspark`, `pandas`, `numpy`                           |
-| dev       | `chispa`, `pytest-*`, `ruff`, `mypy`, `mkdocs-*`, `taskipy` |
+| Group     | Contents                                                      |
+| --------- | ------------------------------------------------------------- |
+| runtime   | `pyspark`, `pandas`, `numpy`                                  |
+| dev       | `chispa`, `pytest-*`, `ruff`, `mypy`, `mkdocs-material`, `taskipy` |
 
 ## Source & Test Layout
 
 ```
 src/                 ← pythonpath (configured in pytest)
   data_frame/
-    <domain>/
-      __init__.py
-      <module>.py
+    columns/         ← column-level transformations
+    equality/        ← DataFrame comparison utilities
+    functions/       ← arithmetic column functions
+    helper/          ← pure Python utilities (no Spark dependency)
+    schema/          ← schema inspection and conversion
+    transformation/  ← DataFrame-level transformations
 
 tests/               ← testpaths (configured in pytest)
-  conftest.py        ← shared fixtures (SparkSession)
-  <domain>/
-    test_<module>.py
+  conftest.py        ← shared SparkSession fixture
+  columns/           ← mirrors src/data_frame/columns/
+  equality/          ← mirrors src/data_frame/equality/
+  functions/         ← mirrors src/data_frame/functions/
+  helper/            ← mirrors src/data_frame/helper/
+  schema/            ← mirrors src/data_frame/schema/
+  transformation/    ← mirrors src/data_frame/transformation/
 ```
 
 **Rules:**

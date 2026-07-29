@@ -1,0 +1,71 @@
+[project]
+name = "pyspark-deepu"
+version = "0.1.0"
+description = "PySpark data quality reference project using PyDeequ"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark>=3.5,<4.0",
+    "pydeequ>=1.0.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.11",
+    "mypy>=2.3.0",
+    "bandit>=1.8",
+    "safety>=3.0",
+    "pre-commit>=4.0",
+    "taskipy>=1.14",
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.7",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-x --tb=short -q"
+markers = [
+    "slow: marks tests that download Maven JARs on first run",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:pydeequ",
+    "ignore:DataFrame constructor is internal:UserWarning:pyspark",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM", "RUF", "S"]
+ignore = ["E501", "S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["constraints", "mertics"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = false
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]
+
+[tool.taskipy.tasks]
+test = "pytest tests/ -x --tb=short -q"
+test_verbose = "pytest tests/ -v --tb=long"
+lint = "ruff check src/ tests/"
+format = "ruff format src/ tests/"
+format_check = "ruff format --check src/ tests/"
+typecheck = "mypy src/"
+security = "bandit -r src -c pyproject.toml"
+security_deps = "safety check"
+check = "task lint && task format_check && task typecheck && task security && task test"
+docs = "mkdocs build --strict"
+docs_serve = "mkdocs serve"
+clean = "rm -rf .pytest_cache .mypy_cache .ruff_cache site __pycache__ src/**/__pycache__ tests/**/__pycache__"

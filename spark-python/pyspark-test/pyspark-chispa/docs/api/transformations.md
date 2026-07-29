@@ -6,7 +6,7 @@ and returns a new DataFrame.
 ## Source
 
 ```python title="src/data_frame/transformation/df_transformations.py"
---8<-- "src/data_frame/transformation/df_transformations.py"
+--8 < --"src/data_frame/transformation/df_transformations.py"
 ```
 
 ## Functions
@@ -28,8 +28,8 @@ clean_df = modify_column_names(df, dots_to_underscores)
 Works with any `str → str` function:
 
 ```python
-upper_df = modify_column_names(df, str.upper)   # "name" → "NAME"
-snake_df = modify_column_names(df, snake_case)   # "My Col" → "my_col"
+upper_df = modify_column_names(df, str.upper)  # "name" → "NAME"
+snake_df = modify_column_names(df, snake_case)  # "My Col" → "my_col"
 ```
 
 ### with_row_number
@@ -57,9 +57,7 @@ from data_frame.transformation.df_transformations import with_running_total
 result = with_running_total(df, value_col="revenue", order_col="date")
 
 # Partitioned running total (per region)
-result = with_running_total(
-    df, value_col="revenue", order_col="date", partition_col="region"
-)
+result = with_running_total(df, value_col="revenue", order_col="date", partition_col="region")
 ```
 
 **Example:**

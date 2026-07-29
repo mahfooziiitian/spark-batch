@@ -39,14 +39,18 @@ Test that mismatches raise:
 
 ```python
 def test_same_columns_different_types_raises(self, spark):
-    schema1 = StructType([
-        StructField("id", LongType(), True),
-        StructField("val", StringType(), True),
-    ])
-    schema2 = StructType([
-        StructField("id", LongType(), True),
-        StructField("val", DoubleType(), True),
-    ])
+    schema1 = StructType(
+        [
+            StructField("id", LongType(), True),
+            StructField("val", StringType(), True),
+        ]
+    )
+    schema2 = StructType(
+        [
+            StructField("id", LongType(), True),
+            StructField("val", DoubleType(), True),
+        ]
+    )
     with pytest.raises(Exception):
         assert_schema_equality(schema1, schema2)
 ```
@@ -58,22 +62,32 @@ You don't need a DataFrame to compare schemas. Build them directly:
 ```python
 from pyspark.sql.types import StructType, StructField, LongType, StringType
 
-schema = StructType([
-    StructField("id", LongType(), True),
-    StructField("name", StringType(), True),
-])
+schema = StructType(
+    [
+        StructField("id", LongType(), True),
+        StructField("name", StringType(), True),
+    ]
+)
 ```
 
 ### Nested Schemas
 
 ```python
 def test_nested_struct_schemas(self, spark):
-    nested = StructType([
-        StructField("id", LongType(), True),
-        StructField("info", StructType([
-            StructField("name", StringType(), True),
-        ]), True),
-    ])
+    nested = StructType(
+        [
+            StructField("id", LongType(), True),
+            StructField(
+                "info",
+                StructType(
+                    [
+                        StructField("name", StringType(), True),
+                    ]
+                ),
+                True,
+            ),
+        ]
+    )
     assert_schema_equality(nested, nested)
 ```
 
@@ -81,7 +95,7 @@ def test_nested_struct_schemas(self, spark):
 
 ```python
 def test_empty_schemas_match(self, spark):
-    assert_schema_equality(StructType([]), StructType([])
+    assert_schema_equality(StructType([]), StructType([]))
 ```
 
 ## Schema Utilities

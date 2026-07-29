@@ -6,27 +6,29 @@ applyTo: "{**/test_*.py,**/*_test.py,**/conftest.py}"
 
 ## SparkSession Fixture
 
-PyDeequ tests require the Deequ Maven JAR. Use a session-scoped fixture:
+This project uses a **shared conftest.py** (`tests/conftest.py`) with a
+session-scoped SparkSession configured with the Deequ JAR.
+
+**Important:** `SPARK_VERSION` must be set before importing pydeequ:
 
 ```python
 import os
-import pytest
-import pydeequ
-from pyspark.sql import SparkSession
+os.environ["SPARK_VERSION"] = "3.5"
 
-os.environ["SPARK_VERSION"] = "3.0.2"
+import pydeequ  # noqa: E402
+import pytest  # noqa: E402
+from pyspark.sql import SparkSession  # noqa: E402
 
 @pytest.fixture(scope="session")
 def spark():
-    session = (
-        SparkSession.builder.appName("test-suite")
-        .master("local[2]")
-        .config("spark.jars.packages", pydeequ.deequ_maven_coord)
-        .config("spark.jars.excludes", pydeequ.f2j_maven_coord)
-        .config("spark.sql.shuffle.partitions", "2")
-        .config("spark.ui.enabled", "false")
-        .getOrCreate()
-    )
+    session = (SparkSession.builder
+               .master("local[2]")
+               .appName("pyspark-deepu-tests")
+               .config("spark.jars.packages", pydeequ.deequ_maven_coord)
+               .config("spark.jars.excludes", pydeequ.f2j_maven_coord)
+               .config("spark.sql.shuffle.partitions", "2")
+               .config("spark.ui.enabled", "false")
+               .getOrCreate())
     session.sparkContext.setLogLevel("ERROR")
     yield session
     session.stop()
@@ -35,28 +37,27 @@ def spark():
 **Key settings:**
 - `spark.jars.packages` — downloads the Deequ JAR at session startup.
 - `spark.jars.excludes` — excludes conflicting f2j dependency.
-- `SPARK_VERSION` env var — must match the installed PySpark version.
-
-## Shared Fixture
-
-Place the SparkSession fixture in `tests/conftest.py` so all test files share one
-session. Do not create inline fixtures in individual test files.
+- `local[2]` — two threads for deterministic tests.
+- `shuffle.partitions=2` — avoids wasteful default of 200.
+- `ui.enabled=false` — skips Spark Web UI.
 
 ## Test Organisation
 
 - Mirror `src/` structure in `tests/`.
 - One test file per source module.
-- Group tests into classes by feature:
+- Group related tests into classes:
 
 ```python
 class TestAnalyzers:
     """Tests for PyDeequ analyzer computations."""
 
     def test_size_analyzer(self, spark):
-        ...
+        df = spark.createDataFrame([Row(a="foo", b=1), Row(a="bar", b=2)])
+        result = AnalysisRunner(spark).onData(df).addAnalyzer(Size()).run()
+        result_df = AnalyzerContext.successMetricsAsDataFrame(spark, result)
 
-    def test_completeness_analyzer(self, spark):
-        ...
+        row = result_df.filter(F.col("name") == "Size").first()
+        assert row["value"] == 2.0
 ```
 
 ## Assertion Patterns
@@ -64,10 +65,17 @@ class TestAnalyzers:
 PyDeequ returns analysis results as DataFrames. Assert on collected rows:
 
 ```python
-result_df = AnalysisRunner(spark).onData(df).addAnalyzer(Size()).run()
-result = AnalysisRunner.successMetricsAsDataFrame(spark, result_df)
-row = result.filter(F.col("name") == "Size").first()
+result_df = AnalyzerContext.successMetricsAsDataFrame(spark, result)
+row = result_df.filter(F.col("name") == "Size").first()
 assert row["value"] == expected_count
+```
+
+For verification results, check the status column:
+
+```python
+result_df = VerificationResult.checkResultsAsDataFrame(spark, result)
+row = result_df.first()
+assert row["constraint_status"] == "Success"
 ```
 
 ## Edge Cases
@@ -87,5 +95,7 @@ if __name__ == "__main__":
 ## Running Tests
 
 ```bash
-pytest tests/
+uv run task test                           # all tests, stop on first failure
+uv run task test_verbose                   # verbose output
+uv run pytest tests/constraints/ -v        # specific domain
 ```

@@ -1,0 +1,70 @@
+site_name: PySpark Test
+site_description: Mono-repo of PySpark testing reference projects — chispa, PyDeequ, and pyspark.testing
+repo_url: https://github.com/mahfooziiitian/spark-batch
+repo_name: mahfooziiitian/spark-batch
+edit_uri: ""
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.footer
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/overview.md
+      - Installation: getting-started/installation.md
+  - Libraries:
+      - Chispa: "!include ./pyspark-chispa/mkdocs.yml"
+      - PyDeequ: "!include ./pyspark-deepu/mkdocs.yml"
+      - PySpark Pytest: "!include ./pyspark-pytest/mkdocs.yml"
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - monorepo

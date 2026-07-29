@@ -13,10 +13,11 @@ SparkSession inside individual test files — always inject via the `spark` para
 import pytest
 from pyspark.sql import SparkSession
 
+
 @pytest.fixture(scope="session")
 def spark():
     session = (
-        SparkSession.builder.appName("test-suite")
+        SparkSession.builder.appName("chispa-test-suite")
         .master("local[2]")
         .config("spark.sql.shuffle.partitions", "2")
         .config("spark.ui.enabled", "false")
@@ -35,123 +36,95 @@ def spark():
 
 ## Test Organisation
 
-Group tests into classes by capability. Mirror `src/` structure in `tests/`:
+Group tests into classes by function. Mirror `src/data_frame/` structure in `tests/`:
 
 ```
 src/data_frame/columns/column_equality.py
     → tests/columns/test_column_equality.py  →  class TestRemoveNonWordCharacters
 src/data_frame/equality/df_equality.py
-    → tests/equality/test_df_equality.py     →  class TestSortColumns, class TestApproxDfEquality
+    → tests/equality/test_df_equality.py     →  class TestSortColumns, class TestColumnsMatch
 ```
 
 Class naming: `Test` + function or concept being tested.
 
-## Chispa Assertion Patterns
+## Imports
 
-### Exact column equality
-Compare a computed column against an expected column in the same DataFrame:
+Import source modules from the `data_frame` package:
+
+```python
+from data_frame.columns.column_equality import remove_non_word_characters
+from data_frame.equality.df_equality import sort_columns
+from data_frame.helper.string_helper import dots_to_underscores
+from data_frame.schema.schema_utils import schema_to_dict
+```
+
+Import chispa assertions explicitly:
 
 ```python
 from chispa.column_comparer import assert_column_equality
+from chispa import assert_approx_column_equality, assert_df_equality
+from chispa.dataframe_comparer import assert_approx_df_equality
+from chispa.schema_comparer import assert_schema_equality
+```
 
+## Chispa Assertion Patterns
+
+### Exact column equality
+
+```python
 def test_clean_name(self, spark):
     data = [("jo&&se", "jose"), (None, None)]
-    df = spark.createDataFrame(data, ["name", "expected"]).withColumn(
-        "result", my_function(F.col("name"))
-    )
-    assert_column_equality(df, "result", "expected")
+    df = spark.createDataFrame(data, ["name", "expected"]).withColumn("actual", my_function(F.col("name")))
+    assert_column_equality(df, "actual", "expected")
 ```
 
 ### Approximate column equality
-For floating-point results, use a precision threshold:
 
 ```python
-from chispa import assert_approx_column_equality
-
-assert_approx_column_equality(df, "result", "expected", 0.01)
+assert_approx_column_equality(df, "actual", "expected", 0.01)
 ```
 
 ### Full DataFrame equality
-Compare two entire DataFrames (schema + data):
 
 ```python
-from chispa import assert_df_equality
-
 assert_df_equality(actual_df, expected_df)
 ```
 
-### Approximate DataFrame equality
-```python
-from chispa.dataframe_comparer import assert_approx_df_equality
-
-assert_approx_df_equality(df1, df2, precision=0.1)
-```
-
-### Schema equality
-Always compare `.schema` (StructType), not the DataFrame itself:
+### Schema equality — pass `.schema`, not the DataFrame
 
 ```python
-from chispa.schema_comparer import assert_schema_equality
-
 assert_schema_equality(df1.schema, df2.schema)
 ```
 
 ### Testing expected failures
-When a chispa assertion is *expected* to raise, wrap with `pytest.raises`:
 
 ```python
 with pytest.raises(Exception):
     assert_df_equality(df1, df2)
-
-with pytest.raises(ValueError, match="valid sort orders"):
-    sort_columns(df, "invalid")
-```
-
-## Standard Assertions
-
-Prefer `df.count()` over `len(df.collect())`:
-
-```python
-assert df.count() == 5
-assert set(df.columns) == {"id", "name", "score"}
-assert df.filter(F.col("id") > 3).count() == 2
-```
-
-For single-row checks, collect minimally:
-
-```python
-row = df.filter(F.col("region") == "North").first()
-assert row["total_revenue"] == 1999.98
 ```
 
 ## Null Handling
 
-When creating DataFrames with all-null rows, PySpark cannot infer the schema.
-Provide an explicit schema:
+When creating DataFrames with all-null rows, provide an explicit schema:
 
 ```python
-from pyspark.sql.types import DoubleType, StructField, StructType
+from pyspark.sql.types import StringType, StructField, StructType
 
-schema = StructType([
-    StructField("num", DoubleType()),
-    StructField("expected", DoubleType()),
-])
+schema = StructType([StructField("text", StringType()), StructField("expected", StringType())])
 df = spark.createDataFrame([(None, None)], schema)
 ```
 
 ## Edge Cases to Always Cover
 
-Every test class should include cases for:
-- **Null values** — verify null propagation
+- **Null values** — verify null propagation (use explicit schemas)
 - **Empty strings** — distinct from null
 - **Empty DataFrames** — zero rows with correct schema
-- **Single-column / single-row** — boundary conditions
 - **Error paths** — invalid input wrapped in `pytest.raises`
 
 ## Pure Python Unit Tests
 
-Helper functions with no Spark dependency (e.g. `string_helper`) should have
-standalone tests that don't need the `spark` fixture:
+Helper functions with no Spark dependency should have standalone tests
+that don't need the `spark` fixture:
 
 ```python
 class TestDotsToUnderscores:
@@ -159,36 +132,7 @@ class TestDotsToUnderscores:
         assert dots_to_underscores("a.b") == "a_b"
 ```
 
-## Docstrings in Tests
-
-Use Google-style docstrings on test classes to describe scope. Individual test
-methods do not need docstrings — the method name should be descriptive enough:
-
-```python
-class TestSortColumns:
-    """Tests for the sort_columns DataFrame utility."""
-
-    def test_ascending(self, spark):
-        ...
-
-    def test_invalid_sort_order_raises(self, spark):
-        ...
-```
-
-Add a docstring to a test method only when the scenario is non-obvious:
-
-```python
-def test_null_propagation_with_explicit_schema(self, spark):
-    """Verify null handling when schema is provided explicitly.
-
-    PySpark cannot infer types from all-null rows, so an explicit
-    StructType is required to avoid CANNOT_DETERMINE_TYPE errors.
-    """
-```
-
 ## Entry Point
-
-Always include a direct-run entry point:
 
 ```python
 if __name__ == "__main__":

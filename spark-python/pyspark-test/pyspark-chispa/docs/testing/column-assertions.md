@@ -57,9 +57,7 @@ def test_only_special_characters(self, spark):
 ```python
 def test_extracts_domain(self, spark):
     data = [("alice@example.com", "example.com"), ("bob@work.org", "work.org")]
-    df = spark.createDataFrame(data, ["email", "expected"]).withColumn(
-        "actual", extract_email_domain(F.col("email"))
-    )
+    df = spark.createDataFrame(data, ["email", "expected"]).withColumn("actual", extract_email_domain(F.col("email")))
     assert_column_equality(df, "actual", "expected")
 ```
 
@@ -68,9 +66,7 @@ def test_extracts_domain(self, spark):
 ```python
 def test_all_uppercase(self, spark):
     data = [("HELLO WORLD", "Hello World")]
-    df = spark.createDataFrame(data, ["text", "expected"]).withColumn(
-        "actual", title_case(F.col("text"))
-    )
+    df = spark.createDataFrame(data, ["text", "expected"]).withColumn("actual", title_case(F.col("text")))
     assert_column_equality(df, "actual", "expected")
 ```
 
@@ -89,9 +85,7 @@ Same as `assert_column_equality`, but with a `precision` parameter:
 ```python
 def test_divide_by_three(self, spark):
     data = [(1, 0.33), (2, 0.66), (3, 1.0)]
-    df = spark.createDataFrame(data, ["num", "expected"]).withColumn(
-        "result", divide_by_three(F.col("num"))
-    )
+    df = spark.createDataFrame(data, ["num", "expected"]).withColumn("result", divide_by_three(F.col("num")))
     assert_approx_column_equality(df, "result", "expected", 0.01)  # (1)!
 ```
 
@@ -106,13 +100,13 @@ explicit schema:
 def test_null_handling(self, spark):
     from pyspark.sql.types import DoubleType, StructField, StructType
 
-    schema = StructType([
-        StructField("num", DoubleType()),
-        StructField("expected", DoubleType()),
-    ])
-    df = spark.createDataFrame([(None, None)], schema).withColumn(
-        "result", divide_by_three(F.col("num"))
+    schema = StructType(
+        [
+            StructField("num", DoubleType()),
+            StructField("expected", DoubleType()),
+        ]
     )
+    df = spark.createDataFrame([(None, None)], schema).withColumn("result", divide_by_three(F.col("num")))
     assert_approx_column_equality(df, "result", "expected", 0.01)
 ```
 
@@ -122,15 +116,15 @@ def test_null_handling(self, spark):
 
 ```python
 def test_zero_denominator_returns_null(self, spark):
-    schema = StructType([
-        StructField("num", DoubleType()),
-        StructField("denom", DoubleType()),
-        StructField("expected", DoubleType()),
-    ])
-    data = [(10.0, 0.0, None)]
-    df = spark.createDataFrame(data, schema).withColumn(
-        "result", null_safe_divide(F.col("num"), F.col("denom"))
+    schema = StructType(
+        [
+            StructField("num", DoubleType()),
+            StructField("denom", DoubleType()),
+            StructField("expected", DoubleType()),
+        ]
     )
+    data = [(10.0, 0.0, None)]
+    df = spark.createDataFrame(data, schema).withColumn("result", null_safe_divide(F.col("num"), F.col("denom")))
     assert_approx_column_equality(df, "result", "expected", 0.01)
 ```
 
@@ -139,9 +133,7 @@ def test_zero_denominator_returns_null(self, spark):
 ```python
 def test_clamps_above_upper(self, spark):
     data = [(150.0, 100.0), (999.0, 100.0)]
-    df = spark.createDataFrame(data, ["val", "expected"]).withColumn(
-        "result", clamp(F.col("val"), 0.0, 100.0)
-    )
+    df = spark.createDataFrame(data, ["val", "expected"]).withColumn("result", clamp(F.col("val"), 0.0, 100.0))
     assert_approx_column_equality(df, "result", "expected", 0.01)
 ```
 

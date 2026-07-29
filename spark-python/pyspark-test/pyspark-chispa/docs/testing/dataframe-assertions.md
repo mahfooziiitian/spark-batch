@@ -48,13 +48,9 @@ def test_union_dedup(self, spark):
 
 ```python
 def test_dots_to_underscores(self, spark):
-    source_df = spark.createDataFrame(
-        [("jose", 8)], ["first.name", "person.favorite.number"]
-    )
+    source_df = spark.createDataFrame([("jose", 8)], ["first.name", "person.favorite.number"])
     actual_df = modify_column_names(source_df, dots_to_underscores)
-    expected_df = spark.createDataFrame(
-        [("jose", 8)], ["first_name", "person_favorite_number"]
-    )
+    expected_df = spark.createDataFrame([("jose", 8)], ["first_name", "person_favorite_number"])
     assert_df_equality(actual_df, expected_df)
 ```
 
@@ -76,10 +72,12 @@ Verify that functions handle zero rows correctly:
 def test_empty_dataframe(self, spark):
     from pyspark.sql.types import LongType, StringType, StructField, StructType
 
-    schema = StructType([
-        StructField("a.b", StringType()),
-        StructField("c.d", LongType()),
-    ])
+    schema = StructType(
+        [
+            StructField("a.b", StringType()),
+            StructField("c.d", LongType()),
+        ]
+    )
     source_df = spark.createDataFrame([], schema)
     actual_df = modify_column_names(source_df, dots_to_underscores)
     assert actual_df.columns == ["a_b", "c_d"]
@@ -121,7 +119,7 @@ def test_exceeds_threshold_raises(self, spark):
 
 ```python
 def test_returns_rows_only_in_left(self, spark):
-    left  = spark.createDataFrame([(1,), (2,), (3,)], ["id"])
+    left = spark.createDataFrame([(1,), (2,), (3,)], ["id"])
     right = spark.createDataFrame([(2,), (3,)], ["id"])
     result = row_diff(left, right)
     expected = spark.createDataFrame([(1,)], ["id"])

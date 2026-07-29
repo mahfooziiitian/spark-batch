@@ -1,0 +1,77 @@
+site_name: PySpark PyDeequ
+site_description: PySpark data quality reference project using PyDeequ
+repo_url: https://github.com/mahfooziiitian/spark-batch
+repo_name: mahfooziiitian/spark-batch
+edit_uri: ""
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Project Structure: getting-started/project-structure.md
+  - Concepts:
+      - Architecture: concepts/architecture.md
+  - Guides:
+      - Best Practices: guides/best-practices.md
+      - Cookbook: guides/cookbook.md
+  - Testing Guide:
+      - Overview: testing/overview.md
+  - API Reference:
+      - Analyzers: api/analyzers.md
+      - Verification: api/verification.md
+      - Suggestions: api/suggestions.md
+      - Profiling: api/profiling.md
+      - Repository: api/repository.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+plugins:
+  - search

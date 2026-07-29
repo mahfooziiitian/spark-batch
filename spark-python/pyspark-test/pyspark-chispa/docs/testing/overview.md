@@ -44,7 +44,7 @@ graph TD
 All tests share a single `SparkSession` via `tests/conftest.py`:
 
 ```python title="tests/conftest.py"
---8<-- "tests/conftest.py"
+--8 < --"tests/conftest.py"
 ```
 
 !!! tip "Why `local[2]`?"
