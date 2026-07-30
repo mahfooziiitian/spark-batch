@@ -1,12 +1,89 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyspark-ds-json"
+version = "0.1.0"
+description = "PySpark 4 JSON Datasource — tutorials, demos, and reusable library for Spark 4 and Databricks"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark>=4.0.0",
+    "pandas<3.0.0",
+    "rich>=15.0.0",
 ]
-build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest>=6.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.7",
+    "pyarrow>=25.0.0",
+    "ruff>=0.16.0",
+    "mypy>=2.3.0",
+    "bandit>=1.9.4",
+    "pip-audit>=2.10.1",
+    "pip-licenses>=5.5.5",
+    "pytest-cov>=7.1.0",
+    "pymarkdownlnt>=0.9.39",
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pys_json"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "examples", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit (security)
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "T20",  # flake8-print
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "T201",   # allow print() in examples
+    "S603",   # allow subprocess calls (scripts)
+    "S607",   # allow partial executable path
+    "E501",   # allow long lines (JSON strings in examples)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/**/*.py" = ["T201", "S101"]  # allow print and assert in examples
+"tests/**/*.py" = ["S101"]             # allow assert in tests
+
+[tool.ruff.lint.isort]
+known-first-party = ["pys_json"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B101"]  # allow assert
+
+[tool.coverage.run]
+source = ["pys_json"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 50

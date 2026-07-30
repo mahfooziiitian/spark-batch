@@ -1,5 +1,5 @@
 ---
-applyTo: "tests/**/*.py"
+applyTo: "{**/test_*.py,**/*_test.py}"
 ---
 
 # Testing Conventions
@@ -7,8 +7,9 @@ applyTo: "tests/**/*.py"
 ## Framework
 
 - Use **pytest** as the test runner.
-- Tests live under `tests/` mirroring the `src/` structure where applicable.
-- Test file names follow the pattern `*_test.py` (e.g., `json_df_test.py`).
+- Tests live under `tests/` mirroring the `src/` and `examples/` structure where applicable.
+- Test file names follow the pattern `test_*.py` or `*_test.py`.
+- Target PySpark 4.x APIs in tests.
 
 ## SparkSession Fixture
 
@@ -25,12 +26,17 @@ def spark() -> SparkSession:
     session = (
         SparkSession.builder
         .master(os.environ.get("SPARK_MASTER", "local[*]"))
-        .appName("json-tests")
+        .appName("pys-json-tests")
+        .config("spark.ui.enabled", "false")
+        .config("spark.sql.adaptive.enabled", "true")
         .getOrCreate()
     )
+    session.sparkContext.setLogLevel("ERROR")
     yield session
     session.stop()
 ```
+
+Place this fixture in `tests/conftest.py` for automatic discovery.
 
 ## Writing Tests
 
@@ -55,6 +61,24 @@ def test_read_json_basic(spark: SparkSession, tmp_path: Path) -> None:
 
     assert df.count() == 2
     assert set(df.columns) == {"name", "age"}
+```
+
+### Testing Library Code (src/pys_json)
+
+```python
+from pys_json import JsonReader, create_spark_session
+from pys_json.parsing import parse_json_column
+from pys_json.schema import with_corrupt_record
+
+
+def test_json_reader_multiline(spark: SparkSession, tmp_path: Path) -> None:
+    json_file = tmp_path / "multi.json"
+    json_file.write_text('[{"name": "Alice"}, {"name": "Bob"}]')
+
+    reader = JsonReader(spark).multiline()
+    df = reader.read(str(json_file))
+
+    assert df.count() == 2
 ```
 
 ### Schema Assertions
@@ -88,6 +112,40 @@ def test_data_content(spark: SparkSession, tmp_path: Path) -> None:
     assert rows[0]["age"] == 30
 ```
 
+### Testing VARIANT Type (Spark 4.0+)
+
+```python
+from pyspark.sql import functions as F
+
+
+def test_variant_parsing(spark: SparkSession) -> None:
+    df = spark.createDataFrame([('{"name": "Alice", "age": 30}',)], ["raw"])
+    result = df.select(F.parse_json("raw").alias("v"))
+    assert result.schema[0].dataType.typeName() == "variant"
+```
+
+## Databricks-Specific Tests
+
+For code targeting Databricks, use conditional skips:
+
+```python
+import pytest
+
+
+def is_databricks() -> bool:
+    try:
+        import dbutils  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+@pytest.mark.skipunless(is_databricks(), reason="Requires Databricks Runtime")
+def test_unity_catalog_json(spark: SparkSession) -> None:
+    df = spark.read.json("/Volumes/catalog/schema/volume/test.json")
+    assert df.count() > 0
+```
+
 ## Guidelines
 
 - Keep tests focused — one behavior per test function.
@@ -96,16 +154,20 @@ def test_data_content(spark: SparkSession, tmp_path: Path) -> None:
 - Name test functions descriptively: `test_<feature>_<scenario>` (e.g., `test_gzip_compression_round_trip`).
 - Always assert on both schema structure and data content when testing read/write.
 - Use `spark.read.schema(expected_schema).json(path)` in tests to avoid schema inference variability.
+- Test both library code (`src/pys_json`) and examples where applicable.
 
 ## Running Tests
 
 ```bash
 # From project root
-pytest
+uv run pytest
 
 # Verbose output
-pytest -v
+uv run pytest -v
 
 # Run a specific test file
-pytest tests/df/json_df_test.py
+uv run pytest tests/df/json_df_test.py
+
+# Run tests matching a pattern
+uv run pytest -k "compression"
 ```

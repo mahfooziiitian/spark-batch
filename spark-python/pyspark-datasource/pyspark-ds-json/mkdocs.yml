@@ -1,0 +1,112 @@
+site_name: PySpark JSON Datasource
+site_description: Comprehensive PySpark JSON datasource reference
+site_url: ""
+repo_url: https://github.com/mahfooziiitian/spark-batch
+repo_name: mahfooziiitian/spark-batch
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.footer
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started/index.md
+  - Data Source:
+      - data-source/index.md
+      - data-source/reading.md
+      - data-source/writing.md
+      - data-source/multiline.md
+  - JSON Functions:
+      - json-functions/index.md
+      - json-functions/from-json.md
+      - json-functions/to-json.md
+      - json-functions/json-tuple.md
+      - json-functions/json-object.md
+      - json-functions/json-array-length.md
+      - json-functions/schema-of-json.md
+  - DataFrame:
+      - dataframe/index.md
+      - dataframe/create-dataframe.md
+      - dataframe/transformations.md
+      - dataframe/nested-json.md
+      - dataframe/write-json.md
+      - dataframe/pandas-bridge.md
+      - dataframe/joins.md
+      - dataframe/json-array.md
+      - dataframe/json-pandas.md
+  - Properties:
+      - properties/index.md
+      - properties/encoding.md
+      - properties/compression.md
+      - properties/formatting.md
+      - properties/null-fields.md
+      - properties/other-options.md
+  - Error Handling:
+      - error-handling/index.md
+      - error-handling/permissive.md
+      - error-handling/drop-malformed.md
+      - error-handling/fail-fast.md
+      - error-handling/rescued-data.md
+  - Schema:
+      - schema/index.md
+      - schema/class-schema.md
+      - schema/ddl-string.md
+      - schema/json-schema.md
+      - schema/json-schema-convert.md
+      - schema/schema-evolution.md
+      - schema/variable-keys.md
+  - JSONPath:
+      - json-path/index.md
+  - Best Practices: best-practices.md
