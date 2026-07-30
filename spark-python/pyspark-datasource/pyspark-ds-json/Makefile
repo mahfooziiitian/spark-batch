@@ -97,7 +97,7 @@ build: clean ## Build wheel and sdist
 # ─── Data & Examples ──────────────────────────────────────────────────────────
 
 generate-data: ## Generate test JSON fixture files
-	uv run python generate_test_data.py
+	uv run python scripts/generate_test_data.py
 
 run-example: ## Run a specific example (usage: make run-example EX=examples/06_schema/01_struct_type_schema.py)
 	uv run python $(EX)
