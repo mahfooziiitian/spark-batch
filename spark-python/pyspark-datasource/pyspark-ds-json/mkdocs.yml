@@ -99,12 +99,32 @@ nav:
       - error-handling/drop-malformed.md
       - error-handling/fail-fast.md
       - error-handling/rescued-data.md
+      - error-handling/corrupt-records-deep.md
+      - error-handling/multiline-vs-jsonlines.md
   - Schema:
       - schema/index.md
       - schema/class-schema.md
       - schema/ddl-string.md
       - schema/json-schema.md
       - schema/json-schema-convert.md
+      - schema/inference-problems.md
+      - schema/deeply-nested.md
+      - schema/array-struct-layouts.md
+      - schema/dynamic-keys.md
+      - schema/infer-from-string.md
+      - schema/mixed-root-structures.md
+      - schema/special-char-columns.md
+      - schema/case-sensitivity.md
+      - schema/timestamp-parsing.md
+      - schema/performance.md
+      - schema/streaming-evolution.md
+      - schema/explode-parent-context.md
+      - schema/optional-fields.md
+      - schema/numeric-precision.md
+      - schema/bad-json.md
+      - schema/production-parser.md
+      - schema/json-schema-spark.md
+      - schema/composition-keywords.md
       - schema/schema-evolution.md
       - schema/variable-keys.md
   - JSONPath:

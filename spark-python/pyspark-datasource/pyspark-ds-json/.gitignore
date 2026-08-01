@@ -51,7 +51,7 @@ spark-warehouse/
 local-*.log
 
 # ─── Data & Output (generated at runtime) ─────────────────────────────────────
-/data/output/
+/data/file_data/json/output/
 /tmp/
 *.parquet
 *.snappy

@@ -121,17 +121,18 @@ def data_path(*parts: str) -> str:
 
 
 def output_path(*parts: str) -> str:
-    """Build an absolute path under DATA_HOME/output (for write operations).
+    """Build an absolute path under DATA_HOME/file_data/json/output (for write operations).
 
     Creates the directory if it doesn't exist.
 
     Args:
-        *parts: Path segments to join after DATA_HOME/output.
+        *parts: Path segments to join after DATA_HOME/file_data/json/output.
 
     Returns:
         Absolute path string.
     """
-    p = Path(DATA_HOME) / "output" / Path(*parts) if parts else Path(DATA_HOME) / "output"
+    base = Path(DATA_HOME) / "file_data" / "json" / "output"
+    p = base / Path(*parts) if parts else base
     p.mkdir(parents=True, exist_ok=True)
     return str(p)
 

@@ -20,16 +20,16 @@ df = spark.read.schema(schema).json("s3://bucket/events/")
 ```
 
 !!! failure "Avoid in Production"
-    ```python
+`python
     # Schema inference scans ALL data — slow, unpredictable types
     df = spark.read.json("s3://bucket/events/")
-    ```
+    `
 
-| Approach | Speed | Type Safety | Use Case |
-|----------|-------|-------------|----------|
-| Explicit schema | ✅ Fast | ✅ Guaranteed | Production pipelines |
-| DDL string | ✅ Fast | ✅ Guaranteed | Config-driven schemas |
-| Schema inference | ❌ Slow | ⚠️ May vary | Development/exploration only |
+| Approach         | Speed   | Type Safety   | Use Case                     |
+| ---------------- | ------- | ------------- | ---------------------------- |
+| Explicit schema  | ✅ Fast | ✅ Guaranteed | Production pipelines         |
+| DDL string       | ✅ Fast | ✅ Guaranteed | Config-driven schemas        |
+| Schema inference | ❌ Slow | ⚠️ May vary   | Development/exploration only |
 
 ### Version Your Schemas
 
@@ -73,10 +73,10 @@ graph LR
 ```
 
 !!! tip "Convert Multiline to Single-Line"
-    ```bash
+`bash
     # Pre-process with jq for best Spark performance
     jq -c '.[]' array.json > records.jsonl
-    ```
+    `
 
 ### Partition Large Datasets
 
@@ -93,13 +93,13 @@ df = spark.read.json("s3://bucket/events/year=2024/month=01/")
 
 ### Use Compression
 
-| Codec | Ratio | Speed | When to Use |
-|-------|-------|-------|-------------|
-| `snappy` | Medium | ✅ Fast | Default for intermediate data |
-| `gzip` | ✅ Best | Slow | Archival, external sharing |
-| `lz4` | Low | ✅ Fastest | Temporary / shuffle data |
-| `zstd` | ✅ Best | Fast | Modern systems (Spark 3.2+) |
-| `none` | — | — | Debugging, small files |
+| Codec    | Ratio   | Speed      | When to Use                   |
+| -------- | ------- | ---------- | ----------------------------- |
+| `snappy` | Medium  | ✅ Fast    | Default for intermediate data |
+| `gzip`   | ✅ Best | Slow       | Archival, external sharing    |
+| `lz4`    | Low     | ✅ Fastest | Temporary / shuffle data      |
+| `zstd`   | ✅ Best | Fast       | Modern systems (Spark 3.2+)   |
+| `none`   | —       | —          | Debugging, small files        |
 
 ```python
 df.write.option("compression", "snappy").json("/output/")
@@ -131,11 +131,11 @@ filtered = df.filter(df.amount > 100)
 ```
 
 !!! warning "Required for `_corrupt_record`"
-    When filtering on `_corrupt_record`, you **must** cache first:
-    ```python
+When filtering on `_corrupt_record`, you **must** cache first:
+`python
     df = spark.read.schema(schema).json("data.json").cache()
     corrupt = df.filter(F.col("_corrupt_record").isNotNull())
-    ```
+    `
 
 ### Push Down Filters Early
 
@@ -164,11 +164,11 @@ graph TD
     E --> H[Data validation / CI]
 ```
 
-| Mode | Malformed Rows | Use Case |
-|------|----------------|----------|
-| `PERMISSIVE` (default) | Kept with nulls + `_corrupt_record` | Production — investigate failures |
-| `DROPMALFORMED` | Silently dropped | Batch jobs with acceptable data loss |
-| `FAILFAST` | Job fails immediately | Validation pipelines, CI/CD |
+| Mode                   | Malformed Rows                      | Use Case                             |
+| ---------------------- | ----------------------------------- | ------------------------------------ |
+| `PERMISSIVE` (default) | Kept with nulls + `_corrupt_record` | Production — investigate failures    |
+| `DROPMALFORMED`        | Silently dropped                    | Batch jobs with acceptable data loss |
+| `FAILFAST`             | Job fails immediately               | Validation pipelines, CI/CD          |
 
 ### Always Include `_corrupt_record` in Schema
 
@@ -262,13 +262,13 @@ if result.warnings:
 
 ### Choose the Right Function
 
-| Need | Function | Returns |
-|------|----------|---------|
-| Parse full JSON string → struct | `from_json(col, schema)` | Typed struct column |
-| Extract 1–2 nested fields | `get_json_object(col, "$.path")` | String column |
-| Extract multiple top-level keys | `json_tuple(col, "k1", "k2")` | Multiple string columns |
-| Convert struct → JSON string | `to_json(col)` | String column |
-| Infer schema from sample | `schema_of_json(lit(sample))` | DDL string column |
+| Need                            | Function                         | Returns                 |
+| ------------------------------- | -------------------------------- | ----------------------- |
+| Parse full JSON string → struct | `from_json(col, schema)`         | Typed struct column     |
+| Extract 1–2 nested fields       | `get_json_object(col, "$.path")` | String column           |
+| Extract multiple top-level keys | `json_tuple(col, "k1", "k2")`    | Multiple string columns |
+| Convert struct → JSON string    | `to_json(col)`                   | String column           |
+| Infer schema from sample        | `schema_of_json(lit(sample))`    | DDL string column       |
 
 ### from_json: Always Provide Schema
 
@@ -344,18 +344,18 @@ df = spark.read \
 
 ## Anti-Patterns to Avoid
 
-| ❌ Anti-Pattern | ✅ Better Approach |
-|----------------|-------------------|
-| Schema inference in production | Explicit `StructType` or DDL schema |
-| `df.collect()` for row count | `df.count()` |
-| `import *` from pyspark.sql.functions | `from pyspark.sql import functions as F` |
-| Hardcoded file paths | Environment variables with defaults |
-| Missing `spark.stop()` | Always stop session in scripts |
-| Multiple `get_json_object` on same column | Single `from_json` with full schema |
-| Reading multiline JSON at scale | Convert to single-line JSONL |
-| Querying only `_corrupt_record` without cache | `.cache()` before filtering |
-| Ignoring malformed records | PERMISSIVE + quarantine pattern |
-| `coalesce(1)` on large datasets | `maxRecordsPerFile` option |
+| ❌ Anti-Pattern                               | ✅ Better Approach                       |
+| --------------------------------------------- | ---------------------------------------- |
+| Schema inference in production                | Explicit `StructType` or DDL schema      |
+| `df.collect()` for row count                  | `df.count()`                             |
+| `import *` from pyspark.sql.functions         | `from pyspark.sql import functions as F` |
+| Hardcoded file paths                          | Environment variables with defaults      |
+| Missing `spark.stop()`                        | Always stop session in scripts           |
+| Multiple `get_json_object` on same column     | Single `from_json` with full schema      |
+| Reading multiline JSON at scale               | Convert to single-line JSONL             |
+| Querying only `_corrupt_record` without cache | `.cache()` before filtering              |
+| Ignoring malformed records                    | PERMISSIVE + quarantine pattern          |
+| `coalesce(1)` on large datasets               | `maxRecordsPerFile` option               |
 
 ---
 
