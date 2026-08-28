@@ -1,0 +1,118 @@
+# pyspark-ds-custom — Development Automation (justfile)
+# Usage: just <recipe>
+# Docs:  https://just.systems/man/en/
+
+set dotenv-load := false
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+# Default recipe — show help
+default:
+    @just --list --unsorted
+
+# ─── Setup ────────────────────────────────────────────────────────────────────
+
+# Install all dependencies (runtime + dev)
+install:
+    uv sync
+
+# Update lockfile
+lock:
+    uv lock
+
+# ─── Code Quality ─────────────────────────────────────────────────────────────
+
+# Run ruff linter (check mode)
+lint:
+    uv run ruff check src/ tests/ examples/
+
+# Auto-fix lint issues
+lint-fix:
+    uv run ruff check --fix src/ tests/ examples/
+
+# Format code with ruff
+format:
+    uv run ruff format src/ tests/ examples/
+
+# Check formatting without modifying
+format-check:
+    uv run ruff format --check src/ tests/ examples/
+
+# Run type checking with pyright
+type-check:
+    uv run pyright src/
+
+# ─── Security ─────────────────────────────────────────────────────────────────
+
+# Run bandit security scanner on source code
+security:
+    uv run bandit -r src/ -c pyproject.toml -q
+
+# Scan for secrets/credentials with gitleaks
+gitleaks:
+    gitleaks detect --source . --no-banner -v
+
+# Pre-commit gitleaks check (staged files only)
+gitleaks-protect:
+    gitleaks protect --source . --no-banner --staged -v
+
+# Run safety check on dependencies
+deps-audit:
+    uv run pip-audit
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+
+# Run tests (quiet)
+test:
+    uv run pytest
+
+# Run tests (verbose)
+test-verbose:
+    uv run pytest -v --tb=short
+
+# Run a specific test file
+test-file file:
+    uv run pytest {{file}} -v --tb=short
+
+# Run tests with coverage
+test-cov:
+    uv run pytest --cov=custom_ds --cov-report=term-missing --cov-report=html:htmlcov
+
+# Run tests matching a keyword
+test-k keyword:
+    uv run pytest -k "{{keyword}}" -v --tb=short
+
+# ─── Documentation ────────────────────────────────────────────────────────────
+
+# Build MkDocs documentation (strict mode)
+docs:
+    uv run mkdocs build --strict
+
+# Serve docs locally with live-reload
+docs-serve:
+    uv run mkdocs serve --dev-addr 127.0.0.1:8000
+
+# Deploy docs to GitHub Pages
+docs-deploy:
+    uv run mkdocs gh-deploy --force
+
+# ─── Maintenance ──────────────────────────────────────────────────────────────
+
+# Remove build artifacts and caches
+clean:
+    rm -rf site/ htmlcov/ .pytest_cache/ .ruff_cache/ dist/ build/
+    find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+    find . -type f -name "*.pyc" -delete 2>/dev/null || true
+
+# ─── Composite Targets ────────────────────────────────────────────────────────
+
+# Run all code quality checks
+check: lint format-check security gitleaks
+
+# Full CI pipeline: install → lint → security → test → docs
+ci: install lint format-check security test-cov docs
+
+# Everything: install + check + test + docs
+all: install check test docs
+
+# Quick pre-commit check (fast feedback)
+pre-commit: format lint security gitleaks-protect

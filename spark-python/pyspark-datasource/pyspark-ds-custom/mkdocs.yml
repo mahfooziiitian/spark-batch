@@ -1,0 +1,86 @@
+site_name: PySpark Custom Data Source
+site_description: "PySpark 4 Python Data Source API — build custom Spark connectors in pure Python"
+site_url: ""
+repo_url: https://github.com/mahfooziiitian/spark-batch
+repo_name: mahfooziiitian/spark-batch
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: custom
+      accent: red
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: custom
+      accent: red
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - toc.integrate
+    - navigation.footer
+
+extra_css:
+  - stylesheets/extra.css
+    
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+  - API Reference:
+      - api/index.md
+      - Batch Reader: api/batch-reader.md
+      - Batch Writer: api/batch-writer.md
+      - Streaming: api/streaming.md
+      - Arrow Reader: api/arrow-reader.md
+      - Partitioning: api/partitioning.md
+  - Examples:
+      - examples/index.md
+      - REST API Read: examples/restapi-read.md
+      - REST API Write: examples/restapi-write.md
+      - REST API Streaming: examples/restapi-streaming.md
+      - SQL Access: examples/sql-access.md
+      - Partitioned Reads: examples/partitioned-reads.md
+      - Community Sources: examples/community-sources.md
+      - UC HTTP Auth: examples/uc-http-auth.md

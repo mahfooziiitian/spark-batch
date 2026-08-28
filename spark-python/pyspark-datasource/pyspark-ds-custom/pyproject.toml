@@ -1,7 +1,107 @@
 [project]
 name = "pyspark-ds-custom"
 version = "0.1.0"
-description = "Add your description here"
+description = "PySpark 4 Python Data Source API — reusable custom connector library and runnable examples"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pyspark>=4.0.0",
+    "pyarrow>=14.0.0",
+    "requests>=2.32.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-sugar>=1.0.0",
+    "pytest-cov>=6.0",
+    "requests-mock>=1.12.1",
+    # Mock API server
+    "faker>=23.1.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    # Community data sources
+    "pyspark-data-sources>=0.1.11",
+    # Code quality & security
+    "ruff>=0.8.0",
+    "bandit>=1.8.0",
+    "pip-audit>=2.7.0",
+    # Documentation
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/custom_ds"]
+
+# ─── Ruff ─────────────────────────────────────────────────────────────────────
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit
+    "T20",  # flake8-print
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "S101",   # assert allowed in tests
+    "T201",   # print allowed in examples
+    "S603",   # subprocess calls OK in dev scripts
+    "S607",   # partial executable path OK
+    "N812",   # PySpark convention: import functions as F
+    "E501",   # line length handled by formatter
+    "RUF001", # ambiguous unicode OK in comments
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S106"]
+"examples/**/*.py" = ["T201", "T203"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_ds"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ─── Bandit ───────────────────────────────────────────────────────────────────
+
+[tool.bandit]
+exclude_dirs = ["tests", "examples"]
+skips = ["B101", "B310", "B601"]
+
+# ─── Coverage ─────────────────────────────────────────────────────────────────
+
+[tool.coverage.run]
+source = ["custom_ds"]
+omit = ["tests/*", "examples/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "if TYPE_CHECKING:",
+]
