@@ -12,25 +12,26 @@ help:
 test: ## Run pytest with verbose output
 	uv run pytest -vv tests
 
+.PHONY: test-parallel
+test-parallel: ## Run pytest in parallel across all CPU cores
+	uv run pytest -n auto -v --tb=short tests
+
 # ── Quality ───────────────────────────────────────────────────────────────────
 .PHONY: quality
-quality: import format format-check lint type-check sql ## Run full quality pipeline
-
-.PHONY: import
-import: ## Sort imports with isort (black profile)
-	uv run isort --profile black src tests
+quality: format lint type-check sql ## Run full quality pipeline
 
 .PHONY: format
-format: ## Format code with ruff
+format: ## Format code and sort imports with ruff
+	uv run ruff check --select I --fix src tests
 	uv run ruff format src tests
 
 .PHONY: format-check
-format-check: ## Lint with ruff (no fixes)
-	uv run ruff check src tests
+format-check: ## Check formatting without modifying files
+	uv run ruff format --check src tests
 
 .PHONY: lint
-lint: ## Lint with flake8
-	uv run flake8 -v src tests
+lint: ## Lint with ruff
+	uv run ruff check src tests
 
 .PHONY: type-check
 type-check: ## Static type check with mypy

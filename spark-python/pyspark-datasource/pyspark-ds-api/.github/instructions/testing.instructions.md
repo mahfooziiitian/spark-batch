@@ -13,8 +13,29 @@ applyTo: "tests/**/*.py"
 
 ```
 tests/
-└── test_rest_api.py          # Unit tests for REST API utilities
+├── conftest.py                    # Shared session-scoped SparkSession fixture
+├── test_rest_api.py               # Unit tests for REST API utilities
+├── test_incremental_state.py      # Watermark parsing + IncrementalStateStore tests
+└── test_incremental_runner.py     # Incremental runner integration tests
 ```
+
+For DB-backed state store tests, use a `tmp_path`-based SQLite file (never
+a shared/production DB URL) so each test gets an isolated database:
+
+```python
+@pytest.fixture
+def state_store(tmp_path):
+    return IncrementalStateStore(f"sqlite:///{tmp_path / 'test.db'}")
+```
+
+To exercise the incremental runner without a real HTTP call, patch
+`fetch_records` at the point it's imported into `incremental_runner`:
+
+```python
+with patch("incremental.incremental_runner.fetch_records", return_value=(records, {})):
+    df = run_incremental_ingestion(spark, config, "source_name", state_store=state_store)
+```
+
 
 ## SparkSession Fixture
 

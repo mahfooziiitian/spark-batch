@@ -1,4 +1,4 @@
-from rest_api import read_key_value
+from rest_ds.rest_api import read_key_value
 
 
 def test_read_key_value_1():

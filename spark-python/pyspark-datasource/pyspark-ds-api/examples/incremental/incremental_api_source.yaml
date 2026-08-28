@@ -1,0 +1,40 @@
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        location: "http://localhost:8090/events"
+        options:
+          method: "GET"
+          headers:
+            Accept: "application/json"
+          responseFormat: "json"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5
+          # -------------------------------------------------------------
+          # Incremental ingestion — see examples/incremental/README.md
+          # -------------------------------------------------------------
+          incremental:
+            enabled: true
+            # Where the watermark is injected on each request.
+            mode: "query_param"
+            # Name of the request parameter carrying the watermark.
+            paramName: "updated_since"
+            # Field read from each fetched record to compute the *next*
+            # watermark (the max value seen this run).
+            watermarkColumn: "updated_at"
+            # Value type used to parse/compare/serialize the watermark.
+            type: "datetime"
+            # Optional strptime/strftime format; omit to use ISO-8601.
+            format: null
+            # Seed value used only on the very first run for this source.
+            initialValue: "1970-01-01T00:00:00+00:00"
+            # Optional overlap window (ISO-8601 duration) rewound from the
+            # last watermark before each run, to tolerate late-arriving
+            # records / clock skew without re-reading full history.
+            lookback: "PT5M"
+            # Control-table connection for run state (see IncrementalStateStore).
+            stateStore:
+              url: "sqlite:///incremental_state.db"

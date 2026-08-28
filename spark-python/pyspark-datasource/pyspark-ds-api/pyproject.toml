@@ -26,9 +26,16 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "bandit>=1.9.4",
     "black>=25.1.0",
     "flake8-pyproject>=1.2.3",
     "isort>=6.0.1",
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.26",
+    "mypy>=2.3.1",
+    "pip-audit>=2.10.1",
+    "pre-commit>=4.6.2",
     "pytest-sugar>=1.0.0",
 ]
 
@@ -38,3 +45,36 @@ per-file-ignores = ['__init__.py:F401']
 max-line-length = 128
 count = true
 exclude = [".venv"]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = true
+exclude = ["examples/", "tests/", "\\.venv/"]
+
+# Pre-existing legacy modules with untyped-optional patterns predating mypy
+# adoption; relaxed here rather than reworked to keep this change scoped.
+[[tool.mypy.overrides]]
+module = ["rest_ds.rest_api", "rest_ds.util.certificate_util"]
+disable_error_code = ["assignment", "arg-type"]
+
+[tool.bandit]
+exclude_dirs = [".venv", "tests", "examples"]
+skips = ["B101"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rest_ds"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/rest_ds", "README.md"]

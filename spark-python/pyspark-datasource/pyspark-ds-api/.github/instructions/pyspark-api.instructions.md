@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.py"
+applyTo: "src/**/*.py,examples/**/*.py"
 ---
 
 # PySpark REST API Ingestion Patterns
@@ -226,6 +226,110 @@ def read_key_value(data: dict, key_path: str) -> any:
 # Usage: read_key_value(response_json, "meta.pagination.total_pages")
 ```
 
+## Incremental Ingestion
+
+Sources that should only fetch new/changed records set
+`options.incremental.enabled: true` in their YAML config. The
+`incremental_runner.run_incremental_ingestion()` orchestrator wraps the
+existing `fetch_records()` path — it does **not** replace auth, pagination,
+or response handling, it only injects a watermark parameter and tracks run
+state in a database.
+
+### YAML shape
+
+```yaml
+options:
+  incremental:
+    enabled: true
+    mode: "query_param"           # only mode implemented — see Limitations
+    paramName: "updated_since"    # request parameter carrying the watermark
+    watermarkColumn: "updated_at" # field read from each response record
+    type: "datetime"               # datetime | integer | string
+    format: null                    # strptime/strftime pattern, or null = ISO-8601
+    initialValue: "1970-01-01T00:00:00+00:00"
+    lookback: "PT5M"                # optional ISO-8601 overlap window
+    stateStore:
+      url: "sqlite:///incremental_state.db"   # any SQLAlchemy URL
+```
+
+### Control tables (`incremental/models.py`)
+
+Two `SQLModel` tables back every incremental source — created automatically
+on first connect via `SQLModel.metadata.create_all()`:
+
+```python
+class IngestionWatermark(SQLModel, table=True):
+    __tablename__ = "ingestion_watermark"
+    source_name: str = Field(primary_key=True)   # one row per source
+    watermark_value: str
+    updated_at: datetime
+
+class IngestionRunHistory(SQLModel, table=True):
+    __tablename__ = "ingestion_run_history"
+    run_id: Optional[int] = Field(default=None, primary_key=True)
+    source_name: str
+    status: str            # running | success | failed
+    watermark_start: Optional[str]
+    watermark_end: Optional[str]
+    params_used: Optional[str]
+    records_fetched: Optional[int]
+    error_message: Optional[str]
+    started_at: datetime
+    completed_at: Optional[datetime]
+```
+
+### Run lifecycle (`incremental/state_store.py`, `incremental/incremental_runner.py`)
+
+```python
+last_watermark = state_store.get_watermark(source_name, default=initial_value)
+run_watermark = apply_lookback(last_watermark, lookback, value_type, date_format)
+
+run_id = state_store.start_run(source_name, watermark_start=last_watermark, params_used=json.dumps(params))
+try:
+    all_data, opts = fetch_records(config, extra_query_params={param_name: run_watermark})
+    new_watermark = compute_next_watermark(all_data, watermark_column, value_type, date_format, fallback=last_watermark)
+    df = create_dataframe_json(spark, all_data, schema_path=opts.get("schema"))
+    state_store.complete_run(run_id, source_name, watermark_end=new_watermark, records_fetched=len(all_data))
+except Exception as exc:
+    state_store.fail_run(run_id, error_message=str(exc))
+    raise
+```
+
+Key invariants:
+
+- **The watermark advances only inside `complete_run()`**, after the fetch
+  has already succeeded — never compute/store the next watermark before the
+  data is safely in hand.
+- **A failed run leaves `ingestion_watermark` untouched** so the next
+  scheduled run retries the exact same window; the failure is still visible
+  in `ingestion_run_history` for alerting/reconciliation.
+- **Empty responses are not failures.** `compute_next_watermark()` falls
+  back to the previous watermark when no records (or no records with a
+  usable `watermarkColumn` value) come back, and `create_dataframe_json()`
+  returns a valid zero-row DataFrame instead of raising
+  `CANNOT_INFER_EMPTY_SCHEMA`.
+
+### Watermark helpers (`incremental/watermark.py`)
+
+```python
+parse_value(value, value_type, date_format=None)      # str -> datetime/int/str for comparison
+format_value(value, value_type, date_format=None)      # datetime/int -> str for storage/request params
+apply_lookback(watermark, lookback, value_type, date_format=None)  # rewind before each run
+compute_next_watermark(records, watermark_column, value_type, date_format=None, fallback=None)
+```
+
+`lookback` accepts a subset of ISO-8601 durations (`PT15M`, `P1D`, `PT1H30M`)
+and only applies to `datetime`-typed watermarks.
+
+### Limitations to be aware of
+
+- Only `mode: "query_param"` is implemented; `body`/`header` injection would
+  need a small extension to `incremental_runner.py`.
+- Incremental fetching reuses the simple pagination path in
+  `util/api_client.fetch_data_with_pagination`, not the `result_key`-aware
+  `Paginator` hierarchy in `rest_api.py` — a source needing both cursor/page
+  pagination *and* incremental watermarks needs that gap closed first.
+
 ## Response Format Handling
 
 Parse API responses based on `responseFormat` config:
@@ -320,6 +424,17 @@ extracts:
             max_attempts: 3
             timeout: 30
           filepath: "output.json"
+          # Optional — see "Incremental Ingestion" section above
+          incremental:
+            enabled: true
+            mode: "query_param"
+            paramName: "updated_since"
+            watermarkColumn: "updated_at"
+            type: "datetime"
+            initialValue: "1970-01-01T00:00:00+00:00"
+            lookback: "PT5M"
+            stateStore:
+              url: "sqlite:///incremental_state.db"
 ```
 
 Load configs with `yaml.safe_load`:

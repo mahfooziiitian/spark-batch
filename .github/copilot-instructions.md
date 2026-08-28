@@ -63,6 +63,25 @@ spark = (SparkSession.builder
 spark.sparkContext.setLogLevel("WARN")
 ```
 
+## Related Skills
+
+This repo includes `dbx-sql/` (a Databricks Asset Bundle with Unity Catalog, system-table,
+and notebook content) and `[Databricks]`-labeled content in `spark-sql/`. When work touches
+these areas, invoke the matching skill:
+
+| Skill | When to use |
+|-------|-------------|
+| `databricks-core` | Entry point for any Databricks CLI, auth/profile, or bundle task — load first. |
+| `databricks-dabs` | Working with `dbx-sql/databricks.yml` or other Databricks Asset Bundles. |
+| `databricks-dbsql` | Delta DML, `OPTIMIZE`/`ZORDER`, `COPY INTO`, `ai_query`, `h3_*`, or other DBSQL-only SQL features. |
+| `databricks-unity-catalog` | Three-part `catalog.schema.table` names, `GRANT`/`REVOKE`, or `dbx-sql/src/catalog` system tables. |
+| `databricks-ai-functions` | `ai_generate_text()`/`ai_query()` and other built-in AI SQL functions. |
+| `databricks-execution-compute` | Running notebooks (`dbx-sql/src/**/*.ipynb`) or SQL/Python on clusters or warehouses. |
+| `databricks-python-sdk` | Python scripts under `dbx-sql/src/mapping` calling Databricks REST APIs or SDK. |
+| `databricks-spark-structured-streaming` | `cloud_files()`/Auto Loader or other streaming examples. |
+| `databricks-pipelines` | `@dlt.table`/`dlt.read_stream` (e.g. `pyspark-ds-json`) or `CREATE STREAMING TABLE`/`MATERIALIZED VIEW` (Lakeflow Declarative Pipelines). |
+| `databricks-docs` | Fallback for unfamiliar Databricks features not covered by the above. |
+
 ## Documentation Style (MkDocs Material)
 
 - Admonitions: `!!! tip`, `!!! warning`, `!!! note`, `!!! success`, `!!! failure`.

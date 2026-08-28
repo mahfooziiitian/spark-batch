@@ -1,0 +1,70 @@
+# Run `just --list` to see all recipes.
+set shell := ["bash", "-cu"]
+
+default:
+    @just --list
+
+# Install runtime + dev dependencies
+sync:
+    uv sync
+
+# Run the test suite
+test:
+    uv run pytest tests/ -v --tb=short
+
+# Auto-format code (black + isort)
+format:
+    uv run black src tests examples
+    uv run isort src tests examples
+
+# Check formatting without modifying files
+format-check:
+    uv run black --check src tests examples
+    uv run isort --check-only src tests examples
+
+# Style lint (flake8)
+lint:
+    uv run flake8 src examples
+
+# Static type check the library (mypy)
+typecheck:
+    uv run mypy src/rest_ds
+
+# Static security scan (bandit)
+security:
+    uv run bandit -r src -c pyproject.toml
+
+# Scan dependencies for known CVEs
+pip-audit:
+    uv run pip-audit
+
+# Install git pre-commit hooks
+precommit-install:
+    uv run pre-commit install
+
+# Run all pre-commit hooks against the whole repo
+precommit:
+    uv run pre-commit run --all-files
+
+# Build the MkDocs site (strict mode)
+docs-build:
+    uv run mkdocs build --strict
+
+# Serve docs locally with live reload
+docs-serve:
+    uv run mkdocs serve
+
+# Build the rest_ds wheel/sdist
+build:
+    uv build
+
+# Remove caches, build artifacts, and the docs site
+clean:
+    rm -rf .mypy_cache .pytest_cache site dist build
+    find . -type d -name "__pycache__" -not -path "./.venv/*" -exec rm -rf {} +
+
+# Run the full local CI pipeline
+ci: format-check lint typecheck security test docs-build
+
+# Alias for `ci`
+all: ci
