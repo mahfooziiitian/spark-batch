@@ -1,7 +1,6 @@
 import os
 
 from authlib.integrations.requests_client import OAuth2Session
-from authlib.oauth2.rfc7523 import ClientSecretJWT
 from dotenv import load_dotenv
 
 load_dotenv()

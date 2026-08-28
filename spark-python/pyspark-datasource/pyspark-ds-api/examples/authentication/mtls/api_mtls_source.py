@@ -1,3 +1,4 @@
+import os
 import random
 from pathlib import Path
 from typing import List
@@ -38,10 +39,10 @@ def get_students():
 
 # --- Run Server ---
 def main():
-    current_dir = Path(__file__).parent
-    ssl_keyfile = f"{current_dir/'certs/server.key'}"
-    ssl_certfile = f"{current_dir/'certs/server.pem'}"
-    ssl_ca_certs = f"{current_dir/'certs/ca.pem'}"
+    certs_dir = Path(os.environ.get("DATA_HOME", "/tmp")) / "rest_api_ds" / "certs"
+    ssl_keyfile = f"{certs_dir / 'server.key'}"
+    ssl_certfile = f"{certs_dir / 'server.pem'}"
+    ssl_ca_certs = f"{certs_dir / 'ca.pem'}"
     print(f"SSL Key File: {ssl_keyfile}")
     print(f"SSL Cert File: {ssl_certfile}")
     print(f"SSL CA Certs: {ssl_ca_certs}")

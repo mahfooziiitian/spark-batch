@@ -13,7 +13,13 @@ os.environ["PYSPARK_PYTHON"] = sys.executable
 
 def main():
     spark = SparkSession.builder.appName("REST_API_Ingestion").getOrCreate()
-    config_path = Path(__file__).parents[0] / "api_key_query.yaml"
+    config_path = (
+        Path(__file__).parents[1]
+        / "authentication"
+        / "api_key"
+        / "query"
+        / "api_key_query.yaml"
+    )
     config = load_config(config_path)
     df = read_api(spark, config)
     df.show(truncate=False, n=100)

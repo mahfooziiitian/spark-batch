@@ -1,4 +1,6 @@
 import math
+import os
+from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
@@ -16,8 +18,9 @@ class Item(SQLModel, table=True):
     created_at: Optional[int] = None  # use integer timestamps for simplicity
 
 
-sqlite_file_name = "database.db"
-engine = create_engine(f"sqlite:///{sqlite_file_name}", echo=False)
+DATA_DIR = Path(os.environ.get("DATA_HOME", "/tmp")) / "rest_api_ds"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+engine = create_engine(f"sqlite:///{DATA_DIR / 'database.db'}", echo=False)
 
 
 def create_db_and_seed():

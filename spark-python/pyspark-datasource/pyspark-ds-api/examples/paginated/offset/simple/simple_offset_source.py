@@ -1,4 +1,6 @@
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
@@ -28,9 +30,10 @@ class PaginatedResponse(SQLModel):
 
 
 # DB setup
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-engine = create_engine(sqlite_url, echo=True)
+DATA_DIR = Path(os.environ.get("DATA_HOME", "/tmp")) / "rest_api_ds"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+sqlite_url = f"sqlite:///{DATA_DIR / 'database.db'}"
+engine = create_engine(sqlite_url, echo=False)
 
 
 def get_session():
@@ -41,6 +44,11 @@ def get_session():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        if not session.exec(select(Item)).first():
+            for i in range(100):
+                session.add(Item(name=f"Item {i + 1}"))
+            session.commit()
     yield
 
 

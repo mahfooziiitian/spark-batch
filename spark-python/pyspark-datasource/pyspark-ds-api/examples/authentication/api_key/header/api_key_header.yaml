@@ -12,7 +12,10 @@ extracts:
             type: "apikey"
             in: "header"
             api_key_name: "x-api-key"
-            api_key_value: "9d207bf0-10f5-4d8f-a479-22ff5aeff8d1"
+            # Non-secret fixture key shared with the local mock server only
+            # (api_key_header_source.py); override via API_KEY_HEADER_DEMO_KEY
+            # if you want a different value.
+            api_key_value: "${API_KEY_HEADER_DEMO_KEY}"
             # caFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/api_key/header/zscaler_root_ca.crt"
           headers:
             Accept: "application/json"
@@ -22,4 +25,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
-          filepath: "api_key_header.json"
+          filepath: "${DATA_HOME}/rest_api_ds/api_key_header.json"

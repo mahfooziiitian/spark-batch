@@ -12,8 +12,10 @@ extracts:
             type: "apikey"
             in: "query"
             api_key_name: "appid"
-            api_key_value: "5e0677c66d584c9ea41746b19e86d4da"
-            caFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/api_key/query/zscaler_root_ca.crt"
+            # Set OPENWEATHERMAP_API_KEY in your environment before running
+            # this example; never commit real API keys to source control.
+            api_key_value: "${OPENWEATHERMAP_API_KEY}"
+            # caFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/api_key/query/zscaler_root_ca.crt"
           headers:
             Accept: "application/json"
           queryParams:
@@ -23,4 +25,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
-          filepath: "api_key_query.json"
+          filepath: "${DATA_HOME}/rest_api_ds/api_key_query.json"

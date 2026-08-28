@@ -10,11 +10,12 @@ from pydantic import BaseModel
 
 # --- Auth setup ---
 security = HTTPBasic()
+authentication_dependency = Depends(security)
 USERNAME = "admin"
 PASSWORD = "secret123"
 
 
-def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+def authenticate(credentials: HTTPBasicCredentials = authentication_dependency):
     correct_username = secrets.compare_digest(credentials.username, USERNAME)
     correct_password = secrets.compare_digest(credentials.password, PASSWORD)
     if not (correct_username and correct_password):

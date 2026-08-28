@@ -1,62 +1,27 @@
-data_sources:
-  api_source:
-    type: "rest"
-    endpoint: "http://localhost:8000/items"
-    method: "GET"
-    authentication:
-      type: "oauth2"
-      tokenUrl: "https://api.example.com/oauth/token"
-      clientId: "your-client-id"
-      clientSecret: "your-client-secret"
-      scope: "read:data"
-
-    headers:
-      Authorization: "Bearer YOUR_ACCESS_TOKEN"
-      Accept: "application/json"
-    queryParams:
-      skip: 0
-      limit: 50
-    responseFormat: "json" # or "csv", "xml", etc.
-    # pagination:
-    #   enabled: true
-    #   pageParam: "page"
-    #   pageSizeParam: "size"
-    #   pageSize: 100
-    pagination:
-      enabled: true
-      skip: 10
-      limit: 100
-      pageSize: 100
-    retries:
-      maxAttempts: 3
-      delaySeconds: 5
-
-  basic_api_source:
-    type: "rest"
-    endpoint: "http://localhost:8000/items"
-    method: "GET"
-    authentication:
-      type: "basic"
-      username: "user123"
-      password: "pass456"
-
-    headers:
-      Authorization: "Bearer YOUR_ACCESS_TOKEN"
-      Accept: "application/json"
-    queryParams:
-      skip: 0
-      limit: 50
-    responseFormat: "json" # or "csv", "xml", etc.
-    # pagination:
-    #   enabled: true
-    #   pageParam: "page"
-    #   pageSizeParam: "size"
-    #   pageSize: 100
-    pagination:
-      enabled: true
-      skip: 10
-      limit: 100
-      pageSize: 100
-    retries:
-      maxAttempts: 3
-      delaySeconds: 5
+# Minimal, unauthenticated config used to demonstrate loading a YAML
+# extraction config with `rest_ds.util.config_loader.load_config` and
+# running it through `rest_ds.rest_api.read_api` — the same pattern used by
+# every other example in this repo, without the extra auth/pagination
+# concerns those examples focus on.
+#
+# Requires examples/ingestion/mock_items_server.py running on port 8091.
+extracts:
+  extract:
+    exec: read_api
+    source:
+      params:
+        format: "api"
+        schema: "json"
+        location: "http://localhost:8091/items"
+        options:
+          method: "GET"
+          queryParams:
+            page: 1
+          headers:
+            Accept: "application/json"
+          responseFormat: "json"
+          result_key: "results"
+          retries:
+            maxAttempts: 3
+            delaySeconds: 5
+          filepath: "${DATA_HOME}/rest_api_ds/config_demo_ds.json"

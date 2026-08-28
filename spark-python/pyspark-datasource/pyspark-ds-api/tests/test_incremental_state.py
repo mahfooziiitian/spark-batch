@@ -3,10 +3,13 @@ import json
 import pytest
 
 from rest_ds.incremental.state_store import IncrementalStateStore
-from rest_ds.incremental.watermark import (apply_lookback,
-                                           compute_next_watermark,
-                                           format_value,
-                                           parse_iso8601_duration, parse_value)
+from rest_ds.incremental.watermark import (
+    apply_lookback,
+    compute_next_watermark,
+    format_value,
+    parse_iso8601_duration,
+    parse_value,
+)
 
 
 class TestWatermarkParsing:

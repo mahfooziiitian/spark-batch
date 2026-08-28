@@ -3,10 +3,12 @@
 Run with: PYTHONPATH=src uv run python examples/schema/demo_json_schema.py
 """
 
+import os
+from pathlib import Path
+
 from pyspark.sql import SparkSession
 
-from rest_ds.schema.json_schema import (generate_schema_from_df,
-                                        read_json_schema)
+from rest_ds.schema.json_schema import generate_schema_from_df, read_json_schema
 
 
 def main():
@@ -19,7 +21,9 @@ def main():
     df.show()
 
     # Generate schema
-    json_schema_file = "schema.json"
+    data_dir = Path(os.environ.get("DATA_HOME", "/tmp")) / "rest_api_ds"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    json_schema_file = str(data_dir / "schema.json")
     generate_schema_from_df(json_schema_file, df)
 
     # Read schema from JSON file

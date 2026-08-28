@@ -77,7 +77,7 @@ options:
     initialValue: "1970-01-01T00:00:00+00:00"
     lookback: "PT5M"               # ISO-8601 duration; optional overlap window
     stateStore:
-      url: "sqlite:///incremental_state.db"
+      url: "sqlite:///${DATA_HOME}/rest_api_ds/incremental_state.db"
 ```
 
 See `incremental_api_source.yaml` for the full runnable example.
@@ -90,7 +90,7 @@ from rest_ds.incremental.state_store import IncrementalStateStore
 from rest_ds.util.config_loader import load_config
 
 config = load_config("examples/incremental/incremental_api_source.yaml")
-store = IncrementalStateStore("sqlite:///incremental_state.db")
+store = IncrementalStateStore(os.path.expandvars("sqlite:///${DATA_HOME}/rest_api_ds/incremental_state.db"))
 
 df = run_incremental_ingestion(spark, config, source_name="events_api", state_store=store)
 ```

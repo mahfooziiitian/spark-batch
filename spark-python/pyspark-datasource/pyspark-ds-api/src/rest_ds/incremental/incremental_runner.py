@@ -16,14 +16,16 @@ Flow per run:
 """
 
 import json
+import logging
 from typing import Optional
 
 from pyspark.sql import DataFrame, SparkSession
 
 from rest_ds.incremental.state_store import IncrementalStateStore
-from rest_ds.incremental.watermark import (apply_lookback,
-                                           compute_next_watermark)
+from rest_ds.incremental.watermark import apply_lookback, compute_next_watermark
 from rest_ds.util.data_processor import create_dataframe_json, fetch_records
+
+logger = logging.getLogger(__name__)
 
 
 class IncrementalConfigError(ValueError):
@@ -104,14 +106,22 @@ def run_incremental_ingestion(
             watermark_end=new_watermark,
             records_fetched=len(all_data),
         )
-        print(
-            f"[incremental] source={source_name} run_id={run_id} status=success "
-            f"records={len(all_data)} watermark {last_watermark!r} -> {new_watermark!r}"
+        logger.info(
+            "[incremental] source=%s run_id=%s status=success records=%d "
+            "watermark %r -> %r",
+            source_name,
+            run_id,
+            len(all_data),
+            last_watermark,
+            new_watermark,
         )
         return df
     except Exception as exc:  # noqa: BLE001 - re-raised after recording failure
         state_store.fail_run(run_id=run_id, error_message=str(exc))
-        print(
-            f"[incremental] source={source_name} run_id={run_id} status=failed error={exc}"
+        logger.error(
+            "[incremental] source=%s run_id=%s status=failed error=%s",
+            source_name,
+            run_id,
+            exc,
         )
         raise

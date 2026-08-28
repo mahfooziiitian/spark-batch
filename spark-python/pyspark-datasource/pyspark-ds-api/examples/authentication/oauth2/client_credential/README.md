@@ -41,7 +41,7 @@ If the credentials are valid, the server responds with an access token (usually 
 
 ```json
 {
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOi...",
+  "access_token": "<opaque-jwt-token>",
   "token_type": "Bearer",
   "expires_in": 3600
 }

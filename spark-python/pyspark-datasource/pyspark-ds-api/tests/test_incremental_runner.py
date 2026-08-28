@@ -2,8 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-from rest_ds.incremental.incremental_runner import (IncrementalConfigError,
-                                                    run_incremental_ingestion)
+from rest_ds.incremental.incremental_runner import (
+    IncrementalConfigError,
+    run_incremental_ingestion,
+)
 from rest_ds.incremental.state_store import IncrementalStateStore
 
 BASE_CONFIG = {

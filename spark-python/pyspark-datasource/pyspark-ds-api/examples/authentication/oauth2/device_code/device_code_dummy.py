@@ -1,9 +1,16 @@
+"""Demo of the OAuth2 device-code flow against GitHub.
+
+Set GITHUB_CLIENT_ID in your environment before running this script (never
+hardcode real OAuth app client IDs in source control).
+"""
+
+import os
 import time
 import webbrowser
 
 import requests
 
-client_id = "Ov23liu6RQn7dtNHiP4g"
+client_id = os.environ["GITHUB_CLIENT_ID"]
 scope = "repo"
 
 # Step 1: Get device code
@@ -11,6 +18,7 @@ device_code_resp = requests.post(
     "https://github.com/login/device/code",
     data={"client_id": client_id, "scope": scope},
     headers={"Accept": "application/json"},
+    timeout=30,
 ).json()
 
 print(
@@ -33,6 +41,7 @@ while True:
             "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
         },
         headers={"Accept": "application/json"},
+        timeout=30,
     ).json()
 
     if "access_token" in token_resp:
@@ -47,7 +56,7 @@ access_token = token_resp["access_token"]
 user_info = requests.get(
     "https://api.github.com/user",
     headers={"Authorization": f"Bearer {access_token}", "User-Agent": "my-cli-tool"},
-    verify="/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/oauth2/device_code/zscaler_root_ca.crt",
+    timeout=30,
 ).json()
 
 print("Authenticated as:", user_info["login"])

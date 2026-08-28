@@ -15,8 +15,8 @@ extracts:
           #     Content-Type: "application/x-www-form-urlencoded"
           #   type: "oauth2_form_client_credentials"
           #   tokenUrl: "https://accounts.spotify.com/api/token"
-          #   clientId: "936ec1a5447546f98cdce1b69c3a490f"
-          #   clientSecret: "818fca170bc8459e90c17024df2017bb"
+          #   clientId: "your-client-id"
+          #   clientSecret: "your-client-secret"
           pagination:
             strategy: "page"
             page_number_key: "page"
@@ -35,4 +35,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
-          filepath: "paginated_page_number_hn_etl.json"
+          filepath: "${DATA_HOME}/rest_api_ds/paginated_page_number_hn_etl.json"

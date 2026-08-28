@@ -37,4 +37,4 @@ extracts:
             lookback: "PT5M"
             # Control-table connection for run state (see IncrementalStateStore).
             stateStore:
-              url: "sqlite:///incremental_state.db"
+              url: "sqlite:///${DATA_HOME}/rest_api_ds/incremental_state.db"

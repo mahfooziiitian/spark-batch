@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
@@ -16,8 +18,9 @@ class Item(SQLModel, table=True):
 
 # ─── DB Setup ───────────────────────────────────────────────────────────
 
-sqlite_file_name = "db_cursor.sqlite"
-engine = create_engine(f"sqlite:///{sqlite_file_name}", echo=False)
+DATA_DIR = Path(os.environ.get("DATA_HOME", "/tmp")) / "rest_api_ds"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+engine = create_engine(f"sqlite:///{DATA_DIR / 'db_cursor.sqlite'}", echo=False)
 
 
 def seed_data():

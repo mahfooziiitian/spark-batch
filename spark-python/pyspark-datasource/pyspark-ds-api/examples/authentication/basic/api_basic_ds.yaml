@@ -18,4 +18,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
-          filepath: "api_basic_ds.json"
+          filepath: "${DATA_HOME}/rest_api_ds/api_basic_ds.json"

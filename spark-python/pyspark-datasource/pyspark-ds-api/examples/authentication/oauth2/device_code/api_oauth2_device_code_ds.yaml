@@ -16,8 +16,8 @@ extracts:
             type: "oauth2_device_code"
             device_code_url: "https://github.com/login/device/code"
             token_url: "https://github.com/login/oauth/access_token"
-            clientId: "936ec1a5447546f98cdce1b69c3a490f"
-            clientSecret: "818fca170bc8459e90c17024df2017bb"
+            clientId: "${GITHUB_CLIENT_ID}"
+            clientSecret: "${GITHUB_CLIENT_SECRET}"
             # scope: "read:data"
           headers:
             Accept: "application/json"
@@ -28,4 +28,4 @@ extracts:
           retries:
             maxAttempts: 3
             delaySeconds: 5
-          filepath: "api_basic_ds.json"
+          filepath: "${DATA_HOME}/rest_api_ds/api_basic_ds.json"

@@ -16,6 +16,7 @@ Any SQLAlchemy-compatible URL works, so the same code path supports:
 - ``mysql+pymysql://user:pass@host/db``
 """
 
+import os
 from datetime import datetime, timezone
 
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -28,6 +29,14 @@ class IncrementalStateStore:
 
     def __init__(self, db_url: str, echo: bool = False):
         self.db_url = db_url
+        # For local sqlite files, ensure the parent directory exists (e.g.
+        # a fresh `DATA_HOME/rest_api_ds/` on first run) — no-op for
+        # in-memory sqlite or remote (postgresql/mysql) URLs.
+        if db_url.startswith("sqlite:///") and db_url != "sqlite:///:memory:":
+            db_path = db_url[len("sqlite:///") :]
+            parent = os.path.dirname(db_path)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
         self.engine = create_engine(db_url, echo=echo)
         SQLModel.metadata.create_all(self.engine)
 

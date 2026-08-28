@@ -23,7 +23,11 @@ def build_request_components(opts):
     queryParams = opts.get("queryParams", {}).copy()
 
     if auth_cfg.get("type") == "apikey" and auth_cfg.get("in") == "query":
-        queryParams[auth_cfg["name"]] = auth_cfg["value"]
+        # Support both the "name"/"value" and "api_key_name"/"api_key_value"
+        # config key conventions used across different example configs.
+        key_name = auth_cfg.get("name", auth_cfg.get("api_key_name"))
+        key_value = auth_cfg.get("value", auth_cfg.get("api_key_value"))
+        queryParams[key_name] = key_value
 
     cert = None
     if auth_cfg.get("type") == "mtls":

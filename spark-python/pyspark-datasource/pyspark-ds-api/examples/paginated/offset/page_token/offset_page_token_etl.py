@@ -1,27 +1,68 @@
+"""Offset page-token pagination ETL demo.
+
+Pairs with ``offset_page_token_source.py`` (mock server on port 8081):
+
+    PYTHONPATH=src uv run python examples/paginated/offset/page_token/offset_page_token_source.py &
+    PYTHONPATH=src uv run python examples/paginated/offset/page_token/offset_page_token_etl.py
+"""
+
+import argparse
+import logging
 import os
 import sys
 from pathlib import Path
 
-import yaml
 from pyspark.sql import SparkSession
 
 from rest_ds.rest_api import read_api
+from rest_ds.util.config_loader import load_config
+from rest_ds.util.config_validator import ConfigValidationError
 
-os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_11"]
+os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_11", "")
 os.environ["PYSPARK_PYTHON"] = sys.executable
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
 
-def main():
-    spark = SparkSession.builder.appName("REST_API_Ingestion").getOrCreate()
-    config_path = Path(__file__).parents[0] / "offset_page_token.yaml"
-    print(f"Loading config from {config_path}")
-    with open(file=config_path, mode="r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    print(f"Config loaded: {config}")
-    print("Extracting data from API...")
-    read_api(spark, config)
-    print("Data extraction complete.")
+DEFAULT_CONFIG = Path(__file__).parent / "offset_page_token.yaml"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG,
+        help="Path to the source YAML config (default: %(default)s)",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    spark = (
+        SparkSession.builder.appName("REST_API_Ingestion")
+        .master(os.environ.get("SPARK_MASTER", "local[*]"))
+        .getOrCreate()
+    )
+    spark.sparkContext.setLogLevel("WARN")
+    try:
+        logger.info("Loading config from %s", args.config)
+        config = load_config(args.config)
+
+        logger.info("Extracting data from API (offset page-token pagination)...")
+        read_api(spark, config)
+        logger.info("Data extraction complete.")
+        return 0
+    except (FileNotFoundError, ConfigValidationError) as err:
+        logger.error("%s", err)
+        return 1
+    except Exception:
+        logger.exception("Extraction failed")
+        return 1
+    finally:
+        spark.stop()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

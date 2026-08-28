@@ -1,8 +1,12 @@
+import logging
+
 from pyspark.sql.types import StructType
 
 from rest_ds.schema.json_schema import read_json_schema
 from rest_ds.util.api_client import fetch_data_with_pagination, make_request
 from rest_ds.util.request_builder import build_request_components
+
+logger = logging.getLogger(__name__)
 
 
 def create_dataframe_json(spark, data, schema_path=None):
@@ -72,5 +76,5 @@ def fetch_records(config, extra_query_params=None):
 
 def read_api(spark, config, extra_query_params=None):
     all_data, opts = fetch_records(config, extra_query_params=extra_query_params)
-    print(f"Extracted {len(all_data)} records.")
+    logger.info("Extracted %d records.", len(all_data))
     return create_dataframe_json(spark, all_data, schema_path=opts.get("schema"))

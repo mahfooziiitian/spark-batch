@@ -1,58 +1,14 @@
-import base64
-import datetime
+import logging
 import socket
 import ssl
-import uuid
 
-import jwt
-import requests
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
-from requests.exceptions import HTTPError
+# Note: JWT assertion / bearer-token generation for OAuth2 certificate-based
+# auth now lives in `rest_ds.authentication.auth_util` (used by the
+# `oauth2_assertion` flow), which is the parameterized, actively used
+# implementation. The hardcoded, unused duplicates that used to live here
+# were removed as part of the duplicate-code cleanup.
 
-
-def generate_assertion(public_key_path: str, private_key_path: str) -> str:
-    """Generates a JWT assertion for GPCS STS."""
-    with open(public_key_path, mode="rb") as public_key_file:
-        public_key = public_key_file.read()
-    with open(private_key_path, mode="rb") as private_key_file:
-        private_key = private_key_file.read()
-
-    cert = x509.load_pem_x509_certificate(public_key)
-    # x5t/kid thumbprint per RFC 7523 — not used as a security hash.
-    fingerprint = cert.fingerprint(hashes.SHA1())  # nosec B303
-    kid = fingerprint.hex()
-    x5t = base64.urlsafe_b64encode(fingerprint).decode("utf-8")
-
-    payload = {
-        "jti": str(uuid.uuid4()),
-        "iat": datetime.datetime.utcnow(),
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
-        "aud": "http://gpcs.hishsp.com",
-        "RequestBranchIdentifier": "gainwell-de-training",
-    }
-
-    headers = {"x5t": x5t, "kid": kid}
-    auth_token = jwt.encode(payload, private_key, algorithm="RS256", headers=headers)
-    return auth_token
-
-
-def generate_bearer_token(
-    public_key_path: str, private_key_path: str, base_url: str, path: str
-) -> str:
-    """Generates a JWT Bearer token for GPCS."""
-    assertion = generate_assertion(public_key_path, private_key_path)
-    try:
-        response = requests.post(
-            f"{base_url}/path",
-            json={"grant_type": "jwt-bearer", "assertion": assertion},
-            timeout=60,
-        )
-        response.raise_for_status()
-        print(response.json().get("access_token"))
-        return response.json().get("access_token")
-    except HTTPError as e:
-        raise Exception("STS Authentication Error", e)
+logger = logging.getLogger(__name__)
 
 
 def get_cert_from_url(
@@ -70,6 +26,8 @@ def get_cert_from_url(
                 with open(cert_file, "w", encoding="utf-8") as f:
                     f.write(pem_cert)
 
-                print(f"Certificate saved to '{cert_file}'")
+                logger.info("Certificate saved to '%s'", cert_file)
     except (socket.error, ssl.SSLError) as e:
-        print(f"Failed to retrieve certificate from {hostname}:{port} - {e}")
+        logger.error(
+            "Failed to retrieve certificate from %s:%s - %s", hostname, port, e
+        )

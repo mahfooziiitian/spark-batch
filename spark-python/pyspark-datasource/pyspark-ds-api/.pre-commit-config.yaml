@@ -20,9 +20,24 @@ repos:
         types: [python]
         files: ^(src|examples)/
 
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check
+        language: system
+        types: [python]
+        files: ^src/
+
       - id: mypy
         name: mypy
         entry: uv run mypy
+        language: system
+        pass_filenames: false
+        args: ["src/rest_ds"]
+        files: ^src/
+
+      - id: radon
+        name: radon (cyclomatic complexity)
+        entry: uv run radon cc -nb
         language: system
         pass_filenames: false
         args: ["src/rest_ds"]
@@ -34,3 +49,9 @@ repos:
         language: system
         types: [python]
         files: ^src/
+
+      - id: gitleaks
+        name: gitleaks (hardcoded secrets scan)
+        entry: gitleaks detect --source . --no-git -v
+        language: system
+        pass_filenames: false

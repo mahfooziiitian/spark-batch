@@ -2,9 +2,12 @@
 
 set -e
 
-# Create output directory
-mkdir -p certs
-cd certs
+# Create output directory under DATA_HOME/rest_api_ds/certs (all example
+# input/output data and databases live under this shared location).
+DATA_HOME="${DATA_HOME:-/tmp}"
+CERTS_DIR="${DATA_HOME}/rest_api_ds/certs"
+mkdir -p "${CERTS_DIR}"
+cd "${CERTS_DIR}"
 
 echo "[1/7] Generating CA private key..."
 openssl genrsa -out ca.key 4096
@@ -59,5 +62,5 @@ openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
 # Clean up
 rm *.csr *.srl server-san.cnf
 
-echo "✅ Certificates generated in ./certs:"
+echo "✅ Certificates generated in ${CERTS_DIR}:"
 ls -1

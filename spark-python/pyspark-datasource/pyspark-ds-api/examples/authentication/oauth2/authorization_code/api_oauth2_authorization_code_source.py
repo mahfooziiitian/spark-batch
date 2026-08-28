@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 
 # Load environment variables
 load_dotenv()
@@ -13,10 +14,6 @@ load_dotenv()
 # Setup FastAPI and templates
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-from fastapi import FastAPI
-from starlette.middleware.sessions import SessionMiddleware
-
-app = FastAPI()
 # we need this to save temporary code & state in session
 app.add_middleware(SessionMiddleware, secret_key="some-random-string")
 

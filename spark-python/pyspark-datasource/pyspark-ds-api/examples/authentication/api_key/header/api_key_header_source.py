@@ -1,3 +1,4 @@
+import os
 import random
 from typing import List
 
@@ -8,11 +9,12 @@ from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 
 # --- Security Setup ---
-API_KEYS = [
-    "9d207bf0-10f5-4d8f-a479-22ff5aeff8d1",
-    "f47d4a2c-24cf-4745-937e-620a5963c0b8",
-    "b7061546-75e8-444b-a2c4-f19655d07eb8",
-]
+# Non-secret fixture key for this local-only demo — override both here and
+# in api_key_header.yaml via API_KEY_HEADER_DEMO_KEY if you want a different
+# value. Deliberately low-entropy/non-secret-looking so it isn't mistaken
+# for a real credential.
+DEFAULT_DEMO_KEY = "demo-local-fixture-key"
+API_KEYS = [os.environ.get("API_KEY_HEADER_DEMO_KEY", DEFAULT_DEMO_KEY)]
 
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
 

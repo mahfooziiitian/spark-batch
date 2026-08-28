@@ -1,8 +1,18 @@
+"""Demo of the OAuth2 authorization-code flow using authlib.
+
+Set GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET in your environment before
+running this script (never hardcode real OAuth app credentials in source
+control) — see authlib_client_cred.py for the equivalent client-credentials
+flow using the same env vars.
+"""
+
+import os
+
 from authlib.integrations.requests_client import OAuth2Session
 
 client = OAuth2Session(
-    client_id="Ov23liu6RQn7dtNHiP4g",
-    client_secret="f686b228efa7dc7c4a705d5d0380c9821c770a2a",
+    client_id=os.environ["GITHUB_CLIENT_ID"],
+    client_secret=os.environ["GITHUB_CLIENT_SECRET"],
     redirect_uri="https://yourapp.com/callback",
 )
 # Redirect user to authorization URL

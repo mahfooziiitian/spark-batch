@@ -10,16 +10,13 @@ extracts:
           method: "GET"
           authentication:
             type: "mtls"
-            certFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/certs/client.pem"
-            keyFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/certs/client.key"
-            caFile: "/home/malam2/development/learning/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/mtls/certs/ca.pem"
-            # certFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.crt"
-            # keyFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/client.key"
-            # caFile: "/home/malam/development/processing/batching/spark-batch/spark-python/pyspark-datasource/pyspark-ds-api/src/authentication/tls/ca.pem"
+            certFile: "${DATA_HOME}/rest_api_ds/certs/client.pem"
+            keyFile: "${DATA_HOME}/rest_api_ds/certs/client.key"
+            caFile: "${DATA_HOME}/rest_api_ds/certs/ca.pem"
           headers:
             Accept: "application/json"
           responseFormat: "json"
           retries:
             maxAttempts: 3
             delaySeconds: 5
-          filepath: "api_mtls_etl.json"
+          filepath: "${DATA_HOME}/rest_api_ds/api_mtls_etl.json"

@@ -1,4 +1,6 @@
 import base64
+import os
+from pathlib import Path
 from typing import List, Optional
 
 import uvicorn
@@ -15,8 +17,9 @@ class Item(SQLModel, table=True):
     created_at: int  # just an int timestamp
 
 
-sqlite_file_name = "db_token_offset.db"
-engine = create_engine(f"sqlite:///{sqlite_file_name}")
+DATA_DIR = Path(os.environ.get("DATA_HOME", "/tmp")) / "rest_api_ds"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+engine = create_engine(f"sqlite:///{DATA_DIR / 'db_token_offset.db'}")
 
 
 def create_db_and_seed():
