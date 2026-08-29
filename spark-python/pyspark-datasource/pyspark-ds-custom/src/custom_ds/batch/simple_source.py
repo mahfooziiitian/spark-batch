@@ -5,6 +5,7 @@ Reference: pyspark.sql.datasource.{DataSource, DataSourceReader, InputPartition}
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from pyspark.sql.datasource import DataSource, DataSourceReader, InputPartition
@@ -42,7 +43,7 @@ class SimpleDataSource(DataSource):
 
 
 class SimpleDataSourceReader(DataSourceReader):
-    def __init__(self, schema: StructType, options: dict) -> None:
+    def __init__(self, schema: StructType, options: Mapping[str, str]) -> None:
         self.schema = schema
         self.num_rows = int(options.get("numRows", 10))
         self.num_partitions = max(1, int(options.get("numPartitions", 2)))
@@ -59,6 +60,8 @@ class SimpleDataSourceReader(DataSourceReader):
             start += size
         return result or [RangePartition(0, 0)]
 
-    def read(self, partition: RangePartition):
-        for i in range(partition.start, partition.end):
+    def read(self, partition: InputPartition):
+        start = getattr(partition, "start", 0)
+        end = getattr(partition, "end", start)
+        for i in range(start, end):
             yield (i, f"row-{i}")

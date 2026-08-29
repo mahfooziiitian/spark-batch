@@ -17,7 +17,11 @@ locally with `local[*]`.
 | `09_restapi_partitioned/` | Parallel reads: URL-based and page-based partitioning |
 | `10_community_sources/` | Using `pyspark-data-sources` community connectors (Fake, GitHub) |
 | `11_uc_http_auth/` | Unity Catalog HTTP connection — secure credential injection |
-| `mock_server/` | FastAPI mock server used by examples 05–09 |
+| `12_oauth2/` | OAuth2 authentication (client credentials, bearer token) |
+| `13_databricks_connect/` | Run REST API examples on remote clusters via Databricks Connect |
+| `14_restapi_weather/` | Live OpenWeatherMap API — read, multi-city, SQL, streaming |
+| `15_restapi_databricks/` | Databricks REST API — list jobs, clusters, and job runs |
+| `mock_server/` | FastAPI mock server used by examples 05–09, 12 |
 
 ## Run (simple in-memory sources)
 
@@ -61,4 +65,66 @@ uv run python examples/10_community_sources/sql_with_fake_data.py
 
 # Mixed pipeline (community + custom) — requires mock server running
 uv run python examples/10_community_sources/mixed_pipeline.py
+```
+
+## Run (Databricks Connect — remote cluster execution)
+
+Execute REST API examples from your local IDE on a remote Databricks cluster.
+Requires `databricks-connect` (`uv sync --extra databricks`) and a configured cluster.
+
+```bash
+# Set connection (or use DATABRICKS_PROFILE)
+export DATABRICKS_HOST="https://<workspace>.cloud.databricks.com"
+export DATABRICKS_CLUSTER_ID="<cluster-id>"
+export DATABRICKS_TOKEN="<pat-token>"
+export REST_API_URL="http://<api-host>/api/users"
+
+# Batch read
+uv run python examples/13_databricks_connect/dbconnect_batch_read.py
+
+# Batch write
+uv run python examples/13_databricks_connect/dbconnect_batch_write.py
+
+# SQL queries
+uv run python examples/13_databricks_connect/dbconnect_sql.py
+```
+
+## Run (OpenWeatherMap — live API examples)
+
+These examples hit the real OpenWeatherMap API. Get a free key at
+[openweathermap.org/api](https://openweathermap.org/api).
+
+```bash
+export OPENWEATHER_API_KEY=<your-api-key>
+
+# Single city weather read
+uv run python examples/14_restapi_weather/weather_read.py
+
+# Multiple cities — parallel URL-based partitioning
+uv run python examples/14_restapi_weather/weather_multi_city.py
+
+# SQL analytics over weather data
+uv run python examples/14_restapi_weather/weather_sql.py
+
+# Streaming weather updates (polls every 30s for 2 minutes)
+uv run python examples/14_restapi_weather/weather_stream.py
+```
+
+## Run (Databricks REST API — workspace metadata)
+
+Query your Databricks workspace metadata (jobs, clusters, runs) using the
+REST API data source with bearer token auth.
+
+```bash
+export DATABRICKS_HOST=https://<workspace>.cloud.databricks.com
+export DATABRICKS_TOKEN=dapi...
+
+# List all jobs with creator and format analytics
+uv run python examples/15_restapi_databricks/list_jobs.py
+
+# List clusters with state and version breakdown
+uv run python examples/15_restapi_databricks/list_clusters.py
+
+# Recent job runs with success rate analytics
+uv run python examples/15_restapi_databricks/list_job_runs.py
 ```

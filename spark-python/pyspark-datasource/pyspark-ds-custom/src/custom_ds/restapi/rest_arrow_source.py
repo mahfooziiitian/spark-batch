@@ -16,6 +16,7 @@ Usage:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 import requests
@@ -54,6 +55,13 @@ class RestApiArrowDataSource(DataSource):
         params.<name> (str): Query parameters.
         apiKey (str): API key (sent via header).
         apiKeyHeader (str): Header name for API key. Default "X-API-Key".
+        auth (str): Set to "oauth2" for OAuth2 authentication.
+        oauth.tokenUrl (str): OAuth2 token endpoint URL.
+        oauth.clientId (str): OAuth2 client ID.
+        oauth.clientSecret (str): OAuth2 client secret.
+        oauth.grantType (str): OAuth2 grant type. Default "client_credentials".
+        oauth.scope (str): OAuth2 scope.
+        oauth.bearerToken (str): Pre-obtained bearer token.
         schema (str): DDL schema string. If not provided, inferred from response.
     """
 
@@ -67,13 +75,30 @@ class RestApiArrowDataSource(DataSource):
             return user_schema
 
         url = self.options.get("url")
+
+        # Resolve UC HTTP connection
+        from custom_ds.restapi.uc_connection import UCConnectionConfig
+
+        uc_config = UCConnectionConfig.from_options(self.options)
+        if not url and uc_config is not None:
+            uc_path = self.options.get("uc.path") or self.options.get("uc.Path") or ""
+            url = uc_config.resolve_url(None, uc_path)
         if not url:
-            raise ValueError("Option 'url' is required for the restapi_arrow data source")
+            raise ValueError("Option 'url', 'databricks.connection', or 'uc.host' is required")
 
         method = self.options.get("method", "GET").upper()
         headers = _extract_prefixed_options(self.options, "headers.")
         params = _extract_prefixed_options(self.options, "params.")
         _apply_api_key(self.options, headers)
+
+        if uc_config is not None:
+            headers = uc_config.apply_auth_headers(headers)
+
+        from custom_ds.restapi.oauth import OAuth2Config
+
+        oauth_config = OAuth2Config.from_options(self.options)
+        if oauth_config is not None:
+            headers = oauth_config.apply_to_headers(headers)
 
         response = requests.request(method, url, headers=headers, params=params, timeout=30)
         response.raise_for_status()
@@ -91,18 +116,36 @@ class RestApiArrowDataSource(DataSource):
 
 
 class RestApiArrowReader(DataSourceReader):
-    def __init__(self, schema: StructType, options: dict) -> None:
+    def __init__(self, schema: StructType, options: Mapping[str, str]) -> None:
         self.schema = schema
         self.url = options.get("url")
+
+        # Resolve UC HTTP connection
+        from custom_ds.restapi.uc_connection import UCConnectionConfig
+
+        uc_config = UCConnectionConfig.from_options(options)
+        if not self.url and uc_config is not None:
+            uc_path = options.get("uc.path") or options.get("uc.Path") or ""
+            self.url = uc_config.resolve_url(None, uc_path)
         if not self.url:
-            raise ValueError("Option 'url' is required for the restapi_arrow data source")
+            raise ValueError("Option 'url', 'databricks.connection', or 'uc.host' is required")
+
         self.method = options.get("method", "GET").upper()
         self.headers = _extract_prefixed_options(options, "headers.")
         self.params = _extract_prefixed_options(options, "params.")
         self.result_key = options.get("resultKey") or options.get("resultkey")
         _apply_api_key(options, self.headers)
 
+        # Apply UC bearer token
+        if uc_config is not None:
+            self.headers = uc_config.apply_auth_headers(self.headers)
+
+        from custom_ds.restapi.oauth import OAuth2Config
+
+        self.oauth_config = OAuth2Config.from_options(options)
+
     def partitions(self) -> list[InputPartition]:
+        assert self.url is not None
         return [
             ArrowRestPartition(
                 url=self.url,
@@ -113,14 +156,19 @@ class RestApiArrowReader(DataSourceReader):
             )
         ]
 
-    def read(self, partition: ArrowRestPartition):
+    def read(self, partition: InputPartition):
+        assert isinstance(partition, ArrowRestPartition)
         import pyarrow as pa
         import requests as req
+
+        headers = partition.headers
+        if self.oauth_config is not None:
+            headers = self.oauth_config.apply_to_headers(headers)
 
         response = req.request(
             partition.method,
             partition.url,
-            headers=partition.headers,
+            headers=headers,
             params=partition.params,
             timeout=30,
         )
@@ -142,15 +190,19 @@ class RestApiArrowReader(DataSourceReader):
 
         # Build columnar arrays from the records
         field_names = [f.name for f in self.schema.fields]
-        columns = {name: [] for name in field_names}
+        columns: dict[str, list[object | None]] = {name: [] for name in field_names}
         for record in records:
             for name in field_names:
                 columns[name].append(record.get(name))
 
-        arrays = [
-            pa.array(columns[f.name], type=_spark_to_arrow_type(f.dataType))
-            for f in self.schema.fields
-        ]
+        arrays = []
+        for f in self.schema.fields:
+            arrow_type = _spark_to_arrow_type(f.dataType)
+            col_values = columns[f.name]
+            # Coerce values to target type to avoid Arrow type errors
+            if arrow_type == pa.utf8():
+                col_values = [str(v) if v is not None else None for v in col_values]
+            arrays.append(pa.array(col_values, type=arrow_type))
         arrow_schema = pa.schema(
             [(f.name, _spark_to_arrow_type(f.dataType)) for f in self.schema.fields]
         )
@@ -175,7 +227,7 @@ def _spark_to_arrow_type(spark_type):
     return type_map.get(spark_type, pa.string())
 
 
-def _extract_prefixed_options(options: dict, prefix: str) -> dict:
+def _extract_prefixed_options(options: Mapping[str, str], prefix: str) -> dict[str, str]:
     result = {}
     for key, value in options.items():
         if key.lower().startswith(prefix.lower()):
@@ -183,7 +235,7 @@ def _extract_prefixed_options(options: dict, prefix: str) -> dict:
     return result
 
 
-def _apply_api_key(options: dict, headers: dict) -> None:
+def _apply_api_key(options: Mapping[str, str], headers: dict[str, str]) -> None:
     api_key = options.get("apiKey") or options.get("apikey")
     if api_key:
         header_name = options.get("apiKeyHeader") or options.get("apikeyheader") or "X-API-Key"

@@ -12,6 +12,8 @@ from pyspark.sql import SparkSession
 
 from custom_ds.restapi import RestApiDataSource
 
+pytestmark = pytest.mark.pyspark
+
 # ---------------------------------------------------------------------------
 # Lightweight test server
 # ---------------------------------------------------------------------------

@@ -118,3 +118,30 @@ pyspark-ds-custom/
 - [Announcing GA of the Python Data Source API (Databricks blog)](https://www.databricks.com/blog/announcing-general-availability-python-data-source-api)
 - [Example Connectors Repository](https://github.com/databricks/pyspark-datasource-examples)
 - [HuggingFace DataSource Connector](https://github.com/anandnalya/spark-huggingface)
+
+## Databricks Asset Bundle (DABs)
+
+Deploy and run the examples as workflows on Databricks:
+
+```bash
+# Validate
+databricks bundle validate --strict -t dev
+
+# Deploy
+databricks bundle deploy -t dev
+
+# Run specific jobs
+databricks bundle run basic_examples -t dev
+databricks bundle run restapi_examples -t dev
+databricks bundle run community_examples -t dev
+databricks bundle run uc_http_auth_example -t dev
+```
+
+| Job | Examples | External Dependencies |
+|-----|----------|----------------------|
+| `basic_examples` | 01–04 | None |
+| `restapi_examples` | 05–09, 12 | Mock server |
+| `community_examples` | 10a–10d | `pyspark-data-sources` PyPI |
+| `uc_http_auth_example` | 11 | UC HTTP connection + DBR 18.1+ |
+
+See `databricks.yml` and `resources/` for job definitions.

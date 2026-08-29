@@ -11,9 +11,17 @@ default:
 
 # ─── Setup ────────────────────────────────────────────────────────────────────
 
-# Install all dependencies (runtime + dev)
+# Install dev deps (no PySpark — use install-spark or install-databricks)
 install:
     uv sync
+
+# Install with PySpark extra (local mode)
+install-spark:
+    uv sync --extra spark
+
+# Install with Databricks Connect + SDK (remote mode)
+install-databricks:
+    uv sync --extra databricks
 
 # Update lockfile
 lock:
@@ -61,13 +69,17 @@ deps-audit:
 
 # ─── Testing ──────────────────────────────────────────────────────────────────
 
-# Run tests (quiet)
+# Run tests — use: just test-mark pyspark|databricks
 test:
     uv run pytest
 
+# Run tests filtered by marker
+test-mark mark:
+    uv run pytest -m "{{mark}}"
+
 # Run tests (verbose)
-test-verbose:
-    uv run pytest -v --tb=short
+test-verbose mark="":
+    uv run pytest -v --tb=short {{ if mark != "" { "-m " + mark } else { "" } }}
 
 # Run a specific test file
 test-file file:
@@ -116,3 +128,52 @@ all: install check test docs
 
 # Quick pre-commit check (fast feedback)
 pre-commit: format lint security gitleaks-protect
+
+# ─── Databricks Asset Bundle ──────────────────────────────────────────────────
+
+# Default target for bundle commands
+target := "dev"
+profile := ""
+profile_flag := if profile != "" { "--profile " + profile } else { "" }
+
+# Validate DABs configuration
+bundle-validate:
+    databricks bundle validate --strict -t {{target}} {{profile_flag}}
+
+# Deploy DABs to workspace
+bundle-deploy:
+    databricks bundle deploy -t {{target}} {{profile_flag}}
+
+# Deploy DABs to production (with auto-approve)
+bundle-deploy-prod:
+    databricks bundle deploy -t prod --auto-approve {{profile_flag}}
+
+# Show deployed bundle summary
+bundle-summary:
+    databricks bundle summary -t {{target}} {{profile_flag}}
+
+# Run basic examples job
+bundle-run-basic:
+    databricks bundle run basic_examples -t {{target}} {{profile_flag}}
+
+# Run REST API examples job
+bundle-run-restapi:
+    databricks bundle run restapi_examples -t {{target}} {{profile_flag}}
+
+# Run community sources job
+bundle-run-community:
+    databricks bundle run community_examples -t {{target}} {{profile_flag}}
+
+# Run UC HTTP auth example
+bundle-run-uc-auth:
+    databricks bundle run uc_http_auth_example -t {{target}} {{profile_flag}}
+
+# Run all DABs jobs
+bundle-run-all: bundle-run-basic bundle-run-restapi bundle-run-community bundle-run-uc-auth
+
+# Destroy deployed DABs resources
+bundle-destroy:
+    databricks bundle destroy -t {{target}} {{profile_flag}}
+
+# Validate + deploy bundle
+bundle-ci: bundle-validate bundle-deploy

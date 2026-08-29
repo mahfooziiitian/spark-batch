@@ -1,0 +1,25 @@
+variables:
+  catalog:
+    default: "poc"
+    description: "Unity Catalog catalog name"
+  schema:
+    default: "testing"
+    description: "Unity Catalog schema name"
+  warehouse_id:
+    description: "SQL warehouse ID for queries"
+    lookup:
+      warehouse: "Starter Endpoint"
+  policy_id:
+    description: "Cluster policy ID for job clusters"
+    lookup:
+      cluster_policy: "job_workflow_cluster_oz"
+  cluster_id:
+    description: "Existing cluster ID for interactive/Databricks Connect tasks"
+    lookup:
+      cluster: "mahfooz-oz-dev"
+  mock_server_url:
+    description: "URL of the mock REST API server (for REST API examples)"
+    default: "http://localhost:8000"
+  weather_api_connection:
+    description: "UC HTTP connection name for weather API example"
+    default: "weather_api"

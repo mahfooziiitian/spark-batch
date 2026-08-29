@@ -3,6 +3,11 @@
 Read JSON data from REST API endpoints into Spark DataFrames with configurable
 partitioning for parallel processing.
 
+!!! abstract "API Base Class"
+    Extends [`DataSource`](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/api/pyspark.sql.datasource.DataSource.html)
+    and [`DataSourceReader`](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/api/pyspark.sql.datasource.DataSourceReader.html)
+    from `pyspark.sql.datasource`.
+
 ## Format Name
 
 ```python

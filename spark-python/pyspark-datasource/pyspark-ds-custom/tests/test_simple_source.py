@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
 from pyspark.sql import SparkSession
 
 from custom_ds import SimpleDataSource
+
+pytestmark = pytest.mark.pyspark
 
 
 def test_simple_source_default_row_count(spark: SparkSession) -> None:

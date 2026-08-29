@@ -1,0 +1,69 @@
+# Self-contained examples — no external services required.
+# Examples 01-04: batch read, batch write, streaming, SQL access.
+resources:
+  jobs:
+    basic_examples:
+      name: "[${bundle.target}] PySpark Custom DS — Basic Examples"
+      description: >
+        Self-contained examples demonstrating the PySpark 4 Python Data Source API:
+        batch read, batch write, streaming, and SQL access.
+        No external services or connections required.
+      tags:
+        project: pyspark-ds-custom
+        category: basic
+
+      job_clusters:
+        - job_cluster_key: pyspark4
+          new_cluster:
+            policy_id: ${var.policy_id}
+            spark_version: "16.4.x-scala2.12"
+            node_type_id: "i4i.xlarge"
+            num_workers: 1
+            autoscale:
+              min_workers: 1
+              max_workers: 2
+            aws_attributes:
+              first_on_demand: 1
+
+      tasks:
+        - task_key: batch_read
+          description: "Register and read from the in-memory simple data source"
+          spark_python_task:
+            python_file: ../../examples/01_batch_read/read_simple_source.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: batch_write
+          description: "Write DataFrame to the simple_sink custom data source"
+          depends_on:
+            - task_key: batch_read
+          spark_python_task:
+            python_file: ../../examples/02_batch_write/write_simple_sink.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: streaming
+          description: "Streaming read from the simple_stream counter source"
+          depends_on:
+            - task_key: batch_read
+          spark_python_task:
+            python_file: ../../examples/03_streaming/stream_simple_source.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: sql_access
+          description: "Query custom data source via SQL temp views"
+          depends_on:
+            - task_key: batch_read
+          spark_python_task:
+            python_file: ../../examples/04_sql/query_custom_source_with_sql.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: "users"

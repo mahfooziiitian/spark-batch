@@ -5,10 +5,14 @@ description = "PySpark 4 Python Data Source API — reusable custom connector li
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pyspark>=4.0.0",
     "pyarrow>=14.0.0",
     "requests>=2.32.0",
+    "databricks-sdk>=0.40.0",
 ]
+
+[project.optional-dependencies]
+spark = ["pyspark>=4.0.0"]
+databricks = ["databricks-connect<=18.3.4", "pandas>=2.2.0"]
 
 [dependency-groups]
 dev = [
@@ -26,6 +30,7 @@ dev = [
     "ruff>=0.8.0",
     "bandit>=1.8.0",
     "pip-audit>=2.7.0",
+    "pyright>=1.1.380",
     # Documentation
     "mkdocs>=1.6",
     "mkdocs-material>=9.5",
@@ -36,6 +41,11 @@ minversion = "8.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "pyspark: requires PySpark (local mode)",
+    "databricks: requires Databricks Connect (remote mode)",
+    "integration: requires network access and API keys",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -75,8 +85,9 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S106"]
+"tests/**/*.py" = ["S101", "S105", "S106"]
 "examples/**/*.py" = ["T201", "T203"]
+"examples/mock_server/**/*.py" = ["T201", "S105"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["custom_ds"]
@@ -89,7 +100,7 @@ indent-style = "space"
 
 [tool.bandit]
 exclude_dirs = ["tests", "examples"]
-skips = ["B101", "B310", "B601"]
+skips = ["B101", "B107", "B310", "B404", "B601", "B603", "B607"]
 
 # ─── Coverage ─────────────────────────────────────────────────────────────────
 

@@ -15,7 +15,7 @@ Usage:
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 
 from pyspark.sql import Row
@@ -41,6 +41,13 @@ class RestApiSinkDataSource(DataSource):
         headers.<name> (str): Custom headers to include in each request.
         apiKey (str): API key value (sent via header).
         apiKeyHeader (str): Header name for the API key. Default "X-API-Key".
+        auth (str): Set to "oauth2" for OAuth2 authentication.
+        oauth.tokenUrl (str): OAuth2 token endpoint URL.
+        oauth.clientId (str): OAuth2 client ID.
+        oauth.clientSecret (str): OAuth2 client secret.
+        oauth.grantType (str): OAuth2 grant type. Default "client_credentials".
+        oauth.scope (str): OAuth2 scope.
+        oauth.bearerToken (str): Pre-obtained bearer token.
     """
 
     @classmethod
@@ -55,14 +62,32 @@ class RestApiSinkDataSource(DataSource):
 
 
 class RestApiSinkWriter(DataSourceWriter):
-    def __init__(self, schema: StructType, options: dict, overwrite: bool) -> None:
+    def __init__(self, schema: StructType, options: Mapping[str, str], overwrite: bool) -> None:
         self.url = options.get("url")
+
+        # Resolve UC HTTP connection
+        from custom_ds.restapi.uc_connection import UCConnectionConfig
+
+        uc_config = UCConnectionConfig.from_options(options)
+        if not self.url and uc_config is not None:
+            uc_path = options.get("uc.path") or options.get("uc.Path") or ""
+            self.url = uc_config.resolve_url(None, uc_path)
+
         if not self.url:
-            raise ValueError("Option 'url' is required for the restapi_sink data source")
+            raise ValueError("Option 'url', 'databricks.connection', or 'uc.host' is required")
+
         self.batch_size = int(options.get("batchSize") or options.get("batchsize") or 100)
         self.headers = {"Content-Type": "application/json"}
         self.headers.update(_extract_prefixed_options(options, "headers."))
         _apply_api_key(options, self.headers)
+
+        # Apply UC bearer token
+        if uc_config is not None:
+            self.headers = uc_config.apply_auth_headers(self.headers)
+
+        from custom_ds.restapi.oauth import OAuth2Config
+
+        self.oauth_config = OAuth2Config.from_options(options)
 
     def write(self, iterator: Iterator[Row]) -> RestApiWriteCommitMessage:
         batch: list[dict] = []
@@ -92,7 +117,11 @@ class RestApiSinkWriter(DataSourceWriter):
     def _send_batch(self, batch: list[dict]) -> int:
         import requests as req
 
-        response = req.post(self.url, json=batch, headers=self.headers, timeout=30)
+        headers = self.headers
+        if self.oauth_config is not None:
+            headers = self.oauth_config.apply_to_headers(headers)
+        assert self.url is not None
+        response = req.post(self.url, json=batch, headers=headers, timeout=30)
         response.raise_for_status()
         return response.status_code
 
@@ -110,7 +139,7 @@ class RestApiSinkWriter(DataSourceWriter):
 # ---------------------------------------------------------------------------
 
 
-def _extract_prefixed_options(options: dict, prefix: str) -> dict:
+def _extract_prefixed_options(options: Mapping[str, str], prefix: str) -> dict[str, str]:
     result = {}
     for key, value in options.items():
         if key.lower().startswith(prefix.lower()):
@@ -118,7 +147,7 @@ def _extract_prefixed_options(options: dict, prefix: str) -> dict:
     return result
 
 
-def _apply_api_key(options: dict, headers: dict) -> None:
+def _apply_api_key(options: Mapping[str, str], headers: dict[str, str]) -> None:
     api_key = options.get("apiKey") or options.get("apikey")
     if api_key:
         header_name = options.get("apiKeyHeader") or options.get("apikeyheader") or "X-API-Key"

@@ -12,6 +12,8 @@ from pyspark.sql import SparkSession
 
 from custom_ds.restapi import RestApiArrowDataSource
 
+pytestmark = pytest.mark.pyspark
+
 _arrow_app = FastAPI()
 
 MOCK_DATA = [

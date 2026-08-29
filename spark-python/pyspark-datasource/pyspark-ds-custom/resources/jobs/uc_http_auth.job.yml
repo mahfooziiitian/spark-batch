@@ -1,0 +1,37 @@
+# Unity Catalog HTTP connection example.
+# Requires a UC HTTP connection configured in the workspace.
+# DBR 18.1+ for credential injection into Python Data Sources.
+resources:
+  jobs:
+    uc_http_auth_example:
+      name: "[${bundle.target}] PySpark Custom DS — UC HTTP Auth"
+      description: >
+        Demonstrates Unity Catalog HTTP connection credential injection
+        for secure REST API authentication without hardcoded tokens.
+        Requires a UC HTTP connection named '${var.weather_api_connection}'
+        and DBR 18.1+.
+      tags:
+        project: pyspark-ds-custom
+        category: uc-auth
+
+      tasks:
+        - task_key: uc_weather_api
+          description: "Weather API with UC HTTP connection credential injection"
+          spark_python_task:
+            python_file: ../../examples/11_uc_http_auth/uc_weather_api.py
+          new_cluster:
+            policy_id: ${var.policy_id}
+            spark_version: "16.4.x-scala2.12"
+            node_type_id: "i4i.xlarge"
+            num_workers: 1
+            autoscale:
+              min_workers: 1
+              max_workers: 2
+            aws_attributes:
+              first_on_demand: 1
+          libraries:
+            - whl: ../../dist/*.whl
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: "users"

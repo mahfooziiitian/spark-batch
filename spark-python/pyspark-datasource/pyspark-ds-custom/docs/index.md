@@ -13,6 +13,7 @@ A reference implementation library (`custom_ds`) demonstrating the full Python D
 |---|---|---|
 | **Batch** | `RestApiDataSource`, `RestApiArrowDataSource` | `RestApiSinkDataSource` |
 | **Streaming** | `RestApiStreamDataSource` | `RestApiStreamSinkDataSource` |
+| **UC Auth** | `WeatherApiSource` | — |
 
 Plus simple in-memory sources (`SimpleDataSource`, `SimpleSinkDataSource`, `SimpleStreamDataSource`)
 for learning the API without external dependencies.
@@ -35,12 +36,15 @@ graph TB
         SINK[RestApiSinkDataSource] --> |POST| API
         STREAM[RestApiStreamDataSource] --> |poll| API
         ARROW[RestApiArrowDataSource] --> |GET + Arrow| API
+        WEATHER[WeatherApiSource] --> |UC Auth| EXT[(External API)]
     end
 
     R --> REST
+    R --> ARROW
+    R --> WEATHER
     W --> SINK
     SR --> STREAM
-    R --> ARROW
+    SW --> |micro-batch| API
 ```
 
 ---
@@ -49,10 +53,11 @@ graph TB
 
 - :fontawesome-brands-python: **Pure Python** — no JVM connector development needed
 - :material-rocket-launch: **3 Partitioning Strategies** — single, URL-based, page-based
-- :material-arrow-right-bold: **Arrow Batch Support** — up to 10x throughput for large payloads
+- :material-arrow-right-bold: **Arrow Batch Support** — zero-copy transfer for large payloads
 - :material-stream: **Streaming** — poll endpoints with offset tracking
 - :material-database: **SQL Access** — `createOrReplaceTempView` + Spark SQL
-- :material-shield-check: **API Key Auth** — header-based authentication
+- :material-shield-lock: **Unity Catalog Auth** — credential injection via HTTP connections
+- :material-package-variant: **Community Ecosystem** — works alongside [`pyspark-data-sources`](https://github.com/allisonwang-db/pyspark-data-sources)
 
 ---
 
@@ -74,9 +79,20 @@ spark.stop()
 
 ---
 
+## Compatibility
+
+| Platform | Version | Status |
+|----------|---------|--------|
+| Apache Spark (OSS) | 4.0+ | :material-check-circle:{ .green } GA |
+| Databricks Runtime | 15.4 LTS+ | :material-check-circle:{ .green } GA |
+| Databricks Serverless | Generic Compute | :material-check-circle:{ .green } Supported |
+
+---
+
 ## Next Steps
 
 - [Installation](getting-started/installation.md) — set up the project
 - [Quick Start](getting-started/quickstart.md) — run your first example
 - [API Reference](api/index.md) — detailed DataSource documentation
 - [Examples](examples/index.md) — runnable demos with mock servers
+- [References](references.md) — official docs, talks, and community resources

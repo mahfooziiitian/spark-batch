@@ -59,6 +59,9 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.snippets:
       base_path: ["."]
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
 
@@ -70,11 +73,14 @@ nav:
       - Quick Start: getting-started/quickstart.md
   - API Reference:
       - api/index.md
+      - REST API Overview: api/restapi-overview.md
       - Batch Reader: api/batch-reader.md
       - Batch Writer: api/batch-writer.md
       - Streaming: api/streaming.md
       - Arrow Reader: api/arrow-reader.md
       - Partitioning: api/partitioning.md
+      - OAuth2: api/oauth2.md
+      - UC HTTP Connection: api/uc-connection.md
   - Examples:
       - examples/index.md
       - REST API Read: examples/restapi-read.md
@@ -84,3 +90,7 @@ nav:
       - Partitioned Reads: examples/partitioned-reads.md
       - Community Sources: examples/community-sources.md
       - UC HTTP Auth: examples/uc-http-auth.md
+      - OAuth2: examples/oauth2.md
+      - Databricks Connect: examples/databricks-connect.md
+  - References: references.md
+  - Testing: testing.md

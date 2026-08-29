@@ -4,6 +4,7 @@ Demonstrates building a real-world custom connector using the Python Data Source
 that fetches JSON data from any REST endpoint. Supports:
     - Configurable URL, HTTP method, headers, and query parameters
     - API key authentication (header-based)
+    - OAuth2 authentication (client_credentials, password, bearer token)
     - Automatic JSON array → rows conversion
     - Configurable result key path for nested responses (e.g. "data.items")
     - 3 partitioning strategies: single, urls, pages
@@ -15,6 +16,15 @@ Usage:
     df = spark.read.format("restapi") \\
         .option("url", "http://localhost:8000/api/users") \\
         .option("resultKey", "data") \\
+        .load()
+
+    # With OAuth2 client credentials
+    df = spark.read.format("restapi") \\
+        .option("url", "http://localhost:8000/api/users") \\
+        .option("auth", "oauth2") \\
+        .option("oauth.tokenUrl", "http://auth/token") \\
+        .option("oauth.clientId", "my-client") \\
+        .option("oauth.clientSecret", "my-secret") \\
         .load()
 
     # URL-based partitioning (one partition per URL, parallel)
@@ -35,6 +45,7 @@ Usage:
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 import requests
@@ -84,7 +95,7 @@ class RestApiDataSource(DataSource):
     """A batch data source that reads JSON data from REST API endpoints.
 
     Options:
-        url (str): The HTTP endpoint URL. Required unless using `urls`.
+        url (str): The HTTP endpoint URL. Required unless using `urls` or UC connection.
         urls (str): Comma-separated URLs for URL-based partitioning.
         method (str): HTTP method (GET, POST). Default "GET".
         resultKey (str): Dot-path to the JSON array in the response.
@@ -97,6 +108,21 @@ class RestApiDataSource(DataSource):
         params.<name> (str): Query parameters to include in the request.
         apiKey (str): API key value (sent via header).
         apiKeyHeader (str): Header name for the API key. Default "X-API-Key".
+        auth (str): Authentication type. Set to "oauth2" for OAuth2.
+        oauth.tokenUrl (str): OAuth2 token endpoint URL.
+        oauth.clientId (str): OAuth2 client ID.
+        oauth.clientSecret (str): OAuth2 client secret.
+        oauth.grantType (str): OAuth2 grant type. Default "client_credentials".
+        oauth.scope (str): OAuth2 scope (space-separated).
+        oauth.username (str): Username for "password" grant type.
+        oauth.password (str): Password for "password" grant type.
+        oauth.bearerToken (str): Pre-obtained bearer token (skips token fetch).
+        databricks.connection (str): Unity Catalog HTTP connection name (DBR 18.1+).
+            Injects host, base_path, bearer_token automatically.
+        uc.host (str): UC connection host (local testing).
+        uc.basePath (str): UC connection base path (local testing).
+        uc.bearerToken (str): UC connection bearer token (local testing).
+        uc.path (str): Additional path appended to base URL.
         timeout (int): Request timeout in seconds. Default 30.
         schema (str): DDL schema string. If not provided, inferred from response.
     """
@@ -110,20 +136,39 @@ class RestApiDataSource(DataSource):
         if user_schema:
             return user_schema
 
+        # Resolve UC HTTP connection if configured
+        from custom_ds.restapi.uc_connection import UCConnectionConfig
+
+        uc_config = UCConnectionConfig.from_options(self.options)
+
         # Determine the URL for schema inference
         url = self.options.get("url")
+        if not url and uc_config is not None:
+            uc_path = self.options.get("uc.path") or self.options.get("uc.Path") or ""
+            url = uc_config.resolve_url(None, uc_path)
         if not url:
             urls_str = self.options.get("urls") or self.options.get("Urls") or ""
             url_list = [u.strip() for u in urls_str.split(",") if u.strip()]
             url = url_list[0] if url_list else None
         if not url:
-            raise ValueError("Option 'url' or 'urls' is required for the restapi data source")
+            raise ValueError("Option 'url', 'urls', or 'databricks.connection' is required")
 
         method = self.options.get("method", "GET").upper()
         headers = _extract_prefixed_options(self.options, "headers.")
         params = _extract_prefixed_options(self.options, "params.")
         _apply_api_key(self.options, headers)
         timeout = int(self.options.get("timeout") or 30)
+
+        # Apply UC connection auth
+        if uc_config is not None:
+            headers = uc_config.apply_auth_headers(headers)
+
+        # Apply OAuth2 on the driver for schema inference
+        from custom_ds.restapi.oauth import OAuth2Config
+
+        oauth_config = OAuth2Config.from_options(self.options)
+        if oauth_config is not None:
+            headers = oauth_config.apply_to_headers(headers)
 
         response = requests.request(method, url, headers=headers, params=params, timeout=timeout)
         response.raise_for_status()
@@ -147,7 +192,7 @@ class RestApiDataSource(DataSource):
 
 
 class RestApiDataSourceReader(DataSourceReader):
-    def __init__(self, schema: StructType, options: dict) -> None:
+    def __init__(self, schema: StructType, options: Mapping[str, str]) -> None:
         self.schema = schema
         self.options = options
         self.method = options.get("method", "GET").upper()
@@ -157,11 +202,28 @@ class RestApiDataSourceReader(DataSourceReader):
         self.timeout = int(options.get("timeout") or 30)
         _apply_api_key(options, self.headers)
 
+        # UC HTTP connection (pickle-safe dataclass)
+        from custom_ds.restapi.uc_connection import UCConnectionConfig
+
+        self.uc_config = UCConnectionConfig.from_options(options)
+
+        # Resolve URL from UC connection if no explicit url
+        self.url = options.get("url")
+        if not self.url and self.uc_config is not None:
+            uc_path = options.get("uc.path") or options.get("uc.Path") or ""
+            self.url = self.uc_config.resolve_url(None, uc_path)
+            # Apply UC bearer token to headers
+            self.headers = self.uc_config.apply_auth_headers(self.headers)
+
+        # OAuth2 config (pickle-safe dataclass)
+        from custom_ds.restapi.oauth import OAuth2Config
+
+        self.oauth_config = OAuth2Config.from_options(options)
+
         # Partitioning config
         self.strategy = (
             options.get("partitionStrategy") or options.get("partitionstrategy") or "single"
         ).lower()
-        self.url = options.get("url")
         self.urls_str = options.get("urls") or options.get("Urls") or ""
         self.total_pages = int(options.get("totalPages") or options.get("totalpages") or 1)
         self.page_size = int(options.get("pageSize") or options.get("pagesize") or 100)
@@ -175,7 +237,7 @@ class RestApiDataSourceReader(DataSourceReader):
             if not self.urls_str:
                 raise ValueError("Option 'urls' is required when partitionStrategy='urls'")
         elif not self.url:
-            raise ValueError("Option 'url' is required for the restapi data source")
+            raise ValueError("Option 'url', 'databricks.connection', or 'uc.host' is required")
 
     def partitions(self) -> list[InputPartition]:
         if self.strategy == "urls":
@@ -192,6 +254,7 @@ class RestApiDataSourceReader(DataSourceReader):
             ]
 
         if self.strategy == "pages":
+            assert self.url is not None
             return [
                 RestApiPagePartition(
                     base_url=self.url,
@@ -206,6 +269,7 @@ class RestApiDataSourceReader(DataSourceReader):
             ]
 
         # Default: single partition
+        assert self.url is not None
         return [
             RestApiPartition(
                 url=self.url,
@@ -216,7 +280,7 @@ class RestApiDataSourceReader(DataSourceReader):
             )
         ]
 
-    def read(self, partition):
+    def read(self, partition: InputPartition):
         import requests as req
 
         if isinstance(partition, RestApiPagePartition):
@@ -226,18 +290,25 @@ class RestApiDataSourceReader(DataSourceReader):
                 self.page_size_param: partition.page_size,
             }
             merged_params = {**partition.params, **page_params}
+            headers = partition.headers
+            if self.oauth_config is not None:
+                headers = self.oauth_config.apply_to_headers(headers)
             response = req.request(
                 partition.method,
                 partition.base_url,
-                headers=partition.headers,
+                headers=headers,
                 params=merged_params,
                 timeout=self.timeout,
             )
         else:
+            assert isinstance(partition, RestApiPartition)
+            headers = partition.headers
+            if self.oauth_config is not None:
+                headers = self.oauth_config.apply_to_headers(headers)
             response = req.request(
                 partition.method,
                 partition.url,
-                headers=partition.headers,
+                headers=headers,
                 params=partition.params,
                 timeout=self.timeout,
             )
@@ -245,7 +316,8 @@ class RestApiDataSourceReader(DataSourceReader):
         response.raise_for_status()
         data = response.json()
 
-        records = _navigate_result_key(data, partition.result_key)
+        result_key = getattr(partition, "result_key", None) or self.result_key
+        records = _navigate_result_key(data, result_key)
 
         field_names = [f.name for f in self.schema.fields]
         for record in records:
@@ -267,7 +339,7 @@ def _coerce_value(value):
     return value
 
 
-def _extract_prefixed_options(options: dict, prefix: str) -> dict:
+def _extract_prefixed_options(options: Mapping[str, str], prefix: str) -> dict[str, str]:
     """Extract options with a given prefix, stripping the prefix from keys."""
     result = {}
     for key, value in options.items():
@@ -277,7 +349,7 @@ def _extract_prefixed_options(options: dict, prefix: str) -> dict:
     return result
 
 
-def _apply_api_key(options: dict, headers: dict) -> None:
+def _apply_api_key(options: Mapping[str, str], headers: dict[str, str]) -> None:
     """If apiKey option is present, add it to the headers dict."""
     api_key = options.get("apiKey") or options.get("apikey")
     if api_key:

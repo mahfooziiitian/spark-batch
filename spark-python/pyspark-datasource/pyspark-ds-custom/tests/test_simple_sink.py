@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
 from pyspark.sql import SparkSession
 
 from custom_ds import SimpleSinkDataSource
+
+pytestmark = pytest.mark.pyspark
 
 
 def test_simple_sink_writes_all_rows(spark: SparkSession, tmp_path) -> None:

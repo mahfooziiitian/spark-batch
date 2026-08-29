@@ -1,0 +1,64 @@
+# Community data source examples using the pyspark-data-sources package.
+# Requires pyspark-data-sources PyPI package on the cluster.
+resources:
+  jobs:
+    community_examples:
+      name: "[${bundle.target}] PySpark Custom DS — Community Sources"
+      description: >
+        Examples using community-built data sources (FakeDataSource,
+        GitHubDataSource) from the pyspark-data-sources package.
+      tags:
+        project: pyspark-ds-custom
+        category: community
+
+      job_clusters:
+        - job_cluster_key: pyspark4
+          new_cluster:
+            policy_id: ${var.policy_id}
+            spark_version: "16.4.x-scala2.12"
+            node_type_id: "i4i.xlarge"
+            num_workers: 1
+            autoscale:
+              min_workers: 1
+              max_workers: 2
+            aws_attributes:
+              first_on_demand: 1
+
+      tasks:
+        - task_key: fake_and_github
+          description: "FakeDataSource and GitHub data source reads"
+          spark_python_task:
+            python_file: ../../examples/10_community_sources/fake_and_github.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+            - pypi:
+                package: "pyspark-data-sources>=0.1.11"
+
+        - task_key: streaming_fake_data
+          description: "Streaming micro-batch generation with FakeDataSource"
+          depends_on:
+            - task_key: fake_and_github
+          spark_python_task:
+            python_file: ../../examples/10_community_sources/streaming_fake_data.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+            - pypi:
+                package: "pyspark-data-sources>=0.1.11"
+
+        - task_key: sql_with_fake_data
+          description: "SQL analytics over community-generated fake data"
+          depends_on:
+            - task_key: fake_and_github
+          spark_python_task:
+            python_file: ../../examples/10_community_sources/sql_with_fake_data.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+            - pypi:
+                package: "pyspark-data-sources>=0.1.11"
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: "users"

@@ -2,6 +2,12 @@
 
 Poll a REST API for new records or push micro-batches to an endpoint.
 
+!!! abstract "API Base Classes"
+    - Stream Reader: extends [`SimpleDataSourceStreamReader`](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/api/pyspark.sql.datasource.SimpleDataSourceStreamReader.html)
+    - Stream Writer: extends [`DataSourceStreamWriter`](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/api/pyspark.sql.datasource.DataSourceStreamWriter.html)
+
+    See the [streaming tutorial](https://spark.apache.org/docs/4.0.0/api/python/tutorial/sql/python_data_source.html#streaming-data-sources) for API details.
+
 ## Stream Reader — `restapi_stream`
 
 ### Options

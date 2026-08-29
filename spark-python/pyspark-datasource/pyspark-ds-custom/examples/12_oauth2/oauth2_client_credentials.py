@@ -1,0 +1,101 @@
+"""OAuth2 authentication — client credentials flow with REST API data source.
+
+Demonstrates reading from an OAuth2-protected REST API using the
+client_credentials grant type. The data source automatically fetches
+an access token from the token endpoint before each request.
+
+Prerequisites:
+    Start the mock server: uv run python examples/mock_server/server.py
+
+Run:
+    uv run python examples/12_oauth2/oauth2_client_credentials.py
+
+Supported OAuth2 flows:
+    - client_credentials (machine-to-machine, most common for APIs)
+    - password (resource owner, username/password)
+    - bearer token (pre-obtained, no refresh)
+"""
+
+from __future__ import annotations
+
+from pyspark.sql import functions as F
+
+from custom_ds import RestApiDataSource, RestApiSinkDataSource, create_spark_session
+
+spark = create_spark_session("oauth2-demo")
+
+spark.dataSource.register(RestApiDataSource)
+spark.dataSource.register(RestApiSinkDataSource)
+
+# ─── 1. Client Credentials Flow ──────────────────────────────────────────────
+print("=" * 60)
+print("OAuth2 Client Credentials — Read from protected endpoint")
+print("=" * 60)
+
+df = (
+    spark.read.format("restapi")
+    .option("url", "http://localhost:9090/api/protected/users")
+    .option("resultKey", "data")
+    .option("schema", "id LONG, name STRING, email STRING, city STRING, age LONG")
+    # OAuth2 configuration
+    .option("auth", "oauth2")
+    .option("oauth.tokenUrl", "http://localhost:9090/oauth/token")
+    .option("oauth.clientId", "test-client")
+    .option("oauth.clientSecret", "test-secret")
+    .option("oauth.scope", "read")
+    .load()
+)
+
+df.show(truncate=False)
+print(f"Rows fetched: {df.count()}")
+
+# ─── 2. Pre-obtained Bearer Token ────────────────────────────────────────────
+print("=" * 60)
+print("OAuth2 Bearer Token — Skip token endpoint")
+print("=" * 60)
+
+df_bearer = (
+    spark.read.format("restapi")
+    .option("url", "http://localhost:9090/api/protected/users")
+    .option("resultKey", "data")
+    .option("schema", "id LONG, name STRING, email STRING, city STRING, age LONG")
+    .option("auth", "oauth2")
+    .option("oauth.bearerToken", "mock-access-token-12345")
+    .load()
+)
+
+df_bearer.show(5, truncate=False)
+
+# ─── 3. Write with OAuth2 ────────────────────────────────────────────────────
+print("=" * 60)
+print("OAuth2 — Write to REST API with authentication")
+print("=" * 60)
+
+df_write = spark.range(5).select(
+    F.col("id"),
+    F.concat(F.lit("oauth-item-"), F.col("id").cast("string")).alias("value"),
+)
+
+df_write.write.format("restapi_sink").option("url", "http://localhost:9090/api/records").option(
+    "auth", "oauth2"
+).option("oauth.tokenUrl", "http://localhost:9090/oauth/token").option(
+    "oauth.clientId", "test-client"
+).option("oauth.clientSecret", "test-secret").mode("append").save()
+
+print("Write complete!")
+
+# ─── 4. SQL with OAuth2 ──────────────────────────────────────────────────────
+print("=" * 60)
+print("SQL analytics over OAuth2-protected data")
+print("=" * 60)
+
+df.createOrReplaceTempView("protected_users")
+
+spark.sql("""
+    SELECT city, COUNT(*) as user_count, ROUND(AVG(age), 1) as avg_age
+    FROM protected_users
+    GROUP BY city
+    ORDER BY user_count DESC
+""").show()
+
+spark.stop()

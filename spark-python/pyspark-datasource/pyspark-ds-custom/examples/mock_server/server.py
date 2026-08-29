@@ -21,6 +21,49 @@ app = FastAPI(title="Mock REST API for pyspark-ds-custom")
 fake = Faker()
 Faker.seed(42)
 
+# OAuth2 mock tokens
+VALID_CLIENT_ID = "test-client"
+VALID_CLIENT_SECRET = "test-secret"
+MOCK_ACCESS_TOKEN = "mock-access-token-12345"
+
+
+@app.post("/oauth/token")
+async def oauth_token(request: Request):
+    """Mock OAuth2 token endpoint (client_credentials and password grants)."""
+    body = await request.body()
+    from urllib.parse import parse_qs
+
+    params = parse_qs(body.decode())
+
+    client_id = (params.get("client_id") or [""])[0]
+    client_secret = (params.get("client_secret") or [""])[0]
+    grant_type = (params.get("grant_type") or ["client_credentials"])[0]
+
+    if client_id != VALID_CLIENT_ID or client_secret != VALID_CLIENT_SECRET:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=401, detail="invalid_client")
+
+    return {
+        "access_token": MOCK_ACCESS_TOKEN,
+        "token_type": "bearer",
+        "expires_in": 3600,
+        "scope": (params.get("scope") or [""])[0],
+        "grant_type": grant_type,
+    }
+
+
+@app.get("/api/protected/users")
+def get_protected_users(request: Request):
+    """OAuth2-protected endpoint — requires Bearer token."""
+    auth = request.headers.get("Authorization", "")
+    if auth != f"Bearer {MOCK_ACCESS_TOKEN}":
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=401, detail="Invalid or missing Bearer token")
+    return {"data": USERS[:5], "total": 5}
+
+
 # Pre-generated users
 USERS = [
     {

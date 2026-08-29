@@ -16,7 +16,7 @@ Usage:
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 
 from pyspark.sql.datasource import DataSource, SimpleDataSourceStreamReader
 from pyspark.sql.types import LongType, StringType, StructField, StructType
@@ -33,6 +33,13 @@ class RestApiStreamDataSource(DataSource):
         headers.<name> (str): Custom headers.
         apiKey (str): API key value.
         apiKeyHeader (str): Header name for API key. Default "X-API-Key".
+        auth (str): Set to "oauth2" for OAuth2 authentication.
+        oauth.tokenUrl (str): OAuth2 token endpoint URL.
+        oauth.clientId (str): OAuth2 client ID.
+        oauth.clientSecret (str): OAuth2 client secret.
+        oauth.grantType (str): OAuth2 grant type. Default "client_credentials".
+        oauth.scope (str): OAuth2 scope.
+        oauth.bearerToken (str): Pre-obtained bearer token.
         schema (str): DDL schema string. Required for streaming (no auto-inference).
     """
 
@@ -58,11 +65,21 @@ class RestApiStreamDataSource(DataSource):
 
 
 class RestApiStreamReader(SimpleDataSourceStreamReader):
-    def __init__(self, schema: StructType, options: dict) -> None:
+    def __init__(self, schema: StructType, options: Mapping[str, str]) -> None:
         self.schema = schema
         self.url = options.get("url")
+
+        # Resolve UC HTTP connection
+        from custom_ds.restapi.uc_connection import UCConnectionConfig
+
+        uc_config = UCConnectionConfig.from_options(options)
+        if not self.url and uc_config is not None:
+            uc_path = options.get("uc.path") or options.get("uc.Path") or ""
+            self.url = uc_config.resolve_url(None, uc_path)
+
         if not self.url:
-            raise ValueError("Option 'url' is required for the restapi_stream data source")
+            raise ValueError("Option 'url', 'databricks.connection', or 'uc.host' is required")
+
         self.offset_param = options.get("offsetParam") or options.get("offsetparam") or "since_id"
         self.offset_key = options.get("offsetKey") or options.get("offsetkey") or "id"
         self.limit = int(options.get("limit") or 100)
@@ -75,6 +92,15 @@ class RestApiStreamReader(SimpleDataSourceStreamReader):
         if api_key:
             header_name = options.get("apiKeyHeader") or options.get("apikeyheader") or "X-API-Key"
             self.headers[header_name] = api_key
+
+        # Apply UC bearer token
+        if uc_config is not None:
+            self.headers = uc_config.apply_auth_headers(self.headers)
+
+        from custom_ds.restapi.oauth import OAuth2Config
+
+        self.oauth_config = OAuth2Config.from_options(options)
+
         self.field_names = [f.name for f in schema.fields]
 
     def initialOffset(self) -> dict:
@@ -101,9 +127,14 @@ class RestApiStreamReader(SimpleDataSourceStreamReader):
     def _fetch(self, since_offset: int) -> list[dict]:
         import requests as req
 
+        headers = self.headers
+        if self.oauth_config is not None:
+            headers = self.oauth_config.apply_to_headers(headers)
+
         params = {self.offset_param: since_offset, "limit": self.limit}
         try:
-            response = req.get(self.url, headers=self.headers, params=params, timeout=10)
+            assert self.url is not None
+            response = req.get(self.url, headers=headers, params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
         except req.RequestException:

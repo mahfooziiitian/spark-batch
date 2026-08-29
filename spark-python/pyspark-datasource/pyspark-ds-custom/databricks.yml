@@ -1,0 +1,29 @@
+bundle:
+  name: pyspark-ds-custom
+
+include:
+  - resources/jobs/*.yml
+  - variables/*.yml
+
+artifacts:
+  custom_ds_wheel:
+    type: whl
+    build: uv build --wheel --out-dir dist
+    path: .
+
+targets:
+  dev:
+    default: true
+    mode: development
+
+  staging:
+    mode: development
+    variables:
+      catalog: "poc"
+      schema: "pyspark_ds_custom"
+
+  prod:
+    mode: production
+    variables:
+      catalog: "poc"
+      schema: "pyspark_ds_custom"

@@ -3,11 +3,20 @@ from __future__ import annotations
 import os
 
 import pytest
-from pyspark.sql import SparkSession
+
+try:
+    from pyspark.sql import SparkSession
+
+    _HAS_PYSPARK = True
+except ImportError:
+    _HAS_PYSPARK = False
 
 
 @pytest.fixture(scope="session")
-def spark() -> SparkSession:
+def spark():
+    if not _HAS_PYSPARK:
+        pytest.skip("pyspark not installed — install with: uv sync --extra spark")
+
     session = (
         SparkSession.builder.master(os.environ.get("SPARK_MASTER", "local[*]"))
         .appName("custom-ds-tests")

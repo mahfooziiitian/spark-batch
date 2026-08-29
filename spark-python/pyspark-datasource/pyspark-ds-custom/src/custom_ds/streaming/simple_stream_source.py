@@ -5,7 +5,7 @@ Reference: pyspark.sql.datasource.{DataSource, SimpleDataSourceStreamReader}
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 
 from pyspark.sql.datasource import DataSource, SimpleDataSourceStreamReader
 from pyspark.sql.types import StructType
@@ -33,7 +33,7 @@ class SimpleStreamDataSource(DataSource):
 
 
 class SimpleCounterStreamReader(SimpleDataSourceStreamReader):
-    def __init__(self, options: dict) -> None:
+    def __init__(self, options: Mapping[str, str]) -> None:
         self.rows_per_batch = int(options.get("rowsPerBatch", 2))
 
     def initialOffset(self) -> dict:

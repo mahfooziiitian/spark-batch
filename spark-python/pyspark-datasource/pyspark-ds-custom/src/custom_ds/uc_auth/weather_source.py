@@ -16,6 +16,7 @@ Architecture:
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import cast
 
@@ -39,7 +40,7 @@ class WeatherApiReader(DataSourceReader):
         cities: Comma-separated city names (default: Seattle,Portland,Denver)
     """
 
-    def __init__(self, options: dict) -> None:
+    def __init__(self, options: Mapping[str, str]) -> None:
         self.host = options["host"]
         self.base_path = options.get("base_path", "")
         self.token = options.get("bearer_token", "")

@@ -11,6 +11,8 @@ from fastapi import FastAPI, Header, HTTPException
 
 from custom_ds import WeatherApiSource, create_spark_session
 
+pytestmark = pytest.mark.pyspark
+
 # ---------------------------------------------------------------------------
 # Mock Weather API server
 # ---------------------------------------------------------------------------

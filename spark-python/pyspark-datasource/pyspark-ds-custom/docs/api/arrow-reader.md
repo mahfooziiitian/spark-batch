@@ -1,7 +1,12 @@
 # Arrow Reader — `RestApiArrowDataSource`
 
 High-throughput batch reader that yields `pyarrow.RecordBatch` objects instead of
-row tuples, providing up to **10x performance improvement** for large API responses.
+row tuples, providing **zero-copy columnar transfer** for large API responses.
+
+!!! abstract "API Base Class"
+    Uses the same [`DataSourceReader.read()`](https://spark.apache.org/docs/4.0.0/api/python/reference/pyspark.sql/api/pyspark.sql.datasource.DataSourceReader.html)
+    interface — PySpark 4 automatically detects `RecordBatch` return type.
+    See the [official Arrow tutorial](https://spark.apache.org/docs/4.0.0/api/python/tutorial/sql/python_data_source.html#arrow-batch-support).
 
 ## Format Name
 

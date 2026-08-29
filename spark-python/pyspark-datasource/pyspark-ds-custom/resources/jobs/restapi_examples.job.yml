@@ -1,0 +1,93 @@
+# REST API examples — require a running mock server or real API endpoint.
+# Examples 05-09, 12: batch read/write, streaming, SQL, partitioned, OAuth2.
+resources:
+  jobs:
+    restapi_examples:
+      name: "[${bundle.target}] PySpark Custom DS — REST API Examples"
+      description: >
+        REST API custom data source examples: batch read/write, streaming,
+        SQL access, partitioned reads, and OAuth2 authentication.
+        Requires a running REST API server (mock or real).
+      tags:
+        project: pyspark-ds-custom
+        category: restapi
+
+      parameters:
+        - name: mock_server_url
+          default: ${var.mock_server_url}
+
+      job_clusters:
+        - job_cluster_key: pyspark4
+          new_cluster:
+            policy_id: ${var.policy_id}
+            spark_version: "16.4.x-scala2.12"
+            node_type_id: "i4i.xlarge"
+            num_workers: 1
+            autoscale:
+              min_workers: 1
+              max_workers: 2
+            aws_attributes:
+              first_on_demand: 1
+
+      tasks:
+        - task_key: restapi_read
+          description: "Batch read from a REST API endpoint"
+          spark_python_task:
+            python_file: ../../examples/05_restapi_read/read_restapi_source.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: restapi_write
+          description: "Batch write (POST) to a REST API endpoint"
+          depends_on:
+            - task_key: restapi_read
+          spark_python_task:
+            python_file: ../../examples/06_restapi_write/write_restapi_sink.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: restapi_stream
+          description: "Streaming poll from a REST API endpoint"
+          depends_on:
+            - task_key: restapi_read
+          spark_python_task:
+            python_file: ../../examples/07_restapi_stream/stream_restapi_source.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: restapi_sql
+          description: "SQL queries over REST API data via temp views"
+          depends_on:
+            - task_key: restapi_read
+          spark_python_task:
+            python_file: ../../examples/08_restapi_sql/query_restapi_with_sql.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: restapi_partitioned
+          description: "Parallel REST reads with URL-based and page-based partitioning"
+          depends_on:
+            - task_key: restapi_read
+          spark_python_task:
+            python_file: ../../examples/09_restapi_partitioned/partitioned_restapi_read.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+        - task_key: restapi_oauth2
+          description: "OAuth2 client_credentials flow for authenticated REST API reads"
+          depends_on:
+            - task_key: restapi_read
+          spark_python_task:
+            python_file: ../../examples/12_oauth2/oauth2_client_credentials.py
+          job_cluster_key: pyspark4
+          libraries:
+            - whl: ../../dist/*.whl
+
+      permissions:
+        - level: CAN_VIEW
+          group_name: "users"

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -44,7 +44,7 @@ class SimpleSinkDataSource(DataSource):
 
 
 class SimpleSinkDataSourceWriter(DataSourceWriter):
-    def __init__(self, options: dict, overwrite: bool) -> None:
+    def __init__(self, options: Mapping[str, str], overwrite: bool) -> None:
         self.path = options["path"]
         self.overwrite = overwrite
 
