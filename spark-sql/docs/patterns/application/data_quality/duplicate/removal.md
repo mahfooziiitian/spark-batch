@@ -353,7 +353,7 @@ WHEN NOT MATCHED THEN INSERT *;
 ## :material-flask-outline: Full Example with Sample Data
 
 ```sql
---8<-- "src/application/duplicate/removal/deduplication.sql"
+--8<-- "sql/application/duplicate/removal/deduplication.sql"
 ```
 
 ---

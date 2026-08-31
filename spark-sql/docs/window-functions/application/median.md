@@ -2,6 +2,9 @@
 
 Compute median and arbitrary percentiles within each partition.
 
+!!! note "Source"
+    Full runnable example: `sql/application/ranking/percentile_median.sql`
+
 ---
 
 ## :material-flask-outline: Practical Examples

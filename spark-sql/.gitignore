@@ -12,3 +12,4 @@ project/plugins/project/build.properties
 .databricks
 .venv/
 databricks.yml
+.env

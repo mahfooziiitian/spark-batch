@@ -41,7 +41,7 @@ graph LR
 Drill-down subtotals from year down to month with grand total.
 
 ```sql
---8<-- "src/application/grouping/rollup_hierarchical_totals.sql"
+--8<-- "sql/application/grouping/rollup_hierarchical_totals.sql"
 ```
 
 ---
@@ -51,7 +51,7 @@ Drill-down subtotals from year down to month with grand total.
 Produce totals for every combination of dimensions.
 
 ```sql
---8<-- "src/application/grouping/cube_cross_dimensional.sql"
+--8<-- "sql/application/grouping/cube_cross_dimensional.sql"
 ```
 
 ---
@@ -61,7 +61,7 @@ Produce totals for every combination of dimensions.
 Select only the specific grouping combinations you need.
 
 ```sql
---8<-- "src/application/grouping/grouping_sets_custom.sql"
+--8<-- "sql/application/grouping/grouping_sets_custom.sql"
 ```
 
 ---

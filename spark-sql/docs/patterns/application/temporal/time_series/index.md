@@ -39,7 +39,7 @@ graph LR
 Aggregate sales for the current calendar year up to today.
 
 ```sql
---8<-- "src/application/time_series/aggregate_value_current_year_till_now.sql"
+--8<-- "sql/application/time_series/aggregate_value_current_year_till_now.sql"
 ```
 
 ---
@@ -49,7 +49,7 @@ Aggregate sales for the current calendar year up to today.
 Filter and aggregate data for the previous full calendar month.
 
 ```sql
---8<-- "src/application/time_series/previous_month_data.sql"
+--8<-- "sql/application/time_series/previous_month_data.sql"
 ```
 
 ---
@@ -59,7 +59,7 @@ Filter and aggregate data for the previous full calendar month.
 Compare sales by color across two consecutive years.
 
 ```sql
---8<-- "src/application/time_series/year_over_year_color_sales.sql"
+--8<-- "sql/application/time_series/year_over_year_color_sales.sql"
 ```
 
 ---
@@ -69,7 +69,7 @@ Compare sales by color across two consecutive years.
 Aggregate sales for weekdays only using WEEKDAY().
 
 ```sql
---8<-- "src/application/time_series/weekday_sales_total.sql"
+--8<-- "sql/application/time_series/weekday_sales_total.sql"
 ```
 
 ---
@@ -79,7 +79,7 @@ Aggregate sales for weekdays only using WEEKDAY().
 Count the number of weekend days in a date range using SEQUENCE.
 
 ```sql
---8<-- "src/application/time_series/weekend_days_between_dates.sql"
+--8<-- "sql/application/time_series/weekend_days_between_dates.sql"
 ```
 
 ---
@@ -89,7 +89,7 @@ Count the number of weekend days in a date range using SEQUENCE.
 Group and aggregate sales by the last day of each calendar month.
 
 ```sql
---8<-- "src/application/time_series/last_day_of_month_sales.sql"
+--8<-- "sql/application/time_series/last_day_of_month_sales.sql"
 ```
 
 ---
@@ -99,7 +99,7 @@ Group and aggregate sales by the last day of each calendar month.
 Categorise sales into morning, afternoon, and evening bands.
 
 ```sql
---8<-- "src/application/time_series/time_of_day_sales.sql"
+--8<-- "sql/application/time_series/time_of_day_sales.sql"
 ```
 
 ---
@@ -109,7 +109,7 @@ Categorise sales into morning, afternoon, and evening bands.
 Aggregate sales by hour of day using HOUR() and CASE.
 
 ```sql
---8<-- "src/application/time_series/hourly_banding_sales.sql"
+--8<-- "sql/application/time_series/hourly_banding_sales.sql"
 ```
 
 ---
@@ -119,7 +119,7 @@ Aggregate sales by hour of day using HOUR() and CASE.
 Divide each hour into 15-minute interval buckets.
 
 ```sql
---8<-- "src/application/time_series/quarter_hour_banding_sales.sql"
+--8<-- "sql/application/time_series/quarter_hour_banding_sales.sql"
 ```
 
 ---

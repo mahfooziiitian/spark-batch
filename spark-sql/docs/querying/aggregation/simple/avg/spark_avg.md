@@ -36,7 +36,7 @@ AVG(expr) FILTER (WHERE condition)
 2. **Return type** — `DOUBLE` for `INTEGER` / `BIGINT` / `FLOAT` inputs; `DECIMAL(p, s)` for `DECIMAL` inputs (preserves precision).
 3. **DISTINCT semantics** — `AVG(DISTINCT col)` deduplicates values before averaging; useful when rows are duplicated by a join.
 4. **Integer division** — input integers are promoted to `DOUBLE` before averaging, so `AVG(1, 2)` returns `1.5`, not `1`.
-5. **Window function** — `AVG` is also available as a window function with `OVER (...)` for moving averages; see [Window Aggregate Functions](../../../../window-functions/window/aggregate.md).
+5. **Window function** — `AVG` is also available as a window function with `OVER (...)` for moving averages; see [Window Aggregate Functions](../../../../window-functions/functions/aggregate.md).
 
 ---
 

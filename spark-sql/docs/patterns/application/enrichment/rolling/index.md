@@ -36,7 +36,7 @@ graph LR
 Cumulative sum from the first row to the current row within a partition.
 
 ```sql
---8<-- "src/application/rolling/01_running_totals.sql"
+--8<-- "sql/application/rolling/01_running_totals.sql"
 ```
 
 ---
@@ -46,7 +46,7 @@ Cumulative sum from the first row to the current row within a partition.
 Combine standard aggregation with window functions in a single query.
 
 ```sql
---8<-- "src/application/rolling/02_window_in_aggregation.sql"
+--8<-- "sql/application/rolling/02_window_in_aggregation.sql"
 ```
 
 ---
@@ -56,7 +56,7 @@ Combine standard aggregation with window functions in a single query.
 Generate a unique sequential identifier per row within a partition.
 
 ```sql
---8<-- "src/application/rolling/03_row_number_unique_ids.sql"
+--8<-- "sql/application/rolling/03_row_number_unique_ids.sql"
 ```
 
 ---
@@ -66,7 +66,7 @@ Generate a unique sequential identifier per row within a partition.
 Use SEQUENCE with a LEFT JOIN to expose missing dates in a sparse time series.
 
 ```sql
---8<-- "src/application/rolling/04_missing_data_date_range.sql"
+--8<-- "sql/application/rolling/04_missing_data_date_range.sql"
 ```
 
 ---
@@ -76,7 +76,7 @@ Use SEQUENCE with a LEFT JOIN to expose missing dates in a sparse time series.
 Compare each row to the previous and next period.
 
 ```sql
---8<-- "src/application/rolling/05_lag_lead_comparison.sql"
+--8<-- "sql/application/rolling/05_lag_lead_comparison.sql"
 ```
 
 ---
@@ -86,7 +86,7 @@ Compare each row to the previous and next period.
 Extract the boundary values within each ordered window partition.
 
 ```sql
---8<-- "src/application/rolling/06_first_last_value.sql"
+--8<-- "sql/application/rolling/06_first_last_value.sql"
 ```
 
 ---
@@ -96,7 +96,7 @@ Extract the boundary values within each ordered window partition.
 Compute a moving average over a fixed N-row window.
 
 ```sql
---8<-- "src/application/rolling/07_rolling_averages.sql"
+--8<-- "sql/application/rolling/07_rolling_averages.sql"
 ```
 
 ---
@@ -106,7 +106,7 @@ Compute a moving average over a fixed N-row window.
 Calculate the cumulative distribution and relative rank of each row.
 
 ```sql
---8<-- "src/application/rolling/08_cume_dist_percent_rank.sql"
+--8<-- "sql/application/rolling/08_cume_dist_percent_rank.sql"
 ```
 
 ---

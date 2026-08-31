@@ -35,7 +35,7 @@ graph LR
 Simple correlated subquery referencing the outer query's current row.
 
 ```sql
---8<-- "src/application/subquery/correlated_basics.sql"
+--8<-- "sql/application/subquery/correlated_basics.sql"
 ```
 
 ---
@@ -45,7 +45,7 @@ Simple correlated subquery referencing the outer query's current row.
 Advanced correlated patterns including EXISTS and NOT EXISTS.
 
 ```sql
---8<-- "src/application/subquery/correlated_advanced.sql"
+--8<-- "sql/application/subquery/correlated_advanced.sql"
 ```
 
 ---
@@ -55,7 +55,7 @@ Advanced correlated patterns including EXISTS and NOT EXISTS.
 Use subqueries in WHERE to filter rows based on inner aggregations.
 
 ```sql
---8<-- "src/application/subquery/subquery_filtering.sql"
+--8<-- "sql/application/subquery/subquery_filtering.sql"
 ```
 
 ---
@@ -65,7 +65,7 @@ Use subqueries in WHERE to filter rows based on inner aggregations.
 Scalar subqueries in the SELECT list for ratio and percentage calculations.
 
 ```sql
---8<-- "src/application/subquery/subquery_aggregation.sql"
+--8<-- "sql/application/subquery/subquery_aggregation.sql"
 ```
 
 ---

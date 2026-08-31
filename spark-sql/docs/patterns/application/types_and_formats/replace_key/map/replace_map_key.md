@@ -58,7 +58,7 @@ For each `(original_key, value)` pair in `original_map`:
 ## :material-magnify: SQL Implementation
 
 ```sql
---8<-- "src/application/map_key_replace/v5/map_key_replace_v5.sql"
+--8<-- "sql/application/map_key_replace/v5/map_key_replace_v5.sql"
 ```
 
 ---

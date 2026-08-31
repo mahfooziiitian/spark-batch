@@ -32,7 +32,7 @@ graph LR
 Check whether any key in a MAP column matches a runtime predicate — demonstrated on the Databricks `system.billing.usage` system table.
 
 ```sql
---8<-- "src/application/key_n_struct/any_key_exists_in_struct.sql"
+--8<-- "sql/application/key_n_struct/any_key_exists_in_struct.sql"
 ```
 
 ---

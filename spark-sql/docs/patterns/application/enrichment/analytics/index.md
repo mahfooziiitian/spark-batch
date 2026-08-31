@@ -33,7 +33,7 @@ graph LR
 Band numeric metrics into KPI labels using CASE expressions.
 
 ```sql
---8<-- "src/application/analytics/kpi_and_alerts.sql"
+--8<-- "sql/application/analytics/kpi_and_alerts.sql"
 ```
 
 ---
@@ -43,7 +43,7 @@ Band numeric metrics into KPI labels using CASE expressions.
 Multi-tier classification using nested CASE expressions.
 
 ```sql
---8<-- "src/application/analytics/categorization.sql"
+--8<-- "sql/application/analytics/categorization.sql"
 ```
 
 ---
@@ -53,7 +53,7 @@ Multi-tier classification using nested CASE expressions.
 Control NULL placement in sorted result sets.
 
 ```sql
---8<-- "src/application/analytics/null_ordering.sql"
+--8<-- "sql/application/analytics/null_ordering.sql"
 ```
 
 ---
@@ -63,7 +63,7 @@ Control NULL placement in sorted result sets.
 Truncate, pad, and concatenate strings for formatted report output.
 
 ```sql
---8<-- "src/application/analytics/text_formatting.sql"
+--8<-- "sql/application/analytics/text_formatting.sql"
 ```
 
 ---

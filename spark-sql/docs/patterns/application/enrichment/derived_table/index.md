@@ -35,7 +35,7 @@ graph LR
 Subquery in FROM for intermediate grouping before outer filtering.
 
 ```sql
---8<-- "src/application/derived_table/derived_table_basics.sql"
+--8<-- "sql/application/derived_table/derived_table_basics.sql"
 ```
 
 ---
@@ -45,7 +45,7 @@ Subquery in FROM for intermediate grouping before outer filtering.
 Year-on-year comparison and multi-level aggregation with joined derived tables.
 
 ```sql
---8<-- "src/application/derived_table/derived_table_advanced.sql"
+--8<-- "sql/application/derived_table/derived_table_advanced.sql"
 ```
 
 ---

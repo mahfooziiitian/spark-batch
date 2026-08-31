@@ -35,7 +35,7 @@ graph LR
 Combine multiple conditions using boolean operators.
 
 ```sql
---8<-- "src/application/filter/and_or_filters.sql"
+--8<-- "sql/application/filter/and_or_filters.sql"
 ```
 
 ---
@@ -45,7 +45,7 @@ Combine multiple conditions using boolean operators.
 Mix string and numeric predicates in a single WHERE clause.
 
 ```sql
---8<-- "src/application/filter/text_number_filters.sql"
+--8<-- "sql/application/filter/text_number_filters.sql"
 ```
 
 ---
@@ -55,7 +55,7 @@ Mix string and numeric predicates in a single WHERE clause.
 Use LIKE with `%` and `_` wildcards for partial string matching.
 
 ```sql
---8<-- "src/application/filter/wildcard_searches.sql"
+--8<-- "sql/application/filter/wildcard_searches.sql"
 ```
 
 ---
@@ -65,7 +65,7 @@ Use LIKE with `%` and `_` wildcards for partial string matching.
 Handle NULL values safely in filter predicates.
 
 ```sql
---8<-- "src/application/filter/null_filters.sql"
+--8<-- "sql/application/filter/null_filters.sql"
 ```
 
 ---
@@ -75,7 +75,7 @@ Handle NULL values safely in filter predicates.
 Apply regular expression patterns with RLIKE for advanced text filtering.
 
 ```sql
---8<-- "src/application/filter/regex_filters.sql"
+--8<-- "sql/application/filter/regex_filters.sql"
 ```
 
 ---

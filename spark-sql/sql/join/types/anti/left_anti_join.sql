@@ -5,7 +5,7 @@ CREATE TABLE ozd.poc.employee (
     name VARCHAR(50),
     age INT,
     department VARCHAR(50)
-) -- COMMAND ----------
+); -- COMMAND ----------
 -- Inserting data into ozd.poc.employee table
 INSERT INTO ozd.poc.employee (id, name, age, department)
 VALUES (1, 'John Doe', 30, 'IT');
@@ -33,5 +33,5 @@ select *
 from ozd.poc.employee LEFT ANTI
     JOIN ozd.poc.department on department_name = department;
 select *
-from department LEFT ANTI
+from ozd.poc.department LEFT ANTI
     JOIN ozd.poc.employee on department_name = department;

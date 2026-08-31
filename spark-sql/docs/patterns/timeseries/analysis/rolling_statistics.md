@@ -3,6 +3,9 @@
 Compute **rolling median, variance, standard deviation, and min/max** over sliding
 windows — essential for anomaly detection, control charts, and adaptive thresholds.
 
+!!! note "Source"
+    Full runnable example: `sql/timeseries/sliding.sql`
+
 ---
 
 ## :material-sitemap: Rolling Statistics Pipeline

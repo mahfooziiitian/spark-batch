@@ -3,6 +3,9 @@
 Assign each rep a percentile rank and quartile bucket across their region
 using `PERCENT_RANK` and `NTILE(4)`.
 
+!!! note "Source"
+    Full runnable example: `sql/window/ranking/ranking.sql`
+
 ---
 
 ## :material-flask-outline: Practical Examples

@@ -37,7 +37,7 @@ graph LR
 ROUND, FLOOR, CEIL, and TRUNCATE for financial precision.
 
 ```sql
---8<-- "src/application/numeric/decimal_operations.sql"
+--8<-- "sql/application/numeric/decimal_operations.sql"
 ```
 
 ---
@@ -47,7 +47,7 @@ ROUND, FLOOR, CEIL, and TRUNCATE for financial precision.
 Reference for INT, BIGINT, DECIMAL, FLOAT, and DOUBLE behaviour.
 
 ```sql
---8<-- "src/application/numeric/numeric_datatypes.sql"
+--8<-- "sql/application/numeric/numeric_datatypes.sql"
 ```
 
 ---
@@ -57,7 +57,7 @@ Reference for INT, BIGINT, DECIMAL, FLOAT, and DOUBLE behaviour.
 Guard against division by zero using NULLIF and CASE.
 
 ```sql
---8<-- "src/application/numeric/divide_zero_errors.sql"
+--8<-- "sql/application/numeric/divide_zero_errors.sql"
 ```
 
 ---
@@ -67,7 +67,7 @@ Guard against division by zero using NULLIF and CASE.
 Apply modulo arithmetic for financial bucketing.
 
 ```sql
---8<-- "src/application/numeric/modulo_financial.sql"
+--8<-- "sql/application/numeric/modulo_financial.sql"
 ```
 
 ---
@@ -77,7 +77,7 @@ Apply modulo arithmetic for financial bucketing.
 Generate a number series with SEQUENCE for gap-filling and tally tables.
 
 ```sql
---8<-- "src/application/numeric/tally_table_sequence.sql"
+--8<-- "sql/application/numeric/tally_table_sequence.sql"
 ```
 
 ---
@@ -87,7 +87,7 @@ Generate a number series with SEQUENCE for gap-filling and tally tables.
 Sample rows randomly using RAND and TABLESAMPLE.
 
 ```sql
---8<-- "src/application/numeric/random_sampling.sql"
+--8<-- "sql/application/numeric/random_sampling.sql"
 ```
 
 ---
@@ -97,7 +97,7 @@ Sample rows randomly using RAND and TABLESAMPLE.
 Cast and validate string columns that contain numeric values.
 
 ```sql
---8<-- "src/application/numeric/numbers_as_text.sql"
+--8<-- "sql/application/numeric/numbers_as_text.sql"
 ```
 
 ---

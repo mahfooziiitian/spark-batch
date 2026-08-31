@@ -3,6 +3,9 @@
 Statistical functions compute **descriptive statistics** across grouped or ungrouped rows —
 averages, medians, modes, percentiles, and extremes with associated values.
 
+!!! note "Source"
+    Full runnable example: `sql/aggregation/stats/stats.sql`
+
 ### :material-sitemap: Overview
 
 ```mermaid

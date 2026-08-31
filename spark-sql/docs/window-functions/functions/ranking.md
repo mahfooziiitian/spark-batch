@@ -2,6 +2,9 @@
 
 Ranking functions assign a position to each row within a partition based on an ordering expression.
 
+!!! note "Source"
+    Full runnable example: `sql/window/ranking/ranking.sql`
+
 ### :material-sitemap: Overview
 
 ```mermaid

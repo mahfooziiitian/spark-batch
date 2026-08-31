@@ -35,7 +35,7 @@ graph LR
 Rotate color values into columns with aggregated sale totals.
 
 ```sql
---8<-- "src/application/pivot/pivot_sales_by_color.sql"
+--8<-- "sql/application/pivot/pivot_sales_by_color.sql"
 ```
 
 ---
@@ -45,7 +45,7 @@ Rotate color values into columns with aggregated sale totals.
 Multi-row-group pivot with make and model as row dimensions.
 
 ```sql
---8<-- "src/application/pivot/pivot_color_count_by_make_model.sql"
+--8<-- "sql/application/pivot/pivot_color_count_by_make_model.sql"
 ```
 
 ---

@@ -34,7 +34,7 @@ graph LR
 Parse varchar date columns and format them for downstream use.
 
 ```sql
---8<-- "src/application/date_string/reading_date_strings.sql"
+--8<-- "sql/application/date_string/reading_date_strings.sql"
 ```
 
 ---

@@ -36,7 +36,7 @@ graph LR
 Standard SUM, AVG, MIN, MAX over the sales table.
 
 ```sql
---8<-- "src/application/aggregation/basic_aggregates.sql"
+--8<-- "sql/application/aggregation/basic_aggregates.sql"
 ```
 
 ---
@@ -46,7 +46,7 @@ Standard SUM, AVG, MIN, MAX over the sales table.
 Aggregate metrics grouped by make and model.
 
 ```sql
---8<-- "src/application/aggregation/grouped_aggregations.sql"
+--8<-- "sql/application/aggregation/grouped_aggregations.sql"
 ```
 
 ---
@@ -56,7 +56,7 @@ Aggregate metrics grouped by make and model.
 Difference between `COUNT(*)` and `COUNT(column)` with NULL behaviour.
 
 ```sql
---8<-- "src/application/aggregation/count_operations.sql"
+--8<-- "sql/application/aggregation/count_operations.sql"
 ```
 
 ---
@@ -66,7 +66,7 @@ Difference between `COUNT(*)` and `COUNT(column)` with NULL behaviour.
 Filter grouped results to only those meeting a minimum threshold.
 
 ```sql
---8<-- "src/application/aggregation/having_filters.sql"
+--8<-- "sql/application/aggregation/having_filters.sql"
 ```
 
 ---
@@ -76,7 +76,7 @@ Filter grouped results to only those meeting a minimum threshold.
 Conditional aggregation using CASE inside aggregate functions.
 
 ```sql
---8<-- "src/application/aggregation/threshold_aggregates.sql"
+--8<-- "sql/application/aggregation/threshold_aggregates.sql"
 ```
 
 ---
@@ -86,7 +86,7 @@ Conditional aggregation using CASE inside aggregate functions.
 Aggregate across multiple related columns in a single pass.
 
 ```sql
---8<-- "src/application/aggregation/cross_column_aggregation.sql"
+--8<-- "sql/application/aggregation/cross_column_aggregation.sql"
 ```
 
 ---
@@ -96,7 +96,7 @@ Aggregate across multiple related columns in a single pass.
 Use BOOL_AND and BOOL_OR to reduce boolean expressions across a group.
 
 ```sql
---8<-- "src/application/aggregation/bool_aggregations.sql"
+--8<-- "sql/application/aggregation/bool_aggregations.sql"
 ```
 
 ---

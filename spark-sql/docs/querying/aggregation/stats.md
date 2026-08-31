@@ -2,6 +2,9 @@
 
 Spark SQL provides a suite of statistical aggregate functions for measuring dispersion, correlation, and distribution of numeric data.
 
+!!! note "Source"
+    Full runnable example: `sql/aggregation/stats/stats.sql`
+
 ---
 
 ## :material-pin: Functions

@@ -2,6 +2,9 @@
 
 Identify data points that deviate significantly from the norm — using z-scores, IQR fencing, percentile thresholds, and moving-window techniques — essential for data quality, fraud detection, and anomaly alerting.
 
+!!! note "Source"
+    Full runnable example: `sql/application/data_quality/outlier_detection.sql`
+
 ---
 
 ## :material-sitemap: Execution Flow

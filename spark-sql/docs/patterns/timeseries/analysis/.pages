@@ -12,6 +12,7 @@ nav:
   - utilization_analysis.md
   - queue_analysis.md
   - capacity_planning.md
+  - p95_latency_analysis.md
   - inventory_analytics.md
   - interval_analytics.md
   - time_binning.md

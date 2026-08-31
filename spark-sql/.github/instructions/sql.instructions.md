@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.sql, docs/**/*.md"
+applyTo: "sql/**/*.sql, docs/**/*.md"
 ---
 
 # SQL — Spark SQL (Databricks Dialect)

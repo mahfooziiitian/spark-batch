@@ -33,7 +33,7 @@ graph LR
 Single and multi-CTE patterns for intermediate calculations.
 
 ```sql
---8<-- "src/application/cte/cte_basics.sql"
+--8<-- "sql/application/cte/cte_basics.sql"
 ```
 
 ---
@@ -43,7 +43,7 @@ Single and multi-CTE patterns for intermediate calculations.
 Chained CTEs and reuse patterns for complex multi-step pipelines.
 
 ```sql
---8<-- "src/application/cte/cte_advanced.sql"
+--8<-- "sql/application/cte/cte_advanced.sql"
 ```
 
 ---

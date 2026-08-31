@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
+
 from tests._helpers import create_view, statement_containing
 
 if TYPE_CHECKING:
@@ -51,10 +52,12 @@ class TestAggregation:
             "origin_airport string, count int",
         )
 
-    def test_cube_query_comes_from_source(self: TestAggregation, spark: SparkSession) -> None:
+    def test_cube_query_comes_from_source(
+        self: TestAggregation, spark: SparkSession
+    ) -> None:
         self._register_sales(spark)
         cube_statement = statement_containing(
-            "src/aggregation/cube/spark-cube.sql",
+            "sql/aggregation/cube/spark-cube.sql",
             "GROUP BY CUBE (region, product)",
         )
         actual = spark.sql(cube_statement)
@@ -75,17 +78,26 @@ class TestAggregation:
             ],
             "region string, product string, total_sales double",
         )
-        assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
-        assert actual.filter("region IS NULL AND product IS NULL AND total_sales = 1710.0").count() == 1
+        assert_df_equality(
+            actual, expected, ignore_row_order=True, ignore_nullable=True
+        )
+        assert (
+            actual.filter(
+                "region IS NULL AND product IS NULL AND total_sales = 1710.0"
+            ).count()
+            == 1
+        )
 
-    def test_rollup_and_pivot_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
+    def test_rollup_and_pivot_queries_come_from_source(
+        self: TestAggregation, spark: SparkSession
+    ) -> None:
         self._register_sales(spark)
         rollup_statement = statement_containing(
-            "src/aggregation/rollup/rollup.sql",
+            "sql/aggregation/rollup/rollup.sql",
             "GROUP BY ROLLUP (region, product)",
         )
         pivot_statement = statement_containing(
-            "src/aggregation/pivoting/spark/spark_pivot.sql",
+            "sql/aggregation/pivoting/spark/spark_pivot.sql",
             "FROM students PIVOT",
         )
 
@@ -93,15 +105,24 @@ class TestAggregation:
         pivot = spark.sql(pivot_statement)
 
         assert rollup.count() == 10
-        assert rollup.filter("region = 'East' AND product IS NULL AND total_sales = 650.0").count() == 1
+        assert (
+            rollup.filter(
+                "region = 'East' AND product IS NULL AND total_sales = 650.0"
+            ).count()
+            == 1
+        )
         assert pivot.count() == 6
         assert pivot.filter("name = 'Alice' AND female_min = 55").count() == 1
 
-    def test_simple_aggregation_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
+    def test_simple_aggregation_queries_come_from_source(
+        self: TestAggregation, spark: SparkSession
+    ) -> None:
         self._register_sales(spark)
-        avg_statement = statement_containing("src/aggregation/simple/avg/avg.sql", "AVG(count) AS avg_fun")
+        avg_statement = statement_containing(
+            "sql/aggregation/simple/avg/avg.sql", "AVG(count) AS avg_fun"
+        )
         minmax_statement = statement_containing(
-            "src/aggregation/simple/minmax/min_max_agg.sql",
+            "sql/aggregation/simple/minmax/min_max_agg.sql",
             "GROUP BY origin_airport",
         )
 
@@ -112,4 +133,9 @@ class TestAggregation:
         assert avg_result.count() == 1
         assert avg_row is not None and avg_row.avg_fun == avg_row.avg == 16.0
         assert minmax_result.count() == 2
-        assert minmax_result.filter("min_count = 10 AND max_count = 30 AND count = 3").count() == 1
+        assert (
+            minmax_result.filter(
+                "min_count = 10 AND max_count = 30 AND count = 3"
+            ).count()
+            == 1
+        )

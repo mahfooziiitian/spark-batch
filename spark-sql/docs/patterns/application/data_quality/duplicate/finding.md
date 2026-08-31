@@ -240,7 +240,7 @@ FROM students;
 ## :material-flask-outline: Full Example with Sample Data
 
 ```sql
---8<-- "src/application/duplicate/finding/find-duplicate.sql"
+--8<-- "sql/application/duplicate/finding/find-duplicate.sql"
 ```
 
 ---

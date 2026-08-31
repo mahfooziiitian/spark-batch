@@ -34,7 +34,7 @@ graph LR
 Compare RANK and DENSE_RANK behaviour on tied values.
 
 ```sql
---8<-- "src/application/ranking/rank_dense_rank.sql"
+--8<-- "sql/application/ranking/rank_dense_rank.sql"
 ```
 
 ---
@@ -44,7 +44,7 @@ Compare RANK and DENSE_RANK behaviour on tied values.
 Divide the result set into equal-sized quantile buckets.
 
 ```sql
---8<-- "src/application/ranking/ntile_segments.sql"
+--8<-- "sql/application/ranking/ntile_segments.sql"
 ```
 
 ---
@@ -54,7 +54,7 @@ Divide the result set into equal-sized quantile buckets.
 Compute continuous and discrete percentiles including the median.
 
 ```sql
---8<-- "src/application/ranking/percentile_median.sql"
+--8<-- "sql/application/ranking/percentile_median.sql"
 ```
 
 ---
