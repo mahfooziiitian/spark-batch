@@ -12,18 +12,28 @@ Prerequisites:
 
 from __future__ import annotations
 
+import argparse
+import os
+
 from custom_ds import create_spark_session
 from custom_ds.restapi import RestApiDataSource
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="SQL queries over REST API data")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("MOCK_SERVER_URL", "http://localhost:9090"),
+        help="Mock server base URL (default: $MOCK_SERVER_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+
     spark = create_spark_session("restapi-sql")
 
     spark.dataSource.register(RestApiDataSource)
 
-    # Load REST API data into a temp view
     (
         spark.read.format("restapi")
-        .option("url", "http://localhost:9090/api/users")
+        .option("url", f"{args.url}/api/users")
         .option("resultKey", "data")
         .load()
         .createOrReplaceTempView("api_users")

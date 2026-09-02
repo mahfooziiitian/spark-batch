@@ -12,12 +12,23 @@ Prerequisites:
 
 from __future__ import annotations
 
+import argparse
+import os
+
 from pyspark.sql import functions as F
 
 from custom_ds import create_spark_session
 from custom_ds.restapi import RestApiSinkDataSource
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Batch write to REST API sink")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("MOCK_SERVER_URL", "http://localhost:9090"),
+        help="Mock server base URL (default: $MOCK_SERVER_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+
     spark = create_spark_session("restapi-batch-write")
 
     spark.dataSource.register(RestApiSinkDataSource)
@@ -32,7 +43,7 @@ if __name__ == "__main__":
     df.show(5)
 
     # Write to the mock API endpoint — batchSize controls rows per HTTP request
-    df.write.format("restapi_sink").option("url", "http://localhost:9090/api/records").option(
+    df.write.format("restapi_sink").option("url", f"{args.url}/api/records").option(
         "batchSize", "10"
     ).mode("append").save()
 

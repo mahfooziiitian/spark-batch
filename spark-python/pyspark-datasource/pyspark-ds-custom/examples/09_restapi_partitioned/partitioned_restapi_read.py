@@ -12,12 +12,24 @@ Prerequisites:
 
 from __future__ import annotations
 
+import argparse
+import os
+
 from pyspark.sql import functions as F
 
 from custom_ds import create_spark_session
 from custom_ds.restapi import RestApiDataSource
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Partitioned REST API reads")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("MOCK_SERVER_URL", "http://localhost:9090"),
+        help="Mock server base URL (default: $MOCK_SERVER_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+    base_url: str = args.url
+
     spark = create_spark_session("restapi-partitioned")
     spark.dataSource.register(RestApiDataSource)
 
@@ -30,7 +42,7 @@ if __name__ == "__main__":
 
     df_single = (
         spark.read.format("restapi")
-        .option("url", "http://localhost:9090/api/users")
+        .option("url", f"{base_url}/api/users")
         .option("resultKey", "data")
         .option("schema", "id LONG, name STRING, email STRING, city STRING, age LONG")
         .load()
@@ -47,7 +59,7 @@ if __name__ == "__main__":
     print("Strategy: URLS (3 URLs → 3 partitions)")
     print("=" * 60)
 
-    urls = ",".join(f"http://localhost:9090/api/users/{i}" for i in range(1, 4))
+    urls = ",".join(f"{base_url}/api/users/{i}" for i in range(1, 4))
 
     df_urls = (
         spark.read.format("restapi")
@@ -74,7 +86,7 @@ if __name__ == "__main__":
     df_pages = (
         spark.read.format("restapi")
         .option("partitionStrategy", "pages")
-        .option("url", "http://localhost:9090/api/posts")
+        .option("url", f"{base_url}/api/posts")
         .option("totalPages", "4")
         .option("pageSize", "25")
         .option("resultKey", "data")

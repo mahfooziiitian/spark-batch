@@ -18,12 +18,24 @@ Key concepts:
 
 from __future__ import annotations
 
+import argparse
+import os
+
 from pyspark.sql import functions as F
 from pyspark_datasources import FakeDataSource
 
 from custom_ds import RestApiDataSource, RestApiSinkDataSource, create_spark_session
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Mixed pipeline with community + custom sources")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("MOCK_SERVER_URL", "http://localhost:9090"),
+        help="Mock server base URL (default: $MOCK_SERVER_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+    base_url: str = args.url
+
     spark = create_spark_session("mixed-pipeline")
 
     # Register both community and custom sources
@@ -56,7 +68,7 @@ if __name__ == "__main__":
 
     df_api = (
         spark.read.format("restapi")
-        .option("url", "http://localhost:9090/api/users")
+        .option("url", f"{base_url}/api/users")
         .option("resultKey", "data")
         .option("schema", "id LONG, name STRING, email STRING, city STRING, age LONG")
         .load()
@@ -95,7 +107,7 @@ if __name__ == "__main__":
     print("=" * 60)
 
     df_combined.select("id", F.col("name").alias("value")).write.format("restapi_sink").option(
-        "url", "http://localhost:9090/api/records"
+        "url", f"{base_url}/api/records"
     ).option("batchSize", "20").mode("append").save()
 
     print("Pipeline complete!")

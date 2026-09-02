@@ -30,6 +30,10 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class ArrowRestPartition(InputPartition):
@@ -100,7 +104,9 @@ class RestApiArrowDataSource(DataSource):
         if oauth_config is not None:
             headers = oauth_config.apply_to_headers(headers)
 
+        logger.debug("Arrow schema inference: %s %s", method, url)
         response = requests.request(method, url, headers=headers, params=params, timeout=30)
+        logger.debug("Response: %d %s", response.status_code, response.reason)
         response.raise_for_status()
         data = response.json()
 
@@ -161,16 +167,26 @@ class RestApiArrowReader(DataSourceReader):
         import pyarrow as pa
         import requests as req
 
+        from custom_ds.util.log import get_logger as _get_logger
+
+        _log = _get_logger(__name__)
         headers = partition.headers
         if self.oauth_config is not None:
             headers = self.oauth_config.apply_to_headers(headers)
 
+        _log.debug("Arrow read: %s %s", partition.method, partition.url)
         response = req.request(
             partition.method,
             partition.url,
             headers=headers,
             params=partition.params,
             timeout=30,
+        )
+        _log.debug(
+            "Response: %d %s (%d bytes)",
+            response.status_code,
+            response.reason,
+            len(response.content),
         )
         response.raise_for_status()
         data = response.json()

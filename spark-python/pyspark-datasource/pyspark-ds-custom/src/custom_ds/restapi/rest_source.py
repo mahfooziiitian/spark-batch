@@ -57,6 +57,9 @@ from pyspark.sql.types import (
     StructType,
 )
 
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 # Partition types
 # ---------------------------------------------------------------------------
@@ -170,7 +173,9 @@ class RestApiDataSource(DataSource):
         if oauth_config is not None:
             headers = oauth_config.apply_to_headers(headers)
 
+        logger.debug("Schema inference: %s %s params=%s", method, url, params)
         response = requests.request(method, url, headers=headers, params=params, timeout=timeout)
+        logger.debug("Schema inference response: %d %s", response.status_code, response.reason)
         response.raise_for_status()
         data = response.json()
 
@@ -283,8 +288,11 @@ class RestApiDataSourceReader(DataSourceReader):
     def read(self, partition: InputPartition):
         import requests as req
 
+        from custom_ds.util.log import get_logger as _get_logger
+
+        _log = _get_logger(__name__)
+
         if isinstance(partition, RestApiPagePartition):
-            # Build URL with pagination params
             page_params = {
                 self.page_param: partition.page,
                 self.page_size_param: partition.page_size,
@@ -293,6 +301,7 @@ class RestApiDataSourceReader(DataSourceReader):
             headers = partition.headers
             if self.oauth_config is not None:
                 headers = self.oauth_config.apply_to_headers(headers)
+            _log.debug("Read page %d: %s %s", partition.page, partition.method, partition.base_url)
             response = req.request(
                 partition.method,
                 partition.base_url,
@@ -305,6 +314,7 @@ class RestApiDataSourceReader(DataSourceReader):
             headers = partition.headers
             if self.oauth_config is not None:
                 headers = self.oauth_config.apply_to_headers(headers)
+            _log.debug("Read: %s %s", partition.method, partition.url)
             response = req.request(
                 partition.method,
                 partition.url,
@@ -313,6 +323,12 @@ class RestApiDataSourceReader(DataSourceReader):
                 timeout=self.timeout,
             )
 
+        _log.debug(
+            "Response: %d %s (%d bytes)",
+            response.status_code,
+            response.reason,
+            len(response.content),
+        )
         response.raise_for_status()
         data = response.json()
 

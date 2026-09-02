@@ -1,0 +1,23 @@
+# Bundle variable definitions for pyspark-excel-ds.
+# Extracted from databricks.yml so variables can be maintained independently
+# of resource wiring. Values are overridden per-target in databricks.yml.
+variables:
+  catalog:
+    description: Unity Catalog catalog for the demo tables.
+    default: poc
+  schema:
+    description: Unity Catalog schema for the demo tables.
+    default: testing
+  input_volume_path:
+    description: Unity Catalog Volumes path containing source Excel workbooks.
+    default: /Volumes/poc/testing/landing
+  output_volume_path:
+    description: Unity Catalog Volumes path for exported Excel reports.
+    default: /Volumes/poc/testing/reports
+  node_type_id:
+    description: Worker/driver node type for the job cluster.
+    default: i4i.xlarge
+  policy_id:
+    description: Cluster policy applied to the job cluster, resolved by name.
+    lookup:
+      cluster_policy: job_workflow_cluster_oz

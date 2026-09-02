@@ -7,8 +7,11 @@ Key concepts:
     - Identical API to local example 08
 
 Prerequisites:
-    - Databricks Connect configured (see README.md)
-    - A REST API endpoint accessible from the cluster
+    databricks auth login --profile dev
+
+Usage:
+    uv run python examples/13_databricks_connect/dbconnect_sql.py --profile dev
+    # or: export DATABRICKS_PROFILE=dev
 """
 
 from __future__ import annotations
@@ -17,13 +20,24 @@ import os
 
 from custom_ds import create_dbconnect_session
 from custom_ds.restapi import RestApiDataSource
+from custom_ds.util.databricks_auth import create_arg_parser
 
 if __name__ == "__main__":
+    parser = create_arg_parser("Databricks Connect — REST API SQL queries")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("REST_API_URL", "http://localhost:9090"),
+        help="REST API base URL (default: $REST_API_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+    if args.profile:
+        os.environ["DATABRICKS_PROFILE"] = args.profile
+
     spark = create_dbconnect_session("dbconnect-restapi-sql")
 
     spark.dataSource.register(RestApiDataSource)
 
-    api_url = os.environ.get("REST_API_URL", "http://localhost:9090/api/users")
+    api_url: str = f"{args.url}/api/users"
 
     # Read and register as temp view
     df = (

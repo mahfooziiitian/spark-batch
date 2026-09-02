@@ -13,18 +13,28 @@ Prerequisites:
 
 from __future__ import annotations
 
+import argparse
+import os
+
 from custom_ds import create_spark_session
 from custom_ds.restapi import RestApiDataSource
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Batch read from REST API data source")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("MOCK_SERVER_URL", "http://localhost:9090"),
+        help="Mock server base URL (default: $MOCK_SERVER_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+
     spark = create_spark_session("restapi-batch-read")
 
     spark.dataSource.register(RestApiDataSource)
 
-    # Read users from the mock API — `resultKey` extracts the "data" array from the response
     df = (
         spark.read.format("restapi")
-        .option("url", "http://localhost:9090/api/users")
+        .option("url", f"{args.url}/api/users")
         .option("method", "GET")
         .option("resultKey", "data")
         .load()

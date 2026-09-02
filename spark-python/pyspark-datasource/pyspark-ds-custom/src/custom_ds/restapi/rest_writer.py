@@ -22,6 +22,10 @@ from pyspark.sql import Row
 from pyspark.sql.datasource import DataSource, DataSourceWriter, WriterCommitMessage
 from pyspark.sql.types import StructType
 
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class RestApiWriteCommitMessage(WriterCommitMessage):
@@ -117,21 +121,26 @@ class RestApiSinkWriter(DataSourceWriter):
     def _send_batch(self, batch: list[dict]) -> int:
         import requests as req
 
+        from custom_ds.util.log import get_logger as _get_logger
+
+        _log = _get_logger(__name__)
         headers = self.headers
         if self.oauth_config is not None:
             headers = self.oauth_config.apply_to_headers(headers)
         assert self.url is not None
+        _log.debug("POST %s (%d records)", self.url, len(batch))
         response = req.post(self.url, json=batch, headers=headers, timeout=30)
+        _log.debug("Response: %d %s", response.status_code, response.reason)
         response.raise_for_status()
         return response.status_code
 
     def commit(self, messages: list) -> None:
         total_rows = sum(m.rows_sent for m in messages if m is not None)
         total_requests = sum(m.requests_made for m in messages if m is not None)
-        print(f"[restapi_sink] committed {total_rows} rows via {total_requests} HTTP requests")
+        logger.info("Committed %d rows via %d HTTP requests", total_rows, total_requests)
 
     def abort(self, messages: list) -> None:
-        print("[restapi_sink] write aborted — partial data may have been sent to the endpoint")
+        logger.warning("Write aborted — partial data may have been sent to the endpoint")
 
 
 # ---------------------------------------------------------------------------

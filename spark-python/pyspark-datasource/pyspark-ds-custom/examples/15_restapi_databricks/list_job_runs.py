@@ -21,15 +21,17 @@ from pyspark.sql import functions as F
 
 from custom_ds import create_spark_session
 from custom_ds.restapi import RestApiDataSource
-from custom_ds.util.databricks_auth import get_databricks_auth, parse_profile_arg
+from custom_ds.util.databricks_auth import create_arg_parser, get_databricks_auth
 
 if __name__ == "__main__":
-    auth = get_databricks_auth(parse_profile_arg())
+    parser = create_arg_parser("List Databricks job runs via REST API")
+    args = parser.parse_args()
+    auth = get_databricks_auth(args.profile)
 
     spark = create_spark_session("restapi-databricks-runs")
     spark.dataSource.register(RestApiDataSource)
 
-    url = f"{auth.host}/api/2.2/jobs/runs/list"
+    url = f"{auth.host}/api/2.1/jobs/runs/list"
 
     # Single fetch — recent runs
     df = (
@@ -38,7 +40,6 @@ if __name__ == "__main__":
         .option("method", "GET")
         .option("headers.Authorization", f"Bearer {auth.token}")
         .option("params.limit", "100")
-        .option("params.expand_tasks", "false")
         .option("resultKey", "runs")
         .load()
     )

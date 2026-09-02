@@ -6,10 +6,11 @@ profile (``~/.databrickscfg``) or environment variables using the
 
 Usage::
 
-    from custom_ds.util.databricks_auth import get_databricks_auth, parse_profile_arg
+    from custom_ds.util.databricks_auth import get_databricks_auth, create_arg_parser
 
-    profile = parse_profile_arg()           # reads --profile from sys.argv
-    auth = get_databricks_auth(profile)     # resolves host + token
+    parser = create_arg_parser("List Databricks jobs")
+    args = parser.parse_args()
+    auth = get_databricks_auth(args.profile)
 
     print(auth.host)    # https://<workspace>.cloud.databricks.com
     print(auth.token)   # temporary or PAT token
@@ -23,9 +24,13 @@ CLI usage::
 
 from __future__ import annotations
 
+import argparse
 import os
-import sys
 from dataclasses import dataclass
+
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -36,21 +41,26 @@ class DatabricksAuth:
     token: str
 
 
-def parse_profile_arg() -> str | None:
-    """Parse ``--profile <name>`` from command-line arguments.
+def create_arg_parser(
+    description: str = "Databricks REST API example",
+) -> argparse.ArgumentParser:
+    """Create an ArgumentParser pre-configured with ``--profile``.
 
-    Falls back to the ``DATABRICKS_PROFILE`` environment variable.
+    Subclasses / callers can add extra arguments before calling ``parse_args()``.
+
+    Args:
+        description: Script description shown in ``--help``.
 
     Returns:
-        Profile name, or ``None`` if not specified.
+        An :class:`argparse.ArgumentParser` with ``--profile`` already added.
     """
-    args = sys.argv[1:]
-    for i, arg in enumerate(args):
-        if arg == "--profile" and i + 1 < len(args):
-            return args[i + 1]
-        if arg.startswith("--profile="):
-            return arg.split("=", 1)[1]
-    return os.environ.get("DATABRICKS_PROFILE")
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "--profile",
+        default=os.environ.get("DATABRICKS_PROFILE"),
+        help="Databricks CLI profile from ~/.databrickscfg (default: DATABRICKS_PROFILE env var)",
+    )
+    return parser
 
 
 def get_databricks_auth(profile: str | None = None) -> DatabricksAuth:
@@ -98,8 +108,7 @@ def get_databricks_auth(profile: str | None = None) -> DatabricksAuth:
         )
 
     # Get a fresh token via the SDK's auth provider
-    headers: dict[str, str] = {}
-    cfg.authenticate(headers)
+    headers = cfg.authenticate()
     auth_header = headers.get("Authorization", "")
 
     if auth_header.startswith("Bearer "):
@@ -113,8 +122,8 @@ def get_databricks_auth(profile: str | None = None) -> DatabricksAuth:
     # Verify connectivity
     try:
         me = client.current_user.me()
-        print(f"[auth] Authenticated as {me.user_name} on {host}")
+        logger.info("Authenticated as %s on %s", me.user_name, host)
     except Exception as e:
-        print(f"[auth] Warning: connectivity check failed: {e}")
+        logger.warning("Connectivity check failed: %s", e)
 
     return DatabricksAuth(host=host.rstrip("/"), token=token)

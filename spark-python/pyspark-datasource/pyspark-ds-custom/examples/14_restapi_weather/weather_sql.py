@@ -12,15 +12,24 @@ Prerequisites:
 
 from __future__ import annotations
 
+import argparse
 import os
 import sys
 
 from custom_ds import WeatherApiSource, create_spark_session
 
 if __name__ == "__main__":
-    api_key = os.environ.get("OPENWEATHER_API_KEY", "")
+    parser = argparse.ArgumentParser(description="Weather SQL analytics via WeatherApiSource")
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("OPENWEATHER_API_KEY", ""),
+        help="OpenWeatherMap API key (default: $OPENWEATHER_API_KEY)",
+    )
+    args = parser.parse_args()
+
+    api_key: str = args.api_key
     if not api_key:
-        print("ERROR: Set OPENWEATHER_API_KEY environment variable")
+        print("ERROR: Pass --api-key or set OPENWEATHER_API_KEY environment variable")
         sys.exit(1)
 
     spark = create_spark_session("restapi-weather-sql")

@@ -1,0 +1,92 @@
+site_name: PySpark Excel Datasource
+site_description: Read Excel into Spark, write Spark tables/DataFrames back to Excel — with spark-excel and Databricks support
+site_url: ""
+repo_url: https://github.com/mahfooziiitian/spark-batch
+repo_name: mahfooziiitian/spark-batch
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.footer
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started/index.md
+  - Data Source:
+      - data-source/index.md
+      - data-source/reading.md
+      - data-source/writing.md
+      - data-source/spark-excel-library.md
+  - Table Integration:
+      - table-integration/index.md
+      - table-integration/excel-to-table.md
+      - table-integration/table-to-excel.md
+      - table-integration/upsert-merge.md
+  - Properties:
+      - properties/index.md
+      - properties/header-and-rows.md
+      - properties/sheets-and-columns.md
+      - properties/na-values-and-types.md
+      - properties/formatting.md
+  - Schema:
+      - schema/index.md
+      - schema/explicit-schema.md
+      - schema/schema-inference.md
+  - Error Handling:
+      - error-handling/index.md
+      - error-handling/missing-file.md
+      - error-handling/malformed-rows.md
+  - Databricks: databricks-runtime/index.md
+  - Deploying with DABs: databricks-runtime/dab-workflow.md
+  - Best Practices: best-practices.md

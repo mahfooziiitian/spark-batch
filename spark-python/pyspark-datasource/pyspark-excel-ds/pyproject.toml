@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyspark-excel-ds"
+version = "0.1.0"
+description = "PySpark Excel Datasource — reusable library and examples for reading Excel into Spark and writing Spark tables/DataFrames back to Excel"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark>=3.5.0,<4.0.0",
+    "pandas<3.0.0",
+    "openpyxl>=3.1.0",
+    "xlsxwriter>=3.2.0",
+    "rich>=15.0.0",
+]
+
+[project.optional-dependencies]
+# Optional: enables MERGE INTO upsert support (pys_excel.table.upsert_table_from_excel)
+# and Delta-backed managed tables. Requires network access to resolve the matching
+# io.delta:delta-spark Maven package the first time a Delta SparkSession is created.
+delta = ["delta-spark>=3.2.0,<4.0.0"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=7.1.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.7",
+    "ruff>=0.16.0",
+    "mypy>=2.3.0",
+    "bandit>=1.9.4",
+    "pymarkdownlnt>=0.9.39",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pys_excel"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "examples", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit (security)
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "T20",  # flake8-print
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "T201",   # allow print() in examples
+    "S603",   # allow subprocess calls (scripts)
+    "S607",   # allow partial executable path
+    "E501",   # allow long lines
+]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/**/*.py" = ["T201", "S101"]
+"tests/**/*.py" = ["S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pys_excel"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+# B101: allow assert; B608: table/column identifiers in table/_table.py SQL are
+# caller-controlled config (table names, merge key columns), not user input.
+skips = ["B101", "B608"]
+
+[tool.coverage.run]
+source = ["pys_excel"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 50

@@ -16,8 +16,12 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from custom_ds.util.log import get_logger
+
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession
+
+logger = get_logger(__name__)
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -78,14 +82,14 @@ def _resolve_cluster_id(
 
         for cluster in client.clusters.list():
             if cluster.cluster_name == cluster_name:
-                print(f"[dbconnect] Resolved cluster '{cluster_name}' → {cluster.cluster_id}")
+                logger.info("Resolved cluster '%s' → %s", cluster_name, cluster.cluster_id)
                 return cluster.cluster_id
 
-        print(f"[dbconnect] Cluster '{cluster_name}' not found")
+        logger.warning("Cluster '%s' not found", cluster_name)
     except ImportError:
-        print("[dbconnect] databricks-sdk not installed, cannot resolve cluster name")
+        logger.warning("databricks-sdk not installed, cannot resolve cluster name")
     except Exception as e:
-        print(f"[dbconnect] Cluster lookup failed: {e}")
+        logger.error("Cluster lookup failed: %s", e)
     return None
 
 
@@ -96,7 +100,7 @@ def _find_or_build_wheel() -> Path | None:
     if wheels:
         return wheels[-1]
 
-    print("[dbconnect] No wheel found — building with 'uv build'...")
+    logger.info("No wheel found — building with 'uv build'...")
     try:
         subprocess.run(
             ["uv", "build", "--wheel", "--quiet"],
@@ -107,7 +111,7 @@ def _find_or_build_wheel() -> Path | None:
         if wheels:
             return wheels[-1]
     except (FileNotFoundError, subprocess.CalledProcessError) as e:
-        print(f"[dbconnect] Wheel build failed: {e}")
+        logger.error("Wheel build failed: %s", e)
     return None
 
 
@@ -123,13 +127,12 @@ def _upload_wheel(spark: SparkSession) -> None:
 
     wheel_path = _find_or_build_wheel()
     if wheel_path is None:
-        print(
-            "[dbconnect] WARNING: Could not find/build wheel — "
-            "custom_ds must already be installed on the cluster"
+        logger.warning(
+            "Could not find/build wheel — custom_ds must already be installed on the cluster"
         )
         return
 
-    print(f"[dbconnect] Uploading wheel: {wheel_path.name}")
+    logger.info("Uploading wheel: %s", wheel_path.name)
     tmp_dir = Path(tempfile.mkdtemp(prefix="dbconnect_"))
     zip_path = tmp_dir / wheel_path.with_suffix(".zip").name
     try:
@@ -196,7 +199,7 @@ def create_dbconnect_session(
 
     builder = builder.clusterId(cluster_id)
     spark = builder.getOrCreate()
-    print(f"[dbconnect] Connected to cluster: {cluster_id}")
+    logger.info("Connected to cluster: %s", cluster_id)
 
     if upload_wheel:
         _upload_wheel(spark)

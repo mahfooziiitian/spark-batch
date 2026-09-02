@@ -13,17 +13,28 @@ Prerequisites:
 
 from __future__ import annotations
 
+import argparse
+import os
+
 from custom_ds import create_spark_session
 from custom_ds.restapi import RestApiStreamDataSource
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Stream events from REST API")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("MOCK_SERVER_URL", "http://localhost:9090"),
+        help="Mock server base URL (default: $MOCK_SERVER_URL or http://localhost:9090)",
+    )
+    args = parser.parse_args()
+
     spark = create_spark_session("restapi-stream-read")
 
     spark.dataSource.register(RestApiStreamDataSource)
 
     stream_df = (
         spark.readStream.format("restapi_stream")
-        .option("url", "http://localhost:9090/api/events")
+        .option("url", f"{args.url}/api/events")
         .option("offsetParam", "since_id")
         .option("offsetKey", "id")
         .option("limit", "10")

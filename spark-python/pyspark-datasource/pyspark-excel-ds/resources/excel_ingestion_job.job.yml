@@ -1,0 +1,102 @@
+# Databricks Job (Lakeflow Jobs) — Excel ingestion workflow.
+#
+# Demonstrates consuming two different libraries on the same job cluster:
+#   1. The `pys_excel` Python wheel (built from this project's src/pys_excel,
+#      see the `artifacts:` block in databricks.yml) — pandas-bridge reader/writer/table helpers.
+#   2. The community `spark-excel` Maven library (com.crealytics:spark-excel_2.12)
+#      — distributed Excel I/O, attached as a cluster library.
+#
+# Target compute: Databricks Runtime 15.4 LTS+ (Spark 3.5, Scala 2.12), matching
+# the spark-excel Maven coordinate. On DBR 17.1+, pys_excel.spark_excel automatically
+# switches to the built-in `excel` format instead (no config change needed).
+resources:
+  jobs:
+    excel_ingestion_job:
+      name: "[${bundle.target}] Excel Ingestion Workflow"
+      description: >-
+        Reads Excel extracts into Delta tables (pandas bridge and distributed
+        spark-excel paths) and exports a Delta table back out to an Excel report.
+
+      parameters:
+        - name: input_path
+          default: ${var.input_volume_path}/employees.xlsx
+        - name: table_name
+          default: ${var.catalog}.${var.schema}.employees
+        - name: sheet_name
+          default: "Employees"
+        - name: spark_excel_input_path
+          default: ${var.input_volume_path}/employees.xlsx
+        - name: spark_excel_table_name
+          default: ${var.catalog}.${var.schema}.employees_distributed
+        - name: spark_excel_data_address
+          default: "'Employees'!A1"
+        - name: output_path
+          default: ${var.output_volume_path}/employees_report.xlsx
+
+      job_clusters:
+        - job_cluster_key: excel_cluster
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            node_type_id: ${var.node_type_id}
+            policy_id: ${var.policy_id}
+            aws_attributes:
+              first_on_demand: 1
+            data_security_mode: SINGLE_USER
+            autoscale:
+              min_workers: 1
+              max_workers: 2
+
+      tasks:
+        - task_key: ingest_excel_to_delta
+          job_cluster_key: excel_cluster
+          spark_python_task:
+            python_file: ../workflows/ingest_excel_to_delta.py
+            parameters:
+              - "--input-path"
+              - "{{job.parameters.input_path}}"
+              - "--table-name"
+              - "{{job.parameters.table_name}}"
+              - "--sheet-name"
+              - "{{job.parameters.sheet_name}}"
+          libraries:
+            - whl: ../dist/*.whl
+
+        - task_key: distributed_ingest_spark_excel
+          job_cluster_key: excel_cluster
+          spark_python_task:
+            python_file: ../workflows/distributed_ingest_spark_excel.py
+            parameters:
+              - "--input-path"
+              - "{{job.parameters.spark_excel_input_path}}"
+              - "--table-name"
+              - "{{job.parameters.spark_excel_table_name}}"
+              - "--data-address"
+              - "{{job.parameters.spark_excel_data_address}}"
+          libraries:
+            - whl: ../dist/*.whl
+            - maven:
+                coordinates: "com.crealytics:spark-excel_2.12:3.5.1_0.20.4"
+
+        - task_key: export_table_to_excel
+          depends_on:
+            - task_key: ingest_excel_to_delta
+          job_cluster_key: excel_cluster
+          spark_python_task:
+            python_file: ../workflows/export_table_to_excel.py
+            parameters:
+              - "--table-name"
+              - "{{job.parameters.table_name}}"
+              - "--output-path"
+              - "{{job.parameters.output_path}}"
+              - "--sheet-name"
+              - "Employees Report"
+          libraries:
+            - whl: ../dist/*.whl
+
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: "UTC"
+        pause_status: PAUSED
+
+      tags:
+        project: pyspark-excel-ds

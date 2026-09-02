@@ -25,6 +25,10 @@ from pyspark.sql.datasource import (
 )
 from pyspark.sql.types import StructType
 
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class StreamWriteCommitMessage(WriterCommitMessage):
@@ -114,6 +118,7 @@ class RestApiStreamWriter(DataSourceStreamWriter):
                 if self.oauth_config is not None:
                     headers = self.oauth_config.apply_to_headers(headers)
                 assert self.url is not None
+                logger.debug("Stream POST %s (%d records)", self.url, len(batch))
                 resp = req.post(self.url, json=batch, headers=headers, timeout=30)
                 resp.raise_for_status()
                 rows_sent += len(batch)
@@ -124,6 +129,7 @@ class RestApiStreamWriter(DataSourceStreamWriter):
             if self.oauth_config is not None:
                 headers = self.oauth_config.apply_to_headers(headers)
             assert self.url is not None
+            logger.debug("Stream POST %s (%d records, final)", self.url, len(batch))
             resp = req.post(self.url, json=batch, headers=headers, timeout=30)
             resp.raise_for_status()
             rows_sent += len(batch)
@@ -134,7 +140,7 @@ class RestApiStreamWriter(DataSourceStreamWriter):
 
     def commit(self, messages: list, batchId: int) -> None:
         total = sum(m.rows_sent for m in messages if m is not None)
-        print(f"[restapi_stream_sink] batch {batchId}: committed {total} rows")
+        logger.info("Batch %d: committed %d rows", batchId, total)
 
     def abort(self, messages: list, batchId: int) -> None:
-        print(f"[restapi_stream_sink] batch {batchId}: aborted")
+        logger.warning("Batch %d: aborted", batchId)

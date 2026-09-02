@@ -15,35 +15,49 @@ Run:
 
 from __future__ import annotations
 
+import argparse
 import os
 
 from custom_ds import create_spark_session
 from custom_ds.uc_auth import WeatherApiSource
 
-spark = create_spark_session("weather-api-local")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Local weather API via UC HTTP auth pattern")
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("WEATHER_API_TOKEN", ""),
+        help="OpenWeatherMap API key (default: $WEATHER_API_TOKEN)",
+    )
+    parser.add_argument(
+        "--host",
+        default=os.environ.get("WEATHER_API_HOST", "https://api.openweathermap.org"),
+        help="Weather API host (default: $WEATHER_API_HOST or https://api.openweathermap.org)",
+    )
+    parser.add_argument(
+        "--base-path",
+        default=os.environ.get("WEATHER_API_BASE_PATH", "/data/2.5"),
+        help="Weather API base path (default: $WEATHER_API_BASE_PATH or /data/2.5)",
+    )
+    args = parser.parse_args()
 
-spark.dataSource.register(WeatherApiSource)
+    token: str = args.api_key
+    if not token:
+        print("⚠️  Pass --api-key or set WEATHER_API_TOKEN — API calls will fail with 401.")
+        print("   Get a free key at: https://openweathermap.org/api")
+        print()
 
-# Read credentials from environment (mimics UC injection)
-host = os.environ.get("WEATHER_API_HOST", "https://api.openweathermap.org")
-base_path = os.environ.get("WEATHER_API_BASE_PATH", "/data/2.5")
-token = os.environ.get("WEATHER_API_TOKEN", "")
+    spark = create_spark_session("weather-api-local")
+    spark.dataSource.register(WeatherApiSource)
 
-if not token:
-    print("⚠️  WEATHER_API_TOKEN not set — API calls will fail with 401.")
-    print("   Get a free key at: https://openweathermap.org/api")
-    print("   Then: export WEATHER_API_TOKEN=your_key")
-    print()
+    df = (
+        spark.read.format("weather_api")
+        .option("host", args.host)
+        .option("base_path", args.base_path)
+        .option("bearer_token", token)
+        .option("cities", "Seattle,Portland,Denver")
+        .load()
+    )
 
-df = (
-    spark.read.format("weather_api")
-    .option("host", host)
-    .option("base_path", base_path)
-    .option("bearer_token", token)
-    .option("cities", "Seattle,Portland,Denver")
-    .load()
-)
+    df.show(truncate=False)
 
-df.show(truncate=False)
-
-spark.stop()
+    spark.stop()

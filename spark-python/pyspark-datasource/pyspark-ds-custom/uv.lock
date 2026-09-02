@@ -1707,15 +1707,16 @@ name = "pyspark-ds-custom"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "databricks-sdk" },
     { name = "pyarrow", version = "24.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pyarrow", version = "25.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "requests" },
+    { name = "rich" },
 ]
 
 [package.optional-dependencies]
 databricks = [
     { name = "databricks-connect" },
-    { name = "databricks-sdk" },
     { name = "pandas" },
 ]
 spark = [
@@ -1743,11 +1744,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "databricks-connect", marker = "extra == 'databricks'", specifier = "<=18.3.4" },
-    { name = "databricks-sdk", marker = "extra == 'databricks'", specifier = ">=0.40.0" },
+    { name = "databricks-sdk", specifier = ">=0.40.0" },
     { name = "pandas", marker = "extra == 'databricks'", specifier = ">=2.2.0" },
     { name = "pyarrow", specifier = ">=14.0.0" },
     { name = "pyspark", marker = "extra == 'spark'", specifier = ">=4.0.0" },
     { name = "requests", specifier = ">=2.32.0" },
+    { name = "rich", specifier = ">=15.0.0" },
 ]
 provides-extras = ["spark", "databricks"]
 

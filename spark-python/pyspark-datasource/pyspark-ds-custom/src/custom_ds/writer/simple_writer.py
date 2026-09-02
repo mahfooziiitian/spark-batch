@@ -15,6 +15,10 @@ from pyspark.sql import Row
 from pyspark.sql.datasource import DataSource, DataSourceWriter, WriterCommitMessage
 from pyspark.sql.types import StructType
 
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class SimpleCommitMessage(WriterCommitMessage):
@@ -63,7 +67,7 @@ class SimpleSinkDataSourceWriter(DataSourceWriter):
 
     def commit(self, messages: list) -> None:
         total = sum(m.num_rows for m in messages if m is not None)
-        print(f"[simple_sink] committed {total} rows across {len(messages)} tasks")
+        logger.info("Committed %d rows across %d tasks", total, len(messages))
 
     def abort(self, messages: list) -> None:
         for message in messages:

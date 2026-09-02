@@ -8,17 +8,28 @@ Key concepts:
 
 from __future__ import annotations
 
+import argparse
 import os
 import tempfile
 
 from custom_ds import SimpleSinkDataSource, create_spark_session
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Batch write to simple_sink data source")
+    parser.add_argument(
+        "--output-path",
+        default=os.environ.get(
+            "OUTPUT_PATH", os.path.join(tempfile.gettempdir(), "custom_ds_sink")
+        ),
+        help="Output directory for sink files (default: $OUTPUT_PATH or /tmp/custom_ds_sink)",
+    )
+    args = parser.parse_args()
+
     spark = create_spark_session("simple-batch-write")
 
     spark.dataSource.register(SimpleSinkDataSource)
 
-    out_dir = os.environ.get("OUTPUT_PATH", os.path.join(tempfile.gettempdir(), "custom_ds_sink"))
+    out_dir: str = args.output_path
 
     df = spark.range(10).selectExpr("id", "concat('row-', id) as value")
     df.write.format("simple_sink").option("path", out_dir).mode("append").save()

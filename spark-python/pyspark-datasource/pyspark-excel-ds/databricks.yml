@@ -1,0 +1,38 @@
+# Declarative Automation Bundle (DAB) for pyspark-excel-ds.
+#
+# Deploys an Excel ingestion workflow (resources/excel_ingestion_job.job.yml)
+# that consumes two different libraries on the same job cluster: the
+# `pys_excel` wheel (built from this project) and the community `spark-excel`
+# Maven library. See README.md and docs/databricks-runtime/index.md for the
+# full runbook.
+bundle:
+  name: pyspark-excel-ds
+
+include:
+  - resources/*.yml
+  - variables/*.yml
+
+# Build the pys_excel wheel from this project's pyproject.toml (hatchling)
+# before every deploy. The resulting dist/*.whl is referenced by
+# `libraries.whl: ../dist/*.whl` in resources/excel_ingestion_job.job.yml.
+artifacts:
+  pys_excel:
+    type: whl
+    build: uv build --wheel
+    path: .
+
+targets:
+  dev:
+    default: true
+    mode: development
+    variables:
+      catalog: poc
+      schema: testing
+
+  prod:
+    mode: production
+    variables:
+      catalog: main
+      schema: excel_demo
+    run_as:
+      user_name: ${workspace.current_user.userName}

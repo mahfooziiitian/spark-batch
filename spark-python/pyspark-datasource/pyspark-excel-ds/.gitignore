@@ -1,0 +1,68 @@
+# ─── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# ─── Virtual Environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+ENV/
+
+# ─── Testing & Coverage ───────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# ─── Type Checking ────────────────────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# ─── Linting ──────────────────────────────────────────────────────────────────
+.ruff_cache/
+
+# ─── IDE ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ─── MkDocs ───────────────────────────────────────────────────────────────────
+site/
+
+# ─── Spark / PySpark / Delta / Hive ───────────────────────────────────────────
+derby.log
+metastore_db/
+spark-warehouse/
+*.log
+local-*.log
+
+# ─── Data & Output (generated at runtime) ─────────────────────────────────────
+/data/
+*.xlsx
+*.xls
+*.xlsm
+!examples/**/*.xlsx
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ─── OS Files ─────────────────────────────────────────────────────────────────
+Thumbs.db
+.DS_Store

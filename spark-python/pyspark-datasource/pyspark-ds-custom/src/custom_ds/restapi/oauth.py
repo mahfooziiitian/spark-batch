@@ -19,8 +19,11 @@ Usage from data source options:
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -105,6 +108,7 @@ class OAuth2Config:
 
         payload.update(self.extra_params)
 
+        logger.debug("OAuth2 token request: %s grant_type=%s", self.token_url, self.grant_type)
         response = requests.post(
             self.token_url,
             data=payload,

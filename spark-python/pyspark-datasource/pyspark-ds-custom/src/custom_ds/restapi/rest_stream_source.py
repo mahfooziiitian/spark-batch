@@ -21,6 +21,10 @@ from collections.abc import Iterator, Mapping
 from pyspark.sql.datasource import DataSource, SimpleDataSourceStreamReader
 from pyspark.sql.types import LongType, StringType, StructField, StructType
 
+from custom_ds.util.log import get_logger
+
+logger = get_logger(__name__)
+
 
 class RestApiStreamDataSource(DataSource):
     """A streaming source that polls a REST API endpoint for new records.
@@ -134,10 +138,18 @@ class RestApiStreamReader(SimpleDataSourceStreamReader):
         params = {self.offset_param: since_offset, "limit": self.limit}
         try:
             assert self.url is not None
+            logger.debug("Stream poll: GET %s offset=%d", self.url, since_offset)
             response = req.get(self.url, headers=headers, params=params, timeout=10)
+            logger.debug(
+                "Response: %d %s (%d bytes)",
+                response.status_code,
+                response.reason,
+                len(response.content),
+            )
             response.raise_for_status()
             data = response.json()
-        except req.RequestException:
+        except req.RequestException as exc:
+            logger.warning("Stream poll failed: %s", exc)
             return []
 
         if self.result_key:
