@@ -152,13 +152,13 @@ with jobs_usage AS (
 jobs_usage_with_usd AS (
   SELECT
     jobs_usage.*,
-    usage_quantity * pricing.default as usage_usd
+    usage_quantity * list_prices.pricing.default as usage_usd
   FROM jobs_usage
-    LEFT JOIN system.billing.list_prices pricing ON
-      jobs_usage.sku_name = pricing.sku_name
-      AND pricing.price_start_time <= jobs_usage.usage_start_time
-      AND (pricing.price_end_time >= jobs_usage.usage_start_time OR pricing.price_end_time IS NULL)
-      AND pricing.currency_code="USD"
+    LEFT JOIN system.billing.list_prices list_prices ON
+      jobs_usage.sku_name = list_prices.sku_name
+      AND list_prices.price_start_time <= jobs_usage.usage_start_time
+      AND (list_prices.price_end_time >= jobs_usage.usage_start_time OR list_prices.price_end_time IS NULL)
+      AND list_prices.currency_code="USD"
 ),
 jobs_usage_aggregated AS (
   SELECT

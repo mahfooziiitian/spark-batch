@@ -169,7 +169,6 @@ out/
 .settings/
 d
 databricks/
-databricks.yml
 
 
 # Terraform
