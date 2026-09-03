@@ -24,7 +24,7 @@ name = "spark-xpath"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "pyspark<4.0.0",
+    "pyspark>=4.0.0",
 ]
 
 [dependency-groups]
@@ -41,7 +41,7 @@ dev = [
 - **Runtime** dependencies go in `[project] dependencies`.
 - **Dev** dependencies (test, docs, lint tools) go in `[dependency-groups] dev`.
 - Always specify **minimum version** constraints (e.g., `>=1.6`).
-- For PySpark, pin the **upper bound** (`<4.0.0`) to avoid breaking changes.
+- For PySpark, require **`>=4.0.0`** — the project targets Spark 4 (requires Java 17+).
 
 ## .python-version
 

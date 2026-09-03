@@ -1,0 +1,66 @@
+site_name: spark-xml-etree
+site_description: Parse, extract, and build XML inside PySpark DataFrames using Python's xml.etree.ElementTree via Spark UDFs — no external JARs required.
+repo_url: https://github.com/mahfooziiitian/spark-batch
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guide:
+      - Overview: guide/index.md
+      - Single Field: guide/single-field.md
+      - Multi Field: guide/multi-field.md
+      - Attributes & Explode: guide/attributes-explode.md
+      - Nested Flattening: guide/nested-flattening.md
+      - Namespaces: guide/namespaces.md
+      - Error Handling: guide/error-handling.md
+      - Building XML: guide/building-xml.md
+  - Testing: testing.md
+  - API Reference: api-reference.md

@@ -1,6 +1,6 @@
 # Namespace Handling
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_namespace_handling.py`
+> :material-file-code: **Source:** `examples/xmls_namespace_handling.py`
 
 Parse XML that uses namespace prefixes (`bk:`, `rv:`) by passing a namespace
 map to `find()` and `findall()`.
@@ -98,7 +98,7 @@ for prefix, uri in NS.items():
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_namespace_handling.py
+uv run python examples/xmls_namespace_handling.py
 ```
 
 ??? success "Expected output"

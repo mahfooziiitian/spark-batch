@@ -4,7 +4,7 @@ This example demonstrates **exploding XPath arrays** into individual rows,
 zipping parallel arrays together, tracking element positions, and performing
 aggregations on flattened data.
 
-:material-file-code: **Source:** `src/xpath/xml_xpath_flatten.py`  
+:material-file-code: **Source:** `examples/xml_xpath_flatten.py`  
 :material-test-tube: **Tests:** `tests/xpath/test_xpath_flatten.py`
 
 ---
@@ -237,7 +237,7 @@ GROUP BY store
 ## Running
 
 ```bash
-uv run python src/xpath/xml_xpath_flatten.py
+uv run python examples/xml_xpath_flatten.py
 ```
 
 ---

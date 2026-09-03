@@ -3,4 +3,4 @@ if __name__ == '__main__':
     even_numbers = list(filter(lambda n: n % 2 == 0, numbers))
     print(even_numbers)
     field ="name"
-    exploded_array = [f"explode_outer( {field} ) as {explode_outer}"]
+    exploded_array = [f"explode_outer( {field} ) as explode_outer"]

@@ -1,0 +1,60 @@
+site_name: PySpark XML Datasources
+site_description: Three approaches to XML processing with PySpark — the built-in Spark 4 xml data source, Python's xml.etree.ElementTree via UDFs, and Spark's built-in XPath SQL functions.
+repo_url: https://github.com/mahfooziiitian/spark-batch
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - toc.integrate
+
+plugins:
+  - search
+  - monorepo
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - spark-xml (Databricks / built-in): "!include ./spark-xml/mkdocs.yml"
+  - spark-xml-etree (stdlib UDFs): "!include ./spark-xml-etree/mkdocs.yml"
+  - spark-xpath (XPath functions): "!include ./spark-xpath/mkdocs.yml"

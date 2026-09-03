@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![PySpark < 4.0](https://img.shields.io/badge/pyspark-%3C4.0-orange.svg)](https://spark.apache.org/)
+[![PySpark >= 4.0](https://img.shields.io/badge/pyspark-%3E%3D4.0-orange.svg)](https://spark.apache.org/)
 
 Extract and transform XML data inside PySpark DataFrames using built-in
 XPath functions (`xpath_string`, `xpath_boolean`, `xpath`, …).

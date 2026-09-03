@@ -1,6 +1,6 @@
 # Nested Flattening
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_nested_flattening.py`
+> :material-file-code: **Source:** `examples/xmls_nested_flattening.py`
 
 Denormalize deeply nested XML (orders containing line items) into flat
 tabular rows using an array-of-struct UDF and `F.explode`.
@@ -105,7 +105,7 @@ line_items = (
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_nested_flattening.py
+uv run python examples/xmls_nested_flattening.py
 ```
 
 ??? success "Expected output — flattened line items"

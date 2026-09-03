@@ -9,7 +9,7 @@ No external XML JARs are required — everything runs with the standard library.
 | File | Scope (`applyTo`) | Purpose |
 |------|--------------------|---------|
 | `instructions/python.instructions.md` | `**/*.py` | Python style, imports, type hints, docstrings |
-| `instructions/pyspark-etree.instructions.md` | `src/**/*.py` | PySpark + ElementTree UDF patterns |
+| `instructions/pyspark-etree.instructions.md` | `src/**/*.py`, `examples/**/*.py` | PySpark + ElementTree UDF patterns |
 | `instructions/testing.instructions.md` | `tests/**/*.py` | pytest conventions, SparkSession fixture, assertions |
 | `instructions/mkdocs.instructions.md` | `docs/**/*.md`, `mkdocs.yml` | MkDocs Material documentation style |
 | `instructions/project-config.instructions.md` | `pyproject.toml`, `uv.lock`, `.python-version` | Package manager and project metadata |
@@ -29,11 +29,22 @@ through a Python UDF that calls `xml.etree.ElementTree`. This is useful when:
 | Component | Version / Tool |
 |-----------|---------------|
 | Python | ≥ 3.11 |
-| PySpark | < 4.0.0 (3.5.x preferred) |
+| PySpark | >= 4.0.0 (Spark 4) |
 | XML library | `xml.etree.ElementTree` (stdlib) |
 | Package manager | uv |
 | Testing | pytest ≥ 8.0 |
 | Documentation | MkDocs Material ≥ 9.5 |
+
+## Folder Conventions
+
+| Folder | Holds | Import? |
+|--------|-------|---------|
+| `src/spark_etree/` | **Library / helper / utility** code — reusable, importable modules (shared UDFs, parsing helpers). | Yes — `from spark_etree import ...` |
+| `examples/` | **Usage / demo** scripts — self-contained, runnable ElementTree-UDF examples. | No — run directly |
+
+- Reusable helpers go in `src/spark_etree/`; runnable demonstrations go in
+  `examples/`. Example scripts build their own SparkSession, embed sample XML
+  inline, and call `spark.stop()`.
 
 ## Project Structure
 
@@ -48,27 +59,17 @@ spark-xml-etree/
 │       ├── mkdocs.instructions.md
 │       └── project-config.instructions.md
 ├── src/
-│   └── spark_etree/
-│       ├── __init__.py
-│       ├── xmls_data_processing.py               # single-field UDF
-│       ├── xmls_data_processing_multiple_column.py  # struct UDF
-│       ├── xmls_data_processing_multiple_column2.py # attributes + explode
-│       ├── xmls_namespace_handling.py             # XML namespaces
-│       ├── xmls_nested_flattening.py              # order → line items
-│       ├── xmls_error_handling.py                 # malformed XML
-│       └── xmls_build_from_dataframe.py           # DataFrame → XML
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py                                # session-scoped SparkSession
-│   ├── test_data_processing.py
-│   ├── test_attributes_explode.py
-│   ├── test_namespace_handling.py
-│   ├── test_nested_flattening.py
-│   ├── test_error_handling.py
-│   └── test_build_from_dataframe.py
+│   └── spark_etree/                              # library / helper / utility code
+│       └── __init__.py
+├── examples/                                     # runnable usage / demo scripts
+│   ├── xmls_data_processing.py                   # single-field UDF
+│   ├── xmls_data_processing_multiple_column.py   # struct UDF
+│   └── xmls_data_processing_multiple_column2.py  # attributes + explode
+├── tests/                                        # pytest suite
+├── docs/                                         # MkDocs documentation
+├── mkdocs.yml
 ├── pyproject.toml
-├── README.md
-└── uv.lock
+└── README.md
 ```
 
 ## Quick Reference
@@ -77,7 +78,7 @@ spark-xml-etree/
 uv sync                           # install dependencies
 uv run pytest                     # run all tests
 uv run pytest tests/ -v           # verbose test output
-uv run python src/spark_etree/xmls_data_processing.py  # run an example
+uv run python examples/xmls_data_processing.py  # run an example
 ```
 
 ## Things to Avoid

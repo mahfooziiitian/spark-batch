@@ -3,8 +3,8 @@
 This example shows how to load **inline XML strings** into a PySpark DataFrame
 and extract values using `xpath_string` and `xpath`.
 
-:material-file-code: **Source:** `src/xpath/xml_data_parsing.py`  
-:material-file-code: **Array Source:** `src/xpath/text/xml_xpath_text.py`
+:material-file-code: **Source:** `examples/xml_data_parsing.py`  
+:material-file-code: **Array Source:** `examples/text/xml_xpath_text.py`
 
 ---
 
@@ -54,7 +54,7 @@ containing repeating `Pair` elements:
 
 ### Step 1 — Create the DataFrame
 
-```python title="src/xpath/xml_data_parsing.py" linenums="1"
+```python title="examples/xml_data_parsing.py" linenums="1"
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StringType
 
@@ -136,7 +136,7 @@ into an array.
 
 === "PySpark DataFrame API"
 
-    ```python title="src/xpath/text/xml_xpath_text.py"
+    ```python title="examples/text/xml_xpath_text.py"
     from pyspark.sql.functions import xpath, lit
 
     df = spark.createDataFrame(
@@ -185,7 +185,7 @@ into an array.
 ## Running This Example
 
 ```bash
-uv run python src/xpath/xml_data_parsing.py
+uv run python examples/xml_data_parsing.py
 ```
 
 ---

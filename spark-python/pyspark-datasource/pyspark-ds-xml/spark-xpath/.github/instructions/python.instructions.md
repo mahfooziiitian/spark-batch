@@ -117,7 +117,7 @@ This module demonstrates loading inline XML strings into a DataFrame
 and extracting header fields using Spark SQL XPath functions.
 
 Typical usage:
-    $ uv run python src/xpath/xml_data_parsing.py
+    $ uv run python examples/xml_data_parsing.py
 """
 ```
 

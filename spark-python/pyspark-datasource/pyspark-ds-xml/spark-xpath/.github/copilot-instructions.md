@@ -9,14 +9,15 @@
 | File | Scope (`applyTo`) | What It Covers |
 | ---- | ------------------ | -------------- |
 | [`python.instructions.md`](instructions/python.instructions.md) | `**/*.py` | PEP 8, type hints, imports, Google-style docstrings |
-| [`pyspark.instructions.md`](instructions/pyspark.instructions.md) | `src/**/*.py` | SparkSession, DataFrame creation, XPath functions, SQL patterns |
+| [`pyspark.instructions.md`](instructions/pyspark.instructions.md) | `src/**/*.py`, `examples/**/*.py` | SparkSession, DataFrame creation, XPath functions, SQL patterns |
 | [`pytest.instructions.md`](instructions/pytest.instructions.md) | `tests/**/*.py` | Fixtures, test naming, arrange-act-assert, assertions |
 | [`mkdocs.instructions.md`](instructions/mkdocs.instructions.md) | `docs/**/*.md`, `mkdocs.yml` | Page structure, admonitions, code blocks, page template |
 | [`github-actions.instructions.md`](instructions/github-actions.instructions.md) | `.github/workflows/**/*.yml` | Pipeline structure, uv setup, matrix, permissions |
 | [`project-config.instructions.md`](instructions/project-config.instructions.md) | `pyproject.toml`, `uv.lock`, `.python-version` | uv commands, dependency groups, lockfile rules |
 
-When editing a `.py` file in `src/`, both **python** and **pyspark** instructions
-activate. When editing a test, both **python** and **pytest** instructions apply.
+When editing a `.py` file in `src/` or `examples/`, both **python** and
+**pyspark** instructions activate. When editing a test, both **python** and
+**pytest** instructions apply.
 
 ---
 
@@ -25,7 +26,7 @@ activate. When editing a test, both **python** and **pytest** instructions apply
 This project demonstrates how to extract and transform XML data inside PySpark
 DataFrames using Spark's built-in XPath SQL functions (`xpath_string`,
 `xpath_boolean`, `xpath`, etc.). It targets **Python ≥ 3.11** with
-**PySpark < 4.0**.
+**PySpark >= 4.0**.
 
 ---
 
@@ -44,15 +45,30 @@ spark-xpath/
 │   │   └── project-config.instructions.md
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions CI pipeline
-├── src/xpath/                         # Source code — PySpark XPath examples
-│   ├── text/                          # xpath() array text-node extraction
-│   ├── nested/                        # xpath() on nested columns with namespaces
-│   └── ...                            # other example files
-├── tests/xpath/                         # Pytest test suite
-├── docs/                              # MkDocs documentation (Markdown)
-├── mkdocs.yml                         # MkDocs + Material theme config
-└── pyproject.toml                     # Project metadata & dependencies
+├── src/
+│   └── spark_xpath/                # library / helper / utility code
+│       └── __init__.py
+├── examples/                       # runnable usage / demo scripts
+│   ├── xml_xpath.py                # credit-evaluation example
+│   ├── xml_data_parsing.py         # parse XML column with xpath functions
+│   ├── text/                       # xpath() array text-node extraction
+│   └── netsted/                    # xpath() on nested columns with namespaces
+├── tests/                          # pytest suite
+├── docs/                           # MkDocs documentation (Markdown)
+├── mkdocs.yml                      # MkDocs + Material theme config
+└── pyproject.toml                  # Project metadata & dependencies
 ```
+
+## Folder Conventions
+
+| Folder | Holds | Import? |
+|--------|-------|---------|
+| `src/spark_xpath/` | **Library / helper / utility** code — reusable, importable modules. | Yes — `from spark_xpath import ...` |
+| `examples/` | **Usage / demo** scripts — self-contained, runnable XPath examples. | No — run directly |
+
+Reusable helpers go in `src/spark_xpath/`; runnable demonstrations go in
+`examples/`. Example scripts build their own SparkSession, embed sample XML
+inline, and call `spark.stop()`.
 
 ---
 
@@ -61,7 +77,7 @@ spark-xpath/
 | Component        | Technology                    |
 | ---------------- | ----------------------------- |
 | Language         | Python 3.11+                  |
-| Spark            | PySpark < 4.0                 |
+| Spark            | PySpark >= 4.0                |
 | Package Manager  | [uv](https://docs.astral.sh/uv/) |
 | Testing          | pytest, pytest-mock, pytest-sugar |
 | Documentation    | MkDocs + mkdocs-material      |
@@ -112,7 +128,7 @@ uv sync                              # install all dependencies
 uv run pytest tests/ -v              # run tests
 uv run mkdocs serve                  # preview docs locally
 uv run mkdocs build --strict         # build docs (CI mode)
-uv run python src/xpath/xml_xpath.py # run credit-evaluation example
+uv run python examples/xml_xpath.py # run credit-evaluation example
 ```
 
 ---

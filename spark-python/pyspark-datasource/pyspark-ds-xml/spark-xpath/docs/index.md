@@ -118,7 +118,7 @@ serialization overhead.
 
 ```
 spark-xpath/
-├── src/xpath/
+├── examples/
 │   ├── xml_data_parsing.py      # Basic inline XML parsing
 │   ├── xml_xpath.py             # Credit evaluation XPath + CASE logic
 │   ├── text/
@@ -139,7 +139,7 @@ spark-xpath/
 | Component | Technology |
 |---|---|
 | Language | Python ≥ 3.11 |
-| Data Processing | PySpark (< 4.0) |
+| Data Processing | PySpark (>= 4.0) |
 | Package Manager | [uv](https://docs.astral.sh/uv/) |
 | Testing | pytest + pytest-mock + pytest-sugar |
 | Documentation | MkDocs with Material theme |

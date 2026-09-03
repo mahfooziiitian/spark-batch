@@ -1,26 +1,74 @@
 [project]
 name = "spark-xml"
 version = "0.1.0"
-description = "Add your description here"
+description = "PySpark XML processing examples using the built-in Spark 4 xml data source — reading, writing, schema/XSD validation, encoding, compression, namespaces, and nested-structure handling."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "chardet>=5.2.0",
-    "faker>=37.4.2",
-    "generateds>=2.44.3",
-    "ipykernel>=6.29.5",
-    # "lxml>=6.0.0",
-    "pandas>=2.3.1",
-    "pydantic>=2.11.7",
-    "pyspark>=4.0.0",
-    "requests>=2.32.4",
-    # "xmlschema>=4.1.0",
-    # "xmltoxsd>=0.1.1",
+license = { text = "MIT" }
+keywords = ["pyspark", "spark", "xml", "spark-xml", "xsd", "etl"]
+authors = [{ name = "spark-batch" }]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: XML",
 ]
+dependencies = [
+    # Spark runtime — pinned >= 4.0.0 because this project uses the built-in
+    # "xml" data source and from_xml/schema_of_xml functions added in Spark 4.0.
+    "pyspark>=4.0.0",
+    # Encoding detection before reading XML files.
+    "chardet>=5.2.0",
+    # Synthetic XML test-data generation.
+    "faker>=37.4.2",
+    # Alternative XML reading (pandas.read_xml) and DataFrame bridging.
+    "pandas>=2.3.1",
+    # HTTP/API XML fetching.
+    "requests>=2.32.4",
+    # Pretty-printed XML generation and XSD tooling (used in schema/xsd examples).
+    "lxml>=5.2.0",
+    # XSD validation and schema introspection.
+    "xmlschema>=4.1.0",
+    # Auto-generate XSD from sample XML.
+    "xmltoxsd>=0.1.1",
+    # XSD -> Python binding code generation (CLI/codegen; also provides lxml).
+    "generateds>=2.44.3",
+    # Data validation models used by schema examples.
+    "pydantic>=2.11.7",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.urls]
+Homepage = "https://github.com/mahfooziiitian/spark-batch"
+Repository = "https://github.com/mahfooziiitian/spark-batch"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spark_xml"]
 
 [dependency-groups]
 dev = [
     "black>=25.1.0",
-    "flake8-pyproject>=1.2.3",
     "isort>=6.0.1",
+    "flake8-pyproject>=1.2.3",
+    # Jupyter kernel for interactive notebook exploration.
+    "ipykernel>=6.29.5",
 ]
+
+[tool.black]
+line-length = 120
+target-version = ["py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["spark_xml"]
+
+[tool.flake8]
+max-line-length = 120
+# E203/W503 conflict with black's formatting; E402 allowed because scripts set
+# JAVA_HOME/PYSPARK_PYTHON env vars before importing pyspark.
+extend-ignore = ["E203", "W503", "E402"]
+exclude = [".venv", "build", "dist", "__pycache__", "site"]

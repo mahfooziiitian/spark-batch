@@ -1,6 +1,6 @@
 # Multi-Field Extraction
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_data_processing_multiple_column.py`
+> :material-file-code: **Source:** `examples/xmls_data_processing_multiple_column.py`
 
 Extract multiple named fields from each XML row using a struct-returning UDF.
 
@@ -70,7 +70,7 @@ extract_cd_info_udf = udf(extract_cd_info, CD_INFO_SCHEMA)
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_data_processing_multiple_column.py
+uv run python examples/xmls_data_processing_multiple_column.py
 ```
 
 ??? success "Expected output"

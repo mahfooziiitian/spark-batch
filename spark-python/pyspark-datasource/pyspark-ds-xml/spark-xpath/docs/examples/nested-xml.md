@@ -4,7 +4,7 @@ This example reads a **whole XML file** from disk and extracts values from
 deeply nested elements — a common pattern when processing XML exports from
 enterprise systems.
 
-:material-file-code: **Source:** `src/xpath/nested/nested_xml_xpath.py`
+:material-file-code: **Source:** `examples/nested/nested_xml_xpath.py`
 
 ---
 
@@ -65,7 +65,7 @@ records. A typical structure looks like:
 When XML is stored as a **file** (not inline strings), use `spark.read.text()`
 with `wholetext=True` to load the entire file into a single DataFrame row:
 
-```python title="src/xpath/nested/nested_xml_xpath.py" linenums="1"
+```python title="examples/nested/nested_xml_xpath.py" linenums="1"
 import os
 from pyspark.sql import SparkSession
 
@@ -210,14 +210,14 @@ Set the `DATA_HOME` environment variable before running:
 
     ```bash
     export DATA_HOME=/path/to/data
-    uv run python src/xpath/nested/nested_xml_xpath.py
+    uv run python examples/nested/nested_xml_xpath.py
     ```
 
 === "Windows"
 
     ```powershell
     $env:DATA_HOME = "C:\path\to\data"
-    uv run python src/xpath/nested/nested_xml_xpath.py
+    uv run python examples/nested/nested_xml_xpath.py
     ```
 
 ---

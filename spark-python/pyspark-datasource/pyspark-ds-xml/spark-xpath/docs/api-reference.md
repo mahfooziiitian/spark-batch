@@ -8,7 +8,7 @@ Source code inventory and module descriptions for the `spark-xpath` project.
 
 ```mermaid
 graph TD
-    A["src/xpath/"] --> B["xml_data_parsing.py"]
+    A["examples/"] --> B["xml_data_parsing.py"]
     A --> C["xml_xpath.py"]
     A --> D["text/"]
     A --> E["nested/"]
@@ -26,7 +26,7 @@ graph TD
 
 ## Modules
 
-### `src/xpath/xml_data_parsing.py`
+### `examples/xml_data_parsing.py`
 
 :material-tag: **Basic Parsing** · :material-file-document: [Example](examples/basic-parsing.md)
 
@@ -50,7 +50,7 @@ spark.sql("SELECT xpath_string(data, 'Msg/Header/tag1') FROM xml_df")
 
 ---
 
-### `src/xpath/xml_xpath.py`
+### `examples/xml_xpath.py`
 
 :material-tag: **Credit Evaluation** · :material-file-document: [Example](examples/credit-evaluation.md)
 
@@ -74,7 +74,7 @@ Experian/Equifax and applies conditional business logic with `CASE` expressions.
 
 ---
 
-### `src/xpath/xml_xpath_numeric.py`
+### `examples/xml_xpath_numeric.py`
 
 :material-tag: **Numeric Extraction** · :material-file-document: [Example](examples/numeric-extraction.md)
 
@@ -89,7 +89,7 @@ and `GROUP BY` aggregations on xpath-extracted numeric values.
 
 ---
 
-### `src/xpath/xml_xpath_conditional.py`
+### `examples/xml_xpath_conditional.py`
 
 :material-tag: **Conditional Logic** · :material-file-document: [Example](examples/conditional-logic.md)
 
@@ -105,7 +105,7 @@ conditional computation.
 
 ---
 
-### `src/xpath/xml_xpath_flatten.py`
+### `examples/xml_xpath_flatten.py`
 
 :material-tag: **Array Flattening** · :material-file-document: [Example](examples/array-flattening.md)
 
@@ -120,7 +120,7 @@ for flattening xpath arrays into individual rows with aggregation.
 
 ---
 
-### `src/xpath/text/xml_xpath_text.py`
+### `examples/text/xml_xpath_text.py`
 
 :material-tag: **Array Extraction** · :material-file-document: [Example](examples/basic-parsing.md#array-extraction-with-xpath)
 
@@ -145,7 +145,7 @@ df.select(xpath(df.x, lit('a/b/text()')).alias('values')).collect()
 
 ---
 
-### `src/xpath/nested/nested_xml_xpath.py`
+### `examples/nested/nested_xml_xpath.py`
 
 :material-tag: **File-based XML** · :material-file-document: [Example](examples/nested-xml.md)
 

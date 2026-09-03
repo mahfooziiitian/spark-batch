@@ -1,6 +1,6 @@
 # Error Handling
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_error_handling.py`
+> :material-file-code: **Source:** `examples/xmls_error_handling.py`
 
 Safely parse XML that may be malformed, incomplete, empty, or null —
 capturing parse errors in a dedicated column instead of crashing the job.
@@ -96,7 +96,7 @@ errors = parsed.filter(F.col("parse_error").isNotNull())               # (2)!
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_error_handling.py
+uv run python examples/xmls_error_handling.py
 ```
 
 ??? success "Expected output — all rows"

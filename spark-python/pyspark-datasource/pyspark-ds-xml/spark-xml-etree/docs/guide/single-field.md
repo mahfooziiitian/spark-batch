@@ -1,6 +1,6 @@
 # Single-Field Extraction
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_data_processing.py`
+> :material-file-code: **Source:** `examples/xmls_data_processing.py`
 
 Extract a single text value from each XML row using a string-returning UDF.
 
@@ -72,7 +72,7 @@ from pyspark.sql import functions as F
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_data_processing.py
+uv run python examples/xmls_data_processing.py
 ```
 
 ??? success "Expected output"

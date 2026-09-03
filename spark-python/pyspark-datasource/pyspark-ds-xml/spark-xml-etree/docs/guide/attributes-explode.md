@@ -1,6 +1,6 @@
 # Attributes & Explode
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_data_processing_multiple_column2.py`
+> :material-file-code: **Source:** `examples/xmls_data_processing_multiple_column2.py`
 
 Extract XML attributes from root elements and explode nested record arrays
 into individual rows.
@@ -78,7 +78,7 @@ df_exploded = (
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_data_processing_multiple_column2.py
+uv run python examples/xmls_data_processing_multiple_column2.py
 ```
 
 ??? success "Expected output"

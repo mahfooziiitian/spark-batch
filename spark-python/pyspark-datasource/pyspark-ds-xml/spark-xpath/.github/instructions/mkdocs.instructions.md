@@ -94,7 +94,7 @@ uv run pytest tests/ -v
 - Use tables for structured comparisons (functions, options, configs).
 - Include runnable code examples in every page.
 - Always show **expected output** after code examples where practical.
-- Reference source files with relative paths: `src/xpath/xml_xpath.py`.
+- Reference source files with relative paths: `examples/xml_xpath.py`.
 
 ## Example Page Template
 
@@ -105,7 +105,7 @@ Brief description of what this page covers.
 
 ## Source
 
-:material-file-code: `src/xpath/<file>.py`
+:material-file-code: `examples/<file>.py`
 
 ## The XML
 

@@ -36,7 +36,7 @@ graph LR
 === "Run an example"
 
     ```bash
-    uv run python src/spark_etree/xmls_data_processing.py
+    uv run python examples/xmls_data_processing.py
     ```
 
 === "Run tests"
@@ -52,7 +52,7 @@ graph LR
 
 ```
 spark-xml-etree/
-├── src/spark_etree/           # source examples
+├── examples/           # source examples
 │   ├── xmls_data_processing.py
 │   ├── xmls_data_processing_multiple_column.py
 │   ├── xmls_data_processing_multiple_column2.py
@@ -71,7 +71,7 @@ spark-xml-etree/
 | Component | Version |
 |-----------|---------|
 | Python | ≥ 3.11 |
-| PySpark | < 4.0.0 (3.5.x preferred) |
+| PySpark | >= 4.0.0 (Spark 4) |
 | XML library | `xml.etree.ElementTree` (stdlib) |
 | Package manager | uv |
 | Testing | pytest ≥ 8.0 |

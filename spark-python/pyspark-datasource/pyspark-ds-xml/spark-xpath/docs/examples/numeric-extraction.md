@@ -3,7 +3,7 @@
 This example demonstrates extracting **numeric values** from XML using
 `xpath_int`, `xpath_double`, and performing arithmetic and aggregations.
 
-:material-file-code: **Source:** `src/xpath/xml_xpath_numeric.py`  
+:material-file-code: **Source:** `examples/xml_xpath_numeric.py`  
 :material-test-tube: **Tests:** `tests/xpath/test_xpath_numeric.py`
 
 ---
@@ -54,7 +54,7 @@ The dataset contains 4 orders:
 
 ### Step 1 — Setup
 
-```python title="src/xpath/xml_xpath_numeric.py" linenums="1"
+```python title="examples/xml_xpath_numeric.py" linenums="1"
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StringType
 
@@ -161,7 +161,7 @@ GROUP BY xpath_string(data, 'order/product')
 ## Running
 
 ```bash
-uv run python src/xpath/xml_xpath_numeric.py
+uv run python examples/xml_xpath_numeric.py
 ```
 
 ---

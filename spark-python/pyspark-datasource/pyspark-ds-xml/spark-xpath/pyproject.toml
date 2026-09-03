@@ -1,0 +1,57 @@
+[project]
+name = "spark-xpath"
+version = "0.1.0"
+description = "PySpark XML extraction using Spark's built-in XPath SQL functions (xpath, xpath_string, xpath_boolean, ...) — query and transform XML string columns without external JARs."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+keywords = ["pyspark", "spark", "xml", "xpath", "sql", "etl"]
+authors = [{ name = "spark-batch" }]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: XML",
+]
+dependencies = [
+    "pyspark>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/mahfooziiitian/spark-batch"
+Repository = "https://github.com/mahfooziiitian/spark-batch"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spark_xpath"]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "isort>=6.0.1",
+    "flake8-pyproject>=1.2.3",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-sugar>=1.0.0",
+    # Jupyter kernel for interactive notebook exploration.
+    "ipykernel>=6.29.5",
+]
+
+[tool.black]
+line-length = 120
+target-version = ["py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["spark_xpath"]
+
+[tool.flake8]
+max-line-length = 120
+# E203/W503 conflict with black's formatting; E402 allowed because scripts set
+# env vars before importing pyspark.
+extend-ignore = ["E203", "W503", "E402"]
+exclude = [".venv", "build", "dist", "__pycache__", "site"]

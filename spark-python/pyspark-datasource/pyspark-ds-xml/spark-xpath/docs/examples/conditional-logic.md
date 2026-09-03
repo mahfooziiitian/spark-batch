@@ -4,7 +4,7 @@ This example demonstrates **filtering, branching, and fallback** patterns
 using `xpath_boolean` in `WHERE` clauses, `CASE` expressions for multi-branch
 logic, and `COALESCE` for handling missing XML elements.
 
-:material-file-code: **Source:** `src/xpath/xml_xpath_conditional.py`  
+:material-file-code: **Source:** `examples/xml_xpath_conditional.py`  
 :material-test-tube: **Tests:** `tests/xpath/test_xpath_conditional.py`
 
 ---
@@ -208,7 +208,7 @@ FROM employees
 ## Running
 
 ```bash
-uv run python src/xpath/xml_xpath_conditional.py
+uv run python examples/xml_xpath_conditional.py
 ```
 
 ---

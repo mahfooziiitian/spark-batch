@@ -1,6 +1,6 @@
 # Building XML from DataFrames
 
-> :material-file-code: **Source:** `src/spark_etree/xmls_build_from_dataframe.py`
+> :material-file-code: **Source:** `examples/xmls_build_from_dataframe.py`
 
 Convert DataFrame rows into XML element strings using a UDF, then assemble
 them into a complete XML document on the driver.
@@ -98,7 +98,7 @@ round_trip_df = spark.createDataFrame(round_trip_rows)
 ## Run
 
 ```bash
-uv run python src/spark_etree/xmls_build_from_dataframe.py
+uv run python examples/xmls_build_from_dataframe.py
 ```
 
 ??? success "Expected output — assembled XML"

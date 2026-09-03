@@ -1,0 +1,65 @@
+site_name: spark-xpath
+site_description: Extract and transform XML inside PySpark DataFrames using Spark's built-in XPath SQL functions (xpath_string, xpath_boolean, xpath, ...).
+repo_url: https://github.com/mahfooziiitian/spark-batch
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - XPath Functions: xpath-functions.md
+  - Examples:
+      - Basic Parsing: examples/basic-parsing.md
+      - Numeric Extraction: examples/numeric-extraction.md
+      - Conditional Logic: examples/conditional-logic.md
+      - Array Flattening: examples/array-flattening.md
+      - Nested XML: examples/nested-xml.md
+      - Credit Evaluation: examples/credit-evaluation.md
+  - Testing: testing.md
+  - API Reference: api-reference.md

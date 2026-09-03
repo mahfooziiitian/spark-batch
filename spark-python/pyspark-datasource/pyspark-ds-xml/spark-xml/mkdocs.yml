@@ -1,0 +1,70 @@
+site_name: spark-xml
+site_description: PySpark XML processing with the built-in Spark 4 xml data source — reading, writing, schema/XSD validation, encoding, compression, namespaces, and nested structures.
+repo_url: https://github.com/mahfooziiitian/spark-batch
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guide:
+      - Reading: guide/reading.md
+      - Writing: guide/writing.md
+      - Schema: guide/schema.md
+      - Nested: guide/nested.md
+      - Encoding: guide/encoding.md
+      - Compression: guide/compression.md
+      - Namespaces: guide/namespaces.md
+      - Attributes: guide/attributes.md
+      - Value Tags: guide/value-tags.md
+      - SQL: guide/sql.md
+      - Error Handling: guide/error-handling.md
+      - Enterprise Patterns: guide/enterprise.md
+  - Examples: examples/index.md
+  - API Reference: api/reference.md

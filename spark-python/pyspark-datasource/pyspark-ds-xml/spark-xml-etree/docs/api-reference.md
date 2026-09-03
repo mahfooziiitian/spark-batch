@@ -6,7 +6,7 @@ PySpark UDFs.
 
 ## xmls_data_processing
 
-:material-file-code: `src/spark_etree/xmls_data_processing.py`
+:material-file-code: `examples/xmls_data_processing.py`
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -24,7 +24,7 @@ extract_title('<CD><ARTIST>Test</ARTIST></CD>') # → None
 
 ## xmls_data_processing_multiple_column
 
-:material-file-code: `src/spark_etree/xmls_data_processing_multiple_column.py`
+:material-file-code: `examples/xmls_data_processing_multiple_column.py`
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -44,7 +44,7 @@ extract_cd_info('<CD><TITLE>X</TITLE><ARTIST>Y</ARTIST><COUNTRY>US</COUNTRY><YEA
 
 ## xmls_data_processing_multiple_column2
 
-:material-file-code: `src/spark_etree/xmls_data_processing_multiple_column2.py`
+:material-file-code: `examples/xmls_data_processing_multiple_column2.py`
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -63,7 +63,7 @@ extract_record_ids('<test a="1" b="2"><records><record id="10" /><record id="20"
 
 ## xmls_namespace_handling
 
-:material-file-code: `src/spark_etree/xmls_namespace_handling.py`
+:material-file-code: `examples/xmls_namespace_handling.py`
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -83,7 +83,7 @@ from spark_etree.xmls_namespace_handling import extract_review_ratings
 
 ## xmls_nested_flattening
 
-:material-file-code: `src/spark_etree/xmls_nested_flattening.py`
+:material-file-code: `examples/xmls_nested_flattening.py`
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -103,7 +103,7 @@ rows = flatten_order('<order id="1" date="2025-01-01"><customer name="A" region=
 
 ## xmls_error_handling
 
-:material-file-code: `src/spark_etree/xmls_error_handling.py`
+:material-file-code: `examples/xmls_error_handling.py`
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -124,7 +124,7 @@ safe_parse_product('<product sku="P1"><name>W</name></product>')
 
 ## xmls_build_from_dataframe
 
-:material-file-code: `src/spark_etree/xmls_build_from_dataframe.py`
+:material-file-code: `examples/xmls_build_from_dataframe.py`
 
 | Name | Type | Description |
 |------|------|-------------|

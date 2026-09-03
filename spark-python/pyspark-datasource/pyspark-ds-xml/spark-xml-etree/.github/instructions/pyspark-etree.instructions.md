@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.py"
+applyTo: "src/**/*.py,examples/**/*.py"
 ---
 
 # PySpark + ElementTree Patterns

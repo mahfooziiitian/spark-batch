@@ -1,0 +1,21 @@
+[project]
+name = "pyspark-ds-xml"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.7",
+    "mkdocs-monorepo-plugin>=1.1.2",
+]
+
+[tool.uv.workspace]
+members = [
+    "spark-xml",
+    "spark-xpath",
+    "spark-xml-etree",
+]

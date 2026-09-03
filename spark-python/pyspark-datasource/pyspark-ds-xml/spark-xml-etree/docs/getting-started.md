@@ -5,7 +5,7 @@ Set up the project and run your first PySpark + ElementTree example in minutes.
 ## Prerequisites
 
 !!! warning "Java required"
-    PySpark requires Java 11 or 17 on your `PATH`. Verify with:
+    PySpark 4 requires Java 17 or later on your `PATH`. Verify with:
     ```bash
     java -version
     ```
@@ -36,7 +36,7 @@ Set up the project and run your first PySpark + ElementTree example in minutes.
     ```
 
 !!! note
-    The only runtime dependency is `pyspark<4.0.0`. The XML library
+    The only runtime dependency is `pyspark>=4.0.0`. The XML library
     `xml.etree.ElementTree` is part of the Python standard library.
 
 ## Verify the Installation
@@ -44,7 +44,7 @@ Set up the project and run your first PySpark + ElementTree example in minutes.
 Run the simplest example to confirm everything works:
 
 ```bash
-uv run python src/spark_etree/xmls_data_processing.py
+uv run python examples/xmls_data_processing.py
 ```
 
 ??? success "Expected output"

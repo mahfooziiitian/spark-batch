@@ -8,13 +8,13 @@ copilot instructions.
 
 | Sub-Project | Approach | Key Dependency |
 |-------------|----------|----------------|
-| [`spark-xml-lib`](spark-xml-lib/) | Databricks spark-xml JAR | `com.databricks:spark-xml_2.12:0.18.0` |
+| [`spark-xml`](spark-xml/) | Databricks spark-xml JAR | not needed `com.databricks:spark-xml_2.12:0.18.0` |
 | [`spark-xml-etree`](spark-xml-etree/) | Python `xml.etree.ElementTree` via Spark UDFs | None (stdlib) |
 | [`spark-xpath`](spark-xpath/) | Spark built-in XPath SQL functions | None (built-in) |
 
 ## When to Use Each Approach
 
-- **spark-xml-lib** — Best for reading/writing entire XML files as DataFrames.
+- **spark-xml** — Best for reading/writing entire XML files as DataFrames.
   Handles nested XML, attributes, and namespaces. Requires the Databricks
   spark-xml JAR.
 - **spark-xml-etree** — Best when you need fine-grained control over XML
@@ -29,7 +29,7 @@ copilot instructions.
 Each sub-project contains its own `.github/copilot-instructions.md` with
 detailed patterns and conventions:
 
-- `spark-xml-lib/.github/copilot-instructions.md`
+- `spark-xml/.github/copilot-instructions.md`
 - `spark-xml-etree/.github/copilot-instructions.md`
 - `spark-xpath/.github/copilot-instructions.md`
 
@@ -40,7 +40,7 @@ Refer to the sub-project instructions for datasource-specific guidance.
 | Component | Version / Tool |
 |-----------|---------------|
 | Python | ≥ 3.11 |
-| PySpark | 3.5.x |
+| PySpark | 4.x.x |
 | Package manager | uv (preferred) |
 | Testing | pytest ≥ 8.0 |
 

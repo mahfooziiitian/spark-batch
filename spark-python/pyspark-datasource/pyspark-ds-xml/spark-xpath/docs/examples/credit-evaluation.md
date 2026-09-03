@@ -4,7 +4,7 @@ This is the most complex example — it parses **namespaced credit-evaluation XM
 from Experian and applies conditional business logic using `CASE` expressions
 combined with `xpath_string`, `xpath_boolean`, and string comparisons.
 
-:material-file-code: **Source:** `src/xpath/xml_xpath.py`
+:material-file-code: **Source:** `examples/xml_xpath.py`
 
 ---
 
@@ -299,7 +299,7 @@ instr(Score, '9') == 1
 ## Running
 
 ```bash
-uv run python src/xpath/xml_xpath.py
+uv run python examples/xml_xpath.py
 ```
 
 ??? info "What to expect"
@@ -309,7 +309,7 @@ uv run python src/xpath/xml_xpath.py
     to a file:
 
     ```bash
-    uv run python src/xpath/xml_xpath.py 2>/dev/null | less -S
+    uv run python examples/xml_xpath.py 2>/dev/null | less -S
     ```
 
 ---

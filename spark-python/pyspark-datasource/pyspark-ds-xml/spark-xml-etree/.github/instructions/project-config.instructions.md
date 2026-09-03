@@ -28,7 +28,7 @@ description = "PySpark examples for parsing XML with Python's xml.etree.ElementT
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pyspark<4.0.0",
+    "pyspark>=4.0.0",
 ]
 
 [dependency-groups]
@@ -45,7 +45,7 @@ testpaths = ["tests"]
 
 - **Runtime dependencies** go under `[project] dependencies`.
 - **Dev dependencies** (pytest, linters, doc tools) go under `[dependency-groups] dev`.
-- PySpark is pinned with `<4.0.0` upper bound — update when Spark 4.x is adopted.
+- PySpark is pinned with `>=4.0.0` — the project targets Spark 4 (requires Java 17+).
 - `requires-python = ">=3.11"` must match `.python-version`.
 
 ### pytest Configuration
