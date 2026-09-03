@@ -2,7 +2,7 @@
 -- suffix sums, and a direct ROWS vs RANGE comparison showing tie behaviour.
 
 CREATE OR REPLACE TEMP VIEW sales AS
-SELECT
+SELECT -- noqa: LT09
     * FROM VALUES
 ('North', 'Alice', DATE '2024-01-01', 100),
 ('North', 'Alice', DATE '2024-01-05', 200),

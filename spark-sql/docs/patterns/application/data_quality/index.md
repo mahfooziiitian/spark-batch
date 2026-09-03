@@ -31,3 +31,9 @@ flowchart LR
 - Initial data profiling — discover quality issues before building pipelines.
 - Ingestion layer — catch duplicates introduced by retry logic or late-arriving data.
 - Master data management — merge customer/product records from multiple sources.
+
+---
+
+!!! note "Related"
+    For **detection** patterns — change detection, outliers, snapshot diffs, and fraud
+    signals — see the [Data Quality](../../data_quality/index.md) section.

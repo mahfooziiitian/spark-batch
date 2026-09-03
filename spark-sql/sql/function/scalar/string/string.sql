@@ -41,8 +41,8 @@ SELECT
 
 SELECT
     array_sort(collect_list(tag_key)) AS all_keys,
-    array_sort(collect_list(if(is_filter, tag_key, null))) AS filter_keys,
-    array_sort(collect_list(if(is_filter, tag_entry, null))) AS filter_expected
+    array_sort(collect_list(if(is_filter, tag_key, NULL))) AS filter_keys,
+    array_sort(collect_list(if(is_filter, tag_entry, NULL))) AS filter_expected
 FROM (
     SELECT
         explode(split(
@@ -55,4 +55,4 @@ FROM (
         )) AS tag_entry,
         contains(tag_entry, '=') AS is_filter,
         if(is_filter, split(tag_entry, '=')[0], tag_entry) AS tag_key
-)
+) AS tags

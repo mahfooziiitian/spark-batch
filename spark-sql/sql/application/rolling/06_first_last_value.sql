@@ -44,11 +44,12 @@ SELECT
     LAST_VALUE(saleprice) OVER full_w AS last_price,
     LAST_VALUE(saleprice) OVER full_w - FIRST_VALUE(saleprice) OVER full_w AS price_movement
 FROM allsales
-WINDOW full_w AS (
-    PARTITION BY makename
-    ORDER BY saledate
-    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
-)
+WINDOW
+    full_w AS (
+        PARTITION BY makename
+        ORDER BY saledate
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    )
 ORDER BY makename, saledate;
 
 -- =============================================================================

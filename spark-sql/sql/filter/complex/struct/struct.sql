@@ -38,8 +38,8 @@ CREATE OR REPLACE TEMP VIEW complex_sales AS
 
 -- Get all customers in USA
 SELECT * FROM complex_sales
-WHERE `location`.`country` = 'USA';
+WHERE location.country = 'USA'; -- noqa: RF03
 
 -- Customers from NY only
 SELECT * FROM complex_sales
-WHERE `location`.`city` = 'NY';
+WHERE location.city = 'NY'; -- noqa: RF03

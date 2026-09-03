@@ -11,7 +11,8 @@ WITH students AS (
         id,
         name,
         age
-    FROM VALUES
+    FROM
+        VALUES
         (1, 'Alice', 20),
         (2, 'Bob', 22),
         (1, 'Alice', 20),
@@ -19,7 +20,7 @@ WITH students AS (
         (2, 'Bob', 22),
         (6, 'Eve', 24),
         (1, 'Alice', 20)
-    AS students (id, name, age)
+            AS students (id, name, age)
 )
 
 SELECT DISTINCT * --noqa: AM04
@@ -31,7 +32,8 @@ WITH students AS (
         id,
         name,
         age
-    FROM VALUES
+    FROM
+        VALUES
         (1, 'Alice', 20),
         (2, 'Bob', 22),
         (1, 'Alice', 19),
@@ -39,7 +41,7 @@ WITH students AS (
         (2, 'Bob', 23),
         (6, 'Eve', 24),
         (1, 'Alice', 22)
-    AS students (id, name, age)
+            AS students (id, name, age)
 )
 
 SELECT * --noqa: AM04
@@ -51,7 +53,7 @@ FROM (
             ORDER BY age DESC
         ) AS rn
     FROM students
-)
+) AS ranked
 WHERE rn = 1;
 
 -- 3. Remove Duplicates Based on Key Columns (Keep Any Row)
@@ -60,7 +62,8 @@ WITH students AS (
         id,
         name,
         age
-    FROM VALUES
+    FROM
+        VALUES
         (1, 'Alice', 20),
         (2, 'Bob', 22),
         (1, 'Alice', 19),
@@ -68,7 +71,7 @@ WITH students AS (
         (2, 'Bob', 23),
         (6, 'Eve', 24),
         (1, 'Alice', 22)
-    AS students (id, name, age)
+            AS students (id, name, age)
 )
 
 SELECT
@@ -84,7 +87,8 @@ WITH students AS (
         name,
         age,
         create_datetime
-    FROM VALUES
+    FROM
+        VALUES
         (1, 'Alice', 20, '2023-08-01 10:00:00'),
         (2, 'Bob', 22, '2023-08-01 11:00:00'),
         (1, 'Alice', 19, '2023-08-02 10:00:00'),
@@ -92,7 +96,7 @@ WITH students AS (
         (2, 'Bob', 23, '2023-08-03 10:00:00'),
         (6, 'Eve', 24, '2023-08-03 11:00:00'),
         (1, 'Alice', 22, '2023-08-04 10:00:00')
-    AS students (id, name, age, create_datetime)
+            AS students (id, name, age, create_datetime)
 )
 
 SELECT * --noqa: AM04
@@ -104,7 +108,7 @@ FROM (
             ORDER BY create_datetime DESC
         ) AS rn
     FROM students
-)
+) AS ranked
 WHERE rn = 1;
 
 -- 5. Remove Duplicates with Conditional Logic
@@ -121,7 +125,7 @@ FROM (
             END
         ) AS rn
     FROM my_table
-)
+) AS ranked
 WHERE rn = 1;
 
 -- 7. Remove Duplicates with Window Functions (e.g., RANK, DENSE_RANK)
@@ -150,8 +154,9 @@ WITH b AS (
 SELECT a.* --noqa: AM04
 FROM my_table AS a
 INNER JOIN b
-    ON a.id = b.id
-    AND a.some_column = b.min_col;
+    ON
+        a.id = b.id
+        AND a.some_column = b.min_col;
 
 -- 9. Remove Duplicates with CTE (Common Table Expression)
 WITH cte AS (
@@ -188,7 +193,8 @@ FROM my_table AS t1
 WHERE NOT EXISTS (
     SELECT 1
     FROM my_table AS t2
-    WHERE t1.id = t2.id
+    WHERE
+        t1.id = t2.id
         AND t1.some_column < t2.some_column
 );
 

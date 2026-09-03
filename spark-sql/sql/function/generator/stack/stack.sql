@@ -58,12 +58,12 @@ FROM features
 
 CREATE OR REPLACE TEMP VIEW summary AS
 SELECT
-    'Product A' AS `name`,
-    1200 AS `sales`,
-    300 AS `profit`;
+    'Product A' AS name,
+    1200 AS sales,
+    300 AS profit;
 SELECT
-    `name`,
-    `metric`,
+    name,
+    metric,
     value
 FROM summary
     LATERAL VIEW STACK(

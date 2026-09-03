@@ -13,11 +13,11 @@ CREATE OR REPLACE TEMP VIEW person_data AS
         '30' AS value2
     UNION ALL
     SELECT
-        2,
-        'name',
-        'Alice',
-        'age',
-        '28'
+        2 AS id,
+        'name' AS key1,
+        'Alice' AS value1,
+        'age' AS key2,
+        '28' AS value2
 );
 SELECT
     id,

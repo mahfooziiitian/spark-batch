@@ -60,11 +60,11 @@ ORDER BY saleprice;
 
 SELECT
     cost,
+    CAST(cost AS INT) AS cast_int,
     ROUND(cost, 0) AS rounded,
     FLOOR(cost) AS floored,
     CEIL(cost) AS ceiled,
-    TRUNCATE(cost, 0) AS truncated,
-    CAST(cost AS INT) AS cast_int
+    TRUNCATE(cost, 0) AS truncated
 FROM allsales
 ORDER BY cost;
 
@@ -97,15 +97,15 @@ WITH sample_data AS (
 SELECT
     saleprice,
     cost,
+    CAST(saleprice AS INT) AS sale_int,
+    CAST(cost AS INT) AS cost_int,
     ROUND(saleprice, 2) AS sale_round2,
     FLOOR(saleprice) AS sale_floor,
     CEIL(saleprice) AS sale_ceil,
     TRUNCATE(saleprice, 2) AS sale_trunc2,
-    CAST(saleprice AS INT) AS sale_int,
     ROUND(cost, 2) AS cost_round2,
     FLOOR(cost) AS cost_floor,
     CEIL(cost) AS cost_ceil,
-    TRUNCATE(cost, 2) AS cost_trunc2,
-    CAST(cost AS INT) AS cost_int
+    TRUNCATE(cost, 2) AS cost_trunc2
 FROM sample_data
 ORDER BY saleprice;

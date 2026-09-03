@@ -1,11 +1,10 @@
 -- ============================================================
--- Topic: Next-event matching — with events-between count
+-- Topic: Next-event matching — correlated subquery approach
 -- Dialect: Databricks / Spark SQL 3.5
 -- Description: For each 'Y' event, find the first subsequent
---              'X' event and also count how many events of any
---              type occurred strictly between the two.
---              Combines a self-join pairing step with a second
---              join to count intermediate rows.
+--              'X' event for the same user and return the time
+--              difference. Uses a correlated scalar subquery
+--              (semantically equivalent to a LATERAL JOIN).
 --
 --              event_id provides a stable tiebreaker when two
 --              events share the same timestamp.
@@ -88,55 +87,46 @@ WITH events AS (
         'Y' AS event_type
 ),
 
--- Step 1: pair each Y with its next X (same as self-join approach)
+-- Isolate trigger events and resolve the subquery once in a CTE
 paired AS (
     SELECT
         y.user_id,
         y.event_time AS y_time,
-        MIN(x.event_time) AS x_time
+        (
+            SELECT MIN(x.event_time)
+            FROM events AS x
+            WHERE
+                x.user_id = y.user_id
+                AND x.event_type = 'X'
+                AND x.event_time > y.event_time
+        ) AS x_time
     FROM events AS y
-    LEFT JOIN events AS x
-        ON  y.user_id   = x.user_id
-        AND x.event_type = 'X'
-        AND y.event_time < x.event_time
     WHERE y.event_type = 'Y'
-    GROUP BY
-        y.user_id,
-        y.event_time
 )
 
--- Step 2: count events strictly between y_time and x_time
 SELECT
-    p.user_id,
-    p.y_time,
-    p.x_time,
-    TIMESTAMPDIFF(SECOND, p.y_time, p.x_time) AS diff_seconds,
-    COUNT(e.event_id)                          AS events_between
-FROM paired AS p
-LEFT JOIN events AS e
-    ON  p.user_id    = e.user_id
-    AND p.y_time     < e.event_time
-    AND p.x_time     > e.event_time
-GROUP BY
-    p.user_id,
-    p.y_time,
-    p.x_time
+    user_id,
+    y_time,
+    x_time,
+    TIMESTAMPDIFF(SECOND, y_time, x_time) AS diff_seconds
+FROM paired
 ORDER BY
-    p.user_id,
-    p.y_time;
+    user_id,
+    y_time;
 
 -- Expected output:
--- +---------+---------------------+---------------------+--------------+----------------+
--- | user_id | y_time              | x_time              | diff_seconds | events_between |
--- +---------+---------------------+---------------------+--------------+----------------+
--- |       1 | 2024-03-01 10:05:00 | 2024-03-01 10:10:00 |          300 |              2 |
--- |       1 | 2024-03-01 10:20:00 | 2024-03-01 10:45:00 |         1500 |              0 |
--- |       2 | 2024-03-01 11:00:00 | 2024-03-01 11:10:00 |          600 |              1 |
--- |       2 | 2024-03-01 11:03:00 | 2024-03-01 11:10:00 |          420 |              0 |
--- |       2 | 2024-03-01 12:00:00 | NULL                |         NULL |              0 |
--- +---------+---------------------+---------------------+--------------+----------------+
+-- +---------+---------------------+---------------------+--------------+
+-- | user_id | y_time              | x_time              | diff_seconds |
+-- +---------+---------------------+---------------------+--------------+
+-- |       1 | 2024-03-01 10:05:00 | 2024-03-01 10:10:00 |          300 |
+-- |       1 | 2024-03-01 10:20:00 | 2024-03-01 10:45:00 |         1500 |
+-- |       2 | 2024-03-01 11:00:00 | 2024-03-01 11:10:00 |          600 |
+-- |       2 | 2024-03-01 11:03:00 | 2024-03-01 11:10:00 |          420 |
+-- |       2 | 2024-03-01 12:00:00 | NULL                |         NULL |
+-- +---------+---------------------+---------------------+--------------+
 --
--- Y at 10:05 → X at 10:10: 2 events between (B at 10:06, C at 10:08).
--- Y at 11:00 → X at 11:10: 1 event between (Y at 11:03).
--- Unmatched Y rows show events_between = 0 because the LEFT JOIN
--- on events finds no rows when x_time IS NULL.
+-- Unmatched Y rows naturally return NULL from the subquery.
+--
+-- Trade-off: the correlated subquery is re-evaluated per Y row,
+-- which can be expensive at scale. Prefer the window-function
+-- approach for large datasets.

@@ -129,6 +129,36 @@ WHERE c.customer_id IS NULL;
 
 ---
 
+## :material-play-circle-outline: Worked Example
+
+Self-contained — paste and run. A staging batch arrives with a duplicate
+`customer_id`; the audit query surfaces the offending key before you load.
+
+```sql
+CREATE OR REPLACE TEMP VIEW staging_customers AS
+SELECT * FROM VALUES
+    (1, 'Alice', 'alice@acme.io'),
+    (2, 'Bob',   'bob@acme.io'),
+    (2, 'Bob R', 'bob.r@acme.io'),   -- duplicate customer_id
+    (3, 'Carol', 'carol@acme.io')
+AS t (customer_id, name, email);
+
+-- Primary-key audit: which values appear more than once?
+SELECT customer_id, COUNT(*) AS cnt
+FROM staging_customers
+GROUP BY customer_id
+HAVING COUNT(*) > 1
+ORDER BY customer_id;
+-- customer_id | cnt
+-- 2           | 2      ← must be resolved before INSERT
+```
+
+!!! success "Interpretation"
+    A clean primary key returns **zero rows** here. Because Spark does not enforce
+    uniqueness, this check is your guardrail — run it in staging, then dedup or `MERGE`.
+
+---
+
 ## :material-lightbulb-outline: When to Use
 
 | Scenario | Recommendation |

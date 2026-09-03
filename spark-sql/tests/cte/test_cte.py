@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-
 from tests._helpers import execute_sql_file, statement_containing
 
 if TYPE_CHECKING:
@@ -13,9 +12,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.spark]
 
 
 class TestCTE:
-    def test_execute_supported_cte_queries_from_source(
-        self: TestCTE, spark: SparkSession
-    ) -> None:
+    def test_execute_supported_cte_queries_from_source(self: TestCTE, spark: SparkSession) -> None:
         results = execute_sql_file(
             spark,
             "sql/cte/cte.sql",
@@ -26,9 +23,7 @@ class TestCTE:
         assert results[0].count() == 2
         assert results[-1].count() == 4
 
-    def test_recursive_cte_comes_from_source(
-        self: TestCTE, spark: SparkSession
-    ) -> None:
+    def test_recursive_cte_comes_from_source(self: TestCTE, spark: SparkSession) -> None:
         recursive_statement = statement_containing(
             "sql/cte/cte.sql",
             "WITH RECURSIVE int_sequence",

@@ -36,10 +36,11 @@ SELECT
     a2.saledate AS repeat_purchase
 FROM allsales AS a1
 INNER JOIN allsales AS a2
-    ON a1.customername = a2.customername
-    AND a1.makename = a2.makename
-    AND a1.color = a2.color
-    AND a1.saledate < a2.saledate
+    ON
+        a1.customername = a2.customername
+        AND a1.makename = a2.makename
+        AND a1.color = a2.color
+        AND a1.saledate < a2.saledate
 ORDER BY a1.customername, a1.makename;
 
 -- =============================================================================

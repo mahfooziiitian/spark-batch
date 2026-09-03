@@ -29,9 +29,9 @@ FROM ( -- noqa: ST05
     INNER JOIN sales AS sa
         ON sd.salesid = sa.salesid
 ) AS sq
-PIVOT (
-    SUM(saleprice) FOR yearofsale IN (2015 y2015, 2016 y2016, 2017 y2017, 2018 y2018)
-);
+    PIVOT (
+        SUM(saleprice) FOR yearofsale IN (2015 y2015, 2016 y2016, 2017 y2017, 2018 y2018)
+    );
 
 /* Expected output (NULL where no sales exist for that colour / year):
    color  | y2015   | y2016   | y2017   | y2018
@@ -64,9 +64,9 @@ FROM ( -- noqa: ST05
     INNER JOIN sales AS sa
         ON sd.salesid = sa.salesid
 ) AS sq
-PIVOT (
-    SUM(saleprice) FOR yearofsale IN (2015 y2015, 2016 y2016, 2017 y2017, 2018 y2018)
-);
+    PIVOT (
+        SUM(saleprice) FOR yearofsale IN (2015 y2015, 2016 y2016, 2017 y2017, 2018 y2018)
+    );
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Section 3: PIVOT with two aggregate functions — revenue and unit count
@@ -77,14 +77,14 @@ PIVOT (
 -- Backtick-quoting is required because the names start with a digit.
 SELECT
     color,
-    `2015_total_revenue`,
-    `2015_units_sold`,
-    `2016_total_revenue`,
-    `2016_units_sold`,
-    `2017_total_revenue`,
-    `2017_units_sold`,
-    `2018_total_revenue`,
-    `2018_units_sold`
+    2015_total_revenue,
+    2015_units_sold,
+    2016_total_revenue,
+    2016_units_sold,
+    2017_total_revenue,
+    2017_units_sold,
+    2018_total_revenue,
+    2018_units_sold
 FROM ( -- noqa: ST05
     SELECT
         st.color,
@@ -96,11 +96,11 @@ FROM ( -- noqa: ST05
     INNER JOIN sales AS sa
         ON sd.salesid = sa.salesid
 ) AS sq
-PIVOT (
-    SUM(saleprice) AS total_revenue,
-    COUNT(*) AS units_sold
-    FOR yearofsale IN (2015, 2016, 2017, 2018)
-);
+    PIVOT (
+        SUM(saleprice) AS total_revenue,
+        COUNT(*) AS units_sold
+        FOR yearofsale IN (2015, 2016, 2017, 2018)
+    );
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Section 4: Sample data — verify PIVOT output with inline CTE rows
@@ -164,9 +164,9 @@ SELECT
     COALESCE(`2017`, 0) AS y2017,
     COALESCE(`2018`, 0) AS y2018
 FROM raw_sales
-PIVOT (
-    ROUND(SUM(saleprice), 2) FOR yearofsale IN (2016, 2017, 2018)
-)
+    PIVOT (
+        ROUND(SUM(saleprice), 2) FOR yearofsale IN (2016, 2017, 2018)
+    )
 ORDER BY color;
 
 /* Expected output:
@@ -216,9 +216,9 @@ SELECT
     year_label,
     total_revenue
 FROM pivoted
-UNPIVOT (
-    total_revenue FOR year_label IN (y2016, y2017, y2018)
-)
+    UNPIVOT (
+        total_revenue FOR year_label IN (y2016, y2017, y2018)
+    )
 ORDER BY color, year_label;
 
 /* Expected output (NULL rows are silently excluded):

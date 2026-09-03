@@ -151,8 +151,8 @@ FROM order_items
 -- Or using the INLINE table function directly
 SELECT
     t.*,
-    order_id
-FROM order_items, INLINE(line_items) AS t;
+    order_items.order_id
+FROM order_items, INLINE(order_items.line_items) AS t;
 
 ---
 -- 7. Struct equality comparison
@@ -162,7 +162,7 @@ FROM order_items, INLINE(line_items) AS t;
 SELECT
     -- Result: true
     STRUCT('NY' AS city, 'USA' AS country)
-    = STRUCT('NY' AS city, 'USA' AS country) AS same,
+    = STRUCT('NY' AS city, 'USA' AS country) AS same, -- noqa: ST10
     -- Result: false
     STRUCT('NY' AS city, 'USA' AS country) = STRUCT('LA' AS city, 'USA' AS country) AS different;
 

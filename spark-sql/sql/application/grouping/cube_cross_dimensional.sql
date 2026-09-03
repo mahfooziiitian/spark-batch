@@ -72,34 +72,34 @@ ORDER BY YEAR(saledate) NULLS LAST, QUARTER(saledate) NULLS LAST;
 -- ──────────────────────────────────────────────────────────────────────────────
 WITH sample_sales AS (
     SELECT
-'UK' AS country,
-'Ferrari' AS makename,
-'Red' AS color,
-55000.00 AS saleprice
+        'UK' AS country,
+        'Ferrari' AS makename,
+        'Red' AS color,
+        55000.00 AS saleprice
     UNION ALL
     SELECT
-'UK' AS country,
-'Ferrari' AS makename,
-'Blue' AS color,
-62000.00 AS saleprice
+        'UK' AS country,
+        'Ferrari' AS makename,
+        'Blue' AS color,
+        62000.00 AS saleprice
     UNION ALL
     SELECT
-'UK' AS country,
-'Bentley' AS makename,
-'Black' AS color,
-105000.00 AS saleprice
+        'UK' AS country,
+        'Bentley' AS makename,
+        'Black' AS color,
+        105000.00 AS saleprice
     UNION ALL
     SELECT
-'France' AS country,
-'Ferrari' AS makename,
-'Red' AS color,
-49000.00 AS saleprice
+        'France' AS country,
+        'Ferrari' AS makename,
+        'Red' AS color,
+        49000.00 AS saleprice
     UNION ALL
     SELECT
-'France' AS country,
-'Bentley' AS makename,
-'Silver' AS color,
-98000.00 AS saleprice
+        'France' AS country,
+        'Bentley' AS makename,
+        'Silver' AS color,
+        98000.00 AS saleprice
 )
 
 SELECT

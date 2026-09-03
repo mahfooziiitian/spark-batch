@@ -2,7 +2,7 @@
 -- rolling max, cumulative contribution %, CUME_DIST, and partition size via COUNT(*).
 
 CREATE OR REPLACE TEMP VIEW sales AS
-SELECT
+SELECT -- noqa: LT09
     * FROM VALUES
 ('North', 'Alice', DATE '2024-01-01', 100),
 ('North', 'Alice', DATE '2024-01-05', 200),

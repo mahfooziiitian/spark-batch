@@ -562,3 +562,9 @@ ORDER BY txn_date, account;
 | Running min/max watermark | `MIN()` / `MAX()` over the same cumulative frame |
 | Pareto (80/20) analysis | Running total percentage of grand total |
 | Progressive distinct count | `SIZE(COLLECT_SET(col) OVER (...))` |
+
+---
+
+!!! note "Related"
+    See this technique applied end-to-end alongside moving averages and LAG/LEAD in
+    [Rolling Analysis](../application/enrichment/rolling/index.md).

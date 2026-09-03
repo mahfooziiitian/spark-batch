@@ -178,6 +178,39 @@ HAVING current_count > 1;
 
 ---
 
+## :material-play-circle-outline: Worked Example
+
+Self-contained — turn stable natural keys (`sku`) into both a sequential and an
+idempotent (hash) surrogate key in one pass.
+
+```sql
+CREATE OR REPLACE TEMP VIEW products AS
+SELECT * FROM VALUES
+    ('SKU-1', 'Widget'),
+    ('SKU-2', 'Gadget'),
+    ('SKU-3', 'Gizmo')
+AS t (sku, name);
+
+SELECT
+    ROW_NUMBER() OVER (ORDER BY sku) AS product_sk,   -- sequential surrogate
+    SUBSTR(MD5(sku), 1, 8)           AS hash_sk,       -- idempotent surrogate (shown truncated)
+    sku,
+    name
+FROM products
+ORDER BY product_sk;
+-- product_sk | hash_sk  | sku   | name
+-- 1          | 318e4195 | SKU-1 | Widget
+-- 2          | 3ac3312c | SKU-2 | Gadget
+-- 3          | 9d091b8a | SKU-3 | Gizmo
+```
+
+!!! tip "Sequential vs hash"
+    `ROW_NUMBER` gives compact, join-friendly integers but is **not reproducible** across
+    reloads. `MD5(natural_key)` is **deterministic** — the same input always yields the same
+    key — which makes re-runs and cross-environment loads idempotent.
+
+---
+
 ## :material-swap-horizontal: Surrogate Key Strategies
 
 | Strategy | Uniqueness | Idempotent | Use case |

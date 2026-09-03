@@ -6,12 +6,14 @@
 
 SELECT DISTINCT customername
 FROM allsales AS a
-WHERE EXISTS (
-    SELECT 1
-    FROM allsales AS a2
-    WHERE a2.customername = a.customername
-    AND a2.makename = 'Ferrari'
-)
+WHERE
+    EXISTS (
+        SELECT 1
+        FROM allsales AS a2
+        WHERE
+            a2.customername = a.customername
+            AND a2.makename = 'Ferrari'
+    )
 ORDER BY customername;
 
 -- =============================================================================
@@ -20,12 +22,14 @@ ORDER BY customername;
 
 SELECT DISTINCT customername
 FROM allsales AS a
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM allsales AS a2
-    WHERE a2.customername = a.customername
-    AND a2.makename = 'Ferrari'
-)
+WHERE
+    NOT EXISTS (
+        SELECT 1
+        FROM allsales AS a2
+        WHERE
+            a2.customername = a.customername
+            AND a2.makename = 'Ferrari'
+    )
 ORDER BY customername;
 
 -- =============================================================================

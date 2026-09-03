@@ -174,6 +174,37 @@ WHERE event_date  = '2024-06-01'    -- partition pruning
 
 ---
 
+## :material-play-circle-outline: Worked Example
+
+Self-contained — the key is the pair `(order_id, line_id)`. A duplicate pair slips
+in; grouping on *all* key columns detects it.
+
+```sql
+CREATE OR REPLACE TEMP VIEW order_items AS
+SELECT * FROM VALUES
+    (100, 1, 'Widget', 2),
+    (100, 2, 'Gadget', 1),
+    (100, 2, 'Gizmo',  5),   -- duplicate composite key (100, 2)
+    (101, 1, 'Widget', 3)
+AS t (order_id, line_id, product, qty);
+
+-- Composite-key audit: group on every key column
+SELECT order_id, line_id, COUNT(*) AS cnt
+FROM order_items
+GROUP BY order_id, line_id
+HAVING COUNT(*) > 1
+ORDER BY order_id, line_id;
+-- order_id | line_id | cnt
+-- 100      | 2       | 2      ← the pair is duplicated, not either column alone
+```
+
+!!! warning "All columns, always"
+    `order_id` alone repeats legitimately (100 appears twice), and so does `line_id`.
+    Only the **combination** is unique — every uniqueness check, `MERGE ON`, and join
+    must reference *all* key columns.
+
+---
+
 ## :material-swap-horizontal: Single Key vs Composite Key
 
 | Aspect | Single PK | Composite PK |

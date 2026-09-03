@@ -12,45 +12,45 @@
 DROP TABLE IF EXISTS sales;
 
 CREATE TABLE sales (
-    order_id   BIGINT,
-    region     STRING,
-    product    STRING,
-    amount     DOUBLE,
+    order_id BIGINT,
+    region STRING,
+    product STRING,
+    amount DOUBLE,
     order_date DATE
 );
 
 INSERT INTO sales VALUES
-    (1, 'East',  'Widget',  120.00, DATE '2024-01-15'),
-    (2, 'West',  'Gadget',  340.00, DATE '2024-01-15'),
-    (3, 'East',  'Widget',   80.00, DATE '2024-02-10'),
-    (4, 'North', 'Gadget',  210.00, DATE '2024-02-10'),
-    (5, 'West',  'Widget',  150.00, DATE '2024-03-05'),
-    (6, 'East',  'Gadget',  450.00, DATE '2024-03-05'),
-    (7, 'North', 'Widget',   90.00, DATE '2024-03-20'),
-    (8, 'West',  'Gadget',  270.00, DATE '2024-03-20');
+(1, 'East', 'Widget', 120.00, DATE '2024-01-15'),
+(2, 'West', 'Gadget', 340.00, DATE '2024-01-15'),
+(3, 'East', 'Widget', 80.00, DATE '2024-02-10'),
+(4, 'North', 'Gadget', 210.00, DATE '2024-02-10'),
+(5, 'West', 'Widget', 150.00, DATE '2024-03-05'),
+(6, 'East', 'Gadget', 450.00, DATE '2024-03-05'),
+(7, 'North', 'Widget', 90.00, DATE '2024-03-20'),
+(8, 'West', 'Gadget', 270.00, DATE '2024-03-20');
 
 -- ─── Setup: web_sessions — multi-channel e-commerce data ─────
 DROP TABLE IF EXISTS web_sessions;
 
 CREATE TABLE web_sessions (
-    session_date  DATE,
-    channel       STRING,
-    device        STRING,
-    country       STRING,
-    sessions      BIGINT,
-    conversions   BIGINT,
-    revenue       DOUBLE
+    session_date DATE,
+    channel STRING,
+    device STRING,
+    country STRING,
+    sessions BIGINT,
+    conversions BIGINT,
+    revenue DOUBLE
 );
 
 INSERT INTO web_sessions VALUES
-    (DATE '2024-01-10', 'Organic', 'Desktop', 'US', 4200, 210, 18900.0),
-    (DATE '2024-01-10', 'Organic', 'Mobile',  'US', 5100, 180, 14400.0),
-    (DATE '2024-01-10', 'Paid',    'Desktop', 'US', 2800, 196, 19600.0),
-    (DATE '2024-01-10', 'Paid',    'Mobile',  'UK', 3300, 165, 15675.0),
-    (DATE '2024-01-11', 'Email',   'Desktop', 'US', 1500, 135, 13500.0),
-    (DATE '2024-01-11', 'Email',   'Mobile',  'UK', 2200, 110,  9900.0),
-    (DATE '2024-01-11', 'Social',  'Mobile',  'US', 6800, 204, 18360.0),
-    (DATE '2024-01-11', 'Social',  'Desktop', 'UK', 1900,  76,  7600.0);
+(DATE '2024-01-10', 'Organic', 'Desktop', 'US', 4200, 210, 18900.0),
+(DATE '2024-01-10', 'Organic', 'Mobile', 'US', 5100, 180, 14400.0),
+(DATE '2024-01-10', 'Paid', 'Desktop', 'US', 2800, 196, 19600.0),
+(DATE '2024-01-10', 'Paid', 'Mobile', 'UK', 3300, 165, 15675.0),
+(DATE '2024-01-11', 'Email', 'Desktop', 'US', 1500, 135, 13500.0),
+(DATE '2024-01-11', 'Email', 'Mobile', 'UK', 2200, 110, 9900.0),
+(DATE '2024-01-11', 'Social', 'Mobile', 'US', 6800, 204, 18360.0),
+(DATE '2024-01-11', 'Social', 'Desktop', 'UK', 1900, 76, 7600.0);
 
 -- ============================================================
 -- 1. Custom subtotals — (region, product), (region), ()
@@ -61,11 +61,12 @@ SELECT
     product,
     SUM(amount) AS total_sales
 FROM sales
-GROUP BY GROUPING SETS (
-    (region, product),
-    (region),
-    ()
-)
+GROUP BY
+    GROUPING SETS (
+        (region, product),
+        (region),
+        ()
+    )
 ORDER BY region ASC NULLS LAST, product ASC NULLS LAST;
 -- region | product | total_sales
 -- East    | Gadget  | 450.0        ← (region, product)
@@ -91,7 +92,7 @@ ORDER BY region ASC NULLS LAST, product ASC NULLS LAST;
 SELECT
     region,
     product,
-    SUM(amount)                  AS total_sales,
+    SUM(amount) AS total_sales,
     GROUPING_ID(region, product) AS grp_id,
     CASE GROUPING_ID(region, product)
         WHEN 0 THEN 'Detail'
@@ -100,12 +101,13 @@ SELECT
         WHEN 3 THEN 'Grand Total'
     END AS row_type
 FROM sales
-GROUP BY GROUPING SETS (
-    (region, product),
-    (region),
-    (product),
-    ()
-)
+GROUP BY
+    GROUPING SETS (
+        (region, product),
+        (region),
+        (product),
+        ()
+    )
 ORDER BY grp_id ASC, region ASC NULLS LAST, product ASC NULLS LAST;
 
 -- ============================================================
@@ -116,14 +118,15 @@ ORDER BY grp_id ASC, region ASC NULLS LAST, product ASC NULLS LAST;
 SELECT
     region,
     product,
-    SUM(amount)       AS total_sales,
-    GROUPING(region)  AS g_region,
+    SUM(amount) AS total_sales,
+    GROUPING(region) AS g_region,
     GROUPING(product) AS g_product
 FROM sales
-GROUP BY GROUPING SETS (
-    (region),
-    (product)
-)
+GROUP BY
+    GROUPING SETS (
+        (region),
+        (product)
+    )
 ORDER BY g_region ASC, g_product ASC, region ASC NULLS LAST, product ASC NULLS LAST;
 -- region | product | total_sales | g_region | g_product
 -- East    | NULL    | 650.0       | 0        | 1
@@ -136,16 +139,17 @@ ORDER BY g_region ASC, g_product ASC, region ASC NULLS LAST, product ASC NULLS L
 -- 4. Readable labels with GROUPING()
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
     SUM(amount) AS total_sales
 FROM sales
-GROUP BY GROUPING SETS (
-    (region, product),
-    (region),
-    (product),
-    ()
-)
+GROUP BY
+    GROUPING SETS (
+        (region, product),
+        (region),
+        (product),
+        ()
+    )
 ORDER BY region_label ASC, product_label ASC;
 
 -- ============================================================
@@ -157,8 +161,8 @@ ORDER BY region_label ASC, product_label ASC;
 -- Single scan (preferred)
 SELECT
     region,
-    NULL         AS product,
-    SUM(amount)  AS total_sales
+    NULL AS product,
+    SUM(amount) AS total_sales
 FROM sales
 GROUP BY GROUPING SETS ((region), ());
 
@@ -183,33 +187,35 @@ FROM sales;
 SELECT
     region,
     product,
-    SUM(amount)      AS total_sales,
+    SUM(amount) AS total_sales,
     YEAR(order_date) AS yr
 FROM sales
-GROUP BY GROUPING SETS (
-    (YEAR(order_date), region, product),   -- full detail
-    (YEAR(order_date), region),            -- year + region subtotal
-    (region),                              -- region across all years
-    ()                                     -- grand total
-)
+GROUP BY
+    GROUPING SETS (
+        (YEAR(order_date), region, product),   -- full detail
+        (YEAR(order_date), region),            -- year + region subtotal
+        (region),                              -- region across all years
+        ()                                     -- grand total
+    )
 ORDER BY yr ASC NULLS LAST, region ASC NULLS LAST, product ASC NULLS LAST;
 
 -- ============================================================
 -- 7. Multiple aggregates in one scan
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
-    ROUND(SUM(amount), 2)  AS total_revenue,
-    COUNT(*)               AS order_count,
-    ROUND(AVG(amount), 2)  AS avg_order_value,
-    MAX(amount)            AS max_order_value
+    ROUND(SUM(amount), 2) AS total_revenue,
+    COUNT(*) AS order_count,
+    ROUND(AVG(amount), 2) AS avg_order_value,
+    MAX(amount) AS max_order_value
 FROM sales
-GROUP BY GROUPING SETS (
-    (region, product),
-    (region),
-    ()
-)
+GROUP BY
+    GROUPING SETS (
+        (region, product),
+        (region),
+        ()
+    )
 ORDER BY GROUPING_ID(region, product) ASC, region_label ASC, product_label ASC;
 
 -- ============================================================
@@ -242,18 +248,19 @@ FROM sales;
 SELECT
     region,
     product,
-    ROUND(SUM(amount), 2)             AS revenue,
+    ROUND(SUM(amount), 2) AS revenue,
     CASE GROUPING_ID(region, product)
         WHEN 0 THEN 'Region+Product'
         WHEN 1 THEN 'Region'
         WHEN 3 THEN 'Grand Total'
     END AS report_level
 FROM sales
-GROUP BY GROUPING SETS (
-    (region, product),
-    (region),
-    ()
-)
+GROUP BY
+    GROUPING SETS (
+        (region, product),
+        (region),
+        ()
+    )
 ORDER BY GROUPING_ID(region, product) ASC, region ASC NULLS LAST, product ASC NULLS LAST;
 
 -- ============================================================
@@ -263,19 +270,20 @@ ORDER BY GROUPING_ID(region, product) ASC, region ASC NULLS LAST, product ASC NU
 --    (region), (product,year), and (region,product) are skipped.
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(YEAR(order_date)) = 1 THEN 'All Years'    ELSE CAST(YEAR(order_date) AS STRING) END AS yr,
-    CASE WHEN GROUPING(region)           = 1 THEN 'All Regions'  ELSE region                              END AS rgn,
-    CASE WHEN GROUPING(product)          = 1 THEN 'All Products' ELSE product                             END AS prd,
+    CASE WHEN GROUPING(YEAR(order_date)) = 1 THEN 'All Years' ELSE CAST(YEAR(order_date) AS STRING) END AS yr,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS rgn,
+    CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS prd,
     ROUND(SUM(amount), 2) AS total_revenue,
-    COUNT(*)              AS order_count
+    COUNT(*) AS order_count
 FROM sales
-GROUP BY GROUPING SETS (
-    (YEAR(order_date), region, product),   -- full detail
-    (YEAR(order_date), region),            -- region within year
-    (YEAR(order_date)),                    -- year total
-    (product),                             -- product across all time
-    ()                                     -- grand total
-)
+GROUP BY
+    GROUPING SETS (
+        (YEAR(order_date), region, product),   -- full detail
+        (YEAR(order_date), region),            -- region within year
+        (YEAR(order_date)),                    -- year total
+        (product),                             -- product across all time
+        ()                                     -- grand total
+    )
 ORDER BY
     GROUPING_ID(YEAR(order_date), region, product) ASC,
     yr ASC NULLS LAST,
@@ -300,8 +308,8 @@ grouped AS (
         region,
         product,
         sale_year,
-        SUM(amount)                             AS total_revenue,
-        COUNT(*)                                AS order_count,
+        SUM(amount) AS total_revenue,
+        COUNT(*) AS order_count,
         GROUPING_ID(region, product, sale_year) AS grp_id
     FROM base
     GROUP BY GROUPING SETS (
@@ -315,10 +323,10 @@ grouped AS (
 SELECT
     order_count,
     grp_id,
-    ROUND(total_revenue, 2)                                 AS total_revenue,
-    COALESCE(region,                    'All Regions')      AS region_label,
-    COALESCE(product,                   'All Products')     AS product_label,
-    COALESCE(CAST(sale_year AS STRING), 'All Years')        AS year_label
+    ROUND(total_revenue, 2) AS total_revenue,
+    COALESCE(region, 'All Regions') AS region_label,
+    COALESCE(product, 'All Products') AS product_label,
+    COALESCE(CAST(sale_year AS STRING), 'All Years') AS year_label
 FROM grouped
 ORDER BY grp_id ASC, region_label ASC, product_label ASC, year_label ASC;
 
@@ -329,21 +337,22 @@ ORDER BY grp_id ASC, region_label ASC, product_label ASC, year_label ASC;
 --     6 of CUBE's 8 combinations for channel×device×country.
 -- ============================================================
 SELECT
-    SUM(sessions)                                                    AS total_sessions,
-    SUM(conversions)                                                 AS total_conversions,
-    ROUND(SUM(revenue), 2)                                           AS total_revenue,
-    GROUPING_ID(channel, device, country)                            AS grp_id,
-    ROUND(SUM(conversions) * 100.0 / NULLIF(SUM(sessions), 0), 2)   AS conversion_rate_pct,
-    CASE WHEN GROUPING(channel) = 1 THEN 'All Channels'  ELSE channel END AS channel_label,
-    CASE WHEN GROUPING(device)  = 1 THEN 'All Devices'   ELSE device  END AS device_label,
+    SUM(sessions) AS total_sessions,
+    SUM(conversions) AS total_conversions,
+    ROUND(SUM(revenue), 2) AS total_revenue,
+    GROUPING_ID(channel, device, country) AS grp_id,
+    ROUND(SUM(conversions) * 100.0 / NULLIF(SUM(sessions), 0), 2) AS conversion_rate_pct,
+    CASE WHEN GROUPING(channel) = 1 THEN 'All Channels' ELSE channel END AS channel_label,
+    CASE WHEN GROUPING(device) = 1 THEN 'All Devices' ELSE device END AS device_label,
     CASE WHEN GROUPING(country) = 1 THEN 'All Countries' ELSE country END AS country_label
 FROM web_sessions
-GROUP BY GROUPING SETS (
-    (channel, device, country),   -- full detail
-    (channel, device),            -- channel x device cross
-    (channel, country),           -- channel x country cross
-    (channel),                    -- channel summary
-    (country),                    -- country summary
-    ()                            -- grand total
-)
+GROUP BY
+    GROUPING SETS (
+        (channel, device, country),   -- full detail
+        (channel, device),            -- channel x device cross
+        (channel, country),           -- channel x country cross
+        (channel),                    -- channel summary
+        (country),                    -- country summary
+        ()                            -- grand total
+    )
 ORDER BY grp_id ASC, channel_label ASC, device_label ASC, country_label ASC;

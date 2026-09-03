@@ -84,8 +84,9 @@ SELECT
     a1.saleprice - a2.saleprice AS price_gap
 FROM allsales AS a1
 INNER JOIN allsales AS a2
-    ON a1.makename = a2.makename
-    AND a1.saleprice > a2.saleprice
+    ON
+        a1.makename = a2.makename
+        AND a1.saleprice > a2.saleprice
 ORDER BY a1.makename ASC, price_gap DESC;
 
 -- =============================================================================

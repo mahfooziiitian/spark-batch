@@ -12,9 +12,10 @@ SELECT
     a2.saleprice AS sale2_price
 FROM allsales AS a1
 INNER JOIN allsales AS a2
-    ON a1.makename = a2.makename
-    AND a1.saledate < a2.saledate
-    AND DATE_TRUNC('MONTH', a1.saledate) = DATE_TRUNC('MONTH', a2.saledate)
+    ON
+        a1.makename = a2.makename
+        AND a1.saledate < a2.saledate
+        AND DATE_TRUNC('MONTH', a1.saledate) = DATE_TRUNC('MONTH', a2.saledate)
 ORDER BY a1.makename, a1.saledate;
 
 -- =============================================================================
@@ -27,8 +28,9 @@ SELECT DISTINCT
     a2.makename AS second_make
 FROM allsales AS a1
 INNER JOIN allsales AS a2
-    ON a1.customername = a2.customername
-    AND a1.makename < a2.makename
+    ON
+        a1.customername = a2.customername
+        AND a1.makename < a2.makename
 ORDER BY a1.customername;
 
 -- =============================================================================
@@ -38,43 +40,43 @@ ORDER BY a1.customername;
 WITH staff AS (
     SELECT
         1 AS staff_id,
-        'Alice' AS name,
+        'Alice' AS staff_name,
         CAST(NULL AS INT) AS manager_id,
-        'CEO' AS role
+        'CEO' AS job_title
     UNION ALL
     SELECT
         2 AS staff_id,
-        'Bob' AS name,
+        'Bob' AS staff_name,
         1 AS manager_id,
-        'Sales Director' AS role
+        'Sales Director' AS job_title
     UNION ALL
     SELECT
         3 AS staff_id,
-        'Carol' AS name,
+        'Carol' AS staff_name,
         2 AS manager_id,
-        'Sales Manager' AS role
+        'Sales Manager' AS job_title
     UNION ALL
     SELECT
         4 AS staff_id,
-        'Dave' AS name,
+        'Dave' AS staff_name,
         2 AS manager_id,
-        'Account Manager' AS role
+        'Account Manager' AS job_title
     UNION ALL
     SELECT
         5 AS staff_id,
-        'Eve' AS name,
+        'Eve' AS staff_name,
         2 AS manager_id,
-        'Account Manager' AS role
+        'Account Manager' AS job_title
 )
 
 SELECT
-    e.name AS employee,
-    e.role AS employee_role,
-    COALESCE(m.name, 'No Manager') AS manager
+    e.staff_name AS employee,
+    e.job_title AS employee_role,
+    COALESCE(m.staff_name, 'No Manager') AS manager
 FROM staff AS e
 LEFT JOIN staff AS m
     ON e.manager_id = m.staff_id
-ORDER BY m.name, e.name;
+ORDER BY m.staff_name, e.staff_name;
 
 -- =============================================================================
 -- Section 4: Previous Period Comparison Self-Join

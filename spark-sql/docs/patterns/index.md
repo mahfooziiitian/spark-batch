@@ -75,7 +75,6 @@ mindmap
 |---------|---------|---------------|
 | [Top-N](ranking/top_n.md) | Highest/lowest per group | `ROW_NUMBER`, `DENSE_RANK` |
 | [Pagination](ranking/pagination.md) | Page through results | `LIMIT` / `OFFSET`, keyset cursor |
-| [Pivot / Unpivot](ranking/pivot_unpivot.md) | Reshape rows ↔ columns | `PIVOT`, `UNPIVOT`, `STACK` |
 
 ### :material-transit-connection-variant: Sequence
 
@@ -169,6 +168,7 @@ mindmap
 | Pattern | Problem | Key Technique |
 |---------|---------|---------------|
 | [Applications Overview](application/index.md) | End-to-end pipeline patterns | CTE chains, ETL recipes |
+| [Pivot / Unpivot](application/transformation/pivot/index.md) | Reshape rows ↔ columns | `PIVOT`, `UNPIVOT`, `STACK` |
 
 ---
 

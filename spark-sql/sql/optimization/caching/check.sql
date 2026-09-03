@@ -22,4 +22,4 @@ FROM (
     SELECT *
     FROM base_data
         LATERAL VIEW explode(sequence(1, 50000)) AS x
-)
+) AS expanded

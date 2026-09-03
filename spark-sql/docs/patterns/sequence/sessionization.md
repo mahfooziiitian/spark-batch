@@ -657,3 +657,9 @@ ORDER BY user_id, event_time;
 | Session-over-session comparison | `LAG` on session-level aggregates |
 | Globally unique session IDs | `CONCAT(user_id, '_s', session_num)` |
 | Configurable threshold | `CROSS JOIN` a config CTE for the gap value |
+
+---
+
+!!! note "Related"
+    For the windowing view of the same idea — variable-length, gap-based windows — see
+    [Session Windows](../timeseries/windowing/session_window.md).

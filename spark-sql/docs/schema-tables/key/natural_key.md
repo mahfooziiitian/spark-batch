@@ -160,6 +160,37 @@ HAVING cnt > 1;
 
 ---
 
+## :material-play-circle-outline: Worked Example
+
+Self-contained — the natural key is `email`, but raw values differ only by case and
+whitespace. Normalising first reveals they are the same customer.
+
+```sql
+CREATE OR REPLACE TEMP VIEW raw_users AS
+SELECT * FROM VALUES
+    (' Alice@Acme.IO ', 'Alice'),
+    ('alice@acme.io',   'Alice A'),   -- same person after normalization
+    ('bob@acme.io',     'Bob')
+AS t (email_raw, name);
+
+-- Normalise the natural key, then check for collisions
+SELECT
+    LOWER(TRIM(email_raw)) AS email_key,
+    COUNT(*)               AS cnt
+FROM raw_users
+GROUP BY LOWER(TRIM(email_raw))
+HAVING COUNT(*) > 1;
+-- email_key     | cnt
+-- alice@acme.io | 2      ← two raw rows collapse to one business key
+```
+
+!!! warning "Normalise before you trust a natural key"
+    Without `LOWER(TRIM(...))`, `' Alice@Acme.IO '` and `'alice@acme.io'` look distinct and
+    both load — a silent duplicate. Always canonicalise (case, whitespace, formatting)
+    *before* dedup, join, or upsert on a natural key.
+
+---
+
 ## :material-swap-horizontal: Natural Key vs Surrogate Key
 
 | Aspect | Natural Key | Surrogate Key |

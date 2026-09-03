@@ -1,0 +1,9 @@
+# Databricks-only SQL that the open-source `sparksql` dialect cannot parse.
+# These files use Databricks-exclusive constructs (OPTIMIZE ... ZORDER BY,
+# WHEN NOT MATCHED BY SOURCE, TABLESAMPLE variants, etc.) and are excluded
+# from sqlfluff linting. They remain valid on Databricks Runtime.
+sql/aggregation/cube/spark-cube.sql
+sql/application/map_key_replace/v4/map_key_replace_v4.sql
+sql/application/numeric/random_sampling.sql
+sql/dml/merge.sql
+sql/scd/type2/scd_type2.sql

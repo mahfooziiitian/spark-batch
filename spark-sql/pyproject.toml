@@ -93,6 +93,10 @@ templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
 max_line_length = 120
 large_file_skip_byte_limit = 25000
+# RF04: reserved words as identifiers (e.g. date, name, role) are intentional in
+#       teaching examples. AM04: SELECT * with unknown column count is common in
+#       illustrative queries. Both are relaxed to preserve pedagogical clarity.
+exclude_rules = "RF04, AM04"
 
 [tool.sqlfluff.indentation]
 indented_joins = false
@@ -189,8 +193,8 @@ type_check = "uv run mypy src"
 quality = "task format && task lint && task type_check && task sql_lint"
 
 # SQL
-sql_format = "uv run sqlfluff fix src --force"
-sql_lint = "uv run sqlfluff lint src"
+sql_format = "uv run sqlfluff fix sql --force"
+sql_lint = "uv run sqlfluff lint sql"
 sql = "task sql_format && task sql_lint"
 
 # Security

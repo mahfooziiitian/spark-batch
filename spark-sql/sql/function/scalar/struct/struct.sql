@@ -15,7 +15,7 @@ SELECT
     person.age --noqa: RF01
 FROM (
     SELECT named_struct('name', 'Alice', 'age', 30) AS person
-);
+) AS people;
 
 -- Dot notation (most common)
 SELECT
@@ -23,10 +23,10 @@ SELECT
     person.age --noqa: RF01
 FROM (
     SELECT named_struct('name', 'Alice', 'age', 30) AS person
-);
+) AS people;
 
 -- Using element_at
 SELECT element_at(person, 'name') AS person_name
 FROM (
     SELECT named_struct('name', 'Alice', 'age', 30) AS person
-);
+) AS people;

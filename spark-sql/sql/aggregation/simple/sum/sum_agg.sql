@@ -12,4 +12,5 @@ SELECT
     sum(population) AS total
 FROM states_population
 GROUP BY state
+ORDER BY total DESC
 LIMIT 5;

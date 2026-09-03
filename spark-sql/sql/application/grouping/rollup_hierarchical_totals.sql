@@ -57,11 +57,13 @@ ORDER BY country NULLS LAST, makename NULLS LAST;
 -- GROUPING(col) returns 1 when col is NULL due to rollup, 0 otherwise
 -- ──────────────────────────────────────────────────────────────────────────────
 SELECT
-    CASE WHEN GROUPING(YEAR(saledate)) = 1 THEN 'Grand Total'
-         ELSE CAST(YEAR(saledate) AS STRING)
+    CASE
+        WHEN GROUPING(YEAR(saledate)) = 1 THEN 'Grand Total'
+        ELSE CAST(YEAR(saledate) AS STRING)
     END AS sale_year,
-    CASE WHEN GROUPING(QUARTER(saledate)) = 1 THEN 'Year Total'
-         ELSE CONCAT('Q', CAST(QUARTER(saledate) AS STRING))
+    CASE
+        WHEN GROUPING(QUARTER(saledate)) = 1 THEN 'Year Total'
+        ELSE CONCAT('Q', CAST(QUARTER(saledate) AS STRING))
     END AS sale_quarter,
     COUNT(*) AS total_sales,
     ROUND(SUM(saleprice), 2) AS total_revenue,
@@ -76,46 +78,46 @@ ORDER BY YEAR(saledate) NULLS LAST, QUARTER(saledate) NULLS LAST;
 -- ──────────────────────────────────────────────────────────────────────────────
 WITH sample_sales AS (
     SELECT
-'UK' AS country,
-'Ferrari' AS makename,
-2015 AS yr,
-1 AS qtr,
-55000.00 AS saleprice
+        'UK' AS country,
+        'Ferrari' AS makename,
+        2015 AS yr,
+        1 AS qtr,
+        55000.00 AS saleprice
     UNION ALL
     SELECT
-'UK' AS country,
-'Ferrari' AS makename,
-2015 AS yr,
-2 AS qtr,
-62000.00 AS saleprice
+        'UK' AS country,
+        'Ferrari' AS makename,
+        2015 AS yr,
+        2 AS qtr,
+        62000.00 AS saleprice
     UNION ALL
     SELECT
-'UK' AS country,
-'Bentley' AS makename,
-2015 AS yr,
-1 AS qtr,
-105000.00 AS saleprice
+        'UK' AS country,
+        'Bentley' AS makename,
+        2015 AS yr,
+        1 AS qtr,
+        105000.00 AS saleprice
     UNION ALL
     SELECT
-'France' AS country,
-'Ferrari' AS makename,
-2015 AS yr,
-1 AS qtr,
-49000.00 AS saleprice
+        'France' AS country,
+        'Ferrari' AS makename,
+        2015 AS yr,
+        1 AS qtr,
+        49000.00 AS saleprice
     UNION ALL
     SELECT
-'France' AS country,
-'Bentley' AS makename,
-2015 AS yr,
-2 AS qtr,
-98000.00 AS saleprice
+        'France' AS country,
+        'Bentley' AS makename,
+        2015 AS yr,
+        2 AS qtr,
+        98000.00 AS saleprice
     UNION ALL
     SELECT
-'UK' AS country,
-'Ferrari' AS makename,
-2016 AS yr,
-1 AS qtr,
-71000.00 AS saleprice
+        'UK' AS country,
+        'Ferrari' AS makename,
+        2016 AS yr,
+        1 AS qtr,
+        71000.00 AS saleprice
 )
 
 SELECT

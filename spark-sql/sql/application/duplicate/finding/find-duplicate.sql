@@ -31,13 +31,14 @@ WITH duplicates AS (
 SELECT s.* --noqa: AM04
 FROM students AS s
 INNER JOIN duplicates AS d
-    ON s.name = d.name
-    AND s.age = d.age;
+    ON
+        s.name = d.name
+        AND s.age = d.age;
 
 -- To get all rows with duplicate emails
 SELECT * --noqa: AM04
 FROM users AS outer_users
-WHERE outer_users.email IN (
+WHERE outer_users.email IN ( -- noqa: RF03
     SELECT inner_users.email
     FROM users AS inner_users
     GROUP BY inner_users.email

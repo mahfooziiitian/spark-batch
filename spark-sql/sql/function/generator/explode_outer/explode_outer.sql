@@ -3,7 +3,7 @@
 -- Using EXPLODE() (drops NULL/empty)
 
 CREATE OR REPLACE TEMP VIEW sample AS
-SELECT
+SELECT -- noqa: LT09
     * --noqa
 FROM
     VALUES

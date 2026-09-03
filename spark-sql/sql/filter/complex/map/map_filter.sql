@@ -32,7 +32,7 @@ FROM
 -- Get all customers in USA
 SELECT *
 FROM complex_sales
-WHERE location.country = 'USA';
+WHERE location.country = 'USA'; -- noqa: RF03
 -- Filter by key's value
 -- Customers whose product is 'A'
 SELECT *
@@ -54,6 +54,6 @@ WHERE ARRAY_CONTAINS(MAP_KEYS(info), 'discount');
 SELECT *
 FROM complex_sales
 WHERE
-    location.country = 'Canada'
+    location.country = 'Canada' -- noqa: RF03
     AND complex_sales.info['product'] = 'A'
     AND ARRAY_CONTAINS(complex_sales.tags, 'promo');

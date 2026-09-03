@@ -148,6 +148,40 @@ WHERE orphan_count > 0;
 
 ---
 
+## :material-play-circle-outline: Worked Example
+
+Self-contained — a fact table references a customer that doesn't exist. The
+anti-join finds the orphan before it corrupts downstream joins.
+
+```sql
+CREATE OR REPLACE TEMP VIEW customers AS
+SELECT * FROM VALUES
+    (1, 'Alice'), (2, 'Bob'), (3, 'Carol')
+AS t (customer_id, name);
+
+CREATE OR REPLACE TEMP VIEW orders AS
+SELECT * FROM VALUES
+    (100, 1, 120.00),
+    (101, 2,  80.00),
+    (102, 9,  50.00)   -- customer_id 9 has no matching customer
+AS t (order_id, customer_id, amount);
+
+-- Referential-integrity check: orders whose FK has no parent row
+SELECT o.order_id, o.customer_id
+FROM orders AS o
+LEFT ANTI JOIN customers AS c
+    ON o.customer_id = c.customer_id
+ORDER BY o.order_id;
+-- order_id | customer_id
+-- 102      | 9      ← orphan: FK violation
+```
+
+!!! success "Interpretation"
+    Zero rows means every foreign key resolves. Since Spark stores FK constraints as
+    *informational* only, this anti-join is how you actually enforce integrity at load time.
+
+---
+
 ## :material-lightbulb-outline: When to Use
 
 | Scenario | Recommendation |

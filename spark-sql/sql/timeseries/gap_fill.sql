@@ -15,15 +15,15 @@ FROM
     VALUES
     (DATE '2024-01-01', 'US', 120.0),
     -- 2024-01-02 missing for US
-    (DATE '2024-01-03', 'US',  80.0),
+    (DATE '2024-01-03', 'US', 80.0),
     (DATE '2024-01-04', 'US', 300.0),
     -- 2024-01-05 and 2024-01-06 missing for US
     (DATE '2024-01-07', 'US', 210.0),
-    (DATE '2024-01-01', 'CA',  60.0),
-    (DATE '2024-01-02', 'CA',  90.0),
+    (DATE '2024-01-01', 'CA', 60.0),
+    (DATE '2024-01-02', 'CA', 90.0),
     -- 2024-01-03 missing for CA
     (DATE '2024-01-04', 'CA', 140.0),
-    (DATE '2024-01-05', 'CA',  70.0)
+    (DATE '2024-01-05', 'CA', 70.0)
     -- 2024-01-06 and 2024-01-07 missing for CA
         AS sparse_sales (sale_date, region, revenue);
 
@@ -36,20 +36,24 @@ SELECT EXPLODE(
     SEQUENCE(DATE '2024-01-01', DATE '2024-01-07', INTERVAL 1 DAY)
 ) AS sale_date;
 
-SELECT * FROM date_spine ORDER BY sale_date;
+SELECT * FROM date_spine
+ORDER BY sale_date;
 
 ---
 -- 2. Cross-join the spine with all regions to create a complete (date, region) grid
 ---
 
 CREATE OR REPLACE TEMP VIEW full_grid AS
+WITH r AS (SELECT DISTINCT region FROM sparse_sales)
+
 SELECT
     d.sale_date,
     r.region
 FROM date_spine AS d
-CROSS JOIN (SELECT DISTINCT region FROM sparse_sales) AS r;
+CROSS JOIN r;
 
-SELECT * FROM full_grid ORDER BY region, sale_date;
+SELECT * FROM full_grid
+ORDER BY region, sale_date;
 
 ---
 -- 3. Zero-fill — replace missing revenue with 0
@@ -61,8 +65,9 @@ SELECT
     COALESCE(s.revenue, 0.0) AS revenue
 FROM full_grid AS g
 LEFT JOIN sparse_sales AS s
-    ON g.sale_date = s.sale_date
-    AND g.region = s.region
+    ON
+        g.sale_date = s.sale_date
+        AND g.region = s.region
 ORDER BY g.region, g.sale_date;
 -- Result: every (date, region) row exists; missing days have revenue = 0
 
@@ -78,8 +83,9 @@ WITH joined AS (
         s.revenue  -- NULL where data is missing
     FROM full_grid AS g
     LEFT JOIN sparse_sales AS s
-        ON g.sale_date = s.sale_date
-        AND g.region = s.region
+        ON
+            g.sale_date = s.sale_date
+            AND g.region = s.region
 )
 
 SELECT
@@ -106,8 +112,9 @@ WITH joined AS (
         s.revenue
     FROM full_grid AS g
     LEFT JOIN sparse_sales AS s
-        ON g.sale_date = s.sale_date
-        AND g.region = s.region
+        ON
+            g.sale_date = s.sale_date
+            AND g.region = s.region
 )
 
 SELECT
@@ -139,8 +146,9 @@ WITH joined AS (
         DATEDIFF(g.sale_date, DATE '2024-01-01') AS day_offset
     FROM full_grid AS g
     LEFT JOIN sparse_sales AS s
-        ON g.sale_date = s.sale_date
-        AND g.region = s.region
+        ON
+            g.sale_date = s.sale_date
+            AND g.region = s.region
 ),
 
 with_anchors AS (
@@ -177,8 +185,8 @@ SELECT
         ELSE ROUND(
             prev_value
             + (next_value - prev_value)
-              * (day_offset - prev_offset)
-              / NULLIF(next_offset - prev_offset, 0),
+            * (day_offset - prev_offset)
+            / NULLIF(next_offset - prev_offset, 0),
             2
         )
     END AS interpolated_revenue
@@ -195,8 +203,8 @@ FROM
     VALUES
     (TIMESTAMP '2024-06-01 09:00:00', 'US', 10),
     (TIMESTAMP '2024-06-01 11:00:00', 'US', 25),   -- 10:00 missing
-    (TIMESTAMP '2024-06-01 12:00:00', 'US',  5),
-    (TIMESTAMP '2024-06-01 09:00:00', 'CA',  8),
+    (TIMESTAMP '2024-06-01 12:00:00', 'US', 5),
+    (TIMESTAMP '2024-06-01 09:00:00', 'CA', 8),
     (TIMESTAMP '2024-06-01 10:00:00', 'CA', 12)
     -- 11:00 and 12:00 missing for CA
         AS hourly_events (event_hour, region, event_count);
@@ -211,10 +219,14 @@ WITH hour_spine AS (
     ) AS event_hour
 ),
 
+r AS (SELECT DISTINCT region FROM hourly_events),
+
 grid AS (
-    SELECT h.event_hour, r.region
+    SELECT
+        h.event_hour,
+        r.region
     FROM hour_spine AS h
-    CROSS JOIN (SELECT DISTINCT region FROM hourly_events) AS r
+    CROSS JOIN r
 )
 
 SELECT
@@ -224,8 +236,9 @@ SELECT
     e.event_count IS NULL AS is_gap
 FROM grid AS g
 LEFT JOIN hourly_events AS e
-    ON g.event_hour = e.event_hour
-    AND g.region = e.region
+    ON
+        g.event_hour = e.event_hour
+        AND g.region = e.region
 ORDER BY g.region, g.event_hour;
 
 ---
@@ -239,8 +252,9 @@ WITH joined AS (
         COALESCE(s.revenue, 0.0) AS revenue
     FROM full_grid AS g
     LEFT JOIN sparse_sales AS s
-        ON g.sale_date = s.sale_date
-        AND g.region = s.region
+        ON
+            g.sale_date = s.sale_date
+            AND g.region = s.region
 )
 
 SELECT
@@ -271,8 +285,9 @@ WITH joined AS (
         s.revenue
     FROM full_grid AS g
     LEFT JOIN sparse_sales AS s
-        ON g.sale_date = s.sale_date
-        AND g.region = s.region
+        ON
+            g.sale_date = s.sale_date
+            AND g.region = s.region
 ),
 
 flagged AS (

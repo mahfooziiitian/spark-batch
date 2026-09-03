@@ -20,7 +20,7 @@ SELECT
     customername,
     CASE
         WHEN LENGTH(customername) > 20
-        THEN CONCAT(LEFT(customername, 17), '...')
+            THEN CONCAT(LEFT(customername, 17), '...')
         ELSE customername
     END AS display_name
 FROM customer
@@ -116,7 +116,7 @@ SELECT
     LEFT(customername, 20) AS left_20,
     CASE
         WHEN LENGTH(customername) > 20
-        THEN CONCAT(LEFT(customername, 17), '...')
+            THEN CONCAT(LEFT(customername, 17), '...')
         ELSE customername
     END AS display_name,
     INITCAP(LOWER(TRIM(customername))) AS normalized,

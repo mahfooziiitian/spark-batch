@@ -1,7 +1,7 @@
 -- 1. Flatten Array of Structs into Multiple Rows & Columns
 
 CREATE OR REPLACE TEMP VIEW orders AS
-SELECT
+SELECT -- noqa: LT09
     * FROM VALUES
 (1, ARRAY(
     NAMED_STRUCT('product', 'book', 'qty', 2),

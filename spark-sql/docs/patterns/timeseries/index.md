@@ -103,3 +103,9 @@ ORDER BY region, sale_date;
 4. Session windows are not natively supported in Spark SQL batch mode — use the LAG + cumulative SUM pattern.
 5. `ROWS BETWEEN` operates on physical row positions; `RANGE BETWEEN` operates on logical value distances — use `ROWS` for time series unless you need true range semantics.
 
+
+---
+
+!!! note "Related"
+    For applied, sales-oriented date patterns (date hierarchies, weekday and intra-day
+    banding, year-over-year), see [Time Series applications](../application/temporal/time_series/index.md).

@@ -56,7 +56,7 @@ flat AS (
         coalesce(element_at(cfg.rename_map, e.k), e.k) AS new_key
     FROM my_table AS t
     CROSS JOIN cfg
-    LATERAL VIEW inline(map_entries(t.my_map)) e AS k, v
+        LATERAL VIEW inline(map_entries(t.my_map)) e AS k, v
 ),
 
 picked AS (
@@ -99,7 +99,7 @@ flat AS (
         coalesce(element_at(cfg.rename_map, e.k), e.k) AS new_key
     FROM my_table AS t
     CROSS JOIN cfg
-    LATERAL VIEW inline(map_entries(t.my_map)) e AS k, v
+        LATERAL VIEW inline(map_entries(t.my_map)) e AS k, v
 ),
 
 merged AS (

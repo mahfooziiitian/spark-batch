@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
-
 from tests._helpers import create_view, statement_containing
 
 if TYPE_CHECKING:
@@ -52,9 +51,7 @@ class TestAggregation:
             "origin_airport string, count int",
         )
 
-    def test_cube_query_comes_from_source(
-        self: TestAggregation, spark: SparkSession
-    ) -> None:
+    def test_cube_query_comes_from_source(self: TestAggregation, spark: SparkSession) -> None:
         self._register_sales(spark)
         cube_statement = statement_containing(
             "sql/aggregation/cube/spark-cube.sql",
@@ -78,19 +75,10 @@ class TestAggregation:
             ],
             "region string, product string, total_sales double",
         )
-        assert_df_equality(
-            actual, expected, ignore_row_order=True, ignore_nullable=True
-        )
-        assert (
-            actual.filter(
-                "region IS NULL AND product IS NULL AND total_sales = 1710.0"
-            ).count()
-            == 1
-        )
+        assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
+        assert actual.filter("region IS NULL AND product IS NULL AND total_sales = 1710.0").count() == 1
 
-    def test_rollup_and_pivot_queries_come_from_source(
-        self: TestAggregation, spark: SparkSession
-    ) -> None:
+    def test_rollup_and_pivot_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
         self._register_sales(spark)
         rollup_statement = statement_containing(
             "sql/aggregation/rollup/rollup.sql",
@@ -105,22 +93,58 @@ class TestAggregation:
         pivot = spark.sql(pivot_statement)
 
         assert rollup.count() == 10
-        assert (
-            rollup.filter(
-                "region = 'East' AND product IS NULL AND total_sales = 650.0"
-            ).count()
-            == 1
-        )
+        assert rollup.filter("region = 'East' AND product IS NULL AND total_sales = 650.0").count() == 1
         assert pivot.count() == 6
         assert pivot.filter("name = 'Alice' AND female_min = 55").count() == 1
 
-    def test_simple_aggregation_queries_come_from_source(
-        self: TestAggregation, spark: SparkSession
-    ) -> None:
-        self._register_sales(spark)
-        avg_statement = statement_containing(
-            "sql/aggregation/simple/avg/avg.sql", "AVG(count) AS avg_fun"
+    @staticmethod
+    def _register_orders(spark: SparkSession) -> None:
+        create_view(
+            spark,
+            "orders",
+            [
+                (1, "East", "Online", "Widget", 3, 120.0, date(2024, 1, 15)),
+                (2, "West", "Online", "Gadget", 5, 340.0, date(2024, 1, 18)),
+                (3, "East", "Retail", "Widget", 2, 80.0, date(2024, 2, 10)),
+                (4, "North", "Online", "Gadget", 4, 210.0, date(2024, 2, 14)),
+                (5, "West", "Retail", "Widget", 6, 150.0, date(2024, 3, 5)),
+                (6, "East", "Online", "Gadget", 8, 450.0, date(2024, 3, 9)),
+                (7, "North", "Retail", "Widget", 1, 90.0, date(2024, 3, 20)),
+                (8, "West", "Online", "Gadget", 5, 270.0, date(2024, 3, 22)),
+                (9, "East", "Online", "Gadget", 7, 380.0, date(2024, 4, 1)),
+                (10, "North", "Retail", "Widget", 3, 130.0, date(2024, 4, 11)),
+                (11, "West", "Retail", "Gadget", 2, 160.0, date(2024, 4, 18)),
+                (12, None, "Online", "Widget", 4, 200.0, date(2024, 4, 25)),
+            ],
+            "order_id bigint, region string, channel string, product string, "
+            "quantity int, amount double, order_date date",
         )
+
+    def test_group_by_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
+        self._register_orders(spark)
+        basic_statement = statement_containing(
+            "sql/aggregation/group/spark-group.sql",
+            "ORDER BY region NULLS LAST",
+        )
+        filter_statement = statement_containing(
+            "sql/aggregation/group/spark-group.sql",
+            "COUNT(*) FILTER (WHERE channel = 'Online')",
+        )
+
+        basic = spark.sql(basic_statement)
+        assert basic.count() == 4
+        assert basic.filter("region = 'East' AND total_sales = 1030.0").count() == 1
+        assert basic.filter("region IS NULL AND total_sales = 200.0").count() == 1
+
+        sliced = spark.sql(filter_statement)
+        assert sliced.count() == 4
+        assert sliced.filter(
+            "region = 'East' AND total_orders = 4 AND online_orders = 3 AND gadget_sales = 830.0",
+        ).count() == 1
+
+    def test_simple_aggregation_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
+        self._register_sales(spark)
+        avg_statement = statement_containing("sql/aggregation/simple/avg/avg.sql", "AVG(count) AS avg_fun")
         minmax_statement = statement_containing(
             "sql/aggregation/simple/minmax/min_max_agg.sql",
             "GROUP BY origin_airport",
@@ -133,9 +157,4 @@ class TestAggregation:
         assert avg_result.count() == 1
         assert avg_row is not None and avg_row.avg_fun == avg_row.avg == 16.0
         assert minmax_result.count() == 2
-        assert (
-            minmax_result.filter(
-                "min_count = 10 AND max_count = 30 AND count = 3"
-            ).count()
-            == 1
-        )
+        assert minmax_result.filter("min_count = 10 AND max_count = 30 AND count = 3").count() == 1

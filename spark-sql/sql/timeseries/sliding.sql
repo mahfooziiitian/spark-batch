@@ -217,11 +217,12 @@ SELECT
     ROUND(AVG(amount) OVER w + 2 * STDDEV(amount) OVER w, 2) AS upper_band,
     ROUND(AVG(amount) OVER w - 2 * STDDEV(amount) OVER w, 2) AS lower_band
 FROM daily_sales
-WINDOW w AS (
-    PARTITION BY region
-    ORDER BY sale_date
-    ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
-)
+WINDOW
+    w AS (
+        PARTITION BY region
+        ORDER BY sale_date
+        ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
+    )
 ORDER BY region, sale_date;
 
 ---
@@ -263,11 +264,12 @@ SELECT
         4
     ) AS z_score_7d
 FROM daily_sales
-WINDOW w AS (
-    PARTITION BY region
-    ORDER BY sale_date
-    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-)
+WINDOW
+    w AS (
+        PARTITION BY region
+        ORDER BY sale_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    )
 ORDER BY region, sale_date;
 -- z_score > 2 or < -2 typically flags an outlier
 

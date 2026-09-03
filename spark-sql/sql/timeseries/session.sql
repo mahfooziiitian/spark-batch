@@ -17,16 +17,16 @@ CREATE OR REPLACE TEMP VIEW user_events AS
 SELECT *
 FROM
     VALUES
-    (1, 'alice', TIMESTAMP '2024-06-01 09:00:00', 'page_view',  0.0),
-    (2, 'alice', TIMESTAMP '2024-06-01 09:05:00', 'click',      5.99),
-    (3, 'alice', TIMESTAMP '2024-06-01 09:12:00', 'purchase',  49.99),
-    (4, 'alice', TIMESTAMP '2024-06-01 10:50:00', 'page_view',  0.0),   -- gap > 30 min → new session
-    (5, 'alice', TIMESTAMP '2024-06-01 10:55:00', 'click',      2.99),
-    (6, 'bob',   TIMESTAMP '2024-06-01 08:00:00', 'page_view',  0.0),
-    (7, 'bob',   TIMESTAMP '2024-06-01 08:20:00', 'click',     12.00),
-    (8, 'bob',   TIMESTAMP '2024-06-01 09:30:00', 'purchase',  75.00),   -- gap > 30 min → new session
-    (9, 'bob',   TIMESTAMP '2024-06-01 09:45:00', 'click',      3.50),
-    (10,'bob',   TIMESTAMP '2024-06-01 12:00:00', 'page_view',  0.0)    -- gap > 30 min → new session
+    (1, 'alice', TIMESTAMP '2024-06-01 09:00:00', 'page_view', 0.0),
+    (2, 'alice', TIMESTAMP '2024-06-01 09:05:00', 'click', 5.99),
+    (3, 'alice', TIMESTAMP '2024-06-01 09:12:00', 'purchase', 49.99),
+    (4, 'alice', TIMESTAMP '2024-06-01 10:50:00', 'page_view', 0.0),   -- gap > 30 min → new session
+    (5, 'alice', TIMESTAMP '2024-06-01 10:55:00', 'click', 2.99),
+    (6, 'bob', TIMESTAMP '2024-06-01 08:00:00', 'page_view', 0.0),
+    (7, 'bob', TIMESTAMP '2024-06-01 08:20:00', 'click', 12.00),
+    (8, 'bob', TIMESTAMP '2024-06-01 09:30:00', 'purchase', 75.00),   -- gap > 30 min → new session
+    (9, 'bob', TIMESTAMP '2024-06-01 09:45:00', 'click', 3.50),
+    (10, 'bob', TIMESTAMP '2024-06-01 12:00:00', 'page_view', 0.0)    -- gap > 30 min → new session
         AS user_events (event_id, user_id, event_time, event_type, revenue);
 
 ---
@@ -47,7 +47,8 @@ SELECT
     ) AS gap_seconds
 FROM user_events;
 
-SELECT * FROM events_with_gaps ORDER BY user_id, event_time;
+SELECT * FROM events_with_gaps
+ORDER BY user_id, event_time;
 
 ---
 -- 2. Assign session IDs using cumulative sum of boundary flags
@@ -84,7 +85,8 @@ SELECT
     ) AS session_id
 FROM sessions_raw;
 
-SELECT * FROM sessions ORDER BY user_id, event_time;
+SELECT * FROM sessions
+ORDER BY user_id, event_time;
 
 ---
 -- 3. Session-level aggregations
@@ -118,11 +120,12 @@ SELECT
     SUM(revenue) AS session_revenue,
     COUNT(*) AS event_count
 FROM sessions
-WHERE session_id IN (
-    SELECT DISTINCT session_id
-    FROM sessions
-    WHERE event_type = 'purchase'
-)
+WHERE
+    session_id IN (
+        SELECT DISTINCT p.session_id
+        FROM sessions AS p
+        WHERE p.event_type = 'purchase'
+    )
 GROUP BY user_id, session_id
 ORDER BY user_id, session_id;
 
@@ -186,12 +189,13 @@ WITH boundaries AS (
         event_type,
         revenue,
         CASE
-            WHEN UNIX_TIMESTAMP(event_time)
-                 - UNIX_TIMESTAMP(
-                     LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time)
-                 ) > 900
-                 OR LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) IS NULL
-            THEN 1
+            WHEN
+                UNIX_TIMESTAMP(event_time)
+                - UNIX_TIMESTAMP(
+                    LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time)
+                ) > 900
+                OR LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) IS NULL
+                THEN 1
             ELSE 0
         END AS is_new_session
     FROM user_events
@@ -199,15 +203,15 @@ WITH boundaries AS (
 
 SELECT
     user_id,
+    event_id,
+    event_time,
+    event_type,
+    revenue,
     SUM(is_new_session) OVER (
         PARTITION BY user_id
         ORDER BY event_time
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-    ) AS session_15min,
-    event_id,
-    event_time,
-    event_type,
-    revenue
+    ) AS session_15min
 FROM boundaries
 ORDER BY user_id, event_time;
 -- Result: same dataset produces more sessions with a 15-min timeout than 30-min

@@ -7,12 +7,12 @@ CREATE OR REPLACE TEMP VIEW key_value_table AS
         'John' AS value
     UNION ALL
     SELECT
-        'age',
-        '30'
+        'age' AS key,
+        '30' AS value
     UNION ALL
     SELECT
-        'city',
-        'Boston'
+        'city' AS key,
+        'Boston' AS value
 );
 
 SELECT

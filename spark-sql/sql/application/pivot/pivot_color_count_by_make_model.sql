@@ -38,20 +38,20 @@ SELECT
     red,
     silver
 FROM make_model_color_cte
-PIVOT (
-    COUNT(costprice) FOR color IN (
-        'Black' black,
-        'Blue' blue,
-        'British Racing Green' british_racing_green,
-        'Canary Yellow' canary_yellow,
-        'Dark Purple' dark_purple,
-        'Green' green,
-        'Night Blue' night_blue,
-        'Pink' pink,
-        'Red' red,
-        'Silver' silver
+    PIVOT (
+        COUNT(costprice) FOR color IN (
+            'Black' black,
+            'Blue' blue,
+            'British Racing Green' british_racing_green,
+            'Canary Yellow' canary_yellow,
+            'Dark Purple' dark_purple,
+            'Green' green,
+            'Night Blue' night_blue,
+            'Pink' pink,
+            'Red' red,
+            'Silver' silver
+        )
     )
-)
 ORDER BY makename, modelname;
 
 /* Expected shape (NULLs where no sale exists for that make/model/colour):
@@ -91,20 +91,20 @@ SELECT
     COALESCE(red, 0) AS red,
     COALESCE(silver, 0) AS silver
 FROM make_model_color_cte
-PIVOT (
-    COUNT(costprice) FOR color IN (
-        'Black' black,
-        'Blue' blue,
-        'British Racing Green' british_racing_green,
-        'Canary Yellow' canary_yellow,
-        'Dark Purple' dark_purple,
-        'Green' green,
-        'Night Blue' night_blue,
-        'Pink' pink,
-        'Red' red,
-        'Silver' silver
+    PIVOT (
+        COUNT(costprice) FOR color IN (
+            'Black' black,
+            'Blue' blue,
+            'British Racing Green' british_racing_green,
+            'Canary Yellow' canary_yellow,
+            'Dark Purple' dark_purple,
+            'Green' green,
+            'Night Blue' night_blue,
+            'Pink' pink,
+            'Red' red,
+            'Silver' silver
+        )
     )
-)
 ORDER BY makename, modelname;
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -228,16 +228,16 @@ SELECT
     COALESCE(red, 0) AS red,
     COALESCE(silver, 0) AS silver
 FROM make_model_color_cte
-PIVOT (
-    COUNT(costprice) FOR color IN (
-        'Black' black,
-        'Blue' blue,
-        'British Racing Green' british_racing_green,
-        'Night Blue' night_blue,
-        'Red' red,
-        'Silver' silver
+    PIVOT (
+        COUNT(costprice) FOR color IN (
+            'Black' black,
+            'Blue' blue,
+            'British Racing Green' british_racing_green,
+            'Night Blue' night_blue,
+            'Red' red,
+            'Silver' silver
+        )
     )
-)
 ORDER BY makename, modelname;
 
 /* Expected output:

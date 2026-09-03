@@ -11,4 +11,4 @@ FROM (
         map_entries(custom_tags) AS custom_tag
     FROM system.billing.usage
     WHERE usage_date > current_date() - 1
-);
+) AS usage_tags;

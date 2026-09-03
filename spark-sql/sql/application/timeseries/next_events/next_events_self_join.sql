@@ -1,10 +1,10 @@
 -- ============================================================
--- Topic: Next-event matching — correlated subquery approach
+-- Topic: Next-event matching — self-join approach
 -- Dialect: Databricks / Spark SQL 3.5
 -- Description: For each 'Y' event, find the first subsequent
 --              'X' event for the same user and return the time
---              difference. Uses a correlated scalar subquery
---              (semantically equivalent to a LATERAL JOIN).
+--              difference. Uses a LEFT self-join with a MIN
+--              aggregate to locate the nearest future match.
 --
 --              event_id provides a stable tiebreaker when two
 --              events share the same timestamp.
@@ -87,28 +87,39 @@ WITH events AS (
         'Y' AS event_type
 ),
 
--- Isolate trigger events and resolve the subquery once in a CTE
-paired AS (
+-- Step 1: isolate the trigger events (type = 'Y')
+y_events AS (
+    SELECT
+        user_id,
+        event_time AS y_time
+    FROM events
+    WHERE event_type = 'Y'
+),
+
+-- Step 2: for each Y, find the earliest X after it for the same user
+next_x AS (
     SELECT
         y.user_id,
-        y.event_time AS y_time,
-        (
-            SELECT MIN(x.event_time)
-            FROM events AS x
-            WHERE x.user_id   = y.user_id
-              AND x.event_type = 'X'
-              AND x.event_time > y.event_time
-        ) AS x_time
-    FROM events AS y
-    WHERE y.event_type = 'Y'
+        y.y_time,
+        MIN(x.event_time) AS x_time
+    FROM y_events AS y
+    LEFT JOIN events AS x
+        ON
+            y.user_id = x.user_id
+            AND x.event_type = 'X'
+            AND y.y_time < x.event_time
+    GROUP BY
+        y.user_id,
+        y.y_time
 )
 
+-- Step 3: compute the elapsed time
 SELECT
     user_id,
     y_time,
     x_time,
     TIMESTAMPDIFF(SECOND, y_time, x_time) AS diff_seconds
-FROM paired
+FROM next_x
 ORDER BY
     user_id,
     y_time;
@@ -124,8 +135,5 @@ ORDER BY
 -- |       2 | 2024-03-01 12:00:00 | NULL                |         NULL |
 -- +---------+---------------------+---------------------+--------------+
 --
--- Unmatched Y rows naturally return NULL from the subquery.
---
--- Trade-off: the correlated subquery is re-evaluated per Y row,
--- which can be expensive at scale. Prefer the window-function
--- approach for large datasets.
+-- The LEFT JOIN retains unmatched Y rows with NULLs.
+-- Change to INNER JOIN to drop them.

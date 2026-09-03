@@ -4,7 +4,7 @@
 -- Extend the shared sales dataset with deliberate NULLs in the amount column
 -- to demonstrate how each function handles missing values.
 CREATE OR REPLACE TEMP VIEW sales AS
-SELECT
+SELECT -- noqa: LT09
     * FROM VALUES
 ('North', 'Alice', DATE '2024-01-01', 100),
 ('North', 'Alice', DATE '2024-01-05', 200),

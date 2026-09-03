@@ -106,8 +106,9 @@ SELECT
     ROUND(mb.monthly_revenue * 100.0 / qt.quarterly_revenue, 2) AS pct_of_quarter
 FROM monthly_base AS mb
 INNER JOIN quarterly_totals AS qt
-    ON mb.makename = qt.makename
-    AND DATE_TRUNC('QUARTER', mb.sale_month) = qt.sale_quarter
+    ON
+        mb.makename = qt.makename
+        AND DATE_TRUNC('QUARTER', mb.sale_month) = qt.sale_quarter
 ORDER BY mb.makename, mb.sale_month;
 
 -- =============================================================================

@@ -57,7 +57,7 @@ ORDER BY n;
 -- ROW_NUMBER over a generated sequence gives ordered row numbers.
 
 WITH nums AS (
-    SELECT EXPLODE(SEQUENCE(1, 10)) AS n        
+    SELECT EXPLODE(SEQUENCE(1, 10)) AS n
 ),
 
 numbered AS (

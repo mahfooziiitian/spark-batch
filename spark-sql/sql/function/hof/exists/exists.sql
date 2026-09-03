@@ -86,14 +86,14 @@ FROM logs;
 WITH prefs AS (
     SELECT
         1 AS user_id,
-        array(true, false, false) AS flags
+        array(TRUE, FALSE, FALSE) AS flags
     UNION ALL
     SELECT
         2 AS user_id,
-        array(false, false, false) AS flags
+        array(FALSE, FALSE, FALSE) AS flags
 )
 
 SELECT
     user_id,
-    exists(flags, f -> f = true) AS any_enabled
+    exists(flags, f -> f = TRUE) AS any_enabled
 FROM prefs;

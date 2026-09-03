@@ -637,3 +637,9 @@ ORDER BY ticker, trade_date;
 | Centred moving average | `ROWS BETWEEN N PRECEDING AND N FOLLOWING` (offline analysis only) |
 | Compare multiple horizons | Side-by-side SMA-3, SMA-5, SMA-10 in one query |
 | Detect crossover signals | `LAG(sma_short)` vs `LAG(sma_long)` to find crosses |
+
+---
+
+!!! note "Related"
+    See this technique applied end-to-end alongside running totals and LAG/LEAD in
+    [Rolling Analysis](../application/enrichment/rolling/index.md).

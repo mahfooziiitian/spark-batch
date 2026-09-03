@@ -73,7 +73,7 @@ class TestDML:
 
     def test_insert_query_logic_comes_from_source(self: TestDML, spark: SparkSession) -> None:
         self._register_views(spark)
-        source_statement = statement_containing("src/dml/insert.sql", "WHERE amount >= 500.00")
+        source_statement = statement_containing("sql/dml/insert.sql", "WHERE amount >= 500.00")
         select_statement = source_statement[source_statement.index("SELECT") :]
 
         actual = spark.sql(select_statement)
@@ -86,7 +86,7 @@ class TestDML:
 
     def test_delete_query_logic_comes_from_source(self: TestDML, spark: SparkSession) -> None:
         self._register_views(spark)
-        delete_statement = statement_containing("src/dml/delete.sql", "DELETE FROM orders\nWHERE NOT EXISTS")
+        delete_statement = statement_containing("sql/dml/delete.sql", "DELETE FROM orders\nWHERE NOT EXISTS")
         where_clause = delete_statement.split("WHERE", maxsplit=1)[1]
         actual = spark.sql(f"SELECT order_id, customer FROM orders WHERE {where_clause}")
 
@@ -96,20 +96,18 @@ class TestDML:
 
     def test_update_query_logic_comes_from_source(self: TestDML, spark: SparkSession) -> None:
         self._register_views(spark)
-        update_statement = statement_containing("src/dml/update.sql", "SET salary = salary * CASE")
+        update_statement = statement_containing("sql/dml/update.sql", "SET salary = salary * CASE")
         match = re.search(r"SET salary = salary \* (CASE.*?END)", update_statement, re.DOTALL)
         assert match is not None
 
-        actual = spark.sql(
-            f"SELECT emp_id, ROUND(salary * {match.group(1)}, 2) AS new_salary FROM employees ORDER BY emp_id"
-        )
+        actual = spark.sql(f"SELECT emp_id, ROUND(salary * {match.group(1)}, 2) AS new_salary FROM employees ORDER BY emp_id")
 
         assert actual.count() == 6
         assert actual.filter("emp_id = 4 AND new_salary = 60900.0").count() == 1
 
     def test_merge_deduplication_logic_comes_from_source(self: TestDML, spark: SparkSession) -> None:
         self._register_views(spark)
-        merge_statement = statement_containing("src/dml/merge.sql", "WITH deduped AS")
+        merge_statement = statement_containing("sql/dml/merge.sql", "WITH deduped AS")
         cte = merge_statement[: merge_statement.index("MERGE INTO")]
         actual = spark.sql(f"{cte} SELECT product_id, name, stock FROM deduped")
         expected = spark.createDataFrame(

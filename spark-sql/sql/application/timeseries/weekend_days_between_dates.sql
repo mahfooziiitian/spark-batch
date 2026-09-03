@@ -24,14 +24,14 @@ WITH tally_cte AS (
 ),
 
 weekend_list_cte AS (
-    SELECT DATE_ADD('2018-03-01', nm - 1) AS weekend_date        
+    SELECT DATE_ADD('2018-03-01', nm - 1) AS weekend_date
     FROM tally_cte
     WHERE
         DAYOFWEEK(DATE_ADD('2018-03-01', nm - 1)) IN (1, 7)
         AND nm <= DATEDIFF('2018-04-30', '2018-03-01') + 1
 )
 
-SELECT COUNT(*) AS weekenddays    
+SELECT COUNT(*) AS weekenddays
 FROM weekend_list_cte;
 
 /* Expected output:
@@ -51,13 +51,13 @@ FROM weekend_list_cte;
 -- SEQUENCE(start_date, end_date) generates every date in the range
 -- (inclusive on both ends) as an array; EXPLODE turns it into rows.
 
-SELECT COUNT(*) AS weekenddays    
+SELECT COUNT(*) AS weekenddays
 FROM (
     SELECT  -- noqa: ST05
         EXPLODE(SEQUENCE(
             TO_DATE('2018-03-01'),
             TO_DATE('2018-04-30')
         )) AS calendar_date
-)
+) AS calendar
 WHERE DAYOFWEEK(calendar_date) IN (1, 7);
 /* Expected output: same 18 weekend days */

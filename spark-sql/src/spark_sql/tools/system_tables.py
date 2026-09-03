@@ -5,9 +5,7 @@ from spark_sql.config.settings import settings
 
 # Observability tools are read-only: mutations must go through the grants
 # tools instead, which use typed SDK calls rather than free-form SQL.
-_READONLY_PREFIX = re.compile(
-    r"^\s*(SELECT|SHOW|DESCRIBE|WITH|EXPLAIN)\b", re.IGNORECASE
-)
+_READONLY_PREFIX = re.compile(r"^\s*(SELECT|SHOW|DESCRIBE|WITH|EXPLAIN)\b", re.IGNORECASE)
 
 _DEFAULT_ROW_LIMIT = 500
 
@@ -43,9 +41,7 @@ def query_system_table(
     result = response.result
     columns = (
         [c.name for c in response.manifest.schema.columns]
-        if response.manifest
-        and response.manifest.schema
-        and response.manifest.schema.columns
+        if response.manifest and response.manifest.schema and response.manifest.schema.columns
         else []
     )
     data_array = result.data_array if result and result.data_array else []

@@ -11,80 +11,83 @@
 -- Sample data 1: Daily transaction amounts by merchant
 -- =============================================================================
 CREATE OR REPLACE TEMP VIEW transactions AS
-SELECT * FROM VALUES
-    ('merchant_A', DATE '2024-06-01', 250.00),
-    ('merchant_A', DATE '2024-06-02', 310.00),
-    ('merchant_A', DATE '2024-06-03', 280.00),
-    ('merchant_A', DATE '2024-06-04', 295.00),
-    ('merchant_A', DATE '2024-06-05', 320.00),
-    ('merchant_A', DATE '2024-06-06', 270.00),
-    ('merchant_A', DATE '2024-06-07', 290.00),
-    ('merchant_A', DATE '2024-06-08', 4500.00),
-    ('merchant_A', DATE '2024-06-09', 305.00),
-    ('merchant_A', DATE '2024-06-10', 285.00),
-    ('merchant_A', DATE '2024-06-11', 330.00),
-    ('merchant_A', DATE '2024-06-12', 15.00),
-    ('merchant_B', DATE '2024-06-01', 1200.00),
-    ('merchant_B', DATE '2024-06-02', 1350.00),
-    ('merchant_B', DATE '2024-06-03', 1180.00),
-    ('merchant_B', DATE '2024-06-04', 1290.00),
-    ('merchant_B', DATE '2024-06-05', 1410.00),
-    ('merchant_B', DATE '2024-06-06', 1250.00),
-    ('merchant_B', DATE '2024-06-07', 12800.00),
-    ('merchant_B', DATE '2024-06-08', 1300.00),
-    ('merchant_B', DATE '2024-06-09', 1220.00),
-    ('merchant_B', DATE '2024-06-10', 1380.00)
-    AS t(merchant, txn_date, amount);
+SELECT -- noqa: LT09
+    * FROM VALUES
+('merchant_A', DATE '2024-06-01', 250.00),
+('merchant_A', DATE '2024-06-02', 310.00),
+('merchant_A', DATE '2024-06-03', 280.00),
+('merchant_A', DATE '2024-06-04', 295.00),
+('merchant_A', DATE '2024-06-05', 320.00),
+('merchant_A', DATE '2024-06-06', 270.00),
+('merchant_A', DATE '2024-06-07', 290.00),
+('merchant_A', DATE '2024-06-08', 4500.00),
+('merchant_A', DATE '2024-06-09', 305.00),
+('merchant_A', DATE '2024-06-10', 285.00),
+('merchant_A', DATE '2024-06-11', 330.00),
+('merchant_A', DATE '2024-06-12', 15.00),
+('merchant_B', DATE '2024-06-01', 1200.00),
+('merchant_B', DATE '2024-06-02', 1350.00),
+('merchant_B', DATE '2024-06-03', 1180.00),
+('merchant_B', DATE '2024-06-04', 1290.00),
+('merchant_B', DATE '2024-06-05', 1410.00),
+('merchant_B', DATE '2024-06-06', 1250.00),
+('merchant_B', DATE '2024-06-07', 12800.00),
+('merchant_B', DATE '2024-06-08', 1300.00),
+('merchant_B', DATE '2024-06-09', 1220.00),
+('merchant_B', DATE '2024-06-10', 1380.00)
+    AS t (merchant, txn_date, amount);
 
 -- =============================================================================
 -- Sample data 2: Hourly server response times
 -- =============================================================================
 CREATE OR REPLACE TEMP VIEW response_times AS
-SELECT * FROM VALUES
-    ('api-gw', TIMESTAMP '2024-04-10 08:00:00', 120),
-    ('api-gw', TIMESTAMP '2024-04-10 09:00:00', 135),
-    ('api-gw', TIMESTAMP '2024-04-10 10:00:00', 128),
-    ('api-gw', TIMESTAMP '2024-04-10 11:00:00', 142),
-    ('api-gw', TIMESTAMP '2024-04-10 12:00:00', 890),
-    ('api-gw', TIMESTAMP '2024-04-10 13:00:00', 155),
-    ('api-gw', TIMESTAMP '2024-04-10 14:00:00', 130),
-    ('api-gw', TIMESTAMP '2024-04-10 15:00:00', 145),
-    ('api-gw', TIMESTAMP '2024-04-10 16:00:00', 1250),
-    ('api-gw', TIMESTAMP '2024-04-10 17:00:00', 138),
-    ('api-gw', TIMESTAMP '2024-04-10 18:00:00', 125),
-    ('api-gw', TIMESTAMP '2024-04-10 19:00:00', 132),
-    ('db-svc', TIMESTAMP '2024-04-10 08:00:00', 45),
-    ('db-svc', TIMESTAMP '2024-04-10 09:00:00', 52),
-    ('db-svc', TIMESTAMP '2024-04-10 10:00:00', 48),
-    ('db-svc', TIMESTAMP '2024-04-10 11:00:00', 55),
-    ('db-svc', TIMESTAMP '2024-04-10 12:00:00', 380),
-    ('db-svc', TIMESTAMP '2024-04-10 13:00:00', 50),
-    ('db-svc', TIMESTAMP '2024-04-10 14:00:00', 47),
-    ('db-svc', TIMESTAMP '2024-04-10 15:00:00', 53)
-    AS t(service, ts, p95_ms);
+SELECT
+    * FROM VALUES
+('api-gw', TIMESTAMP '2024-04-10 08:00:00', 120),
+('api-gw', TIMESTAMP '2024-04-10 09:00:00', 135),
+('api-gw', TIMESTAMP '2024-04-10 10:00:00', 128),
+('api-gw', TIMESTAMP '2024-04-10 11:00:00', 142),
+('api-gw', TIMESTAMP '2024-04-10 12:00:00', 890),
+('api-gw', TIMESTAMP '2024-04-10 13:00:00', 155),
+('api-gw', TIMESTAMP '2024-04-10 14:00:00', 130),
+('api-gw', TIMESTAMP '2024-04-10 15:00:00', 145),
+('api-gw', TIMESTAMP '2024-04-10 16:00:00', 1250),
+('api-gw', TIMESTAMP '2024-04-10 17:00:00', 138),
+('api-gw', TIMESTAMP '2024-04-10 18:00:00', 125),
+('api-gw', TIMESTAMP '2024-04-10 19:00:00', 132),
+('db-svc', TIMESTAMP '2024-04-10 08:00:00', 45),
+('db-svc', TIMESTAMP '2024-04-10 09:00:00', 52),
+('db-svc', TIMESTAMP '2024-04-10 10:00:00', 48),
+('db-svc', TIMESTAMP '2024-04-10 11:00:00', 55),
+('db-svc', TIMESTAMP '2024-04-10 12:00:00', 380),
+('db-svc', TIMESTAMP '2024-04-10 13:00:00', 50),
+('db-svc', TIMESTAMP '2024-04-10 14:00:00', 47),
+('db-svc', TIMESTAMP '2024-04-10 15:00:00', 53)
+    AS t (service, ts, p95_ms);
 
 -- =============================================================================
 -- Sample data 3: Employee expense claims
 -- =============================================================================
 CREATE OR REPLACE TEMP VIEW expense_claims AS
-SELECT * FROM VALUES
-    ('Engineering', 'Alice', DATE '2024-05-01', 'Travel', 450.00),
-    ('Engineering', 'Alice', DATE '2024-05-08', 'Meals', 85.00),
-    ('Engineering', 'Bob', DATE '2024-05-02', 'Travel', 520.00),
-    ('Engineering', 'Bob', DATE '2024-05-10', 'Travel', 8200.00),
-    ('Engineering', 'Carol', DATE '2024-05-03', 'Meals', 72.00),
-    ('Engineering', 'Carol', DATE '2024-05-12', 'Travel', 490.00),
-    ('Engineering', 'Dave', DATE '2024-05-04', 'Travel', 380.00),
-    ('Engineering', 'Dave', DATE '2024-05-15', 'Meals', 95.00),
-    ('Sales', 'Eve', DATE '2024-05-01', 'Travel', 680.00),
-    ('Sales', 'Eve', DATE '2024-05-09', 'Meals', 120.00),
-    ('Sales', 'Frank', DATE '2024-05-02', 'Travel', 710.00),
-    ('Sales', 'Frank', DATE '2024-05-11', 'Meals', 1950.00),
-    ('Sales', 'Grace', DATE '2024-05-03', 'Travel', 650.00),
-    ('Sales', 'Grace', DATE '2024-05-14', 'Meals', 105.00),
-    ('Sales', 'Hank', DATE '2024-05-05', 'Travel', 590.00),
-    ('Sales', 'Hank', DATE '2024-05-16', 'Meals', 88.00)
-    AS t(department, employee, claim_date, category, amount);
+SELECT
+    * FROM VALUES
+('Engineering', 'Alice', DATE '2024-05-01', 'Travel', 450.00),
+('Engineering', 'Alice', DATE '2024-05-08', 'Meals', 85.00),
+('Engineering', 'Bob', DATE '2024-05-02', 'Travel', 520.00),
+('Engineering', 'Bob', DATE '2024-05-10', 'Travel', 8200.00),
+('Engineering', 'Carol', DATE '2024-05-03', 'Meals', 72.00),
+('Engineering', 'Carol', DATE '2024-05-12', 'Travel', 490.00),
+('Engineering', 'Dave', DATE '2024-05-04', 'Travel', 380.00),
+('Engineering', 'Dave', DATE '2024-05-15', 'Meals', 95.00),
+('Sales', 'Eve', DATE '2024-05-01', 'Travel', 680.00),
+('Sales', 'Eve', DATE '2024-05-09', 'Meals', 120.00),
+('Sales', 'Frank', DATE '2024-05-02', 'Travel', 710.00),
+('Sales', 'Frank', DATE '2024-05-11', 'Meals', 1950.00),
+('Sales', 'Grace', DATE '2024-05-03', 'Travel', 650.00),
+('Sales', 'Grace', DATE '2024-05-14', 'Meals', 105.00),
+('Sales', 'Hank', DATE '2024-05-05', 'Travel', 590.00),
+('Sales', 'Hank', DATE '2024-05-16', 'Meals', 88.00)
+    AS t (department, employee, claim_date, category, amount);
 
 -- =============================================================================
 -- Section 1: Z-score outlier detection per merchant
@@ -225,11 +228,12 @@ SELECT
         ELSE 'NORMAL'
     END AS flag
 FROM response_times
-WINDOW w AS (
-    PARTITION BY service
-    ORDER BY ts
-    ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
-)
+WINDOW
+    w AS (
+        PARTITION BY service
+        ORDER BY ts
+        ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+    )
 ORDER BY service, ts;
 
 -- =============================================================================
@@ -249,10 +253,7 @@ filtered AS (
     SELECT
         t.merchant,
         t.amount,
-        CASE
-            WHEN t.amount < s.q1 - 1.5 * (s.q3 - s.q1) OR t.amount > s.q3 + 1.5 * (s.q3 - s.q1) THEN TRUE
-            ELSE FALSE
-        END AS is_outlier
+        COALESCE(t.amount < s.q1 - 1.5 * (s.q3 - s.q1) OR t.amount > s.q3 + 1.5 * (s.q3 - s.q1), FALSE) AS is_outlier
     FROM transactions AS t
     INNER JOIN stats AS s ON t.merchant = s.merchant
 )
@@ -299,9 +300,10 @@ SELECT
     END AS flag
 FROM expense_claims AS e
 INNER JOIN stats AS s ON e.department = s.department AND e.category = s.category
-WHERE e.amount > s.q3 + 1.5 * (s.q3 - s.q1)
+WHERE
+    e.amount > s.q3 + 1.5 * (s.q3 - s.q1)
     OR ABS((e.amount - s.avg_amt) / NULLIF(s.stddev_amt, 0)) > 2
-ORDER BY e.department, e.category, e.amount DESC;
+ORDER BY e.department ASC, e.category ASC, e.amount DESC;
 
 -- =============================================================================
 -- Section 8: Multi-method consensus (flag if 2+ methods agree)
@@ -342,7 +344,7 @@ SELECT
     CASE WHEN z_flag + iqr_flag + pct_flag >= 2 THEN 'CONFIRMED_OUTLIER' ELSE 'NORMAL' END AS verdict
 FROM scored
 WHERE z_flag + iqr_flag + pct_flag >= 1
-ORDER BY agreement_count DESC, merchant, txn_date;
+ORDER BY agreement_count DESC, merchant ASC, txn_date ASC;
 
 -- =============================================================================
 -- Section 9: Outlier summary report per group
@@ -360,10 +362,7 @@ flagged AS (
     SELECT
         t.merchant,
         t.amount,
-        CASE
-            WHEN t.amount < s.q1 - 1.5 * (s.q3 - s.q1) OR t.amount > s.q3 + 1.5 * (s.q3 - s.q1) THEN TRUE
-            ELSE FALSE
-        END AS is_outlier
+        COALESCE(t.amount < s.q1 - 1.5 * (s.q3 - s.q1) OR t.amount > s.q3 + 1.5 * (s.q3 - s.q1), FALSE) AS is_outlier
     FROM transactions AS t
     INNER JOIN stats AS s ON t.merchant = s.merchant
 )
@@ -413,8 +412,8 @@ SELECT
     txn_date,
     amount,
     z_score,
-    CONCAT_WS(', ', iqr_flag, z_flag) AS detection_methods,
-    'quarantined' AS status
+    'quarantined' AS status,
+    CONCAT_WS(', ', iqr_flag, z_flag) AS detection_methods
 FROM scored
 WHERE iqr_flag IS NOT NULL OR z_flag IS NOT NULL
 ORDER BY merchant, txn_date;

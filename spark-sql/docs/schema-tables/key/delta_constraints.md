@@ -160,6 +160,40 @@ ALTER TABLE orders ADD CONSTRAINT orders_amount_chk CHECK (amount > 0);
 
 ---
 
+## :material-play-circle-outline: Worked Example
+
+Self-contained — before writing to a Delta table guarded by `NOT NULL` and a
+`CHECK (amount >= 0)` constraint, pre-validate the batch so the write can't fail midway.
+
+```sql
+CREATE OR REPLACE TEMP VIEW staging_orders AS
+SELECT * FROM VALUES
+    (1, CAST(120.00 AS DECIMAL(10, 2))),
+    (2, CAST(-5.00  AS DECIMAL(10, 2))),   -- violates CHECK (amount >= 0)
+    (3, CAST(NULL   AS DECIMAL(10, 2)))    -- violates NOT NULL
+AS t (order_id, amount);
+
+-- Pre-validation: flag rows that WOULD be rejected by the Delta constraints
+SELECT
+    order_id,
+    amount,
+    (amount IS NULL)                       AS fails_not_null,
+    (amount IS NOT NULL AND amount < 0)    AS fails_check
+FROM staging_orders
+WHERE amount IS NULL OR amount < 0
+ORDER BY order_id;
+-- order_id | amount | fails_not_null | fails_check
+-- 2        | -5.00  | false          | true
+-- 3        | NULL   | true           | false
+```
+
+!!! success "Fail fast, in staging"
+    Delta enforces `NOT NULL` and `CHECK` **at write time** — one bad row aborts the whole
+    write. Running this pre-check lets you quarantine rows 2 and 3 first, so the load into
+    the constrained table always succeeds.
+
+---
+
 ## :material-lightbulb-outline: When to Use Each Constraint
 
 | Constraint | Use for |

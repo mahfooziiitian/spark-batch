@@ -72,12 +72,13 @@ SELECT
     color,
     saleprice,
     CASE
-        WHEN saleprice >= 100000 THEN
-            CASE color
-                WHEN 'Black' THEN 'Premium Black'
-                WHEN 'Silver' THEN 'Premium Silver'
-                ELSE 'Premium Other'
-            END
+        WHEN saleprice >= 100000
+            THEN
+                CASE color
+                    WHEN 'Black' THEN 'Premium Black'
+                    WHEN 'Silver' THEN 'Premium Silver'
+                    ELSE 'Premium Other'
+                END
         ELSE
             CASE color
                 WHEN 'Black' THEN 'Standard Black'

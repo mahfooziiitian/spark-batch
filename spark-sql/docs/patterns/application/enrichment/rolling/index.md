@@ -123,3 +123,10 @@ Calculate the cumulative distribution and relative rank of each row.
 
 !!! warning
     LAST_VALUE() requires ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING (or CURRENT ROW adjusted) — the default frame stops at CURRENT ROW.
+
+---
+
+!!! note "Related"
+    Concept deep-dives for the individual techniques bundled here:
+    [Running Total](../../../aggregation/running_total.md) ·
+    [Moving Average](../../../aggregation/moving_average.md).

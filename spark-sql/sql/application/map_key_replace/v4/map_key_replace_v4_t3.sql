@@ -6,7 +6,7 @@
 
 -- Case: 1 One key with one key in source table
 -- Spark/Databricks SQL
-SELECT map_from_entries(collect_list(struct(old_tag_key, new_tag_key))) AS key_map    
+SELECT map_from_entries(collect_list(struct(old_tag_key, new_tag_key))) AS key_map
 FROM
     mgmt_stg.metadata.old_custom_tags_key_mapping;
 
@@ -71,7 +71,7 @@ WITH map_table (test_id, key_map, original_map) AS (
     SELECT
         10,
         map('A', 'X') AS key_map,
-        map('A', cast(null AS string), 'B', 'bbb') AS original_map
+        map('A', cast(NULL AS string), 'B', 'bbb') AS original_map
     UNION ALL
     -- 11) Mixed: one remap collides with original; another two 
     -- remap to same new key
@@ -185,7 +185,7 @@ WITH map_table (test_id, key_map, original_map) AS (
     SELECT
         10,
         map('A', 'X') AS key_map,
-        map('A', cast(null AS string), 'B', 'bbb') AS original_map
+        map('A', cast(NULL AS string), 'B', 'bbb') AS original_map
     UNION ALL
     -- 11) Mixed: one remap collides with original; 
     -- another two remap to same new key

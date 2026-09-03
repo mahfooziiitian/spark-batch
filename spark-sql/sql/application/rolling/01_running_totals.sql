@@ -55,10 +55,11 @@ SELECT
     ROUND(AVG(saleprice) OVER running_w, 2) AS running_average,
     COUNT(*) OVER running_w AS running_count
 FROM allsales
-WINDOW running_w AS (
-    ORDER BY saledate
-    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-)
+WINDOW
+    running_w AS (
+        ORDER BY saledate
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    )
 ORDER BY saledate;
 
 -- =============================================================================

@@ -1,7 +1,7 @@
 --  1. Exploding an Array of Primitives
 
 CREATE OR REPLACE TEMP VIEW people AS
-SELECT
+SELECT -- noqa: LT09
     * FROM VALUES
 (1, ARRAY('Alice', 'Bob')),
 (2, ARRAY('Charlie', 'Diana'))

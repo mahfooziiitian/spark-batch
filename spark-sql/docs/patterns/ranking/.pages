@@ -2,4 +2,3 @@ title: Ranking
 nav:
   - top_n.md
   - pagination.md
-  - pivot_unpivot.md

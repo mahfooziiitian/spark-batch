@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
-
 from tests._helpers import assert_query_in_source, create_view
 
 if TYPE_CHECKING:
@@ -116,9 +115,7 @@ class TestSCD1:
             ORDER BY customer_id
             """)
 
-    def test_merge_applies_insert_update_and_skip(
-        self: TestSCD1, spark: SparkSession
-    ) -> None:
+    def test_merge_applies_insert_update_and_skip(self: TestSCD1, spark: SparkSession) -> None:
         assert_query_in_source("sql/scd/type1/scd_type1.sql", CONDITIONAL_FRAGMENT)
         self._register_views(spark)
 
@@ -133,9 +130,7 @@ class TestSCD1:
             schema=self._target_schema(),
         )
 
-        assert_df_equality(
-            actual, expected, ignore_row_order=True, ignore_nullable=True
-        )
+        assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
     def test_new_record_inserted(self: TestSCD1, spark: SparkSession) -> None:
         self._register_views(spark)
@@ -163,14 +158,10 @@ class TestSCD1:
         first_run = self._run_merge(spark)
         first_run.createOrReplaceTempView("dim_customer")
         second_run = self._run_merge(spark)
-        assert_df_equality(
-            first_run, second_run, ignore_row_order=True, ignore_nullable=True
-        )
+        assert_df_equality(first_run, second_run, ignore_row_order=True, ignore_nullable=True)
 
     def test_no_duplicate_rows_after_merge(self: TestSCD1, spark: SparkSession) -> None:
         self._register_views(spark)
         result = self._run_merge(spark)
-        duplicate_count = (
-            result.groupBy("customer_id").count().filter("count > 1").count()
-        )
+        duplicate_count = result.groupBy("customer_id").count().filter("count > 1").count()
         assert duplicate_count == 0

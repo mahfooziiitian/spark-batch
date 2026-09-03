@@ -68,12 +68,14 @@ SELECT
     a.makename,
     a.saleprice
 FROM allsales AS a
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM allsales AS b
-    WHERE b.makename = a.makename
-        AND b.saleprice > 150000
-)
+WHERE
+    NOT EXISTS (
+        SELECT 1
+        FROM allsales AS b
+        WHERE
+            b.makename = a.makename
+            AND b.saleprice > 150000
+    )
 ORDER BY a.makename;
 
 -- =============================================================================

@@ -33,24 +33,25 @@ SELECT
     makename,
     saleprice
 FROM allsales
-WHERE saleprice > (
-    SELECT MAX(lower_avgs.avg_price)
-    FROM (
-        SELECT
-            makename,
-            AVG(saleprice) AS avg_price
-        FROM allsales
-        GROUP BY makename
-        HAVING AVG(saleprice) < (
-            SELECT MAX(all_avgs.avg_price2)
-            FROM (
-                SELECT AVG(saleprice) AS avg_price2 -- noqa: ST05
-                FROM allsales
-                GROUP BY makename
-            ) AS all_avgs
-        )
-    ) AS lower_avgs -- noqa: ST05
-)
+WHERE
+    saleprice > (
+        SELECT MAX(lower_avgs.avg_price)
+        FROM (
+            SELECT
+                makename,
+                AVG(saleprice) AS avg_price
+            FROM allsales
+            GROUP BY makename
+            HAVING AVG(saleprice) < (
+                SELECT MAX(all_avgs.avg_price2)
+                FROM (
+                    SELECT AVG(saleprice) AS avg_price2 -- noqa: ST05
+                    FROM allsales
+                    GROUP BY makename
+                ) AS all_avgs
+            )
+        ) AS lower_avgs -- noqa: ST05
+    )
 ORDER BY saleprice DESC;
 
 -- =============================================================================

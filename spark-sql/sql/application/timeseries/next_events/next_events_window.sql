@@ -1,10 +1,11 @@
 -- ============================================================
--- Topic: Next-event matching — self-join approach
+-- Topic: Next-event matching — window-function approach
 -- Dialect: Databricks / Spark SQL 3.5
 -- Description: For each 'Y' event, find the first subsequent
 --              'X' event for the same user and return the time
---              difference. Uses a LEFT self-join with a MIN
---              aggregate to locate the nearest future match.
+--              difference. Uses a forward-fill technique with
+--              MIN(CASE …) OVER (ROWS BETWEEN CURRENT ROW AND
+--              UNBOUNDED FOLLOWING). Single scan — no self-join.
 --
 --              event_id provides a stable tiebreaker when two
 --              events share the same timestamp.
@@ -87,41 +88,36 @@ WITH events AS (
         'Y' AS event_type
 ),
 
--- Step 1: isolate the trigger events (type = 'Y')
-y_events AS (
+-- Step 1: for every row, find the MIN event_time of all 'X' rows
+--         at or after the current row within the same user.
+--         Non-X rows contribute NULL to the MIN, which is ignored.
+--         CURRENT ROW is safe because a Y row's CASE returns NULL.
+with_next_x AS (
     SELECT
         user_id,
-        event_time AS y_time
+        event_time,
+        event_type,
+        MIN(
+            CASE WHEN event_type = 'X' THEN event_time END
+        ) OVER (
+            PARTITION BY user_id
+            ORDER BY event_time, event_id
+            ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING
+        ) AS next_x_time
     FROM events
-    WHERE event_type = 'Y'
-),
-
--- Step 2: for each Y, find the earliest X after it for the same user
-next_x AS (
-    SELECT
-        y.user_id,
-        y.y_time,
-        MIN(x.event_time) AS x_time
-    FROM y_events AS y
-    LEFT JOIN events AS x
-        ON  y.user_id   = x.user_id
-        AND x.event_type = 'X'
-        AND y.y_time     < x.event_time
-    GROUP BY
-        y.user_id,
-        y.y_time
 )
 
--- Step 3: compute the elapsed time
+-- Step 2: keep only Y rows, compute elapsed time
 SELECT
     user_id,
-    y_time,
-    x_time,
-    TIMESTAMPDIFF(SECOND, y_time, x_time) AS diff_seconds
-FROM next_x
+    event_time AS y_time,
+    next_x_time AS x_time,
+    TIMESTAMPDIFF(SECOND, event_time, next_x_time) AS diff_seconds
+FROM with_next_x
+WHERE event_type = 'Y'
 ORDER BY
     user_id,
-    y_time;
+    event_time;
 
 -- Expected output:
 -- +---------+---------------------+---------------------+--------------+
@@ -134,5 +130,7 @@ ORDER BY
 -- |       2 | 2024-03-01 12:00:00 | NULL                |         NULL |
 -- +---------+---------------------+---------------------+--------------+
 --
--- The LEFT JOIN retains unmatched Y rows with NULLs.
--- Change to INNER JOIN to drop them.
+-- Y at 10:05 → next X at 10:10 = 5 min (noise events B, C skipped).
+-- Unmatched Y rows (no subsequent X) naturally return NULL.
+-- Advantage: single-pass — avoids the quadratic explosion of a
+-- self-join when many Y and X events share the same user.

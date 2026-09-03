@@ -10,26 +10,27 @@
 -- Sample data: API request latencies per endpoint
 -- =============================================================================
 CREATE OR REPLACE TEMP VIEW api_requests AS
-SELECT * FROM VALUES
-    ('checkout', TIMESTAMP '2024-03-01 09:00:01', 120),
-    ('checkout', TIMESTAMP '2024-03-01 09:00:05', 145),
-    ('checkout', TIMESTAMP '2024-03-01 09:00:12', 110),
-    ('checkout', TIMESTAMP '2024-03-01 09:00:20', 980),
-    ('checkout', TIMESTAMP '2024-03-01 09:00:31', 130),
-    ('checkout', TIMESTAMP '2024-03-01 09:00:40', 150),
-    ('checkout', TIMESTAMP '2024-03-01 09:00:55', 125),
-    ('checkout', TIMESTAMP '2024-03-01 09:01:10', 118),
-    ('checkout', TIMESTAMP '2024-03-01 09:01:22', 640),
-    ('checkout', TIMESTAMP '2024-03-01 09:01:40', 135),
-    ('search', TIMESTAMP '2024-03-01 09:00:03', 45),
-    ('search', TIMESTAMP '2024-03-01 09:00:18', 52),
-    ('search', TIMESTAMP '2024-03-01 09:00:29', 48),
-    ('search', TIMESTAMP '2024-03-01 09:00:47', 260),
-    ('search', TIMESTAMP '2024-03-01 09:01:02', 51),
-    ('search', TIMESTAMP '2024-03-01 09:01:15', 49),
-    ('search', TIMESTAMP '2024-03-01 09:01:33', 55),
-    ('search', TIMESTAMP '2024-03-01 09:01:50', 47)
-    AS t(endpoint, request_ts, latency_ms);
+SELECT -- noqa: LT09
+    * FROM VALUES
+('checkout', TIMESTAMP '2024-03-01 09:00:01', 120),
+('checkout', TIMESTAMP '2024-03-01 09:00:05', 145),
+('checkout', TIMESTAMP '2024-03-01 09:00:12', 110),
+('checkout', TIMESTAMP '2024-03-01 09:00:20', 980),
+('checkout', TIMESTAMP '2024-03-01 09:00:31', 130),
+('checkout', TIMESTAMP '2024-03-01 09:00:40', 150),
+('checkout', TIMESTAMP '2024-03-01 09:00:55', 125),
+('checkout', TIMESTAMP '2024-03-01 09:01:10', 118),
+('checkout', TIMESTAMP '2024-03-01 09:01:22', 640),
+('checkout', TIMESTAMP '2024-03-01 09:01:40', 135),
+('search', TIMESTAMP '2024-03-01 09:00:03', 45),
+('search', TIMESTAMP '2024-03-01 09:00:18', 52),
+('search', TIMESTAMP '2024-03-01 09:00:29', 48),
+('search', TIMESTAMP '2024-03-01 09:00:47', 260),
+('search', TIMESTAMP '2024-03-01 09:01:02', 51),
+('search', TIMESTAMP '2024-03-01 09:01:15', 49),
+('search', TIMESTAMP '2024-03-01 09:01:33', 55),
+('search', TIMESTAMP '2024-03-01 09:01:50', 47)
+    AS t (endpoint, request_ts, latency_ms);
 
 -- =============================================================================
 -- Section 1: P95 latency per endpoint
@@ -67,8 +68,8 @@ ORDER BY endpoint, minute_bucket;
 WITH daily AS (
     SELECT
         endpoint,
-        DATE(request_ts) AS request_date,
-        latency_ms
+        latency_ms,
+        DATE(request_ts) AS request_date
     FROM api_requests
 ),
 
@@ -97,10 +98,11 @@ ORDER BY endpoint, request_date;
 -- Section 4: SLA breach detection against a P95 target
 -- =============================================================================
 WITH sla_targets AS (
-    SELECT * FROM VALUES
-        ('checkout', 300.0),
-        ('search', 150.0)
-        AS t(endpoint, p95_target_ms)
+    SELECT
+        * FROM VALUES
+    ('checkout', 300.0),
+    ('search', 150.0)
+        AS t (endpoint, p95_target_ms)
 ),
 
 endpoint_p95 AS (
@@ -146,7 +148,7 @@ SELECT
     END AS tail_flag
 FROM api_requests AS r
 INNER JOIN endpoint_p95 AS p ON r.endpoint = p.endpoint
-ORDER BY r.endpoint, r.latency_ms DESC;
+ORDER BY r.endpoint ASC, r.latency_ms DESC;
 
 -- =============================================================================
 -- Section 6: Higher accuracy sketch (more memory, tighter approximation)

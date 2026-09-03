@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-
 from tests._helpers import execute_sql_file, statement_containing
 
 if TYPE_CHECKING:
@@ -13,18 +12,14 @@ pytestmark = [pytest.mark.unit, pytest.mark.spark]
 
 
 class TestSubquery:
-    def test_subquery_file_executes_from_source(
-        self: TestSubquery, spark: SparkSession
-    ) -> None:
+    def test_subquery_file_executes_from_source(self: TestSubquery, spark: SparkSession) -> None:
         results = execute_sql_file(spark, "sql/subquery/subquery.sql")
 
         assert len(results) == 9
         assert results[0].count() == 6
         assert results[5].count() == 2
 
-    def test_scalar_and_correlated_subqueries_come_from_source(
-        self: TestSubquery, spark: SparkSession
-    ) -> None:
+    def test_scalar_and_correlated_subqueries_come_from_source(self: TestSubquery, spark: SparkSession) -> None:
         execute_sql_file(spark, "sql/subquery/subquery.sql")
         scalar_statement = statement_containing(
             "sql/subquery/subquery.sql",

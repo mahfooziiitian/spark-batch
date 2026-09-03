@@ -110,8 +110,8 @@ INNER JOIN stock AS st
     ON md.modelid = st.modelid
 WHERE
     st.datebought BETWEEN
-        TRUNC(CURDATE(), 'MONTH') - INTERVAL 1 MONTH
-        AND LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
+    TRUNC(CURDATE(), 'MONTH') - INTERVAL 1 MONTH
+    AND LAST_DAY(CURDATE() - INTERVAL 1 MONTH)
 GROUP BY mk.makename
 ORDER BY mk.makename;
 

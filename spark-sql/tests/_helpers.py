@@ -99,9 +99,7 @@ def split_sql_statements(sql_text: str) -> list[str]:
 
 def read_sql_statements(sql_path: str) -> list[str]:
     return [
-        cleaned
-        for statement in split_sql_statements(read_sql_text(sql_path))
-        if (cleaned := clean_sql_statement(statement))
+        cleaned for statement in split_sql_statements(read_sql_text(sql_path)) if (cleaned := clean_sql_statement(statement))
     ]
 
 
@@ -137,7 +135,7 @@ def assert_query_in_source(relative_path: str, query: str) -> None:
     compact_query = "".join(query.split()).lower()
     if compact_query in compact_source:
         return
-    normalized = query.replace("(", " ").replace(")", " " ).replace(",", " ")
+    normalized = query.replace("(", " ").replace(")", " ").replace(",", " ")
     keywords = [token.lower() for token in normalized.split() if len(token) > 3]
     assert keywords and all(keyword in read_sql_text(relative_path).lower() for keyword in keywords)
 

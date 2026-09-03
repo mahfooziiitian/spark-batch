@@ -13,22 +13,22 @@
 DROP TABLE IF EXISTS sales;
 
 CREATE TABLE sales (
-    order_id   BIGINT,
-    region     STRING,
-    product    STRING,
-    amount     DOUBLE,
+    order_id BIGINT,
+    region STRING,
+    product STRING,
+    amount DOUBLE,
     order_date DATE
 );
 
 INSERT INTO sales VALUES
-    (1, 'East',  'Widget',  120.00, DATE '2024-01-15'),
-    (2, 'West',  'Gadget',  340.00, DATE '2024-01-15'),
-    (3, 'East',  'Widget',   80.00, DATE '2024-02-10'),
-    (4, 'North', 'Gadget',  210.00, DATE '2024-02-10'),
-    (5, 'West',  'Widget',  150.00, DATE '2024-03-05'),
-    (6, 'East',  'Gadget',  450.00, DATE '2024-03-05'),
-    (7, 'North', 'Widget',   90.00, DATE '2024-03-20'),
-    (8, 'West',  'Gadget',  270.00, DATE '2024-03-20');
+(1, 'East', 'Widget', 120.00, DATE '2024-01-15'),
+(2, 'West', 'Gadget', 340.00, DATE '2024-01-15'),
+(3, 'East', 'Widget', 80.00, DATE '2024-02-10'),
+(4, 'North', 'Gadget', 210.00, DATE '2024-02-10'),
+(5, 'West', 'Widget', 150.00, DATE '2024-03-05'),
+(6, 'East', 'Gadget', 450.00, DATE '2024-03-05'),
+(7, 'North', 'Widget', 90.00, DATE '2024-03-20'),
+(8, 'West', 'Gadget', 270.00, DATE '2024-03-20');
 
 -- ─── Setup: sales_nullable — includes one real NULL region ───
 -- Used in NULL-handling example to contrast COALESCE (unsafe)
@@ -36,68 +36,68 @@ INSERT INTO sales VALUES
 DROP TABLE IF EXISTS sales_nullable;
 
 CREATE TABLE sales_nullable (
-    order_id   BIGINT,
-    region     STRING,
-    product    STRING,
-    amount     DOUBLE,
+    order_id BIGINT,
+    region STRING,
+    product STRING,
+    amount DOUBLE,
     order_date DATE
 );
 
 INSERT INTO sales_nullable VALUES
-    (1, 'East',  'Widget',  120.00, DATE '2024-01-15'),
-    (2, 'West',  'Gadget',  340.00, DATE '2024-01-15'),
-    (3, 'East',  'Widget',   80.00, DATE '2024-02-10'),
-    (4, 'North', 'Gadget',  210.00, DATE '2024-02-10'),
-    (5, NULL,    'Widget',  150.00, DATE '2024-03-05');  -- real NULL region
+(1, 'East', 'Widget', 120.00, DATE '2024-01-15'),
+(2, 'West', 'Gadget', 340.00, DATE '2024-01-15'),
+(3, 'East', 'Widget', 80.00, DATE '2024-02-10'),
+(4, 'North', 'Gadget', 210.00, DATE '2024-02-10'),
+(5, NULL, 'Widget', 150.00, DATE '2024-03-05');  -- real NULL region
 
 -- ─── Setup: monthly_revenue — year/quarter/month hierarchy ───
 DROP TABLE IF EXISTS monthly_revenue;
 
 CREATE TABLE monthly_revenue (
-    sale_year  INT,
-    quarter    STRING,
+    sale_year INT,
+    quarter STRING,
     month_name STRING,
-    revenue    DOUBLE
+    revenue DOUBLE
 );
 
 INSERT INTO monthly_revenue VALUES
-    (2024, 'Q1', 'Jan', 12000.0),
-    (2024, 'Q1', 'Feb',  9500.0),
-    (2024, 'Q1', 'Mar', 11000.0),
-    (2024, 'Q2', 'Apr', 13500.0),
-    (2024, 'Q2', 'May', 16000.0),
-    (2024, 'Q2', 'Jun', 14500.0),
-    (2024, 'Q3', 'Jul', 10000.0),
-    (2024, 'Q3', 'Aug',  8500.0),
-    (2024, 'Q3', 'Sep', 17000.0),
-    (2024, 'Q4', 'Oct', 19000.0),
-    (2024, 'Q4', 'Nov', 22000.0),
-    (2024, 'Q4', 'Dec', 25000.0);
+(2024, 'Q1', 'Jan', 12000.0),
+(2024, 'Q1', 'Feb', 9500.0),
+(2024, 'Q1', 'Mar', 11000.0),
+(2024, 'Q2', 'Apr', 13500.0),
+(2024, 'Q2', 'May', 16000.0),
+(2024, 'Q2', 'Jun', 14500.0),
+(2024, 'Q3', 'Jul', 10000.0),
+(2024, 'Q3', 'Aug', 8500.0),
+(2024, 'Q3', 'Sep', 17000.0),
+(2024, 'Q4', 'Oct', 19000.0),
+(2024, 'Q4', 'Nov', 22000.0),
+(2024, 'Q4', 'Dec', 25000.0);
 
 -- ─── Setup: product_sales — category/subcategory/product ─────
 DROP TABLE IF EXISTS product_sales;
 
 CREATE TABLE product_sales (
-    category    STRING,
+    category STRING,
     subcategory STRING,
-    product     STRING,
-    revenue     DOUBLE,
-    units_sold  BIGINT
+    product STRING,
+    revenue DOUBLE,
+    units_sold BIGINT
 );
 
 INSERT INTO product_sales VALUES
-    ('Electronics', 'Phones',    'iPhone 15',     95000.0,  19),
-    ('Electronics', 'Phones',    'Galaxy S24',    78000.0,  18),
-    ('Electronics', 'Laptops',   'MacBook Pro',  125000.0,  10),
-    ('Electronics', 'Laptops',   'ThinkPad X1',   89000.0,  11),
-    ('Clothing',    'Tops',      'Polo Shirt',     4500.0, 150),
-    ('Clothing',    'Tops',      'T-Shirt Pack',   3200.0, 200),
-    ('Clothing',    'Bottoms',   'Slim Jeans',     6800.0,  85),
-    ('Clothing',    'Bottoms',   'Chinos',         5100.0,  68),
-    ('Home',        'Kitchen',   'Air Fryer',     12000.0,  60),
-    ('Home',        'Kitchen',   'Coffee Maker',   8500.0,  85),
-    ('Home',        'Furniture', 'Office Chair',  22000.0,  44),
-    ('Home',        'Furniture', 'Standing Desk', 35000.0,  28);
+('Electronics', 'Phones', 'iPhone 15', 95000.0, 19),
+('Electronics', 'Phones', 'Galaxy S24', 78000.0, 18),
+('Electronics', 'Laptops', 'MacBook Pro', 125000.0, 10),
+('Electronics', 'Laptops', 'ThinkPad X1', 89000.0, 11),
+('Clothing', 'Tops', 'Polo Shirt', 4500.0, 150),
+('Clothing', 'Tops', 'T-Shirt Pack', 3200.0, 200),
+('Clothing', 'Bottoms', 'Slim Jeans', 6800.0, 85),
+('Clothing', 'Bottoms', 'Chinos', 5100.0, 68),
+('Home', 'Kitchen', 'Air Fryer', 12000.0, 60),
+('Home', 'Kitchen', 'Coffee Maker', 8500.0, 85),
+('Home', 'Furniture', 'Office Chair', 22000.0, 44),
+('Home', 'Furniture', 'Standing Desk', 35000.0, 28);
 
 -- ============================================================
 -- 1. Basic single-column ROLLUP
@@ -148,8 +148,8 @@ SELECT
     region,
     product,
     YEAR(order_date) AS sale_year,
-    SUM(amount)      AS total_sales,
-    COUNT(*)         AS order_count
+    SUM(amount) AS total_sales,
+    COUNT(*) AS order_count
 FROM sales
 GROUP BY ROLLUP (YEAR(order_date), region, product)
 ORDER BY sale_year NULLS LAST, region NULLS LAST, product NULLS LAST;
@@ -167,8 +167,8 @@ ORDER BY sale_year NULLS LAST, region NULLS LAST, product NULLS LAST;
 SELECT
     region,
     product,
-    SUM(amount)       AS total_sales,
-    GROUPING(region)  AS region_is_subtotal,
+    SUM(amount) AS total_sales,
+    GROUPING(region) AS region_is_subtotal,
     GROUPING(product) AS product_is_subtotal
 FROM sales
 GROUP BY ROLLUP (region, product)
@@ -178,7 +178,7 @@ ORDER BY region NULLS LAST, product NULLS LAST;
 -- 5. Readable labels with GROUPING()
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
     SUM(amount) AS total_sales
 FROM sales
@@ -204,7 +204,7 @@ ORDER BY region_label ASC, product_label ASC;
 SELECT
     region,
     product,
-    SUM(amount)                  AS total_sales,
+    SUM(amount) AS total_sales,
     GROUPING_ID(region, product) AS grp_id,
     CASE GROUPING_ID(region, product)
         WHEN 0 THEN 'Detail'
@@ -223,7 +223,7 @@ ORDER BY grp_id ASC, region ASC NULLS LAST, product ASC NULLS LAST;
 
 -- Unsafe: COALESCE conflates real NULL region with subtotal markers
 SELECT
-    COALESCE(region,  'All Regions')  AS region,
+    COALESCE(region, 'All Regions') AS region,
     COALESCE(product, 'All Products') AS product,
     SUM(amount) AS total_sales
 FROM sales_nullable
@@ -232,10 +232,10 @@ ORDER BY region ASC, product ASC;
 
 -- Safe: GROUPING() identifies only synthetic subtotal NULLs
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product,
-    SUM(amount)       AS total_sales,
-    GROUPING(region)  AS is_region_subtotal,
+    SUM(amount) AS total_sales,
+    GROUPING(region) AS is_region_subtotal,
     GROUPING(product) AS is_product_subtotal
 FROM sales_nullable
 GROUP BY ROLLUP (region, product)
@@ -245,12 +245,12 @@ ORDER BY region NULLS LAST, product NULLS LAST;
 -- 8. Multiple aggregates in one pass
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
-    ROUND(SUM(amount), 2)  AS total_revenue,
-    COUNT(*)               AS order_count,
-    ROUND(AVG(amount), 2)  AS avg_order_value,
-    MAX(amount)            AS max_order_value
+    ROUND(SUM(amount), 2) AS total_revenue,
+    COUNT(*) AS order_count,
+    ROUND(AVG(amount), 2) AS avg_order_value,
+    MAX(amount) AS max_order_value
 FROM sales
 GROUP BY ROLLUP (region, product)
 ORDER BY GROUPING_ID(region, product) ASC, region_label ASC, product_label ASC;
@@ -265,11 +265,11 @@ ORDER BY GROUPING_ID(region, product) ASC, region_label ASC, product_label ASC;
 --      7 → grand total       ()
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(sale_year)  = 1 THEN 'All Years'    ELSE CAST(sale_year AS STRING) END AS yr,
-    CASE WHEN GROUPING(quarter)    = 1 THEN 'All Quarters' ELSE quarter                   END AS qtr,
-    CASE WHEN GROUPING(month_name) = 1 THEN 'All Months'   ELSE month_name                END AS mth,
+    CASE WHEN GROUPING(sale_year) = 1 THEN 'All Years' ELSE CAST(sale_year AS STRING) END AS yr,
+    CASE WHEN GROUPING(quarter) = 1 THEN 'All Quarters' ELSE quarter END AS qtr,
+    CASE WHEN GROUPING(month_name) = 1 THEN 'All Months' ELSE month_name END AS mth,
     ROUND(SUM(revenue), 2) AS total_revenue,
-    COUNT(*)               AS month_count
+    COUNT(*) AS month_count
 FROM monthly_revenue
 GROUP BY ROLLUP (sale_year, quarter, month_name)
 ORDER BY GROUPING_ID(sale_year, quarter, month_name) ASC, yr ASC, qtr ASC, mth ASC;
@@ -281,7 +281,7 @@ WITH raw AS (
     SELECT
         region,
         amount,
-        YEAR(order_date)    AS sale_year,
+        YEAR(order_date) AS sale_year,
         QUARTER(order_date) AS sale_quarter
     FROM sales
     WHERE order_date >= DATE '2024-01-01'
@@ -292,8 +292,8 @@ rollup_base AS (
         sale_year,
         sale_quarter,
         region,
-        SUM(amount)                                  AS total_revenue,
-        COUNT(*)                                     AS order_count,
+        SUM(amount) AS total_revenue,
+        COUNT(*) AS order_count,
         GROUPING_ID(sale_year, sale_quarter, region) AS grp_id
     FROM raw
     GROUP BY ROLLUP (sale_year, sale_quarter, region)
@@ -302,10 +302,10 @@ rollup_base AS (
 SELECT
     grp_id,
     order_count,
-    ROUND(total_revenue, 2)                        AS total_revenue,
-    COALESCE(CAST(sale_year    AS STRING), 'All Years')    AS year_label,
+    ROUND(total_revenue, 2) AS total_revenue,
+    COALESCE(CAST(sale_year AS STRING), 'All Years') AS year_label,
     COALESCE(CAST(sale_quarter AS STRING), 'All Quarters') AS quarter_label,
-    COALESCE(region,                       'All Regions')  AS region_label
+    COALESCE(region, 'All Regions') AS region_label
 FROM rollup_base
 ORDER BY grp_id ASC, year_label ASC, quarter_label ASC, region_label ASC;
 
@@ -316,7 +316,7 @@ ORDER BY grp_id ASC, year_label ASC, quarter_label ASC, region_label ASC;
 -- ============================================================
 SELECT
     CASE WHEN GROUPING(sale_year) = 1 THEN 'All Years' ELSE CAST(sale_year AS STRING) END AS yr,
-    CASE WHEN GROUPING(quarter)   = 1 THEN 'All Qtrs'  ELSE quarter                   END AS qtr,
+    CASE WHEN GROUPING(quarter) = 1 THEN 'All Qtrs' ELSE quarter END AS qtr,
     ROUND(SUM(revenue), 2) AS quarterly_revenue
 FROM monthly_revenue
 GROUP BY ROLLUP (sale_year, quarter, month_name)
@@ -329,13 +329,13 @@ ORDER BY yr ASC, qtr ASC;
 --     ROLLUP → 4 sets, grp_id values: 0, 1, 3, 7
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(category)    = 1 THEN 'All Categories'    ELSE category    END AS category_label,
+    CASE WHEN GROUPING(category) = 1 THEN 'All Categories' ELSE category END AS category_label,
     CASE WHEN GROUPING(subcategory) = 1 THEN 'All Subcategories' ELSE subcategory END AS subcategory_label,
-    CASE WHEN GROUPING(product)     = 1 THEN 'All Products'      ELSE product     END AS product_label,
-    ROUND(SUM(revenue), 2)                              AS total_revenue,
-    SUM(units_sold)                                     AS total_units,
+    CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
+    ROUND(SUM(revenue), 2) AS total_revenue,
+    SUM(units_sold) AS total_units,
     ROUND(SUM(revenue) / NULLIF(SUM(units_sold), 0), 2) AS avg_unit_price,
-    GROUPING_ID(category, subcategory, product)         AS grp_id
+    GROUPING_ID(category, subcategory, product) AS grp_id
 FROM product_sales
 GROUP BY ROLLUP (category, subcategory, product)
 ORDER BY grp_id ASC, category_label ASC, subcategory_label ASC, product_label ASC;
@@ -354,7 +354,7 @@ ORDER BY grp_id ASC, category_label ASC, subcategory_label ASC, product_label AS
 SELECT
     region,
     product,
-    SUM(amount)                  AS total_sales,
+    SUM(amount) AS total_sales,
     GROUPING_ID(region, product) AS grp_id
 FROM sales
 GROUP BY ROLLUP (region, product)
@@ -365,7 +365,7 @@ ORDER BY grp_id ASC, region ASC NULLS LAST, product ASC NULLS LAST;
 SELECT
     region,
     product,
-    SUM(amount)                  AS total_sales,
+    SUM(amount) AS total_sales,
     GROUPING_ID(region, product) AS grp_id
 FROM sales
 GROUP BY ROLLUP (product, region)

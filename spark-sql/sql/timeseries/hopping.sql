@@ -221,7 +221,7 @@ FROM (
         *,
         RANK() OVER (PARTITION BY region ORDER BY total_revenue DESC) AS rnk
     FROM aggregated
-)
+) AS ranked
 WHERE rnk = 1
 ORDER BY region;
 -- Result: the single busiest hopping window per region

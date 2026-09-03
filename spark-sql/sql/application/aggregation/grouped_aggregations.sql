@@ -46,7 +46,7 @@ SELECT
     SUM(saleprice) AS total_sales,
     COUNT(*) AS sale_count
 FROM allsales
-GROUP BY ROLLUP(makename, color)
+GROUP BY ROLLUP (makename, color)
 ORDER BY makename NULLS LAST, color NULLS LAST;
 
 -- =============================================================================
@@ -58,7 +58,7 @@ SELECT
     SUM(saleprice) AS total_sales,
     COUNT(*) AS sale_count
 FROM allsales
-GROUP BY CUBE(makename, color)
+GROUP BY CUBE (makename, color)
 ORDER BY makename NULLS LAST, color NULLS LAST;
 
 -- =============================================================================

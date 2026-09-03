@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-
 from tests._helpers import execute_sql_file, statement_containing
 
 if TYPE_CHECKING:
@@ -13,9 +12,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.spark]
 
 
 class TestCondition:
-    def test_comparison_query_comes_from_source(
-        self: TestCondition, spark: SparkSession
-    ) -> None:
+    def test_comparison_query_comes_from_source(self: TestCondition, spark: SparkSession) -> None:
         execute_sql_file(spark, "sql/condition/comparison.sql")
         between_statement = statement_containing(
             "sql/condition/comparison.sql",
@@ -33,9 +30,7 @@ class TestCondition:
         assert results.filter("product_name = 'Desk'").count() == 1
         assert featured.count() == 4
 
-    def test_logical_query_comes_from_source(
-        self: TestCondition, spark: SparkSession
-    ) -> None:
+    def test_logical_query_comes_from_source(self: TestCondition, spark: SparkSession) -> None:
         execute_sql_file(spark, "sql/condition/logical.sql")
         distinct_statement = statement_containing(
             "sql/condition/logical.sql",
@@ -53,9 +48,7 @@ class TestCondition:
         assert complex_result.count() == 4
         assert complex_result.filter("emp_name = 'Grace'").count() == 1
 
-    def test_pattern_query_comes_from_source(
-        self: TestCondition, spark: SparkSession
-    ) -> None:
+    def test_pattern_query_comes_from_source(self: TestCondition, spark: SparkSession) -> None:
         execute_sql_file(spark, "sql/condition/pattern.sql")
         ilike_statement = statement_containing(
             "sql/condition/pattern.sql",

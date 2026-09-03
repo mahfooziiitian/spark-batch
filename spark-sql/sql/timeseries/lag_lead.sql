@@ -16,16 +16,16 @@ FROM
     VALUES
     (DATE '2024-01-01', 'US', 120.0, 30),
     (DATE '2024-01-02', 'US', 200.0, 45),
-    (DATE '2024-01-03', 'US',  80.0, 18),
+    (DATE '2024-01-03', 'US', 80.0, 18),
     (DATE '2024-01-04', 'US', 300.0, 62),
     (DATE '2024-01-05', 'US', 150.0, 35),
-    (DATE '2024-01-06', 'US',  90.0, 22),
+    (DATE '2024-01-06', 'US', 90.0, 22),
     (DATE '2024-01-07', 'US', 210.0, 50),
-    (DATE '2024-01-01', 'CA',  60.0, 14),
-    (DATE '2024-01-02', 'CA',  90.0, 20),
+    (DATE '2024-01-01', 'CA', 60.0, 14),
+    (DATE '2024-01-02', 'CA', 90.0, 20),
     (DATE '2024-01-03', 'CA', 110.0, 25),
     (DATE '2024-01-04', 'CA', 140.0, 32),
-    (DATE '2024-01-05', 'CA',  70.0, 16),
+    (DATE '2024-01-05', 'CA', 70.0, 16),
     (DATE '2024-01-06', 'CA', 130.0, 29),
     (DATE '2024-01-07', 'CA', 160.0, 38)
         AS daily_metrics (sale_date, region, revenue, orders);
@@ -129,7 +129,7 @@ WITH flagged AS (
         revenue,
         CASE
             WHEN revenue > LAG(revenue, 1) OVER (PARTITION BY region ORDER BY sale_date)
-            THEN 1
+                THEN 1
             ELSE 0
         END AS is_growth
     FROM daily_metrics
@@ -172,8 +172,8 @@ FROM
     ('alice', TIMESTAMP '2024-01-05 10:00:00', 'purchase', 29.99),
     ('alice', TIMESTAMP '2024-01-10 14:30:00', 'purchase', 15.00),
     ('alice', TIMESTAMP '2024-01-18 09:00:00', 'purchase', 75.50),
-    ('bob',   TIMESTAMP '2024-01-03 08:00:00', 'purchase', 10.00),
-    ('bob',   TIMESTAMP '2024-01-12 16:00:00', 'purchase', 55.00)
+    ('bob', TIMESTAMP '2024-01-03 08:00:00', 'purchase', 10.00),
+    ('bob', TIMESTAMP '2024-01-12 16:00:00', 'purchase', 55.00)
         AS purchases (user_id, event_time, event_type, amount);
 
 SELECT
@@ -182,8 +182,10 @@ SELECT
     amount,
     LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time) AS prev_purchase_time,
     ROUND(
-        (UNIX_TIMESTAMP(event_time)
-         - UNIX_TIMESTAMP(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time)))
+        (
+            UNIX_TIMESTAMP(event_time)
+            - UNIX_TIMESTAMP(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time))
+        )
         / 86400.0,
         1
     ) AS days_since_last_purchase
@@ -212,11 +214,7 @@ SELECT
     event_time,
     status,
     LAG(status) OVER (PARTITION BY device_id ORDER BY event_time) AS prev_status,
-    CASE
-        WHEN status <> LAG(status) OVER (PARTITION BY device_id ORDER BY event_time)
-        THEN TRUE
-        ELSE FALSE
-    END AS is_transition
+    COALESCE(status <> LAG(status) OVER (PARTITION BY device_id ORDER BY event_time), FALSE) AS is_transition
 FROM device_status
 ORDER BY device_id, event_time;
 -- Result: rows where is_transition = TRUE mark the exact moment status changed

@@ -141,3 +141,9 @@ ORDER BY user_id, session_id;
 > The red dashed line marks where a gap exceeds the 30-minute timeout, triggering a new session.
 
 <div id="viz-session" class="ts-viz"></div>
+
+---
+
+!!! note "Related"
+    For the sequence/SQL take on gap-based grouping (session numbering, boundaries,
+    session-over-session comparison), see [Sessionization](../../sequence/sessionization.md).

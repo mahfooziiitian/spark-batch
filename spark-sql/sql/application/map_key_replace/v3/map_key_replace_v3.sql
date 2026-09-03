@@ -20,9 +20,9 @@ SELECT
         aggregate(
             transform(
                 map_entries(original_map),
-                kv -> struct(
-                    coalesce(key_map[kv.key], kv.key) as new_key, --noqa: RF01
-                    kv.value as value --noqa: RF01
+                kv -> STRUCT(
+                    coalesce(key_map[kv.key], kv.key) AS new_key, --noqa: RF01
+                    kv.value AS value --noqa: RF01
                 )
             ),
             cast(array() AS ARRAY<STRUCT<new_key: string, value: string>>),

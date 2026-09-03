@@ -171,7 +171,7 @@ FROM (
         name,
         EXPLODE(amounts) AS amount
     FROM orders
-)
+) AS exploded
 GROUP BY name;
 
 ---

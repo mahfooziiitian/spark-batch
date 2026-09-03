@@ -20,11 +20,12 @@ SELECT
     a.saleprice,
     a.saledate
 FROM allsales AS a
-WHERE a.makename IN (
-    SELECT mk.makename
-    FROM make AS mk
-    WHERE mk.country = 'Italy'
-)
+WHERE
+    a.makename IN (
+        SELECT mk.makename
+        FROM make AS mk
+        WHERE mk.country = 'Italy'
+    )
 ORDER BY a.makename, a.saledate;
 
 -- =============================================================================
@@ -36,12 +37,14 @@ ORDER BY a.makename, a.saledate;
 
 SELECT DISTINCT a.customername
 FROM allsales AS a
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM allsales AS a2
-    WHERE a2.customername = a.customername
-    AND a2.makename = 'Ferrari'
-)
+WHERE
+    NOT EXISTS (
+        SELECT 1
+        FROM allsales AS a2
+        WHERE
+            a2.customername = a.customername
+            AND a2.makename = 'Ferrari'
+    )
 ORDER BY a.customername;
 
 -- =============================================================================
@@ -53,14 +56,15 @@ SELECT
     a.saleprice,
     YEAR(a.saledate) AS sale_year
 FROM allsales AS a
-WHERE a.saleprice > (
-    SELECT AVG(s.saleprice)
-    FROM allsales AS s
-    WHERE YEAR(s.saledate) = (
-        SELECT MAX(YEAR(s2.saledate))
-        FROM allsales AS s2
+WHERE
+    a.saleprice > (
+        SELECT AVG(s.saleprice)
+        FROM allsales AS s
+        WHERE YEAR(s.saledate) = (
+            SELECT MAX(YEAR(s2.saledate))
+            FROM allsales AS s2
+        )
     )
-)
 ORDER BY a.saleprice DESC;
 
 -- =============================================================================
@@ -71,7 +75,8 @@ SELECT
     a.makename,
     a.saleprice
 FROM allsales AS a
-WHERE a.saleprice BETWEEN
+WHERE
+    a.saleprice BETWEEN
     (
         SELECT MIN(s.saleprice)
         FROM allsales AS s
@@ -109,12 +114,13 @@ SELECT
     a.saleprice,
     YEAR(a.saledate) AS sale_year
 FROM allsales AS a
-WHERE YEAR(a.saledate) = 2017
-AND a.saleprice > (
-    SELECT AVG(s.saleprice)
-    FROM allsales AS s
-    WHERE YEAR(s.saledate) = 2016
-)
+WHERE
+    YEAR(a.saledate) = 2017
+    AND a.saleprice > (
+        SELECT AVG(s.saleprice)
+        FROM allsales AS s
+        WHERE YEAR(s.saledate) = 2016
+    )
 ORDER BY a.makename, a.saleprice;
 
 -- =============================================================================

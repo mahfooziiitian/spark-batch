@@ -1,11 +1,12 @@
 -- ============================================================
--- Topic: Next-event matching — window-function approach
+-- Topic: Next-event matching — consumption pairing
 -- Dialect: Databricks / Spark SQL 3.5
--- Description: For each 'Y' event, find the first subsequent
---              'X' event for the same user and return the time
---              difference. Uses a forward-fill technique with
---              MIN(CASE …) OVER (ROWS BETWEEN CURRENT ROW AND
---              UNBOUNDED FOLLOWING). Single scan — no self-join.
+-- Description: Pairs each Y with at most one X so that every X
+--              is consumed by exactly one Y. Uses a cumulative
+--              SUM to assign each event to a "Y group":
+--              each Y event increments the group counter and
+--              subsequent non-Y events inherit that counter.
+--              Within each group the first X is the match.
 --
 --              event_id provides a stable tiebreaker when two
 --              events share the same timestamp.
@@ -88,49 +89,75 @@ WITH events AS (
         'Y' AS event_type
 ),
 
--- Step 1: for every row, find the MIN event_time of all 'X' rows
---         at or after the current row within the same user.
---         Non-X rows contribute NULL to the MIN, which is ignored.
---         CURRENT ROW is safe because a Y row's CASE returns NULL.
-with_next_x AS (
+-- Step 1: assign a y_group — each Y increments the counter,
+--         subsequent events inherit it until the next Y.
+with_y_group AS (
     SELECT
+        event_id,
         user_id,
         event_time,
         event_type,
-        MIN(
-            CASE WHEN event_type = 'X' THEN event_time END
+        SUM(
+            CASE WHEN event_type = 'Y' THEN 1 ELSE 0 END
         ) OVER (
             PARTITION BY user_id
             ORDER BY event_time, event_id
-            ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING
-        ) AS next_x_time
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS y_group
     FROM events
+),
+
+-- Step 2: extract each Y row's timestamp
+y_rows AS (
+    SELECT
+        user_id,
+        event_time AS y_time,
+        y_group
+    FROM with_y_group
+    WHERE event_type = 'Y'
+),
+
+-- Step 3: within each y_group, find the first X
+x_first AS (
+    SELECT
+        user_id,
+        y_group,
+        MIN(event_time) AS x_time
+    FROM with_y_group
+    WHERE event_type = 'X'
+    GROUP BY
+        user_id,
+        y_group
 )
 
--- Step 2: keep only Y rows, compute elapsed time
+-- Step 4: pair and compute elapsed time
 SELECT
-    user_id,
-    event_time                                    AS y_time,
-    next_x_time                                   AS x_time,
-    TIMESTAMPDIFF(SECOND, event_time, next_x_time) AS diff_seconds
-FROM with_next_x
-WHERE event_type = 'Y'
+    y.user_id,
+    y.y_group,
+    y.y_time,
+    x.x_time,
+    TIMESTAMPDIFF(SECOND, y.y_time, x.x_time) AS diff_seconds
+FROM y_rows AS y
+LEFT JOIN x_first AS x
+    ON
+        y.user_id = x.user_id
+        AND y.y_group = x.y_group
 ORDER BY
-    user_id,
-    event_time;
+    y.user_id,
+    y.y_time;
 
 -- Expected output:
--- +---------+---------------------+---------------------+--------------+
--- | user_id | y_time              | x_time              | diff_seconds |
--- +---------+---------------------+---------------------+--------------+
--- |       1 | 2024-03-01 10:05:00 | 2024-03-01 10:10:00 |          300 |
--- |       1 | 2024-03-01 10:20:00 | 2024-03-01 10:45:00 |         1500 |
--- |       2 | 2024-03-01 11:00:00 | 2024-03-01 11:10:00 |          600 |
--- |       2 | 2024-03-01 11:03:00 | 2024-03-01 11:10:00 |          420 |
--- |       2 | 2024-03-01 12:00:00 | NULL                |         NULL |
--- +---------+---------------------+---------------------+--------------+
+-- +---------+---------+---------------------+---------------------+--------------+
+-- | user_id | y_group | y_time              | x_time              | diff_seconds |
+-- +---------+---------+---------------------+---------------------+--------------+
+-- |       1 |       1 | 2024-03-01 10:05:00 | 2024-03-01 10:10:00 |          300 |
+-- |       1 |       2 | 2024-03-01 10:20:00 | 2024-03-01 10:45:00 |         1500 |
+-- |       2 |       1 | 2024-03-01 11:00:00 | NULL                |         NULL |
+-- |       2 |       2 | 2024-03-01 11:03:00 | 2024-03-01 11:10:00 |          420 |
+-- |       2 |       3 | 2024-03-01 12:00:00 | NULL                |         NULL |
+-- +---------+---------+---------------------+---------------------+--------------+
 --
--- Y at 10:05 → next X at 10:10 = 5 min (noise events B, C skipped).
--- Unmatched Y rows (no subsequent X) naturally return NULL.
--- Advantage: single-pass — avoids the quadratic explosion of a
--- self-join when many Y and X events share the same user.
+-- Key difference from the independent approach:
+--   User 2, Y at 11:00 (group 1) gets NO X because the next Y at
+--   11:03 (group 2) starts a new group before X at 11:10 arrives.
+--   Each X is consumed by the most recent preceding Y.

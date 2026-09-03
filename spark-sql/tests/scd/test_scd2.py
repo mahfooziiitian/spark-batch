@@ -15,7 +15,6 @@ from pyspark.sql.types import (
     StructField,
     StructType,
 )
-
 from tests._helpers import assert_query_in_source, create_view
 
 if TYPE_CHECKING:
@@ -206,17 +205,11 @@ class TestSCD2:
             ],
             schema=self._target_schema(),
         )
-        assert_df_equality(
-            actual, expected, ignore_row_order=True, ignore_nullable=True
-        )
+        assert_df_equality(actual, expected, ignore_row_order=True, ignore_nullable=True)
 
     def test_new_record_inserted(self: TestSCD2, spark: SparkSession) -> None:
         self._register_views(spark)
-        inserted = (
-            self._run_merge(spark)
-            .filter("customer_id = 4 AND is_current = TRUE")
-            .first()
-        )
+        inserted = self._run_merge(spark).filter("customer_id = 4 AND is_current = TRUE").first()
         assert inserted is not None
         assert inserted.effective_from == date(2024, 6, 15)
 
@@ -225,12 +218,7 @@ class TestSCD2:
         result = self._run_merge(spark).filter("customer_id = 1")
         assert result.count() == 2
         assert result.filter("is_current = TRUE AND city = 'Boston'").count() == 1
-        assert (
-            result.filter(
-                "is_current = FALSE AND effective_to = DATE '2024-06-15'"
-            ).count()
-            == 1
-        )
+        assert result.filter("is_current = FALSE AND effective_to = DATE '2024-06-15'").count() == 1
 
     def test_unchanged_record_skipped(self: TestSCD2, spark: SparkSession) -> None:
         self._register_views(spark)
@@ -243,25 +231,15 @@ class TestSCD2:
         first_run = self._run_merge(spark)
         first_run.createOrReplaceTempView("dim_customer")
         second_run = self._run_merge(spark)
-        assert_df_equality(
-            first_run, second_run, ignore_row_order=True, ignore_nullable=True
-        )
+        assert_df_equality(first_run, second_run, ignore_row_order=True, ignore_nullable=True)
 
     def test_no_duplicate_active_rows(self: TestSCD2, spark: SparkSession) -> None:
         self._register_views(spark)
         result = self._run_merge(spark)
-        duplicates = (
-            result.filter("is_current = TRUE")
-            .groupBy("customer_id")
-            .count()
-            .filter("count > 1")
-            .count()
-        )
+        duplicates = result.filter("is_current = TRUE").groupBy("customer_id").count().filter("count > 1").count()
         assert duplicates == 0
 
-    def test_point_in_time_snapshot_returns_old_version(
-        self: TestSCD2, spark: SparkSession
-    ) -> None:
+    def test_point_in_time_snapshot_returns_old_version(self: TestSCD2, spark: SparkSession) -> None:
         self._register_views(spark)
         self._run_merge(spark).createOrReplaceTempView("dim_customer")
         point_in_time = spark.sql("""
@@ -271,6 +249,4 @@ class TestSCD2:
               AND (effective_to > DATE '2024-06-01' OR effective_to IS NULL)
             ORDER BY customer_id
             """)
-        assert (
-            point_in_time.filter("customer_id = 1 AND city = 'New York'").count() == 1
-        )
+        assert point_in_time.filter("customer_id = 1 AND city = 'New York'").count() == 1
