@@ -20,6 +20,7 @@ SCD patterns, time-series analysis, Catalyst optimizer internals, AQE, and execu
 | `tests/`                | pytest + chispa suite that executes the `sql/` examples and validates results                     |
 | `docs/`                 | MkDocs Material documentation site (navigation via per-directory `.pages` files)                  |
 | `Makefile`              | **Primary task runner** (`make <target>`) — see Commands below                                    |
+| `justfile`              | Cross-platform mirror of the Makefile (`just <target>`; Linux/macOS/Windows)                       |
 | `pyproject.toml`        | Central config for ruff, mypy, pytest, coverage, sqlfluff, bandit, taskipy                        |
 | `.sqlfluffignore`       | Databricks-only `.sql` files excluded from the open-source `sparksql` linter                      |
 | `.safety-policy.yml`    | Safety (v3) `scan` policy                                                                          |
@@ -28,8 +29,10 @@ SCD patterns, time-series analysis, Catalyst optimizer internals, AQE, and execu
 ## Commands
 
 The **Makefile is the primary entry point** — run `make help` to list all 35 targets.
+A **`justfile`** mirrors every target for cross-platform use (Linux/macOS/**Windows**)
+— run `just` or `just <target>` (requires [`just`](https://just.systems)).
 A parallel (older) set of `taskipy` tasks exists in `[tool.taskipy.tasks]` for
-`uv run task <name>`, but the **Makefile is authoritative** and kept up to date
+`uv run task <name>`, but the **Makefile/justfile are authoritative** and kept up to date
 (e.g. `safety scan`, sqlfluff parallelism, changed-only SQL targets).
 
 | Task         | Makefile                              | Purpose                                       |

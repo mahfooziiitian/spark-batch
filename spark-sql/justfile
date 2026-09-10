@@ -1,0 +1,173 @@
+# Cross-platform task runner (Linux, macOS, Windows) — mirror of the Makefile.
+# Requires `just` (https://just.systems) and `uv`. Run `just` or `just --list`.
+#
+# On native Windows, recipes run under PowerShell (see windows-shell below);
+# on Unix they run under sh. Every recipe is written to work in both: tool
+# invocations go through `uv run`, and the few filesystem/pipe recipes use an
+# inline `python` program instead of rm/find/xargs.
+
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
+# Allow `just uv=/path/to/uv <recipe>` and sqlfluff parallelism override.
+uv := "uv"
+sqlfluff_processes := "0"
+
+# Silence the MkDocs 2.0 deprecation banner during strict builds.
+export NO_MKDOCS_2_WARNING := "1"
+
+# Show all recipes (default).
+default:
+    @just --list
+
+# ── Setup ─────────────────────────────────────────────────────────────────────
+
+# Sync the virtualenv from uv.lock
+install:
+    {{uv}} sync --all-groups
+
+# Re-resolve and update uv.lock
+lock:
+    {{uv}} lock
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+
+# Run pytest with verbose output
+test:
+    {{uv}} run pytest -vv tests
+
+# Stop at first failure, quiet output
+test-fast:
+    {{uv}} run pytest -x -q tests
+
+# Run pytest in parallel across all CPU cores
+test-parallel:
+    {{uv}} run pytest -n auto -v --tb=short tests
+
+# Run pytest with terminal + HTML coverage report
+test-cov:
+    {{uv}} run pytest --cov=src --cov-report=term-missing --cov-report=html:reports/htmlcov tests
+
+# ── Quality ───────────────────────────────────────────────────────────────────
+
+# Run full quality pipeline
+quality: format lint type-check sql
+
+# Format code and sort imports with ruff
+format:
+    {{uv}} run ruff check --select I --fix src tests
+    {{uv}} run ruff format src tests
+
+# Check formatting and import order without modifying files
+format-check:
+    {{uv}} run ruff check --select I src tests
+    {{uv}} run ruff format --check src tests
+
+# Lint with ruff
+lint:
+    {{uv}} run ruff check src tests
+
+# Lint with ruff, auto-fixing what it can
+lint-fix:
+    {{uv}} run ruff check --fix src tests
+
+# Static type check with mypy
+type-check:
+    {{uv}} run mypy src
+
+# Fix then lint all SQL files
+sql: sql-format sql-lint
+
+# Auto-fix SQL with sqlfluff
+sql-format:
+    {{uv}} run sqlfluff fix sql --processes {{sqlfluff_processes}}
+
+# Lint SQL with sqlfluff
+sql-lint:
+    {{uv}} run sqlfluff lint sql --processes {{sqlfluff_processes}}
+
+# Fix then lint only changed SQL files
+sql-changed: sql-format-changed sql-lint-changed
+
+# Auto-fix only changed SQL files (vs HEAD)
+sql-format-changed:
+    {{uv}} run python -c "import subprocess, sys; files = subprocess.run(['git','diff','--relative','--name-only','--diff-filter=ACMR','HEAD','--','*.sql'], capture_output=True, text=True).stdout.split(); sys.exit(subprocess.run([sys.executable,'-m','sqlfluff','fix','--processes','{{sqlfluff_processes}}'] + files).returncode if files else 0)"
+
+# Lint only changed SQL files (vs HEAD)
+sql-lint-changed:
+    {{uv}} run python -c "import subprocess, sys; files = subprocess.run(['git','diff','--relative','--name-only','--diff-filter=ACMR','HEAD','--','*.sql'], capture_output=True, text=True).stdout.split(); sys.exit(subprocess.run([sys.executable,'-m','sqlfluff','lint','--processes','{{sqlfluff_processes}}'] + files).returncode if files else 0)"
+
+# ── CI ────────────────────────────────────────────────────────────────────────
+
+# Run the full CI pipeline (no auto-fixing)
+ci: format-check lint type-check sql-lint test-cov docs-build
+
+# Run the recommended pre-commit gate
+pre-commit: quality docs-build test
+
+# ── Security ──────────────────────────────────────────────────────────────────
+
+# Run all security checks
+secure: bandit safety
+
+# Static security scan with bandit
+bandit:
+    {{uv}} run bandit -c pyproject.toml -r src
+
+# Check dependencies for known CVEs (safety scan v3; uses SAFETY_API_KEY)
+safety:
+    {{uv}} run safety scan --policy-file .safety-policy.yml
+
+# ── Reporting ─────────────────────────────────────────────────────────────────
+
+# Generate HTML test report
+report-html:
+    {{uv}} run pytest --html=reports/reports.html --self-contained-html
+
+# Generate JUnit XML test report
+report-xml:
+    {{uv}} run pytest --junitxml=reports/report.xml
+
+# Generate JSON test report with coverage
+report-json:
+    {{uv}} run pytest --json-report --json-report-file=reports/report.json --cov-report=term-missing
+
+# Generate HTML coverage report
+report-cov-html:
+    {{uv}} run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing
+
+# Generate XML coverage report
+report-cov-xml:
+    {{uv}} run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+
+# Clean, build, then serve docs
+docs: clean docs-build docs-serve
+
+# Build MkDocs site
+docs-build:
+    {{uv}} run mkdocs build --strict
+
+# Serve docs on 0.0.0.0:8000
+docs-serve:
+    {{uv}} run mkdocs serve -a 0.0.0.0:8000 --livereload
+
+# Lint and fix markdown files
+docs-lint:
+    {{uv}} run pymarkdownlnt fix -r docs README.md
+
+# Check markdown files without modifying them
+docs-lint-check:
+    {{uv}} run pymarkdownlnt scan -r docs README.md
+
+# ── Build ─────────────────────────────────────────────────────────────────────
+
+# Build the package from a clean tree
+build: clean
+    {{uv}} build
+
+# ── Clean ─────────────────────────────────────────────────────────────────────
+
+# Remove caches and build artefacts (Spark artifacts included)
+clean:
+    {{uv}} run python -c "import shutil, os, glob; [shutil.rmtree(d, ignore_errors=True) for d in ['site','dist','build','reports','htmlcov','.pytest_cache','.mypy_cache','.ruff_cache','spark-warehouse','metastore_db']]; [os.remove(f) for f in glob.glob('.coverage*') + ['derby.log'] if os.path.exists(f)]; [shutil.rmtree(p, ignore_errors=True) for p in glob.glob('**/__pycache__', recursive=True) + glob.glob('**/*.egg-info', recursive=True)]; [os.remove(p) for p in glob.glob('**/*.pyc', recursive=True) + glob.glob('**/*.pyo', recursive=True)]; print('clean complete')"

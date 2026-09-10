@@ -1,5 +1,5 @@
 ---
-applyTo: "pyproject.toml,Makefile,.github/**,src/**,sql/**,tests/**"
+applyTo: "pyproject.toml,Makefile,justfile,.github/**,src/**,sql/**,tests/**"
 ---
 
 # Quality & CI
@@ -7,8 +7,10 @@ applyTo: "pyproject.toml,Makefile,.github/**,src/**,sql/**,tests/**"
 ## Task Runner
 
 The **Makefile is the primary interface** — run `make help` to list every target.
-An older `taskipy` mirror (`uv run task <name>`, in `[tool.taskipy.tasks]`) still
-exists but has drifted (e.g. it still calls the deprecated `safety check`); **prefer `make`**.
+On Windows (or any platform), the **`justfile`** mirrors the same targets: run
+`just <target>` (requires [`just`](https://just.systems)). An older `taskipy`
+mirror (`uv run task <name>`, in `[tool.taskipy.tasks]`) still exists but has
+drifted (e.g. it still calls the deprecated `safety check`); **prefer `make`/`just`**.
 
 ### Key Commands
 
