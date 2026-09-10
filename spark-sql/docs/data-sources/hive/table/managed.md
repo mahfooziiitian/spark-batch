@@ -1,35 +1,54 @@
 # :material-bee: Managed Hive Tables
 
-Managed tables are stored in the Spark/Hive warehouse directory and are fully
-managed by the catalog.
+A **managed table** (a.k.a. internal table) is one whose data *and* metadata lifecycle are
+owned by the catalog. Spark stores the files under the warehouse directory
+(`spark.sql.warehouse.dir`) and — critically — **`DROP TABLE` deletes the underlying data**.
 
 ### :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A["Hive Metastore"] --> B["Spark SQL Catalog"]
-    B --> C["Tables / Partitions / Views"]
-    C --> D["Query Execution"]
+    A["CREATE TABLE ... USING"] --> B["Warehouse Dir"]
+    B --> C["Data Files"]
+    D["DROP TABLE"] --> E["Deletes metadata AND data"]
 ```
 
 ---
 
-## :material-pin: Behavior
-
-1. Spark manages data files and metadata.
-2. Dropping the table removes both data and metadata.
-3. Best for datasets whose lifecycle is managed by Spark.
-
----
-
-## :material-flask-outline: Example
+## :material-pin: Syntax
 
 ```sql
 CREATE TABLE managed_sales (
-  id BIGINT,
+  id     BIGINT,
   amount DOUBLE
 ) USING PARQUET;
 ```
+
+No `LOCATION` clause is given — that is what makes the table managed.
+
+---
+
+## :material-magnify: Behavior
+
+1. Data is written under `spark.sql.warehouse.dir/<db>.db/<table>/`.
+2. `DESCRIBE FORMATTED` reports **`Type: MANAGED`** (verified in Spark 4).
+3. `DROP TABLE` removes both the metastore entry **and** the data files.
+4. `TRUNCATE TABLE` clears rows while keeping the schema.
+
+```sql
+DESCRIBE FORMATTED managed_sales;   -- Type -> MANAGED, Location under warehouse dir
+```
+
+---
+
+## :material-compare: Managed vs External
+
+| Aspect | Managed | External |
+|--------|---------|----------|
+| `LOCATION` clause | Omitted | Required |
+| Data location | Warehouse dir | User-specified path |
+| `DROP TABLE` deletes data | :material-check: Yes | :material-close: No |
+| Best for | Spark-owned lifecycle | Shared / pre-existing data |
 
 ---
 
@@ -37,5 +56,11 @@ CREATE TABLE managed_sales (
 
 | Scenario | Recommendation |
 |----------|----------------|
-| Managed lifecycle | Use managed tables |
-| External storage control | Use external tables |
+| Spark fully owns the dataset | Managed table |
+| Intermediate / derived tables | Managed table |
+| Data shared with other tools | [External table](external.md) |
+| Files must survive a drop | [External table](external.md) |
+
+!!! warning "DROP deletes data"
+    Dropping a managed table is destructive — the data files go with it. Use an
+    [external table](external.md) when the files must outlive the table definition.

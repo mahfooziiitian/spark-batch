@@ -1,44 +1,75 @@
 # :material-bee: Hive Table Data Sources
 
-Hive tables can use different storage formats such as Parquet, ORC, or text.
-The choice impacts performance and compatibility.
+A Hive table's **storage format** (the data source) determines how rows are encoded on
+disk, which in turn drives scan speed, compression, and predicate pushdown. Spark supports
+the modern `USING <format>` syntax as well as the classic Hive `STORED AS <format>` clause.
 
 ### :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A["Hive Metastore"] --> B["Spark SQL Catalog"]
-    B --> C["Tables / Partitions / Views"]
-    C --> D["Query Execution"]
+    A["CREATE TABLE"] --> B["USING / STORED AS"]
+    B --> C["Parquet"]
+    B --> D["ORC"]
+    B --> E["CSV / JSON / Text / Avro"]
 ```
 
 ---
 
-## :material-pin: Common Formats
+## :material-pin: Format Comparison
 
-| Format | Benefits |
-|--------|----------|
-| Parquet | Columnar, efficient scans |
-| ORC | Columnar, predicate pushdown |
-| Text | Simple, but slower |
+| Format | Columnar | Pushdown | Compression | Best for |
+|--------|----------|----------|-------------|----------|
+| **Parquet** | :material-check: | :material-check: | Snappy/Zstd | Default analytics format |
+| **ORC** | :material-check: | :material-check: | Zlib/Zstd | Hive-heavy stacks, ACID |
+| **Avro** | :material-close: (row) | Limited | Deflate | Schema evolution, streaming |
+| **CSV / Text** | :material-close: | :material-close: | Optional | Interop, ingestion staging |
+| **JSON** | :material-close: | :material-close: | Optional | Semi-structured ingestion |
 
 ---
 
-## :material-flask-outline: Example
+## :material-flask-outline: Examples
 
-```sql
-CREATE TABLE hive_sales (
-  id BIGINT,
-  amount DOUBLE
-) USING ORC;
-```
+=== "USING (Spark)"
+
+    ```sql
+    CREATE TABLE hive_sales (
+      id     BIGINT,
+      amount DOUBLE
+    ) USING ORC;
+    ```
+
+=== "STORED AS (HiveQL)"
+
+    ```sql
+    CREATE TABLE hive_sales (
+      id     BIGINT,
+      amount DOUBLE
+    ) STORED AS ORC;
+    ```
+
+=== "With options"
+
+    ```sql
+    CREATE TABLE hive_csv (
+      id     BIGINT,
+      amount DOUBLE
+    ) USING CSV
+    OPTIONS (header 'true', delimiter ',');
+    ```
 
 ---
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Analytics queries | Parquet or ORC |
-| Interop with legacy tools | Text or CSV |
-| Compression | Prefer Parquet/ORC |
+| Scenario | Format |
+|----------|--------|
+| General analytics on Spark | Parquet |
+| Hive/ACID interoperability | ORC |
+| Schema evolution / row streams | Avro |
+| Human-readable interchange | CSV / JSON |
+| Compression + fast scans | Parquet or ORC |
+
+!!! tip "Prefer columnar"
+    For analytical workloads choose Parquet or ORC — column pruning and predicate pushdown
+    dramatically cut I/O versus row formats like CSV/JSON.
