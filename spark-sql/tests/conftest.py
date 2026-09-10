@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 import pytest
@@ -8,6 +9,8 @@ from pyspark.sql import SparkSession
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+if os.environ.get("JAVA_HOME") is None:
+    os.environ["JAVA_HOME"] = os.environ.get("JAVA_HOME_17","")
 
 @pytest.fixture(scope="session")
 def spark() -> Generator[SparkSession]:
