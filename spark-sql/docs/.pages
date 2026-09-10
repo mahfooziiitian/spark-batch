@@ -1,13 +1,17 @@
 nav:
   - Home: index.md
   - spark-4
-  - schema-tables
-  - querying
-  - window-functions
-  - functions
-  - sql-scripting
-  - optimization
-  - patterns
-  - data-sources
-  - configuration
-  - internals
+  - SQL Reference:
+      - schema-tables
+      - querying
+      - window-functions
+      - functions
+      - sql-scripting
+  - Data Sources: data-sources
+  - Patterns: patterns
+  - Performance:
+      - optimization
+      - internals
+  - Operations:
+      - configuration
+      - MCP Server: mcp-server.md
