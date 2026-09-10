@@ -16,6 +16,10 @@ graph LR
 
 ## :material-map-marker: Point-in-Interval Range Join
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-range-overview" class="ts-viz"></div>
+
 A *point-in-interval* range join matches a value from one relation that falls between two values from another relation.
 
 ```sql

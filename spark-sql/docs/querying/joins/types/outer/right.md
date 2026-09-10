@@ -46,6 +46,10 @@ df_left.join(df_right, df_left.id == df_right.id, "right")
 
 ## Example
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-right" class="ts-viz"></div>
+
 **Left Table (`Customers`)**
 
 | id | name  |

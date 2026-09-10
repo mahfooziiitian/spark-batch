@@ -37,6 +37,10 @@ _Short form: `LEFT JOIN`_
 
 ## :material-chart-bar: Example
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-left" class="ts-viz"></div>
+
 **Left Table (`Customers`)**
 
 | id | name  |

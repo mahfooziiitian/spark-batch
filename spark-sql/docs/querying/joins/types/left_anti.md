@@ -103,6 +103,10 @@ LEFT ANTI JOIN department AS d
 
 ## :material-database: Example Dataset
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-anti" class="ts-viz"></div>
+
 **`employee`**
 
 | id | name            | age | department |

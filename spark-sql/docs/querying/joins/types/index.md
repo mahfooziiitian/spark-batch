@@ -35,6 +35,12 @@ graph TD
 
 ---
 
+## :material-animation-play: Interactive Comparison
+
+<div id="viz-join-types-overview" class="ts-viz"></div>
+
+---
+
 ## :material-flask-outline: Syntax Examples
 
 ```sql

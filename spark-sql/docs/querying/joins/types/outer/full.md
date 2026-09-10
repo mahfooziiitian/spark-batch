@@ -22,6 +22,10 @@ graph LR
 
 ## :material-clipboard-list-outline: Example
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-full" class="ts-viz"></div>
+
 ```sql
 SELECT
   *
@@ -86,5 +90,35 @@ classDef result fill:#caffbf,stroke:#000,stroke-width:2px;
 ```
 
 **Full Outer Join Result = All of A + All of B (matches + non-matches).**
+
+---
+
+## :material-scale-balance: Reconciliation Diagnostic
+
+A full outer join is the go-to tool for **reconciling two datasets** — proving which keys
+exist only on one side versus both. Bucket the result into `only_a` / `only_b` / `matched`
+in a single pass:
+
+```sql
+SELECT
+    SUM(CASE WHEN b.id IS NULL                        THEN 1 ELSE 0 END) AS only_a,
+    SUM(CASE WHEN a.id IS NULL                        THEN 1 ELSE 0 END) AS only_b,
+    SUM(CASE WHEN a.id IS NOT NULL AND b.id IS NOT NULL THEN 1 ELSE 0 END) AS matched
+FROM a
+FULL OUTER JOIN b ON a.id = b.id;
+-- only_a  only_b  matched
+-- 1       1       2          -- e.g. a={1,2,3}, b={2,3,4}
+```
+
+| Bucket    | Meaning                                   | Typical follow-up                     |
+|-----------|-------------------------------------------|---------------------------------------|
+| `only_a`  | Rows present in **A** but missing from B  | Orphaned/unmigrated source records    |
+| `only_b`  | Rows present in **B** but missing from A  | Extra/stale target records to purge   |
+| `matched` | Keys present on **both** sides            | Candidates for value-level comparison |
+
+!!! tip "Prefer a targeted anti-join when you only need one side"
+    If you just need the *unmatched* rows (not the full reconciliation counts), a
+    [Left Anti Join](../left_anti.md) is cheaper than a full outer join — it skips
+    materializing the matched rows entirely.
 
 ---

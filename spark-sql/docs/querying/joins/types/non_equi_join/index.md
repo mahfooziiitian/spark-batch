@@ -20,6 +20,40 @@ graph LR
 
 ---
 
+---
+
+## :material-flask-outline: Practical Example
+
+```sql
+CREATE TABLE txns (txn_id INT, customer_id INT, amount DOUBLE, txn_date DATE) USING DELTA;
+INSERT INTO txns VALUES
+    (1, 101, 45.00,   DATE '2024-01-15'),
+    (2, 102, 150.00,  DATE '2024-02-10'),
+    (5, 105, 1200.00, DATE '2024-05-01');
+
+CREATE TABLE pricing_tiers (tier STRING, min_amount DOUBLE, max_amount DOUBLE, discount_pct DOUBLE) USING DELTA;
+INSERT INTO pricing_tiers VALUES
+    ('Bronze',   0.00,    99.99,   0.0),
+    ('Silver',   100.00,  499.99,  5.0),
+    ('Platinum', 1000.00, 9999.99, 15.0);
+
+SELECT t.txn_id, t.amount, p.tier, p.discount_pct
+FROM txns t
+JOIN pricing_tiers p ON t.amount BETWEEN p.min_amount AND p.max_amount
+ORDER BY t.txn_id;
+-- Result: each transaction assigned to the pricing tier its amount falls inside.
+-- txn_id  amount   tier      discount_pct
+-- 1       45.00    Bronze    0.0
+-- 2       150.00   Silver    5.0
+-- 5       1200.00  Platinum  15.0
+```
+
+## :material-animation-play: Interactive Visualization
+
+<div id="viz-join-non-equi" class="ts-viz"></div>
+
+---
+
 ## What is a Non-Equi Inner Join?
 
 Unlike a traditional inner join (which matches rows where column values are equal), a **non-equi inner join** matches rows based on non-equality conditions, such as:

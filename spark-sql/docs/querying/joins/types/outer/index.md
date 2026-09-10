@@ -104,6 +104,12 @@ WHERE r.key IS NULL;
 
 ---
 
+## :material-animation-play: Interactive Comparison
+
+<div id="viz-join-types-overview" class="ts-viz"></div>
+
+---
+
 ## :material-flask-outline: Practical Examples
 
 ### Setup

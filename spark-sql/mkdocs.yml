@@ -97,3 +97,4 @@ extra_javascript:
   - assets/js/window-overview-viz.js
   - assets/js/application-patterns-viz.js
   - assets/js/patterns-overview-viz.js
+  - assets/js/join-viz.js

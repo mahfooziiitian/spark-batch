@@ -61,6 +61,27 @@ flowchart LR
 
 ## :material-flask-outline: Practical Examples
 
+### Setup
+
+```sql
+CREATE TABLE customers (customer_id INT, name STRING) USING DELTA;
+INSERT INTO customers VALUES (101, 'Alice'), (102, 'Bob');
+
+CREATE TABLE orders (
+    order_id INT, customer_id INT, order_date DATE, amount DOUBLE
+) USING DELTA;
+INSERT INTO orders VALUES
+    (1, 101, DATE '2024-01-10', 120.00),
+    (2, 101, DATE '2024-03-05',  80.00),
+    (7, 101, DATE '2024-06-01',  95.00),
+    (3, 102, DATE '2024-02-20',  60.00),
+    (4, 102, DATE '2024-05-20', 150.00);
+```
+
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-lateral" class="ts-viz"></div>
+
 ### :material-numeric-1-circle: Latest order per customer (correlated top-1)
 
 ```sql
@@ -73,7 +94,13 @@ JOIN LATERAL (
     WHERE customer_id = c.customer_id
     ORDER BY order_date DESC
     LIMIT 1
-) AS o ON TRUE;
+) AS o ON TRUE
+ORDER BY c.customer_id;
+-- Result: exactly one row per customer -- their most recent order, even
+-- though Alice has 3 orders and Bob has 2.
+-- customer_id  name   order_id  order_date  amount
+-- 101          Alice  7         2024-06-01  95.00
+-- 102          Bob    4         2024-05-20  150.00
 ```
 
 ### :material-numeric-2-circle: Top-N items per group

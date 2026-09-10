@@ -1,3 +1,22 @@
 nav:
   - index.md
+  - debugging_workflow.md
+  - troubleshooting_matrix.md
   - column_duplicate.md
+  - skewed_keys.md
+  - data_explosion.md
+  - duplicate_key_explosion.md
+  - null_key_trap.md
+  - cartesian_join.md
+  - incomplete_join_conditions.md
+  - scd_type2_join.md
+  - type_mismatch.md
+  - case_whitespace_mismatch.md
+  - functions_on_join_keys.md
+  - floating_point_join.md
+  - predicate_vs_filter.md
+  - outer_join_filter_pitfall.md
+  - broadcast_pitfalls.md
+  - range_join_pitfalls.md
+  - join_order_optimizer.md
+  - partition_count.md

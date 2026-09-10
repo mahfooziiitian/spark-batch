@@ -16,6 +16,37 @@ graph LR
 
 ---
 
+---
+
+## :material-flask-outline: Practical Example
+
+```sql
+CREATE TABLE products (product_name STRING) USING DELTA;
+INSERT INTO products VALUES ('Widget'), ('Gadget');
+
+CREATE TABLE regions (region_name STRING) USING DELTA;
+INSERT INTO regions VALUES ('US'), ('EU'), ('APAC');
+
+SELECT p.product_name, r.region_name
+FROM products p
+CROSS JOIN regions r
+ORDER BY p.product_name, r.region_name;
+-- Result: 2 x 3 = 6 rows -- every product paired with every region.
+-- product_name  region_name
+-- Gadget        APAC
+-- Gadget        EU
+-- Gadget        US
+-- Widget        APAC
+-- Widget        EU
+-- Widget        US
+```
+
+## :material-animation-play: Interactive Visualization
+
+<div id="viz-join-cross" class="ts-viz"></div>
+
+---
+
 ## :material-calculator: What Happens in a Cartesian Join?
 
 - **Every combination** of rows from both DataFrames is returned.

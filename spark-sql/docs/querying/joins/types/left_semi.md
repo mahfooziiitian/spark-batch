@@ -107,6 +107,10 @@ LEFT SEMI JOIN orders AS o
 
 ## :material-database: Example Dataset
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-join-semi" class="ts-viz"></div>
+
 **`customers`**
 
 | customer_id | name    | country |
