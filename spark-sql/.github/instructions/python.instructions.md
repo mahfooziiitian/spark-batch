@@ -75,6 +75,8 @@ from pyspark.sql.types import StructType, StructField, StringType, LongType
 - No bare `except` — catch specific exceptions.
 - No code at module level (no side effects on import).
 - No `inferSchema=True` — define schemas explicitly.
+- In tests, mock with the `pytest-mock` `mocker` fixture — never `unittest.mock` / `@patch`
+  (see [testing.instructions.md](testing.instructions.md)).
 
 ## DataFrame API (when used)
 

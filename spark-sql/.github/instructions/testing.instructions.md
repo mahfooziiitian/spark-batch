@@ -69,12 +69,43 @@ Every SCD implementation must test:
 4. Idempotent on rerun
 5. No duplicate active rows
 
+## Mocking
+
+Use the **`pytest-mock`** `mocker` fixture — **never** import `unittest.mock`
+(`patch`, `MagicMock`, `mock.patch`) or add `@patch` decorators directly.
+`mocker` auto-undoes every patch at test teardown, so there is no decorator
+stacking or `with` nesting.
+
+```python
+def test_lists_catalogs(mocker):
+    # patch where the name is *used*, not where it's defined
+    client = mocker.patch("spark_sql.dbx_mcp.tools.catalogs.get_workspace_client")
+    catalog = mocker.Mock(comment=None)
+    catalog.name = "main"  # set separately: `name=` is reserved by Mock
+    client.return_value.catalogs.list.return_value = [catalog]
+
+    result = list_catalogs()
+
+    client.return_value.catalogs.list.assert_called_once()
+    assert result[0]["name"] == "main"
+```
+
+- `mocker.patch("module.path")` instead of `@patch("module.path")`.
+- `mocker.Mock()` / `mocker.MagicMock()` instead of `unittest.mock.Mock()`.
+- `mocker.patch.object(obj, "attr")`, `mocker.spy(obj, "method")`,
+  `mocker.patch.dict(...)` for their `unittest.mock` equivalents.
+- Prefer `monkeypatch` for environment variables (`monkeypatch.setenv(...)`);
+  use `mocker` for objects, methods, and clients (e.g. patch `get_workspace_client`
+  so `dbx_mcp` tool tests need no live Databricks workspace).
+- Don't mock Spark itself — use the session-scoped `spark` fixture and assert on
+  real DataFrames.
+
 ## Rules
 
 - No `df.show()` or `df.printSchema()` in tests.
 - No disk writes in unit tests — assert in memory.
 - Use `tmp_path` for I/O tests.
-- Coverage minimum: 60%.
+- Coverage minimum: 60% (scoped — see [quality.instructions.md](quality.instructions.md)).
 
 ## Markers
 
