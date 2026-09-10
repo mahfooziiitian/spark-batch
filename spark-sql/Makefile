@@ -50,7 +50,8 @@ format: ## Format code and sort imports with ruff
 	$(UV) run ruff format src tests
 
 .PHONY: format-check
-format-check: ## Check formatting without modifying files
+format-check: ## Check formatting and import order without modifying files
+	$(UV) run ruff check --select I src tests
 	$(UV) run ruff format --check src tests
 
 .PHONY: lint
@@ -122,19 +123,23 @@ docs: clean docs-build docs-serve ## Clean, build, then serve docs
 
 .PHONY: docs-build
 docs-build: ## Build MkDocs site
-	NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict
+	NO_MKDOCS_2_WARNING=1 $(UV) run mkdocs build --strict
 
 .PHONY: docs-serve
-docs-serve: ## Serve docs on 0.0.0.0:8080
+docs-serve: ## Serve docs on 0.0.0.0:8000
 	$(UV) run mkdocs serve -a 0.0.0.0:8000 --livereload
 
 .PHONY: docs-lint
 docs-lint: ## Lint and fix markdown files
 	$(UV) run pymarkdownlnt fix -r docs README.md
 
+.PHONY: docs-lint-check
+docs-lint-check: ## Check markdown files without modifying them
+	$(UV) run pymarkdownlnt scan -r docs README.md
+
 # ── Build ─────────────────────────────────────────────────────────────────────
 .PHONY: build
-build: ## Build the package
+build: clean ## Build the package from a clean tree
 	$(UV) build
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
@@ -144,6 +149,7 @@ clean: ## Remove caches and build artefacts
 	rm -rf reports
 	rm -rf .pytest_cache .mypy_cache .ruff_cache
 	rm -rf htmlcov .coverage .coverage.*
+	rm -rf spark-warehouse metastore_db derby.log
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
