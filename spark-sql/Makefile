@@ -7,14 +7,31 @@ help:
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}' \
 		| sort
 
+# ── Setup ─────────────────────────────────────────────────────────────────────
+.PHONY: install
+install: ## Sync the virtualenv from uv.lock
+	uv sync --all-groups
+
+.PHONY: lock
+lock: ## Re-resolve and update uv.lock
+	uv lock
+
 # ── Tests ─────────────────────────────────────────────────────────────────────
 .PHONY: test
 test: ## Run pytest with verbose output
 	uv run pytest -vv tests
 
+.PHONY: test-fast
+test-fast: ## Stop at first failure, quiet output
+	uv run pytest -x -q tests
+
 .PHONY: test-parallel
 test-parallel: ## Run pytest in parallel across all CPU cores
 	uv run pytest -n auto -v --tb=short tests
+
+.PHONY: test-cov
+test-cov: ## Run pytest with terminal + HTML coverage report
+	uv run pytest --cov=src --cov-report=term-missing --cov-report=html:reports/htmlcov tests
 
 # ── Quality ───────────────────────────────────────────────────────────────────
 .PHONY: quality
@@ -33,20 +50,31 @@ format-check: ## Check formatting without modifying files
 lint: ## Lint with ruff
 	uv run ruff check src tests
 
+.PHONY: lint-fix
+lint-fix: ## Lint with ruff, auto-fixing what it can
+	uv run ruff check --fix src tests
+
 .PHONY: type-check
 type-check: ## Static type check with mypy
-	uv run mypy tests --disable-error-code index
+	uv run mypy src
 
 .PHONY: sql
 sql: sql-format sql-lint ## Fix then lint all SQL files
 
 .PHONY: sql-format
 sql-format: ## Auto-fix SQL with sqlfluff
-	uv run sqlfluff fix src
+	uv run sqlfluff fix sql --force
 
 .PHONY: sql-lint
 sql-lint: ## Lint SQL with sqlfluff
-	uv run sqlfluff lint src
+	uv run sqlfluff lint sql
+
+# ── CI ────────────────────────────────────────────────────────────────────────
+.PHONY: ci
+ci: format-check lint type-check sql-lint test-cov docs-build ## Run the full CI pipeline (no auto-fixing)
+
+.PHONY: pre-commit
+pre-commit: quality docs-build test ## Run the recommended pre-commit gate
 
 # ── Security ──────────────────────────────────────────────────────────────────
 .PHONY: secure
@@ -93,8 +121,8 @@ docs-build: ## Build MkDocs site
 docs-serve: ## Serve docs on 0.0.0.0:8080
 	uv run mkdocs serve -a 0.0.0.0:8000 --livereload
 
-.PHONY: lint-md
-lint-md: ## Lint markdown files
+.PHONY: docs-lint
+docs-lint: ## Lint and fix markdown files
 	uv run pymarkdownlnt fix -r docs README.md
 
 # ── Build ─────────────────────────────────────────────────────────────────────

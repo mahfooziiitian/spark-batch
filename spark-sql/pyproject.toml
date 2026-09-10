@@ -27,6 +27,8 @@ dependencies = [
     "databricks-sdk>=0.105.0",
     "mcp[cli]<2.0.0",
     "pydantic-settings>=2.14.2",
+    "sqlfluff>=4.2.2",
+    "mkdocs-material>=9.7.6",
 ]
 
 [project.urls]
@@ -219,7 +221,7 @@ clean = "rm -rf __pycache__ .pytest_cache .mypy_cache .ruff_cache site reports/h
 ci = "task format_check && task lint && task type_check && task sql_lint && task test_cov && task docs_build"
 
 [project.scripts]
-dbx-copilot-mcp = "spark_sql.server:main"
+dbx-copilot-mcp = "spark_sql.dbx_mcp.server:main"
 
 [tool.uv]
 package = true

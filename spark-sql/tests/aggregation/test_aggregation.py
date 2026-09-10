@@ -116,8 +116,7 @@ class TestAggregation:
                 (11, "West", "Retail", "Gadget", 2, 160.0, date(2024, 4, 18)),
                 (12, None, "Online", "Widget", 4, 200.0, date(2024, 4, 25)),
             ],
-            "order_id bigint, region string, channel string, product string, "
-            "quantity int, amount double, order_date date",
+            "order_id bigint, region string, channel string, product string, quantity int, amount double, order_date date",
         )
 
     def test_group_by_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
@@ -138,9 +137,12 @@ class TestAggregation:
 
         sliced = spark.sql(filter_statement)
         assert sliced.count() == 4
-        assert sliced.filter(
-            "region = 'East' AND total_orders = 4 AND online_orders = 3 AND gadget_sales = 830.0",
-        ).count() == 1
+        assert (
+            sliced.filter(
+                "region = 'East' AND total_orders = 4 AND online_orders = 3 AND gadget_sales = 830.0",
+            ).count()
+            == 1
+        )
 
     def test_simple_aggregation_queries_come_from_source(self: TestAggregation, spark: SparkSession) -> None:
         self._register_sales(spark)

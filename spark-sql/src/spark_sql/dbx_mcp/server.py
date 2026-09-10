@@ -1,16 +1,22 @@
-from mcp.server.fastmcp.server import FastMCP
+import logging
+
+from mcp.server.fastmcp import FastMCP
 
 from spark_sql.dbx_mcp.tools.catalogs import list_catalogs as list_catalogs_impl
-from spark_sql.dbx_mcp.tools.grants import (
-    grant_catalog_privileges as grant_catalog_privileges_impl,
-)
-from spark_sql.dbx_mcp.tools.grants import (
-    revoke_catalog_privileges as revoke_catalog_privileges_impl,
-)
+from spark_sql.dbx_mcp.tools.grants import grant_catalog_privileges as grant_catalog_privileges_impl
+from spark_sql.dbx_mcp.tools.grants import revoke_catalog_privileges as revoke_catalog_privileges_impl
 from spark_sql.dbx_mcp.tools.grants import show_grants as show_grants_impl
 from spark_sql.dbx_mcp.tools.schemas import list_schemas as list_schemas_impl
 from spark_sql.dbx_mcp.tools.system_tables import query_system_table as query_system_table_impl
 from spark_sql.dbx_mcp.tools.tables import list_tables as list_tables_impl
+from spark_sql.dbx_mcp.tools.warehouses import get_warehouse_id as get_warehouse_id_impl
+from spark_sql.dbx_mcp.tools.warehouses import list_warehouses as list_warehouses_impl
+
+# NOTE: this server communicates over stdio (see .mcp.json) — logging must never write to
+# stdout, or it would corrupt the MCP JSON-RPC stream. ``basicConfig`` defaults to stderr,
+# which is safe; do not pass ``stream=sys.stdout`` here or anywhere else in this package.
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s — %(message)s")
+logger = logging.getLogger(__name__)
 
 mcp = FastMCP(
     "Databricks Copilot MCP",
@@ -52,6 +58,30 @@ def list_tables(
     return list_tables_impl(
         catalog_name=catalog_name,
         schema_name=schema_name,
+    )
+
+
+@mcp.tool()
+def list_warehouses() -> list[dict]:
+    """
+    List SQL warehouses visible to the configured Databricks PAT, with
+    their ID, name, and current state.
+    """
+
+    return list_warehouses_impl()
+
+
+@mcp.tool()
+def get_warehouse_id(
+    warehouse_name: str,
+) -> str | None:
+    """
+    Resolve a SQL warehouse display name to its ID. Returns None if no
+    warehouse with that name exists in the workspace.
+    """
+
+    return get_warehouse_id_impl(
+        warehouse_name=warehouse_name,
     )
 
 
@@ -120,7 +150,8 @@ def revoke_catalog_privileges(
     )
 
 
-def main():
+def main() -> None:
+    logger.info("Starting Databricks Copilot MCP server (stdio transport)")
     mcp.run()
 
 
