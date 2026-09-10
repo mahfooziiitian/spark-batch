@@ -7,8 +7,9 @@ applyTo: "docs/**/*.md,mkdocs.yml"
 ## Build & Serve
 
 ```bash
-uv run task docs_build   # strict mode — zero warnings
-uv run task docs_serve   # localhost:8080
+make docs-build        # strict mode — zero warnings (uv run task docs_build)
+make docs-serve        # http://0.0.0.0:8000 with live reload
+make docs-lint         # fix markdown (pymarkdownlnt); docs-lint-check to only check
 ```
 
 ## Navigation

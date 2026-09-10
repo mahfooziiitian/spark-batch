@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.sql,docs/**/*.md"
+applyTo: "sql/**/*.sql,docs/**/*.md"
 ---
 
 # Databricks-Specific Features
@@ -8,6 +8,11 @@ applyTo: "src/**/*.sql,docs/**/*.md"
 
 This file covers features that **only work on Databricks Runtime** (not open-source Spark).
 Always label these with `[Databricks]` in docs and `-- [Databricks]` in SQL comments.
+
+> **Linting:** these constructs are not parseable by the open-source `sparksql`
+> dialect, so any `.sql` file that uses them **must** be added to `.sqlfluffignore`
+> (see [sql.instructions.md](sql.instructions.md)). This keeps `make sql-lint` green
+> while the file remains valid on Databricks Runtime.
 
 ## Delta Lake DML
 

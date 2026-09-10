@@ -6,12 +6,16 @@ applyTo: "src/**/*.py,tests/**/*.py"
 
 ## Role in This Repository
 
-PySpark is used primarily to **execute and validate Spark SQL** — not as a DataFrame-first API.
-Most logic lives in `.sql` files; Python wraps execution, testing, and orchestration.
+`src/spark_sql/` is a **Python package**, not a scripts folder. It contains:
+the SQL test helpers (`_helpers.py`) that execute the `sql/` examples, the
+`dbx_mcp` Databricks MCP server (entry point `dbx-copilot-mcp`), and `util`/`model`
+CLI tooling. PySpark is used primarily to **execute and validate Spark SQL** —
+most logic lives in `.sql` files under `sql/`; Python wraps execution and testing.
 
 ## Tooling
 
-All commands via `uv run task <name>`. Config lives exclusively in `pyproject.toml`.
+Run via the **Makefile** (`make lint`, `make format`, `make type-check`); the
+`uv run task <name>` mirror also works. Config lives in `pyproject.toml`.
 
 ## SparkSession
 
@@ -42,9 +46,13 @@ result = spark.sql("""
     GROUP BY customer_id
 """)
 
-# For file-based SQL
+# For file-based SQL, prefer the repo helper (resolves paths under sql/)
+from spark_sql._helpers import execute_sql_file
+execute_sql_file(spark, "sql/scd/type2/expire.sql")
+
+# ...or read directly from the sql/ tree
 from pathlib import Path
-sql_text = Path("src/scd/type2/expire.sql").read_text()
+sql_text = Path("sql/scd/type2/expire.sql").read_text()
 spark.sql(sql_text)
 ```
 

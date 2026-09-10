@@ -1,55 +1,71 @@
 ---
-applyTo: "pyproject.toml,.github/**,src/**,tests/**"
+applyTo: "pyproject.toml,Makefile,.github/**,src/**,sql/**,tests/**"
 ---
 
 # Quality & CI
 
 ## Task Runner
 
-All tasks: `uv run task <name>`. Defined in `[tool.taskipy.tasks]` in `pyproject.toml`.
+The **Makefile is the primary interface** — run `make help` to list every target.
+An older `taskipy` mirror (`uv run task <name>`, in `[tool.taskipy.tasks]`) still
+exists but has drifted (e.g. it still calls the deprecated `safety check`); **prefer `make`**.
 
 ### Key Commands
 
-| Command | Purpose |
-|---------|---------|
-| `uv run task quality` | Full pipeline: import → format → lint → type_check → sql |
-| `uv run task test` | pytest -vv tests/ |
-| `uv run task docs_build` | MkDocs strict build |
-| `uv run task secure` | bandit + safety |
+| Makefile          | taskipy (legacy)         | Purpose                            |
+|-------------------|--------------------------|------------------------------------|
+| `make quality`    | `uv run task quality`    | format → lint → type-check → sql   |
+| `make test-fast`  | `uv run task test_fast`  | pytest, stop on first failure      |
+| `make test-cov`   | `uv run task test_cov`   | pytest + coverage gate             |
+| `make docs-build` | `uv run task docs_build` | MkDocs strict build                |
+| `make secure`     | `uv run task secure`     | bandit + `safety scan`             |
+| `make ci`         | `uv run task ci`         | non-mutating full pipeline         |
 
 ## Pre-commit Gate
 
 ```bash
-uv run task quality
-uv run task docs_build
-uv run task test
+make pre-commit   # quality + docs-build + test
 ```
 
 ## Configuration
 
-All tool config lives **exclusively in `pyproject.toml`**. Never create:
-`.flake8`, `setup.cfg`, `.mypy.ini`, `.bandit`, `.isort.cfg`, or `ruff.toml`.
+Tool config lives in `pyproject.toml`. **Do not** create redundant configs
+(`.flake8`, `setup.cfg`, `.mypy.ini`, `.isort.cfg`, `ruff.toml`). A few tools
+legitimately need their own file — leave these in place:
 
-| Setting | Value |
-|---------|-------|
-| Max line length | 128 |
-| Python target | 3.11 |
-| SQL dialect | Databricks |
-| Coverage minimum | 60% |
-| Ruff rules | E, F, W, I, UP |
+| File                 | Owned by | Purpose                                              |
+|----------------------|----------|------------------------------------------------------|
+| `.sqlfluffignore`    | sqlfluff | Excludes Databricks-only `.sql` from `sparksql` lint |
+| `.safety-policy.yml` | safety   | v3 `scan` policy (severity gate + report settings)   |
+| `.pages`             | mkdocs   | Per-directory navigation                             |
+
+| Setting          | Value                                                                        |
+|------------------|------------------------------------------------------------------------------|
+| Max line length  | 128                                                                          |
+| Python target    | 3.11 (`requires-python >=3.11,<3.13`)                                        |
+| SQL dialect      | `sparksql` (open-source Spark 4)                                             |
+| Coverage minimum | 60% — scoped to the tested SQL helper; `dbx_mcp`/`util`/`model` are omitted  |
+| Ruff rules       | `E, F, W, I, UP, B, SIM, TCH, RUF`                                           |
 
 ## Dependency Management
 
 ```bash
-uv add <package>              # runtime
-uv add --group dev <package>  # dev
+uv add <package>              # runtime  (keep runtime deps minimal)
+uv add --group dev <package>  # dev / docs / tooling
 ```
 
 - Always commit `uv.lock`.
-- Pin breaking majors (e.g. `mkdocs>=1.6,<2`).
+- Pin breaking majors (e.g. `mkdocs>=1.6,<2`, `mcp[cli]>=1.0.0,<2.0.0`).
+- **Runtime vs dev:** runtime deps are only what the `spark_sql` package imports
+  (`pyspark`, `databricks-sdk`, `mcp[cli]`, `pydantic-settings`, `python-dotenv`).
+  Linters, docs, and notebook tooling belong in the `dev` group.
 
 ## Security
 
-- Bandit scans `src/` only (excludes tests, .venv).
-- Never suppress findings without `# nosec: <justification>`.
+- `make bandit` scans `src/` only (config in `pyproject.toml`).
+  Suppress a false positive with `# nosec <ID>` **plus a justification**
+  (e.g. `# nosec B105 - env var name placeholder, not a secret`).
+- `make safety` runs `safety scan` (v3), which authenticates via the
+  `SAFETY_API_KEY` environment variable and reads `.safety-policy.yml`.
+  The gate passes when the declared `pyproject.toml` deps are clean.
 - Never commit secrets.

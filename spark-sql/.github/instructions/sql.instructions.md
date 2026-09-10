@@ -2,13 +2,41 @@
 applyTo: "sql/**/*.sql, docs/**/*.md"
 ---
 
-# SQL — Spark SQL (Databricks Dialect)
+# SQL — Spark SQL (open-source `sparksql` dialect)
+
+`.sql` examples live under **`sql/`** (repo root), not `src/`. Tests execute them
+through `src/spark_sql/_helpers.py` (`read_sql_text` / `execute_sql_file`).
 
 ## Linting
 
 ```bash
-uv run task sql        # fix + lint
-uv run task sql_lint   # lint only
+make sql               # fix + lint all SQL (parallel via SQLFLUFF_PROCESSES=0)
+make sql-lint          # lint only
+make sql-lint-changed  # lint only SQL changed vs HEAD
+```
+
+sqlfluff is configured for `dialect = sparksql` in `pyproject.toml`.
+
+### Databricks-only files
+
+SQL using Databricks-exclusive constructs (`OPTIMIZE … ZORDER`, `WHEN NOT MATCHED
+BY SOURCE`, some `TABLESAMPLE` variants, …) cannot be parsed by the `sparksql`
+dialect. List those files in **`.sqlfluffignore`** so linting skips them — they
+stay valid on Databricks Runtime. Also label them `-- [Databricks]` in the file.
+
+### `SELECT * FROM VALUES` inline tables (LT09 crash workaround)
+
+sqlfluff's LT09 rule crashes on the common inline-table idiom. Use this
+lint-clean layout for sample data:
+
+```sql
+SELECT -- noqa: LT09
+    * --noqa
+FROM
+VALUES
+    (1, 'Alice'),
+    (2, 'Bob')
+AS t (id, name);
 ```
 
 ## Formatting Rules
@@ -23,7 +51,7 @@ uv run task sql_lint   # lint only
 ```sql
 -- ============================================================
 -- Topic: <topic summary>
--- Dialect: Databricks / Spark SQL 3.5
+-- Dialect: Spark SQL 4 (open-source; `sparksql`)
 -- Description: <what this file demonstrates>
 -- ============================================================
 ```

@@ -7,24 +7,31 @@ applyTo: "{**/test_*.py,**/*_test.py}"
 ## Running Tests
 
 ```bash
-uv run task test           # all tests
+make test-fast             # stop at first failure (quiet)
+make test-cov              # with coverage gate
 uv run pytest -k "scd"     # filter by name
 uv run pytest -m unit      # filter by marker
 ```
 
 ## SparkSession Fixture
 
-Session-scoped in `tests/conftest.py` — never create SparkSession per test:
+Session-scoped in `tests/conftest.py` — never create a SparkSession per test.
+The fixture is tuned for **fast, artifact-free** local runs: it uses the
+in-memory catalog (no Derby metastore, so no `derby.log`/`metastore_db`),
+a single shuffle partition, and AQE disabled for tiny test data.
 
 ```python
 @pytest.fixture(scope="session")
-def spark() -> SparkSession:
+def spark() -> Generator[SparkSession]:
     session = (
-        SparkSession.builder
-        .master("local[2]")
+        SparkSession.builder.master("local[2]")
         .appName("test-session")
-        .config("spark.sql.shuffle.partitions", "2")
+        .config("spark.sql.catalogImplementation", "in-memory")
+        .config("spark.sql.shuffle.partitions", "1")
+        .config("spark.sql.adaptive.enabled", "false")
         .config("spark.ui.enabled", "false")
+        .config("spark.driver.bindAddress", "127.0.0.1")
+        .config("spark.sql.warehouse.dir", tempfile.mkdtemp(prefix="spark-test-"))
         .getOrCreate()
     )
     session.sparkContext.setLogLevel("ERROR")
@@ -32,10 +39,14 @@ def spark() -> SparkSession:
     session.stop()
 ```
 
+> If a test intentionally needs a Hive-style catalog, override
+> `spark.sql.catalogImplementation`; `make clean` removes any stray
+> `spark-warehouse`/`metastore_db`/`derby.log` artifacts.
+
 ## Test Structure
 
 - Files: `test_*.py`. Functions: `test_*`. Group related tests in classes.
-- One test file per `src/` module or topic.
+- Tests mirror the `sql/` topic tree (e.g. `tests/scd/` ↔ `sql/scd/`).
 
 ## Assertions
 
@@ -67,7 +78,7 @@ Every SCD implementation must test:
 
 ## Markers
 
-Declared in `pyproject.toml`: `unit`, `integration`, `slow`.
+Declared in `pyproject.toml`: `smoke`, `unit`, `integration`, `slow`, `spark`.
 
 ```bash
 uv run pytest -m "not slow"
