@@ -3,27 +3,36 @@
 
 CREATE OR REPLACE TEMP VIEW sales AS
 SELECT -- noqa: LT09
-    * FROM VALUES
-('North', 'Alice', DATE '2024-01-01', 100),
-('North', 'Alice', DATE '2024-01-05', 200),
-('North', 'Alice', DATE '2024-01-10', 300),
-('North', 'Bob', DATE '2024-01-02', 150),
-('North', 'Bob', DATE '2024-01-06', 250),
-('South', 'Alice', DATE '2024-01-03', 400),
-('South', 'Alice', DATE '2024-01-07', 500),
-('South', 'Bob', DATE '2024-01-04', 180),
-('South', 'Bob', DATE '2024-01-08', 220)
-    AS sales (region, rep, sale_date, amount);
+    * --noqa
+FROM
+    VALUES
+    ('North', 'Alice', DATE '2024-01-01', 100),
+    ('North', 'Alice', DATE '2024-01-05', 200),
+    ('North', 'Alice', DATE '2024-01-10', 300),
+    ('North', 'Bob', DATE '2024-01-02', 150),
+    ('North', 'Bob', DATE '2024-01-06', 250),
+    ('South', 'Alice', DATE '2024-01-03', 400),
+    ('South', 'Alice', DATE '2024-01-07', 500),
+    ('South', 'Bob', DATE '2024-01-04', 180),
+    ('South', 'Bob', DATE '2024-01-08', 220)
+        AS sales (region, rep, sale_date, amount);
 
 ---
 --- 1. ROW_NUMBER vs RANK vs DENSE_RANK — tie behaviour side-by-side
 ---    Introduce a tie by unioning a duplicate amount so the difference is visible.
 
 WITH tied AS (
-    SELECT region, rep, amount FROM sales
+    SELECT
+        region,
+        rep,
+        amount
+    FROM sales
     UNION ALL
     -- duplicate Bob/North/250 to create a tie at rank 1 within North for Bob
-    SELECT 'North' AS region, 'Bob' AS rep, 250 AS amount
+    SELECT
+        'North' AS region,
+        'Bob' AS rep,
+        250 AS amount
 )
 
 SELECT

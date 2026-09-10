@@ -3,17 +3,19 @@
 
 CREATE OR REPLACE TEMP VIEW sales AS
 SELECT -- noqa: LT09
-    * FROM VALUES
-('North', 'Alice', DATE '2024-01-01', 100),
-('North', 'Alice', DATE '2024-01-05', 200),
-('North', 'Alice', DATE '2024-01-10', 300),
-('North', 'Bob', DATE '2024-01-02', 150),
-('North', 'Bob', DATE '2024-01-06', 250),
-('South', 'Alice', DATE '2024-01-03', 400),
-('South', 'Alice', DATE '2024-01-07', 500),
-('South', 'Bob', DATE '2024-01-04', 180),
-('South', 'Bob', DATE '2024-01-08', 220)
-    AS sales (region, rep, sale_date, amount);
+    * --noqa
+FROM
+    VALUES
+    ('North', 'Alice', DATE '2024-01-01', 100),
+    ('North', 'Alice', DATE '2024-01-05', 200),
+    ('North', 'Alice', DATE '2024-01-10', 300),
+    ('North', 'Bob', DATE '2024-01-02', 150),
+    ('North', 'Bob', DATE '2024-01-06', 250),
+    ('South', 'Alice', DATE '2024-01-03', 400),
+    ('South', 'Alice', DATE '2024-01-07', 500),
+    ('South', 'Bob', DATE '2024-01-04', 180),
+    ('South', 'Bob', DATE '2024-01-08', 220)
+        AS sales (region, rep, sale_date, amount);
 
 ---
 --- 1. LAG and LEAD side-by-side — previous and next sale amount per rep within region

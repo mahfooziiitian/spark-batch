@@ -17,13 +17,15 @@ FROM VALUES (10), (20), (30) AS tab (col);
 -- ---------------------------------------------------------
 CREATE OR REPLACE TEMP VIEW orders AS
 SELECT -- noqa: LT09
-    * FROM VALUES
-('East', 'Alice', 100),
-('East', 'Bob', 200),
-('West', 'Carol', 150),
-('West', 'Dave', 300),
-('East', 'Eve', 50)
-    AS orders (region, rep, amount);
+    * --noqa
+FROM
+    VALUES
+    ('East', 'Alice', 100),
+    ('East', 'Bob', 200),
+    ('West', 'Carol', 150),
+    ('West', 'Dave', 300),
+    ('East', 'Eve', 50)
+        AS orders (region, rep, amount);
 
 SELECT
     region,
@@ -60,13 +62,15 @@ FROM VALUES (CAST(NULL AS INT)), (CAST(NULL AS INT)) AS tab (col);
 --    or the column is functionally dependent on the key.
 -- ---------------------------------------------------------
 CREATE OR REPLACE TEMP VIEW employees AS
-SELECT
-    * FROM VALUES
-(1, 'Engineering', 'Alice', 90000),
-(2, 'Engineering', 'Bob', 100000),
-(3, 'Sales', 'Carol', 70000),
-(4, 'Sales', 'Dave', 80000)
-    AS employees (id, dept, name, salary);
+SELECT -- noqa: LT09
+    * --noqa
+FROM
+    VALUES
+    (1, 'Engineering', 'Alice', 90000),
+    (2, 'Engineering', 'Bob', 100000),
+    (3, 'Sales', 'Carol', 70000),
+    (4, 'Sales', 'Dave', 80000)
+        AS employees (id, dept, name, salary);
 
 SELECT
     dept,
