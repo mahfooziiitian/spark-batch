@@ -1,6 +1,7 @@
 # :material-chart-bell-curve: Rolling Analysis
 
-Compute running totals, moving averages, LAG/LEAD comparisons, and cumulative distributions with window functions.
+Running totals, moving averages, `LAG`/`LEAD` comparisons, and cumulative distributions
+computed with window functions — the enrichment stage of a pipeline.
 
 ---
 
@@ -15,99 +16,36 @@ graph LR
 
 ---
 
-## :material-pin: Quick Reference
+## :material-map-marker-path: Canonical Deep-Dives
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| SUM OVER UNBOUNDED | Running total from first to current row | `SUM(...) OVER (ORDER BY col ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` |
-| ROW_NUMBER() | Assign a unique sequential ID per row | `ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...)` |
-| SEQUENCE + LEFT JOIN | Fill in missing dates in a date range | `SEQUENCE(min_date, max_date, INTERVAL 1 DAY)` |
-| LAG / LEAD | Access previous or next row value | `LAG(col, 1) OVER (ORDER BY date)` |
-| FIRST_VALUE / LAST_VALUE | Boundary values within a partition | `FIRST_VALUE(col) OVER (...)` |
-| Rolling AVG | N-row moving average | `AVG(...) OVER (ROWS BETWEEN n PRECEDING AND CURRENT ROW)` |
-| CUME_DIST / PERCENT_RANK | Cumulative distribution and relative rank | `CUME_DIST() OVER (ORDER BY col)` |
+Most rolling-window techniques have a dedicated, self-contained page with full sample
+data and result output. Use those as the source of truth; this page only adds the
+distribution functions not covered elsewhere.
 
----
-
-## :material-magnify: Examples
-
-### Running Totals
-
-Cumulative sum from the first row to the current row within a partition.
-
-```sql
---8<-- "sql/application/rolling/01_running_totals.sql"
-```
+| Technique | Canonical page |
+|-----------|----------------|
+| Running / cumulative total | [Running Total](../../../aggregation/running_total.md) |
+| Moving / rolling average | [Moving Average](../../../aggregation/moving_average.md) |
+| `ROW_NUMBER` unique IDs & dedup | [Top-N Per Group](../../../ranking/top_n.md) |
+| `LAG` / `LEAD` period comparison | [LAG & LEAD](../../../timeseries/analysis/lag_and_lead.md) |
+| Missing-date spine (`SEQUENCE` + `LEFT JOIN`) | [Gap Fill](../../../timeseries/analysis/gap_filling.md) |
+| `FIRST_VALUE` / `LAST_VALUE` boundary fill | [Gap Fill — forward/backward fill](../../../timeseries/analysis/gap_filling.md) |
 
 ---
 
-### Window in Aggregation
-
-Combine standard aggregation with window functions in a single query.
-
-```sql
---8<-- "sql/application/rolling/02_window_in_aggregation.sql"
-```
-
----
-
-### ROW_NUMBER for Unique IDs
-
-Generate a unique sequential identifier per row within a partition.
-
-```sql
---8<-- "sql/application/rolling/03_row_number_unique_ids.sql"
-```
-
----
-
-### Missing Data Date Range
-
-Use SEQUENCE with a LEFT JOIN to expose missing dates in a sparse time series.
-
-```sql
---8<-- "sql/application/rolling/04_missing_data_date_range.sql"
-```
-
----
-
-### LAG and LEAD Comparison
-
-Compare each row to the previous and next period.
-
-```sql
---8<-- "sql/application/rolling/05_lag_lead_comparison.sql"
-```
-
----
-
-### FIRST_VALUE and LAST_VALUE
-
-Extract the boundary values within each ordered window partition.
-
-```sql
---8<-- "sql/application/rolling/06_first_last_value.sql"
-```
-
----
-
-### Rolling Averages
-
-Compute a moving average over a fixed N-row window.
-
-```sql
---8<-- "sql/application/rolling/07_rolling_averages.sql"
-```
-
----
+## :material-magnify: Distribution Ranking (unique to this page)
 
 ### CUME_DIST and PERCENT_RANK
 
-Calculate the cumulative distribution and relative rank of each row.
+Calculate the cumulative distribution and relative rank of each row within an ordered
+partition — useful for "top X%" thresholds and percentile banding.
 
 ```sql
 --8<-- "sql/application/rolling/08_cume_dist_percent_rank.sql"
 ```
+
+- `CUME_DIST()` — fraction of rows with a value **≤** the current row (0 < d ≤ 1).
+- `PERCENT_RANK()` — relative rank as `(rank - 1) / (rows - 1)` (0 ≤ r ≤ 1).
 
 ---
 
@@ -115,19 +53,12 @@ Calculate the cumulative distribution and relative rank of each row.
 
 | Scenario | Recommended Approach |
 |----------|---------------------|
-| Cumulative totals | Running totals with `ROWS BETWEEN UNBOUNDED PRECEDING` |
-| Moving average | Rolling avg over N preceding rows |
-| Unique row identifiers | `ROW_NUMBER()` |
-| Gap detection in time series | Date range + `LEFT JOIN` |
-| Period-over-period comparison | `LAG` / `LEAD` |
+| Cumulative totals | [Running Total](../../../aggregation/running_total.md) |
+| Moving average | [Moving Average](../../../aggregation/moving_average.md) |
+| Period-over-period comparison | [LAG & LEAD](../../../timeseries/analysis/lag_and_lead.md) |
+| Gap detection / date spine | [Gap Fill](../../../timeseries/analysis/gap_filling.md) |
+| "Top X%" / percentile position | `CUME_DIST` / `PERCENT_RANK` (above) |
 
 !!! warning
-    LAST_VALUE() requires ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING (or CURRENT ROW adjusted) — the default frame stops at CURRENT ROW.
-
----
-
-!!! note "Related"
-    Concept deep-dives for the individual techniques bundled here:
-    [Running Total](../../../aggregation/running_total.md) ·
-    [Moving Average](../../../aggregation/moving_average.md) ·
-    [LAG & LEAD](../../../timeseries/analysis/lag_and_lead.md).
+    `LAST_VALUE()` requires `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`
+    (or an explicit frame) — the default frame stops at `CURRENT ROW`.

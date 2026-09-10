@@ -71,15 +71,10 @@ Filter grouped results to only those meeting a minimum threshold.
 
 ---
 
-### Threshold Aggregates
-
-Conditional aggregation using CASE inside aggregate functions.
-
-```sql
---8<-- "sql/application/aggregation/threshold_aggregates.sql"
-```
-
----
+!!! note "Conditional aggregation lives in the canonical page"
+    `SUM(CASE WHEN ...)` / `COUNT(CASE WHEN ...)` threshold aggregation and the
+    `CASE` vs `IF` vs `FILTER` comparison are covered in depth in
+    [Conditional Aggregation](../../../aggregation/conditional_agg.md).
 
 ### Cross-Column Aggregation
 
@@ -109,7 +104,7 @@ Use BOOL_AND and BOOL_OR to reduce boolean expressions across a group.
 | Conditional totals per segment | `HAVING` clause |
 | Boolean flag across a group | `BOOL_AND` / `BOOL_OR` |
 | Grouped statistics by dimension | `GROUP BY` multi-column |
-| Min / max per group | Threshold aggregates with `MIN` / `MAX` |
+| Min / max per group | `MIN` / `MAX` with `GROUP BY` |
 
 !!! tip
     Use FILTER (WHERE ...) with aggregate functions for conditional aggregation without CASE WHEN.

@@ -29,15 +29,10 @@ graph LR
 
 ## :material-magnify: Examples
 
-### RANK and DENSE_RANK
-
-Compare RANK and DENSE_RANK behaviour on tied values.
-
-```sql
---8<-- "sql/application/ranking/rank_dense_rank.sql"
-```
-
----
+!!! note "RANK & DENSE_RANK live in the canonical page"
+    Basic ranking with ties (`RANK`, `DENSE_RANK`, `ROW_NUMBER`) and top-N filtering are
+    covered in depth in [Top-N Per Group](../../../ranking/top_n.md). This page focuses on
+    the **bucketing and percentile** functions not covered there.
 
 ### NTILE Segments
 
