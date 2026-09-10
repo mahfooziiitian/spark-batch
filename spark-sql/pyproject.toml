@@ -143,7 +143,16 @@ filterwarnings = ["ignore::DeprecationWarning:pyspark.*"]
 [tool.coverage.run]
 branch = true
 source = ["src"]
-omit = ["tests/*", "*/__pycache__/*"]
+omit = [
+    "tests/*",
+    "*/__pycache__/*",
+    # Databricks MCP server + CLI tooling: a separate deliverable that needs a
+    # live Databricks workspace/credentials to exercise, so it is out of scope
+    # for the SQL-learning unit-test suite and excluded from its coverage gate.
+    "*/dbx_mcp/*",
+    "*/util/*",
+    "*/model/*",
+]
 
 [tool.coverage.report]
 fail_under = 60
