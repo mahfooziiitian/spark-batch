@@ -1,4 +1,4 @@
-# :material-clock-time-four: Temporal
+# :material-clock-time-four: Applied Date Patterns
 
 Query, aggregate, and compare data across date hierarchies, time bands, and seasonal patterns.
 
@@ -21,7 +21,7 @@ flowchart LR
 
 | Page | Problem | Technique |
 |------|---------|-----------|
-| [Time Series](time_series/index.md) | Date hierarchy, weekday patterns, time bands | `DATE_TRUNC`, `DAYOFWEEK`, `HOUR` |
+| [Sales Date Patterns](date_patterns.md) | Date hierarchy, weekday patterns, time bands | `DATE_TRUNC`, `DAYOFWEEK`, `HOUR` |
 
 ---
 

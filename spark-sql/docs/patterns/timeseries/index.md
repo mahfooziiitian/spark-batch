@@ -108,4 +108,4 @@ ORDER BY region, sale_date;
 
 !!! note "Related"
     For applied, sales-oriented date patterns (date hierarchies, weekday and intra-day
-    banding, year-over-year), see [Time Series applications](../application/temporal/time_series/index.md).
+    banding, year-over-year), see [Applied Date Patterns](applied/date_patterns.md).

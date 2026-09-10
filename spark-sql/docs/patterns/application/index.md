@@ -30,11 +30,10 @@ Click a stage to explore its patterns.
 
 | Group | Description | Contents |
 |-------|-------------|----------|
-| [:material-magnify: Data Quality](data_quality/index.md) | Find and resolve duplicate rows | Finding duplicates, deduplication strategies |
+| [:material-magnify: Data Quality](../data_quality/duplicates/index.md) | Find and resolve duplicate rows | Finding duplicates, deduplication strategies |
 | [:material-cog-outline: Transformation](transformation/index.md) | Shape, filter, aggregate, and pivot data | Filter, aggregation, grouping sets, pivot |
 | [:material-chart-bar: Enrichment](enrichment/index.md) | Add rankings, running calculations, derived context | Ranking, rolling analysis, analytics, CTE, subqueries |
 | [:material-format-text: Types & Formats](types_and_formats/index.md) | Type conversions, date parsing, struct operations | Numeric, date strings, keys & structs, map key replacement |
-| [:material-clock-time-four: Temporal](temporal/index.md) | Date hierarchies, time bands, seasonal patterns | Time series analysis |
 
 ---
 

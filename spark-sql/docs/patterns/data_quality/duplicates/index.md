@@ -21,8 +21,8 @@ flowchart LR
 
 | Page | Problem | Technique |
 |------|---------|-----------|
-| [Finding Duplicates](duplicate/finding.md) | Identify duplicate rows | `GROUP BY HAVING`, window functions, hash comparison |
-| [Deduplication](duplicate/removal.md) | Remove duplicates, keep best row | `ROW_NUMBER`, `QUALIFY`, `MERGE` |
+| [Finding Duplicates](finding.md) | Identify duplicate rows | `GROUP BY HAVING`, window functions, hash comparison |
+| [Deduplication](removal.md) | Remove duplicates, keep best row | `ROW_NUMBER`, `QUALIFY`, `MERGE` |
 
 ---
 
@@ -36,4 +36,4 @@ flowchart LR
 
 !!! note "Related"
     For **detection** patterns — change detection, outliers, snapshot diffs, and fraud
-    signals — see the [Data Quality](../../data_quality/index.md) section.
+    signals — see the parent [Data Quality](../index.md) section.

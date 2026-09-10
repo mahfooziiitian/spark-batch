@@ -113,3 +113,8 @@ Use BOOL_AND and BOOL_OR to reduce boolean expressions across a group.
 
 !!! tip
     Use FILTER (WHERE ...) with aggregate functions for conditional aggregation without CASE WHEN.
+
+!!! note "Related"
+    This page covers `GROUP BY` aggregation as a transformation step. For canonical,
+    self-contained deep-dives see [Conditional Aggregation](../../../aggregation/conditional_agg.md)
+    and [String Aggregation](../../../aggregation/string_agg.md).

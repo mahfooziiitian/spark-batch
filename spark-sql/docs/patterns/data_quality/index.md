@@ -27,6 +27,7 @@ flowchart LR
 | [Outlier Detection](outlier_detection.md) | Find points that deviate from the norm | z-score, IQR fencing, percentile thresholds |
 | [Slowly Changing Comparison](slowly_changing_comparison.md) | Diff current vs previous snapshots | full-outer snapshot join, column-level diff |
 | [Fraud Pattern Detection](fraud_detection.md) | Surface suspicious multi-entity patterns | self-joins, `COUNT(DISTINCT)`, impossible-travel checks |
+| [Duplicates](duplicates/index.md) | Find and remove duplicate rows | `GROUP BY HAVING`, `ROW_NUMBER`, `QUALIFY`, `MERGE` |
 
 ---
 
@@ -40,5 +41,6 @@ flowchart LR
 ---
 
 !!! note "Related"
-    For **duplicate finding and deduplication** (an ingestion-layer integrity task),
-    see the applied [Data Quality](../application/data_quality/index.md) walkthroughs.
+    The [Duplicates](duplicates/index.md) sub-section covers duplicate finding and
+    deduplication — the ingestion-layer integrity task that complements these detection
+    patterns.

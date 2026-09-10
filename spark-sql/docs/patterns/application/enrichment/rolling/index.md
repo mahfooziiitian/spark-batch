@@ -129,4 +129,5 @@ Calculate the cumulative distribution and relative rank of each row.
 !!! note "Related"
     Concept deep-dives for the individual techniques bundled here:
     [Running Total](../../../aggregation/running_total.md) ·
-    [Moving Average](../../../aggregation/moving_average.md).
+    [Moving Average](../../../aggregation/moving_average.md) ·
+    [LAG & LEAD](../../../timeseries/analysis/lag_and_lead.md).

@@ -1,0 +1,5 @@
+title: Duplicates
+nav:
+  - index.md
+  - Finding Duplicates: finding.md
+  - Deduplication: removal.md

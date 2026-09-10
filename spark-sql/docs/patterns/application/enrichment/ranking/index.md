@@ -70,3 +70,8 @@ Compute continuous and discrete percentiles including the median.
 
 !!! tip
     Use DENSE_RANK when you need consecutive integers with no gap after ties. Use RANK when you need to see the true positional gap.
+
+!!! note "Related"
+    This page covers ranking *window functions* as an enrichment step. For the
+    canonical, self-contained recipes see [Top-N](../../../ranking/top_n.md) and
+    [Pagination](../../../ranking/pagination.md).

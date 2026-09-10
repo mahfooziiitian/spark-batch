@@ -5,3 +5,4 @@ nav:
   - outlier_detection.md
   - slowly_changing_comparison.md
   - fraud_detection.md
+  - Duplicates: duplicates

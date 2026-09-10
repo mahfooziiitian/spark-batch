@@ -1,8 +1,6 @@
 title: Applications
 nav:
   - index.md
-  - Data Quality: data_quality
   - Transformation: transformation
   - Enrichment: enrichment
   - Types & Formats: types_and_formats
-  - Temporal: temporal

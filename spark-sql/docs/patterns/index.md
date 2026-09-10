@@ -113,6 +113,7 @@ mindmap
 | [Outlier Detection](data_quality/outlier_detection.md) | Spot anomalous values | Z-score, IQR, percentiles |
 | [Slowly Changing Comparison](data_quality/slowly_changing_comparison.md) | Compare dimension snapshots | Full outer join, `<=>` |
 | [Fraud Pattern Detection](data_quality/fraud_detection.md) | Multi-account, velocity, impossible travel | Window counts, self-join |
+| [Duplicates](data_quality/duplicates/index.md) | Find and remove duplicate rows | `GROUP BY HAVING`, `ROW_NUMBER`, `QUALIFY`, `MERGE` |
 
 ### :material-file-tree: Structural
 

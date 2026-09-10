@@ -1,4 +1,4 @@
-# :material-clock-time-four: Time Series
+# :material-clock-time-four: Sales Date Patterns
 
 Filter, aggregate, and compare data across date hierarchies, weekday patterns, and intra-day time bands.
 
@@ -141,4 +141,4 @@ Divide each hour into 15-minute interval buckets.
 
 !!! note "Related"
     For windowing and analysis patterns on timestamped data (tumbling/hopping/sliding/
-    session windows, gap fill, LAG/LEAD), see the [Time Series](../../../timeseries/index.md) section.
+    session windows, gap fill, LAG/LEAD), see the [Time Series](../index.md) section.
