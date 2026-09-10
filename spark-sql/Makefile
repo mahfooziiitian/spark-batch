@@ -7,6 +7,9 @@
 # install location. Override with `make UV=/path/to/uv <target>` if needed.
 UV ?= $(shell command -v uv 2>/dev/null || echo $(HOME)/.local/bin/uv)
 
+# Parallelism for sqlfluff (0 or negative = all CPU cores).
+SQLFLUFF_PROCESSES ?= 0
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 .PHONY: help
 help:
@@ -71,11 +74,24 @@ sql: sql-format sql-lint ## Fix then lint all SQL files
 
 .PHONY: sql-format
 sql-format: ## Auto-fix SQL with sqlfluff
-	$(UV) run sqlfluff fix sql --force
+	$(UV) run sqlfluff fix sql --processes $(SQLFLUFF_PROCESSES)
 
 .PHONY: sql-lint
 sql-lint: ## Lint SQL with sqlfluff
-	$(UV) run sqlfluff lint sql
+	$(UV) run sqlfluff lint sql --processes $(SQLFLUFF_PROCESSES)
+
+.PHONY: sql-changed
+sql-changed: sql-format-changed sql-lint-changed ## Fix then lint only changed SQL files
+
+.PHONY: sql-format-changed
+sql-format-changed: ## Auto-fix only changed SQL files (vs HEAD)
+	@git diff --relative --name-only --diff-filter=ACMR HEAD -- '*.sql' \
+		| xargs -r $(UV) run sqlfluff fix --processes $(SQLFLUFF_PROCESSES)
+
+.PHONY: sql-lint-changed
+sql-lint-changed: ## Lint only changed SQL files (vs HEAD)
+	@git diff --relative --name-only --diff-filter=ACMR HEAD -- '*.sql' \
+		| xargs -r $(UV) run sqlfluff lint --processes $(SQLFLUFF_PROCESSES)
 
 # ── CI ────────────────────────────────────────────────────────────────────────
 .PHONY: ci
