@@ -137,7 +137,9 @@ def assert_query_in_source(relative_path: str, query: str) -> None:
         return
     normalized = query.replace("(", " ").replace(")", " ").replace(",", " ")
     keywords = [token.lower() for token in normalized.split() if len(token) > 3]
-    assert keywords and all(keyword in read_sql_text(relative_path).lower() for keyword in keywords)
+    source = read_sql_text(relative_path).lower()
+    if not (keywords and all(keyword in source for keyword in keywords)):
+        raise AssertionError(f"Query not found in source {relative_path!r}: {query!r}")
 
 
 def create_view(

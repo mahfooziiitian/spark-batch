@@ -110,7 +110,7 @@ bandit: ## Static security scan with bandit
 
 .PHONY: safety
 safety: ## Check dependencies for known CVEs
-	$(UV) run safety check --policy-file .safety-policy.yml
+	$(UV) run safety scan --policy-file .safety-policy.yml
 
 # ── Reporting ─────────────────────────────────────────────────────────────────
 .PHONY: report-html

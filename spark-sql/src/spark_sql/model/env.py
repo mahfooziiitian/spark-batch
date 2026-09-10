@@ -16,7 +16,7 @@ class DashboardEnvTemplate(Template):
 # Required environment variables. No fallbacks — set these directly.
 REQUIRED_ENV_VARS: dict[str, str | None] = {
     "DATABRICKS_HOST": None,
-    "DATABRICKS_TOKEN": None,
+    "DATABRICKS_TOKEN": None,  # nosec B105 - env var name placeholder, not a hardcoded secret
 }
 
 
