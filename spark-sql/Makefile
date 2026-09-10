@@ -1,5 +1,12 @@
 .DEFAULT_GOAL := help
 
+# ── Tooling ───────────────────────────────────────────────────────────────────
+# Resolve the `uv` binary robustly. IDEs (e.g. the PyCharm GUI) launch `make`
+# with a minimal PATH that does not source the shell profile, so `~/.local/bin`
+# may be missing. Prefer `uv` on PATH; otherwise fall back to its default user
+# install location. Override with `make UV=/path/to/uv <target>` if needed.
+UV ?= $(shell command -v uv 2>/dev/null || echo $(HOME)/.local/bin/uv)
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 .PHONY: help
 help:
@@ -10,28 +17,28 @@ help:
 # ── Setup ─────────────────────────────────────────────────────────────────────
 .PHONY: install
 install: ## Sync the virtualenv from uv.lock
-	uv sync --all-groups
+	$(UV) sync --all-groups
 
 .PHONY: lock
 lock: ## Re-resolve and update uv.lock
-	uv lock
+	$(UV) lock
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
 .PHONY: test
 test: ## Run pytest with verbose output
-	uv run pytest -vv tests
+	$(UV) run pytest -vv tests
 
 .PHONY: test-fast
 test-fast: ## Stop at first failure, quiet output
-	uv run pytest -x -q tests
+	$(UV) run pytest -x -q tests
 
 .PHONY: test-parallel
 test-parallel: ## Run pytest in parallel across all CPU cores
-	uv run pytest -n auto -v --tb=short tests
+	$(UV) run pytest -n auto -v --tb=short tests
 
 .PHONY: test-cov
 test-cov: ## Run pytest with terminal + HTML coverage report
-	uv run pytest --cov=src --cov-report=term-missing --cov-report=html:reports/htmlcov tests
+	$(UV) run pytest --cov=src --cov-report=term-missing --cov-report=html:reports/htmlcov tests
 
 # ── Quality ───────────────────────────────────────────────────────────────────
 .PHONY: quality
@@ -39,35 +46,35 @@ quality: format lint type-check sql ## Run full quality pipeline
 
 .PHONY: format
 format: ## Format code and sort imports with ruff
-	uv run ruff check --select I --fix src tests
-	uv run ruff format src tests
+	$(UV) run ruff check --select I --fix src tests
+	$(UV) run ruff format src tests
 
 .PHONY: format-check
 format-check: ## Check formatting without modifying files
-	uv run ruff format --check src tests
+	$(UV) run ruff format --check src tests
 
 .PHONY: lint
 lint: ## Lint with ruff
-	uv run ruff check src tests
+	$(UV) run ruff check src tests
 
 .PHONY: lint-fix
 lint-fix: ## Lint with ruff, auto-fixing what it can
-	uv run ruff check --fix src tests
+	$(UV) run ruff check --fix src tests
 
 .PHONY: type-check
 type-check: ## Static type check with mypy
-	uv run mypy src
+	$(UV) run mypy src
 
 .PHONY: sql
 sql: sql-format sql-lint ## Fix then lint all SQL files
 
 .PHONY: sql-format
 sql-format: ## Auto-fix SQL with sqlfluff
-	uv run sqlfluff fix sql --force
+	$(UV) run sqlfluff fix sql --force
 
 .PHONY: sql-lint
 sql-lint: ## Lint SQL with sqlfluff
-	uv run sqlfluff lint sql
+	$(UV) run sqlfluff lint sql
 
 # ── CI ────────────────────────────────────────────────────────────────────────
 .PHONY: ci
@@ -82,32 +89,32 @@ secure: bandit safety ## Run all security checks
 
 .PHONY: bandit
 bandit: ## Static security scan with bandit
-	uv run bandit -c pyproject.toml -r src
+	$(UV) run bandit -c pyproject.toml -r src
 
 .PHONY: safety
 safety: ## Check dependencies for known CVEs
-	uv run safety check --policy-file .safety-policy.yml
+	$(UV) run safety check --policy-file .safety-policy.yml
 
 # ── Reporting ─────────────────────────────────────────────────────────────────
 .PHONY: report-html
 report-html: ## Generate HTML test report
-	uv run pytest --html=reports/reports.html --self-contained-html
+	$(UV) run pytest --html=reports/reports.html --self-contained-html
 
 .PHONY: report-xml
 report-xml: ## Generate JUnit XML test report
-	uv run pytest --junitxml=reports/report.xml
+	$(UV) run pytest --junitxml=reports/report.xml
 
 .PHONY: report-json
 report-json: ## Generate JSON test report with coverage
-	uv run pytest --json-report --json-report-file=reports/report.json --cov-report=term-missing
+	$(UV) run pytest --json-report --json-report-file=reports/report.json --cov-report=term-missing
 
 .PHONY: report-cov-html
 report-cov-html: ## Generate HTML coverage report
-	uv run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing
+	$(UV) run pytest --cov=. --cov-report=html --cov-config=.coveragerc --cov-report=term-missing
 
 .PHONY: report-cov-xml
 report-cov-xml: ## Generate XML coverage report
-	uv run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing
+	$(UV) run pytest --cov=. --cov-report=xml --cov-config=.coveragerc --cov-report=term-missing
 
 # ── Documentation ─────────────────────────────────────────────────────────────
 .PHONY: docs
@@ -119,16 +126,16 @@ docs-build: ## Build MkDocs site
 
 .PHONY: docs-serve
 docs-serve: ## Serve docs on 0.0.0.0:8080
-	uv run mkdocs serve -a 0.0.0.0:8000 --livereload
+	$(UV) run mkdocs serve -a 0.0.0.0:8000 --livereload
 
 .PHONY: docs-lint
 docs-lint: ## Lint and fix markdown files
-	uv run pymarkdownlnt fix -r docs README.md
+	$(UV) run pymarkdownlnt fix -r docs README.md
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 .PHONY: build
 build: ## Build the package
-	uv build
+	$(UV) build
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 .PHONY: clean
