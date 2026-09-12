@@ -45,7 +45,7 @@ test-cov: ## Run pytest with terminal + HTML coverage report
 
 # ── Quality ───────────────────────────────────────────────────────────────────
 .PHONY: quality
-quality: format lint type-check sql ## Run full quality pipeline
+quality: format lint type-check sql-changed ## Run full quality pipeline (changed SQL only)
 
 .PHONY: format
 format: ## Format code and sort imports with ruff

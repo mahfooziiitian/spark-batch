@@ -1,177 +1,157 @@
-
-!gradle-wrapper.jar
-*$py.class
-*.DS_Store
-*.class
-*.db
-*.egg-info/
-*.env
-*.iml
-*.ipr
-*.iws
-*.key
-*.lo
-*.log
-*.o
-*.obj
-*.pem
+# =========================
+# Python / PySpark
+# =========================
+__pycache__/
 *.py[cod]
-*.sqlite3
-*.sublime-project
-*.sublime-workspace
-*.swo
-*.swp
-*.tmp
-.DS_Store
-.aws/
-.classpath
-.coverage
-.dmypy.json
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+site/
+pip-wheel-metadata/
+.venv/
+env/
 .env
 .env/
-.gradle/
-.idea/
-.ipynb_checkpoints/
-.metadata/
-.mvn/
+*.env
+.env.dev
+.env.prod
+.env.staging
 .mypy_cache/
-.nox/
-.project
+.dmypy.json
 .pyright/
 .pytest_cache/
-.settings/
+.coverage
+htmlcov/
 .tox/
-.venv/
-.vscode/
+.nox/
+.ipynb_checkpoints/
+.python-version
+uv-cache/
+
+# PySpark runtime artifacts
+spark-warehouse/
+metastore_db/
+derby.log
+*.crc
+_SUCCESS
+checkpoints/
+
+# =========================
+# Java / Scala (Maven, SBT, Gradle)
+# =========================
+*.class
+*.obj
+*.lo
+target/
+/target/
+/project/target/
+/project/project/
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+mvnw.cmd
+mvnw
+/build/
+/.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+!gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+gradlew
+gradlew.bat
 /*.gradle
 /.bloop/
-/.idea_modules/
-/.metadata/
-/.metals.sbt/
 /.metals/
+.metals/
+.bloop/
+.ammonite/
+/.metals.sbt/
 /.nb-gradle/
-/bin/
-/build/
-/dist/
 /lib_managed/
 /nbbuild/
 /nbdist/
 /nbproject/private/
 /out/
-/project/project/
-/project/target/
-/target/
+/bin/
+.bsp/
+.cache/
+.ivy2/cache/
+.coursier/
+*.sc
+.history
+sbt.log
 MANIFEST.MF
-Thumbs.db
-__pycache__/
-build/
-config.yaml
-dist/
-docker-compose.override.yml
-env/
-gradle-app.setting
-htmlcov/
-logs/
-modules/
-pip-wheel-metadata/
 pom.xml.next
 pom.xml.releaseBackup
 pom.xml.tag
 pom.xml.versionsBackup
 release.properties
-site/
-target/
-.venv/
-gradle/
-.bsp/
-# SBT & Build
-/target/
-/project/target/
-/project/project/
 
-# Logs
-*.log
+# =========================
+# R
+# =========================
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
 
-# IntelliJ IDEA
+# =========================
+# Databricks
+# =========================
+.databricks/
+.databrickscfg
+databricks.yml.bak
+
+# =========================
+# Terraform
+# =========================
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# =========================
+# IDEs
+# =========================
 .idea/
-/*.iml
+.idea_modules/
+*.iml
+*.ipr
 *.iws
-out/
-
-# VS Code
 .vscode/
-
-# Eclipse
 .classpath
 .project
 .settings/
+.metadata/
 
-# Mac
+# =========================
+# OS
+# =========================
 .DS_Store
-
-# Windows
+*.DS_Store
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Scala Worksheet
-*.sc
+# =========================
+# Secrets / local config
+# =========================
+*.pem
+*.key
+config.yaml
+docker-compose.override.yml
 
-# Metals (Scala language server)
-.metals/
-.bloop/
-.ammonite/
-
-# coursier
-.cache/
-.ivy2/cache/
-.coursier/
-
-# sbt bloop integration
-.bsp/
-
-# Temporary files
-*.swp
-*.bak
+# =========================
+# Misc temp / logs
+# =========================
+*.log
+logs/
 *.tmp
-
-# SBT history and logs
-.history
-sbt.log
-# Java
-# Build tool wrappers
-.mvn/
-!/.mvn/wrapper/maven-wrapper.jar
-
-# Maven Wrapper logs
-mvnw.cmd
-mvnw
-# Gradle build output
-/build/
-/.gradle/
-
-# Gradle Wrapper files
-!gradle/wrapper/gradle-wrapper.jar
-gradle/wrapper/gradle-wrapper.properties
-gradlew
-gradlew.bat
-
-# IDEs
-## IntelliJ IDEA
-.idea/
-*.iml
-*.iws
-out/
-
-## Eclipse
-.classpath
-.project
-.settings/
-d
-databricks/
-
-
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.backup
+*.bak
+*.swp
+*.swo
+*.db
+*.sqlite3
+modules/

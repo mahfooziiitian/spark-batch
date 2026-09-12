@@ -239,6 +239,15 @@ ______________________________________________________________________
 The `system` catalog is a Databricks-hosted analytical store of account-wide
 operational data (cost, audit, lineage, query history). It requires Unity Catalog
 and is populated automatically — no setup beyond `USE CATALOG`/`SELECT` grants.
+The same tables back the `dbx_mcp` server's `query_system_table` tool (see
+[MCP Server](../../mcp-server.md)).
+
+!!! tip "Full runnable reference"
+
+    [`sql/databricks/system_catalog/system_catalog_queries.sql`](https://github.com/mahfooziiitian/spark-batch/blob/main/spark-sql/sql/databricks/system_catalog/system_catalog_queries.sql)
+    consolidates the snippets below plus `information_schema` catalog introspection,
+    column-level lineage, and query-history cache/spill diagnostics into one aliased,
+    lint-clean file.
 
 ### Cost monitoring — `system.billing.usage`
 
@@ -272,8 +281,10 @@ GROUP BY sku_name, usage_unit;
 ### Security & compliance auditing — `system.access.audit`
 
 ```sql
--- Who dropped tables in the analytics catalog this week?
-SELECT event_time, user_identity.email AS actor, action_name, request_params
+-- Who dropped tables in the analytics catalog this week? (actor pseudonymized — never
+-- select user_identity.email directly; SHA2 keeps rows joinable without exposing PII)
+SELECT event_time, action_name, request_params,
+       SHA2(user_identity.email, 256) AS actor_hash
 FROM system.access.audit
 WHERE service_name = 'unityCatalog'
   AND action_name IN ('deleteTable', 'dropTable')
@@ -282,21 +293,33 @@ WHERE service_name = 'unityCatalog'
 ORDER BY event_time DESC;
 
 -- Failed login attempts by source IP
-SELECT source_ip_address, user_identity.email, COUNT(*) AS attempts
+SELECT source_ip_address, SHA2(user_identity.email, 256) AS actor_hash, COUNT(*) AS attempts
 FROM system.access.audit
 WHERE action_name = 'databricksAccountLogin'
   AND response.status_code != 200
-GROUP BY source_ip_address, user_identity.email
+GROUP BY source_ip_address, SHA2(user_identity.email, 256)
 ORDER BY attempts DESC;
 ```
+
+!!! warning "Never select identity columns raw"
+
+    `user_identity.email`, `executed_by`, `owned_by`, `creator_user_name`,
+    `run_as_user_name`, and `requester` are principal names/emails across the
+    `system` catalog. Wrap them in `SHA2(<column>, 256)` (as above) for a stable,
+    joinable pseudonym, or apply a Unity Catalog
+    [column mask](#column-level-security-column-masks) directly on the source
+    column so every consumer — including ad hoc `SELECT *` — is protected
+    automatically.
 
 ### Query performance — `system.query.history`
 
 ```sql
 -- Slowest queries in the last 24 hours on a given warehouse
-SELECT statement_id, executed_by, total_duration_ms, statement_text
+-- (`compute` is a struct — `warehouse_id`/`cluster_id` are nested fields, not top-level columns)
+SELECT statement_id, total_duration_ms, statement_text,
+       SHA2(executed_by, 256) AS executed_by_hash
 FROM system.query.history
-WHERE warehouse_id = '0123-456789-abcdefg'
+WHERE compute.warehouse_id = '0123-456789-abcdefg'
   AND start_time >= current_timestamp() - INTERVAL 1 DAY
 ORDER BY total_duration_ms DESC
 LIMIT 20;
@@ -311,6 +334,90 @@ FROM system.access.table_lineage
 WHERE source_table_full_name = 'analytics.raw.events'
 ORDER BY target_table_full_name;
 ```
+
+### Compute inventory — `system.compute.clusters` / `system.compute.warehouses`
+
+```sql
+-- Active cluster footprint by runtime and creation source
+SELECT cluster_source, dbr_version, data_security_mode,
+       COUNT(DISTINCT cluster_id) AS cluster_count
+FROM system.compute.clusters
+WHERE delete_time IS NULL
+GROUP BY cluster_source, dbr_version, data_security_mode
+ORDER BY cluster_count DESC;
+
+-- SQL warehouse fleet composition by type and size
+SELECT warehouse_type, warehouse_size,
+       COUNT(DISTINCT warehouse_id) AS warehouse_count
+FROM system.compute.warehouses
+WHERE delete_time IS NULL
+GROUP BY warehouse_type, warehouse_size
+ORDER BY warehouse_count DESC;
+```
+
+!!! example "Anonymized live snapshot (share of active fleet, rounded)"
+
+    Aggregated from a running workspace; absolute counts are withheld and
+    replaced with each category's share of the active fleet so no cost/scale
+    information leaks — only the *shape* of the distribution is illustrative.
+
+    | `warehouse_type` | `warehouse_size` | share of active warehouses |
+    | ---------------- | ---------------- | --------------------------- |
+    | SERVERLESS        | MEDIUM            | ~25%                        |
+    | SERVERLESS        | SMALL             | ~25%                        |
+    | PRO                | SMALL             | ~15%                        |
+    | SERVERLESS        | 2X_SMALL          | ~8%                         |
+    | PRO                | X_SMALL           | ~7%                         |
+    | *(remaining sizes)*| —                 | ~20%                        |
+
+### Job inventory — `system.lakeflow.jobs`
+
+```sql
+-- Active jobs by trigger type and paused state (scheduling health snapshot)
+SELECT COALESCE(trigger_type, 'API_OR_LEGACY') AS trigger_type, paused,
+       COUNT(DISTINCT job_id) AS job_count
+FROM system.lakeflow.jobs
+WHERE delete_time IS NULL
+GROUP BY trigger_type, paused
+ORDER BY job_count DESC;
+```
+
+!!! example "Anonymized live snapshot (share of active jobs, rounded)"
+
+    | `trigger_type`   | `paused` | share of active jobs |
+    | ---------------- | -------- | --------------------- |
+    | API / legacy      | false    | ~50%                   |
+    | API / legacy      | *(n/a)*  | ~34%                   |
+    | CRON               | false    | ~6%                    |
+    | CRON               | true     | ~4%                    |
+    | *(other triggers)* | —        | ~6%                    |
+
+### Model serving — `system.serving.endpoint_usage`
+
+```sql
+-- Endpoint traffic health by HTTP status code, with average token volume
+SELECT status_code, COUNT(*) AS request_count,
+       ROUND(AVG(input_token_count), 0)  AS avg_input_tokens,
+       ROUND(AVG(output_token_count), 0) AS avg_output_tokens
+FROM system.serving.endpoint_usage
+WHERE request_time >= current_timestamp() - INTERVAL 7 DAYS
+GROUP BY status_code
+ORDER BY request_count DESC;
+```
+
+!!! example "Anonymized live snapshot (share of requests, last 7 days, rounded)"
+
+    | `status_code`      | share of requests |
+    | ------------------ | ------------------ |
+    | 200 (success)       | ~84%                |
+    | 429 (rate limited)  | ~15%                |
+    | 400 (bad request)   | ~2%                 |
+    | 5xx (server error)  | <1%                 |
+
+    `requester` is a principal name/email — always wrap it in
+    `SHA2(requester, 256)` before grouping by caller (see
+    [`system_catalog_queries.sql`](https://github.com/mahfooziiitian/spark-batch/blob/main/spark-sql/sql/databricks/system_catalog/system_catalog_queries.sql),
+    section 9).
 
 !!! tip "Combine system tables for richer answers"
 

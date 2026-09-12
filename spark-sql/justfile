@@ -49,8 +49,8 @@ test-cov:
 
 # ── Quality ───────────────────────────────────────────────────────────────────
 
-# Run full quality pipeline
-quality: format lint type-check sql
+# Run full quality pipeline (changed SQL only)
+quality: format lint type-check sql-changed
 
 # Format code and sort imports with ruff
 format:
