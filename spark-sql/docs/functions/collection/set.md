@@ -3,13 +3,21 @@
 Set functions work with **distinct collections** — aggregating unique values and searching
 within delimited strings.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
     A[Input] --> B[COLLECT_SET]
     B --> C[Distinct Array]
 ```
+
+### :material-animation-play: Interactive Visualization — FIND_IN_SET Position Finder
+
+<div id="viz-find-in-set" class="ts-viz"></div>
+
+Type a search value to see which comma-delimited entry (if any) it matches,
+and the 1-based position `FIND_IN_SET` returns — case-sensitive, exact
+match only.
 
 ## :material-pin: COLLECT_SET
 
@@ -77,7 +85,7 @@ FROM VALUES ('b'), ('a'), ('c'), ('a') AS tab(col);
 -- Result: 'a, b, c'
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: FIND_IN_SET
 
@@ -124,6 +132,22 @@ SELECT * FROM users WHERE FIND_IN_SET('admin', roles) > 0;
 -- Returns users 1 and 3
 ```
 
+### :material-toy-brick: 3b. Case Sensitivity and Empty-String Matching
+
+`FIND_IN_SET` is **case-sensitive** and treats a literal empty element in
+the CSV list as a valid match target. Verified on Spark 4.2:
+
+```sql
+SELECT FIND_IN_SET('AB', 'ab,AB,Ab');
+-- Result: 2   ('AB' only matches the exact-case entry at position 2)
+
+SELECT FIND_IN_SET('', 'a,,b');
+-- Result: 2   (the empty string between the commas is a real match)
+```
+
+> Normalize case with `LOWER()` on both sides if you need
+> case-insensitive membership checks.
+
 #### :material-toy-brick: 4. Conditional Logic
 
 ```sql
@@ -134,17 +158,17 @@ SELECT id,
 FROM users;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Function | Why |
-|----------|----------|-----|
-| Aggregate distinct values per group | `COLLECT_SET` | Removes duplicates automatically |
-| Count distinct in nested context | `SIZE(COLLECT_SET(...))` | Alternative to `COUNT(DISTINCT ...)` in complex queries |
-| Deduplicate before joining as string | `CONCAT_WS(COLLECT_SET(...))` | Clean comma-separated output |
-| Search within CSV strings | `FIND_IN_SET` | 1-based index lookup in delimited data |
-| Role / tag membership checks | `FIND_IN_SET` in WHERE | Filter rows by presence in CSV column |
+| Scenario                             | Function                      | Why                                                     |
+| ------------------------------------ | ----------------------------- | ------------------------------------------------------- |
+| Aggregate distinct values per group  | `COLLECT_SET`                 | Removes duplicates automatically                        |
+| Count distinct in nested context     | `SIZE(COLLECT_SET(...))`      | Alternative to `COUNT(DISTINCT ...)` in complex queries |
+| Deduplicate before joining as string | `CONCAT_WS(COLLECT_SET(...))` | Clean comma-separated output                            |
+| Search within CSV strings            | `FIND_IN_SET`                 | 1-based index lookup in delimited data                  |
+| Role / tag membership checks         | `FIND_IN_SET` in WHERE        | Filter rows by presence in CSV column                   |
 
 > **Tip:** Prefer `COLLECT_SET` over `ARRAY_DISTINCT(COLLECT_LIST(...))` — it's more
 > efficient since deduplication happens during aggregation, not as a post-processing step.

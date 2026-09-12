@@ -3,7 +3,7 @@
 Spark 3.x introduced the **DataSource V2 catalog API** — a pluggable interface that lets
 any storage system register as a first-class Spark catalog with full DDL and DML support.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: How V2 Catalogs Work
 
@@ -19,7 +19,7 @@ flowchart LR
     JC --> PG["PostgreSQL / MySQL"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-cog: Configuration
 
@@ -79,7 +79,7 @@ SHOW TABLES IN public;
 SELECT * FROM pg.public.customers LIMIT 10;
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Common DDL Examples
 
@@ -107,20 +107,20 @@ USING PARQUET
 LOCATION 's3://my-bucket/raw/events';
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: External V2 Catalog vs Hive Metastore
 
-| Feature | External V2 Catalog | Hive Metastore |
-|---------|:-------------------:|:--------------:|
-| Three-level namespace | Yes | No (2-level) |
-| Multi-engine support | Yes (Flink, Trino...) | Limited |
-| Open table format | Iceberg, Delta, Hudi | Hive tables |
-| ACID / time travel | Depends on format | Limited |
-| Cloud-native storage | First-class | Via HDFS compat |
-| Databricks native | Delta catalog | spark_catalog |
+| Feature               |  External V2 Catalog  | Hive Metastore  |
+| --------------------- | :-------------------: | :-------------: |
+| Three-level namespace |          Yes          |  No (2-level)   |
+| Multi-engine support  | Yes (Flink, Trino...) |     Limited     |
+| Open table format     | Iceberg, Delta, Hudi  |   Hive tables   |
+| ACID / time travel    |   Depends on format   |     Limited     |
+| Cloud-native storage  |      First-class      | Via HDFS compat |
+| Databricks native     |     Delta catalog     |  spark_catalog  |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -129,14 +129,14 @@ LOCATION 's3://my-bucket/raw/events';
 3. **Mixed namespaces** — you can query tables from different catalogs in the same SQL statement: `SELECT a.*, b.* FROM cat1.db.tbl a JOIN cat2.db.tbl b ON a.id = b.id`.
 4. **DDL forwarded to plugin** — `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE` are forwarded to the catalog plugin, which is responsible for persisting metadata.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Multi-engine open lake (Spark + Trino + Flink) | Iceberg V2 catalog |
-| Databricks Delta Lake with governance | Unity Catalog |
-| Read PostgreSQL/MySQL tables from Spark SQL | JDBC catalog |
-| On-prem Spark with HDFS + Delta | Delta V2 catalog with Hadoop warehouse |
-| Single-engine, single-cluster | Hive Metastore may be sufficient |
+| Scenario                                       | Recommendation                         |
+| ---------------------------------------------- | -------------------------------------- |
+| Multi-engine open lake (Spark + Trino + Flink) | Iceberg V2 catalog                     |
+| Databricks Delta Lake with governance          | Unity Catalog                          |
+| Read PostgreSQL/MySQL tables from Spark SQL    | JDBC catalog                           |
+| On-prem Spark with HDFS + Delta                | Delta V2 catalog with Hadoop warehouse |
+| Single-engine, single-cluster                  | Hive Metastore may be sufficient       |

@@ -3,7 +3,7 @@
 `EXPLODE()` transforms a single row containing an array or map into **multiple rows** — one per
 element. It is the most commonly used generator function in Spark SQL.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -12,6 +12,13 @@ graph LR
     B --> D[Row: b]
     B --> E[Row: c]
 ```
+
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-explode" class="ts-viz"></div>
+
+Click an input row to highlight the output rows it fans out into. The row with a `NULL`/empty
+array produces **no output rows** — `EXPLODE` drops it entirely (see `EXPLODE_OUTER` to keep it).
 
 ## :material-pin: Syntax
 
@@ -39,10 +46,10 @@ LATERAL VIEW EXPLODE(map_column) AS key, value;
 
 ### Input Types
 
-| Input Type | Output Columns |
-|-----------|---------------|
+| Input Type | Output Columns        |
+| ---------- | --------------------- |
 | `array<T>` | `col` (element value) |
-| `map<K,V>` | `key`, `value` |
+| `map<K,V>` | `key`, `value`        |
 
 ## :material-magnify: Behavior
 
@@ -51,6 +58,8 @@ LATERAL VIEW EXPLODE(map_column) AS key, value;
 3. For maps, each entry becomes a `(key, value)` row.
 4. **Drops rows** where the array/map is `NULL` or empty — use `EXPLODE_OUTER` to retain them.
 5. Default output column names are `col` (array) or `key`/`value` (map); override with `AS`.
+6. **NULL *element* vs. NULL *array*** — a `NULL` value *inside* an array produces a row with `col = NULL` (kept); the array/map itself being `NULL` drops the row entirely. These are different cases — see Example 7.
+7. **One generator per SELECT** — a `SELECT` list may contain at most one generator function (`EXPLODE`, `POSEXPLODE`, `INLINE`, `STACK`, …). Calling two directly (e.g. `SELECT EXPLODE(a), EXPLODE(b)`) raises an analysis error; use chained `LATERAL VIEW` clauses instead (see Example 6).
 
 ## :material-flask-outline: Practical Examples
 
@@ -133,15 +142,35 @@ LATERAL VIEW EXPLODE(numbers) AS num;
 -- Cross-product: (1,a,10), (1,a,20), (1,b,10), (1,b,20)
 ```
 
+### :material-alert-circle-outline: 7. NULL Element vs. NULL Array
+
+```sql
+CREATE OR REPLACE TEMP VIEW nulls_demo AS
+SELECT * FROM VALUES
+  (1, ARRAY('a', NULL, 'c')),  -- array contains a NULL element
+  (2, NULL),                   -- the array itself is NULL
+  (3, ARRAY())                 -- the array is empty
+AS nulls_demo(id, arr);
+
+SELECT id, val FROM nulls_demo LATERAL VIEW EXPLODE(arr) AS val;
+-- (1, a), (1, NULL), (1, c)   -- NULL *element* is kept as its own row
+-- id 2 and 3 produce NO rows  -- NULL/empty *array* drops the row entirely
+```
+
+> **Restriction:** only one generator function is allowed per `SELECT` list.
+> `SELECT EXPLODE(a), EXPLODE(b) FROM t` fails with an analysis error
+> (`only one generator allowed per select clause`). Use two `LATERAL VIEW`
+> clauses instead (see Example 6) to get their Cartesian product.
+
 ## :material-brain: When to Use
 
-| Scenario | Why `EXPLODE`? |
-|----------|---------------|
-| Flatten nested arrays into rows | Turn 1 row with N elements into N rows |
-| Normalize JSON / semi-structured data | Unpack nested structures for analysis |
-| Count or aggregate array elements | Explode first, then `GROUP BY` / `COUNT` |
-| Generate date/number sequences | Combine with `SEQUENCE()` for calendar logic |
-| Chain with HOFs | `EXPLODE(FILTER(...))` or `EXPLODE(TRANSFORM(...))` |
+| Scenario                              | Why `EXPLODE`?                                      |
+| ------------------------------------- | --------------------------------------------------- |
+| Flatten nested arrays into rows       | Turn 1 row with N elements into N rows              |
+| Normalize JSON / semi-structured data | Unpack nested structures for analysis               |
+| Count or aggregate array elements     | Explode first, then `GROUP BY` / `COUNT`            |
+| Generate date/number sequences        | Combine with `SEQUENCE()` for calendar logic        |
+| Chain with HOFs                       | `EXPLODE(FILTER(...))` or `EXPLODE(TRANSFORM(...))` |
 
 > **Tip:** If you need to preserve rows where the array is `NULL` or empty,
 > use `EXPLODE_OUTER` instead.

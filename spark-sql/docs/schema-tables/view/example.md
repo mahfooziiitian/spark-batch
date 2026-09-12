@@ -2,7 +2,7 @@
 
 Real-world patterns for building views in Spark SQL and Databricks.
 
----
+______________________________________________________________________
 
 ## :material-layers: Pattern 1 — Layered (Medallion) Views
 
@@ -49,7 +49,7 @@ FROM silver.v_orders
 GROUP BY order_month, region, tier;
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-lock: Pattern 2 — Security / Row-Level View
 
@@ -70,7 +70,7 @@ WHERE region = (
 );
 ```
 
----
+______________________________________________________________________
 
 ## :material-eye-off: Pattern 3 — Column Masking View
 
@@ -97,7 +97,7 @@ FROM analytics.customers;
 GRANT SELECT ON VIEW analytics.v_customers_safe TO `role:analysts`;
 ```
 
----
+______________________________________________________________________
 
 ## :material-chart-bar: Pattern 4 — Running Totals and Window Views
 
@@ -129,7 +129,7 @@ FROM (
 );
 ```
 
----
+______________________________________________________________________
 
 ## :material-cached: Pattern 5 — Materialized View for Dashboard KPIs
 
@@ -159,7 +159,7 @@ WHERE month >= '2024-01-01'
 ORDER BY month DESC, gmv DESC;
 ```
 
----
+______________________________________________________________________
 
 ## :material-pipe: Pattern 6 — Reusable CTE-Style View
 
@@ -184,7 +184,7 @@ GROUP BY d.calendar_date
 ORDER BY d.calendar_date;
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: Pattern 7 — Backward-Compatible Rename View
 
@@ -197,7 +197,7 @@ CREATE OR REPLACE VIEW sales.order_facts AS
 SELECT * FROM sales.orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-refresh: Pattern 8 — Temp View Pipeline
 

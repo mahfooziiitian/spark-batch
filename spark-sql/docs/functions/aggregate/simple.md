@@ -2,7 +2,7 @@
 
 Simple aggregate functions perform basic numeric computations across rows in a group.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,18 +11,26 @@ graph LR
     C --> D[One Row per Group]
 ```
 
+### :material-animation-play: Interactive Visualization — NULLs Are Skipped, Not Zeroed
+
+<div id="viz-null-skip" class="ts-viz"></div>
+
+Toggle a row's value to `NULL` and watch `SUM`/`AVG`/`COUNT` recompute —
+`AVG` divides by the count of **non-NULL** rows only, so adding a `NULL`
+never drags the average toward zero.
+
 ## :material-pin: Functions
 
-| Function | Description | NULL Handling |
-|----------|-------------|---------------|
-| `MIN(expr)` | Minimum value | Ignores NULLs |
-| `MAX(expr)` | Maximum value | Ignores NULLs |
-| `SUM(expr)` | Sum of all values | Ignores NULLs |
-| `AVG(expr)` | Arithmetic mean | Ignores NULLs |
-| `MEAN(expr)` | Alias for `AVG` | Ignores NULLs |
-| `MIN_BY(x, y)` | Value of `x` at the row where `y` is minimum | Ignores NULLs in `y` |
-| `MAX_BY(x, y)` | Value of `x` at the row where `y` is maximum | Ignores NULLs in `y` |
-| `ANY_VALUE(expr)` | Any arbitrary value from the group | May return NULL |
+| Function          | Description                                  | NULL Handling        |
+| ----------------- | -------------------------------------------- | -------------------- |
+| `MIN(expr)`       | Minimum value                                | Ignores NULLs        |
+| `MAX(expr)`       | Maximum value                                | Ignores NULLs        |
+| `SUM(expr)`       | Sum of all values                            | Ignores NULLs        |
+| `AVG(expr)`       | Arithmetic mean                              | Ignores NULLs        |
+| `MEAN(expr)`      | Alias for `AVG`                              | Ignores NULLs        |
+| `MIN_BY(x, y)`    | Value of `x` at the row where `y` is minimum | Ignores NULLs in `y` |
+| `MAX_BY(x, y)`    | Value of `x` at the row where `y` is maximum | Ignores NULLs in `y` |
+| `ANY_VALUE(expr)` | Any arbitrary value from the group           | May return NULL      |
 
 ## :material-flask-outline: Practical Examples
 
@@ -83,16 +91,16 @@ GROUP BY region;
 ```
 
 | region | num_sales | total | avg_amount | min_amount | max_amount |
-|--------|-----------|-------|------------|------------|------------|
-| East | 3 | 350 | 116.67 | 50 | 200 |
-| West | 2 | 450 | 225.0 | 150 | 300 |
+| ------ | --------- | ----- | ---------- | ---------- | ---------- |
+| East   | 3         | 350   | 116.67     | 50         | 200        |
+| West   | 2         | 450   | 225.0      | 150        | 300        |
 
 ## :material-brain: When to Use
 
-| Need | Function |
-|------|----------|
-| Find extremes | `MIN`, `MAX` |
-| Total a column | `SUM` |
-| Average a column | `AVG` / `MEAN` |
+| Need                          | Function           |
+| ----------------------------- | ------------------ |
+| Find extremes                 | `MIN`, `MAX`       |
+| Total a column                | `SUM`              |
+| Average a column              | `AVG` / `MEAN`     |
 | Value associated with min/max | `MIN_BY`, `MAX_BY` |
-| Any sample value from group | `ANY_VALUE` |
+| Any sample value from group   | `ANY_VALUE`        |

@@ -1,157 +1,108 @@
-# :material-file-tree: Spark SQL AST
+# :material-file-tree: Spark SQL AST and the Parsed Logical Plan
 
-The **Abstract Syntax Tree (AST)** is the first structured representation of a query.
-Spark's ANTLR-based parser turns the raw SQL string into a parse tree, and the
-`AstBuilder` converts that into an **Unresolved Logical Plan** — the tree you see under
-`== Parsed Logical Plan ==`. At this point table and column names are recorded but *not*
-validated; unresolved nodes are printed with a leading apostrophe (`'`).
+Spark SQL starts with an ANTLR grammar, but the SQL interfaces you use for debugging do **not** expose the raw parse tree. What `EXPLAIN EXTENDED` shows first is the unresolved logical plan that `AstBuilder` produced from that parse tree.
 
-### :material-sitemap: Overview
+That distinction matters: the parsed-plan section is the closest observable proxy for the AST, but it is already one step past the raw ANTLR tree.
 
-```mermaid
-graph LR
-    A["SQL String"] --> B["ANTLR Parser\n(SqlBase.g4 grammar)"]
-    B --> C["Parse Tree\n(concrete syntax)"]
-    C --> D["AstBuilder"]
-    D --> E["Unresolved Logical Plan\n(the AST — names not bound)"]
-    E --> F["Analyzer\n→ Resolved Logical Plan"]
-```
+______________________________________________________________________
 
----
+### :material-animation-play: Interactive Visualization — From SQL Text to Parsed Plan
 
-## :material-pin: Why It Matters
+<div id="viz-ast-node-explorer" class="ts-viz"></div>
 
-1. The parser produces the AST purely from **syntax** — it never touches the catalog.
-2. Syntax mistakes surface here as a `ParseException`, *before* any name resolution.
-3. The AST is handed to the Analyzer, which binds names and types to produce the
-   Resolved Logical Plan.
-4. Reading the parsed tree helps you distinguish **parser** problems (bad SQL grammar)
-   from **analysis** problems (unknown table/column).
+Use the stages to see where Spark stops exposing parser internals and starts exposing logical-plan nodes such as `'Project`, `'Filter`, and `'UnresolvedRelation`.
 
----
+______________________________________________________________________
 
-## :material-eye: Viewing the AST
+## :material-source-branch: Verified Observable Boundary
 
-There is **no** `EXPLAIN PARSED` mode. The AST is the first section of `EXPLAIN EXTENDED`:
+For Spark 4.2, this query:
 
 ```sql
 EXPLAIN EXTENDED
-SELECT order_id, amount
-FROM orders
-WHERE amount > 100;
+SELECT k + 1 AS v
+FROM big_t
+WHERE k < 3;
 ```
 
-The `== Parsed Logical Plan ==` section is the AST:
+printed the following first section:
 
 ```text
 == Parsed Logical Plan ==
-'Project ['order_id, 'amount]
-+- 'Filter ('amount > 100)
-   +- 'UnresolvedRelation [orders], [], false
+'Project [('k + 1) AS v#12]
++- 'Filter ('k < 3)
+   +- 'UnresolvedRelation [big_t], [], false
 ```
 
-Every node carries a leading `'` — the marker for **unresolved**. Compare it with the
-next section, where the Analyzer has bound names, types, and the view definition:
+The same explain then continued with analyzed and optimized sections:
 
 ```text
 == Analyzed Logical Plan ==
-order_id: int, amount: decimal(4,1)
-Project [order_id#10, amount#12]
-+- Filter (amount#12 > cast(cast(100 as decimal(3,0)) as decimal(4,1)))
-   +- SubqueryAlias orders
-      +- View (`orders`, [order_id#10, region#11, amount#12])
+Project [(k#1L + cast(1 as bigint)) AS v#12L]
++- Filter (k#1L < cast(3 as bigint))
+   +- SubqueryAlias big_t
+      +- View (`big_t`, [k#1L, v1#2L])
          +- ...
+
+== Optimized Logical Plan ==
+Project [(id#0L + 1) AS v#12L]
++- Filter (id#0L < 3)
+   +- Range (0, 1000, step=1, splits=Some(1))
 ```
 
-Note how `'UnresolvedRelation [orders]` became a real `View`, `'order_id` became
-`order_id#10` (a bound attribute with an expression ID), and the literal `100` gained an
-explicit `cast`.
+This verifies three important facts:
 
----
+1. Spark exposes the unresolved logical plan with `'`-prefixed nodes.
+2. The Analyzer, not the parser, inserts type casts and resolves attribute IDs.
+3. The raw ANTLR parse tree itself is not printed by `EXPLAIN`.
 
-## :material-file-tree-outline: AST Structure of the Query
+______________________________________________________________________
 
-```mermaid
-graph TD
-    P["'Project\n['order_id, 'amount]"] --> F["'Filter\n('amount > 100)"]
-    F --> R["'UnresolvedRelation\n[orders]"]
-```
+## :material-table: What You Can and Cannot Observe
 
-The tree reads bottom-up: read `orders`, filter rows, then project two columns — the same
-shape as the SQL, but as a manipulable data structure.
+| Artifact                                      | Exposed directly from SQL? | Where to look                                     |
+| --------------------------------------------- | -------------------------- | ------------------------------------------------- |
+| Raw SQL text                                  | Yes                        | Your query string                                 |
+| ANTLR parse tree                              | No                         | Internal parser only                              |
+| `AstBuilder` output (unresolved logical plan) | Yes                        | `== Parsed Logical Plan ==` in `EXPLAIN EXTENDED` |
+| Resolved logical plan                         | Yes                        | `== Analyzed Logical Plan ==`                     |
+| Optimized logical plan                        | Yes                        | `== Optimized Logical Plan ==`                    |
 
----
+So, when people say "Spark shows the AST," the precise statement is: Spark shows the **unresolved logical plan derived from the parser output**, not the concrete syntax tree produced directly by ANTLR.
 
-## :material-format-list-bulleted-type: Common Unresolved AST Nodes
+______________________________________________________________________
 
-| Node | Meaning | Resolves to |
-|------|---------|-------------|
-| `'UnresolvedRelation [t]` | A table/view name, not yet looked up | `View` / `LogicalRelation` / `HiveTableRelation` |
-| `'UnresolvedAttribute` (`'col`) | A column reference, not yet bound | `AttributeReference` (`col#id`) |
-| `'UnresolvedFunction` | A function call, signature not checked | Concrete expression (e.g. `Sum`) |
-| `'UnresolvedStar` (`'*`) | `SELECT *` before expansion | Explicit list of `AttributeReference`s |
-| `'Project` | The `SELECT` list | `Project` |
-| `'Filter` | The `WHERE` predicate | `Filter` |
-| `'Aggregate` | `GROUP BY` + aggregates | `Aggregate` |
-| `'Join` | A join with its condition | `Join` |
+## :material-format-list-bulleted-type: Common Parsed-Plan Nodes
 
-The `'` prefix is your quickest visual cue that a node is still unresolved.
+| Parsed node               | Meaning before analysis                                              |
+| ------------------------- | -------------------------------------------------------------------- |
+| `'UnresolvedRelation [t]` | A table or view name that has not been bound to catalog metadata yet |
+| `'k` / `'amount`          | Unresolved attribute references                                      |
+| `'Project`                | The `SELECT` list as a logical operator                              |
+| `'Filter`                 | The `WHERE` predicate before resolution                              |
+| `'Aggregate`              | A grouping/aggregation operator before function resolution           |
+| `'Join`                   | A join operator whose inputs and condition are still unresolved      |
 
----
+The leading apostrophe is the quickest visual clue that you are still looking at a pre-analysis tree.
 
-## :material-alert-circle-outline: Parse Errors vs Analysis Errors
+______________________________________________________________________
 
-The stage at which a query fails tells you what kind of mistake it is.
+## :material-compass-outline: Practical Use
 
-### Parse error — caught while building the AST
+| If you are debugging...           | Check this section first                                           |
+| --------------------------------- | ------------------------------------------------------------------ |
+| Parser vs analyzer confusion      | If `== Parsed Logical Plan ==` exists, the SQL parsed successfully |
+| Alias and column binding          | Compare parsed names with analyzed `#id`-suffixed attributes       |
+| View expansion and simplification | Compare analyzed vs optimized, not just parsed vs analyzed         |
 
-```sql
-SELECT FROM orders WHERE;
-```
+!!! note "No `EXPLAIN PARSED` mode"
 
-```text
-[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 1, pos 24)
-== SQL ==
-SELECT FROM orders WHERE
-------------------------^^^
-```
+    Spark 4.2 exposes the parsed stage only as part of `EXPLAIN EXTENDED`. There is no separate SQL-facing `EXPLAIN PARSED` command.
 
-A `ParseException` means the grammar itself was violated — the AST could not even be
-built. The `^^^` marker points at the offending position.
+______________________________________________________________________
 
-### Analysis error — caught *after* the AST, during resolution
+## :material-link-variant: See Also
 
-```sql
-SELECT nonexistent FROM orders;
-```
-
-```text
-[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column ... `nonexistent` cannot be resolved.
-Did you mean one of the following? [`region`, `amount`, `order_id`]. SQLSTATE: 42703
-```
-
-An `AnalysisException` means the SQL was **grammatically valid** (the AST built fine) but
-a name could not be bound against the catalog.
-
-| Symptom | Exception | Stage | Typical cause |
-|---------|-----------|-------|---------------|
-| `PARSE_SYNTAX_ERROR` | `ParseException` | Parser (AST build) | Missing comma/keyword, unbalanced parens |
-| `UNRESOLVED_COLUMN` | `AnalysisException` | Analyzer | Column typo, wrong alias |
-| `TABLE_OR_VIEW_NOT_FOUND` | `AnalysisException` | Analyzer | Unknown/misspelt table |
-
----
-
-## :material-brain: When to Use
-
-| Scenario | Recommendation |
-|----------|----------------|
-| SQL fails with a syntax error | Read the `PARSE_SYNTAX_ERROR` `^^^` pointer — the AST never built |
-| Unsure if a problem is syntax or naming | If `EXPLAIN EXTENDED` prints a Parsed plan, syntax is fine — it's an analysis issue |
-| Learning how Spark reads your query | Compare the `== Parsed ==` vs `== Analyzed ==` sections side by side |
-| Debugging `SELECT *` expansion | Check whether `'UnresolvedStar` expanded to the columns you expected |
-
-!!! tip "Parsed plan = syntax only"
-    If the `== Parsed Logical Plan ==` section prints, your SQL is grammatically valid.
-    Any remaining error is an **analysis** problem (names, types, catalog) — look at the
-    `== Analyzed Logical Plan ==` stage next. See [Logical Optimization](../logical.md)
-    for what happens after resolution.
+- [Catalyst Optimizer](../index.md)
+- [Logical Optimization](../logical.md)
+- [Query Parsing & Execution](../../../internals/planner/query-parsing.md)

@@ -1,101 +1,64 @@
-# :material-scale-unbalanced: Skew Join in Spark SQL
+# :material-scale-unbalanced: Skewed Join Overview
 
-Skew join hints are **not required** in most cases.
+Join skew happens when one or a few key values send far more rows to one shuffle partition than the others, creating long tail tasks even when the overall cluster is idle.
 
-> **Note:** Skew is automatically handled if both  
->
-> - `Adaptive Query Execution (AQE)`  
-> - `spark.sql.adaptive.skewJoin.enabled`  
-> are enabled.
+### :material-animation-play: Interactive Visualization — Skew Handling Options
 
+<div id="viz-joins-skew-overview" class="ts-viz"></div>
 
-### :material-sitemap: Overview
+Switch among the main skew remedies to compare what Spark automates for you and what requires manual data reshaping.
 
-```mermaid
-graph LR
-    S[Skewed Partition] -->|AQE detects skew| SP[Split sub-partitions]
-    SP --> B[Balanced executors]
-```
+<script src="../../../../assets/js/querying-joins-strategy-viz.js"></script>
 
----
+______________________________________________________________________
 
-## Examples of Skew Join Hints
+## :material-check-decagram: What Was Verified
 
-### 1. Table with Skew
+- Open-source PySpark 4.2 recognizes the AQE skew settings `spark.sql.adaptive.skewJoin.enabled`, `spark.sql.adaptive.skewJoin.skewedPartitionFactor`, and `spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes`. Visible partition splitting still depends on runtime shuffle sizes, so verify the executed plan on production-shaped data.
+- The SQL hint forms shown in many Databricks-oriented articles, such as `/*+ SKEW(...) */`, did not produce a distinct skew-aware operator in local open-source Spark 4.2 checks; the test query simply planned its normal join.
+- Broadcast, bucketing, manual key separation, and salting are all still relevant because AQE only helps after a shuffle-based plan exists.
 
-```sql
-SELECT /*+ SKEW('orders') */ *
-FROM orders, customers
-WHERE c_custId = o_custId
-```
+______________________________________________________________________
 
----
+## :material-cog-outline: AQE First
 
-### 2. Subquery with Skew
+For ordinary equi-joins on large tables, start with AQE:
 
 ```sql
-SELECT /*+ SKEW('C1') */ *
-FROM (
-  SELECT * FROM customers WHERE c_custId < 100
-) C1, orders
-WHERE C1.c_custId = o_custId
+set spark.sql.adaptive.enabled = true;
+set spark.sql.adaptive.skewJoin.enabled = true;
+set spark.sql.adaptive.skewJoin.skewedPartitionFactor = 5;
+set spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 268435456;
 ```
 
----
+Interpretation:
 
-## Configuring Skew Hints
+- `skewedPartitionFactor` compares a partition with the median shuffled partition.
+- `skewedPartitionThresholdInBytes` prevents tiny toy partitions from being treated as skew just because the median is even smaller.
 
-You can specify relation names, column names, and skew values.
+______________________________________________________________________
 
-### Single Column
+## :material-table: Choose the Technique by Situation
 
-```sql
-SELECT /*+ SKEW('orders', 'o_custId') */ *
-FROM orders, customers
-WHERE o_custId = c_custId
-```
+| Situation                                                       | Better first response              |
+| --------------------------------------------------------------- | ---------------------------------- |
+| Small dimension, large skewed fact                              | Broadcast the dimension            |
+| Large shuffle join with a few hot partitions                    | AQE skew handling                  |
+| Repeated joins against the same expensive filtered intermediate | Cache after filtering              |
+| Known hot keys on one side                                      | Split hot keys into a special path |
+| Extreme single-key skew that AQE cannot smooth enough           | Salt the join key                  |
+| Reused bucketed datasets with the same join key                 | Bucketing to avoid shuffle         |
 
----
+______________________________________________________________________
 
-### Multiple Columns
+## :material-alert-outline: Important Scope Note
 
-```sql
-SELECT /*+ SKEW('orders', ('o_custId', 'o_storeRegionId')) */ *
-FROM orders, customers
-WHERE o_custId = c_custId AND o_storeRegionId = c_regionId
-```
+!!! warning "Open-source Spark vs vendor-specific syntax"
 
----
+    Do not assume every `SKEW(...)` hint example you find online applies to open-source Spark SQL 4.2. Verify the actual physical plan in your runtime.
 
-### Single Column, Single Skew Value
+______________________________________________________________________
 
-```sql
-SELECT /*+ SKEW('orders', 'o_custId', 0) */ *
-FROM orders, customers
-WHERE o_custId = c_custId
-```
+## :material-lightbulb-outline: Practical Rule
 
----
-
-### Single Column, Multiple Skew Values
-
-```sql
-SELECT /*+ SKEW('orders', 'o_custId', (0, 1, 2)) */ *
-FROM orders, customers
-WHERE o_custId = c_custId
-```
-
----
-
-### Multiple Columns, Multiple Skew Values
-
-```sql
-SELECT /*+ SKEW('orders', ('o_custId', 'o_storeRegionId'), ((0, 1001), (1, 1002))) */ *
-FROM orders, customers
-WHERE o_custId = c_custId AND o_storeRegionId = c_regionId
-```
-
----
-
-!!! tip
-    Use skew hints only if you have disabled AQE or need fine-grained control over skew handling.
+If the skew only exists because a small lookup table is joined to a massive fact table, broadcasting that lookup table is usually simpler and safer than introducing salting immediately.

@@ -2,23 +2,23 @@
 
 Struct columns store named, typed fields. Access individual fields with dot notation (`column.field`) and filter on them like any scalar column.
 
----
+______________________________________________________________________
 
 ## Setup
 
 ```sql
 CREATE OR REPLACE TEMP VIEW customers AS
 SELECT * FROM VALUES
-  (1, 'Alice', STRUCT('gold',   'US',   95)),
-  (2, 'Bob',   STRUCT('silver', 'EU',   72)),
-  (3, 'Carol', STRUCT('bronze', 'US',   45)),
-  (4, 'Dave',  STRUCT('gold',   'APAC', 88)),
-  (5, 'Eve',   NULL)
+  (1, 'Alice', named_struct('tier', 'gold',   'region', 'US',   'score', 95)),
+  (2, 'Bob',   named_struct('tier', 'silver', 'region', 'EU',   'score', 72)),
+  (3, 'Carol', named_struct('tier', 'bronze', 'region', 'US',   'score', 45)),
+  (4, 'Dave',  named_struct('tier', 'gold',   'region', 'APAC', 'score', 88)),
+  (5, 'Eve',   CAST(NULL AS STRUCT<tier: STRING, region: STRING, score: INT>))
 AS t(id, name, profile);
 -- profile fields: tier (STRING), region (STRING), score (INT)
 ```
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -32,7 +32,13 @@ flowchart LR
     SC --> F3["WHERE profile.score >= 80"]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Dot-Notation Filters
+
+<div id="viz-filter-struct" class="ts-viz"></div>
+
+Select a nested-field predicate to see which rows survive and how a `NULL` struct propagates. The outcomes match Spark 4.2 queries against the verified named-field setup above.
+
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -41,7 +47,7 @@ flowchart LR
 3. **NULL guard pattern** — Use `profile IS NOT NULL AND profile.score >= 80` to safely filter when the struct may be NULL.
 4. **Pushdown support** — Catalyst can push predicates on struct fields down to Parquet and Delta scans when the field name resolves correctly.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -97,36 +103,40 @@ WHERE profile.region = 'US' AND profile.score > 50 AND name != 'Carol';
 ### :material-numeric-5-circle: Struct field pushdown — EXPLAIN note
 
 ```sql
+-- On a file-backed source with the same schema
 EXPLAIN FORMATTED
-SELECT id, name
-FROM customers
+SELECT id
+FROM parquet.`/path/to/customers`
 WHERE profile.tier = 'gold';
 -- Result (excerpt):
--- PushedFilters: [IsNotNull(profile), EqualTo(profile.tier,gold)]
+-- PushedFilters: [IsNotNull(profile.tier), EqualTo(profile.tier,gold)]
 -- Struct field predicates are pushed to the scan layer when the source supports it.
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended |
-|----------|-------------|
-| Filter on a single nested field | `WHERE struct_col.field = value` |
-| Combine multiple nested field predicates | `AND` / `OR` with dot-notation fields |
-| Safely filter when struct may be NULL | `struct_col IS NOT NULL AND struct_col.field = value` |
-| Deep nesting | Chain dot notation: `a.b.c = value` |
+| Scenario                                 | Recommended                                           |
+| ---------------------------------------- | ----------------------------------------------------- |
+| Filter on a single nested field          | `WHERE struct_col.field = value`                      |
+| Combine multiple nested field predicates | `AND` / `OR` with dot-notation fields                 |
+| Safely filter when struct may be NULL    | `struct_col IS NOT NULL AND struct_col.field = value` |
+| Deep nesting                             | Chain dot notation: `a.b.c = value`                   |
 
----
+______________________________________________________________________
 
 ## :material-layers: Deeply Nested Structs
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
 SELECT * FROM VALUES
-  (1, STRUCT(STRUCT('shipped', '2024-06-01') AS delivery, STRUCT('gold', 95) AS loyalty)),
-  (2, STRUCT(STRUCT('pending', NULL)          AS delivery, STRUCT('silver', 72) AS loyalty)),
-  (3, STRUCT(STRUCT('returned', '2024-05-20') AS delivery, STRUCT('bronze', 40) AS loyalty))
+  (1, named_struct('delivery', named_struct('status', 'shipped',  'delivered_on', '2024-06-01'),
+                    'loyalty',  named_struct('tier',   'gold',     'score',        95))),
+  (2, named_struct('delivery', named_struct('status', 'pending',  'delivered_on', NULL),
+                    'loyalty',  named_struct('tier',   'silver',   'score',        72))),
+  (3, named_struct('delivery', named_struct('status', 'returned', 'delivered_on', '2024-05-20'),
+                    'loyalty',  named_struct('tier',   'bronze',   'score',        40)))
 AS t(order_id, meta);
 
 -- Access three-level nesting with chained dot notation
@@ -136,7 +146,7 @@ WHERE meta.delivery.status = 'shipped'
   AND meta.loyalty.score >= 80;
 ```
 
----
+______________________________________________________________________
 
 ## :material-function-variant: named_struct — Build Structs in Queries
 
@@ -156,28 +166,30 @@ FROM people
 WHERE age >= 18;
 ```
 
----
+______________________________________________________________________
 
 ## :material-unfold-more-horizontal: Struct Wildcard Unpacking (`.*`)
 
 ```sql
 -- Expand all struct fields into top-level columns
-SELECT order_id, profile.*
+SELECT id, profile.*
 FROM customers;
--- Equivalent to: SELECT order_id, profile.tier, profile.region, profile.score FROM customers
+-- Equivalent to: SELECT id, profile.tier, profile.region, profile.score FROM customers
 
 -- Unpack multiple nested structs
 SELECT order_id, meta.delivery.*, meta.loyalty.*
 FROM orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert-circle: Common Pitfalls
 
-| Mistake | Behaviour | Fix |
-|---------|-----------|-----|
-| `WHERE struct_col.field = val` when struct is NULL | NULL propagation → row excluded | Add `struct_col IS NOT NULL AND ...` |
-| Modifying a struct field (no update-in-place) | Struct is immutable | Rebuild with `named_struct` or `struct_col.* EXCEPT`-style CTE |
-| Pushdown blocked by function on struct field | e.g. `UPPER(profile.tier)` prevents pushdown | Filter on raw field value, transform in SELECT |
-| Accessing missing field after schema evolution | Analysis error | Confirm schema with `DESCRIBE table` before querying |
+| Mistake                                            | Behaviour                                    | Fix                                                            |
+| -------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| `WHERE struct_col.field = val` when struct is NULL | NULL propagation → row excluded              | Add `struct_col IS NOT NULL AND ...`                           |
+| Modifying a struct field (no update-in-place)      | Struct is immutable                          | Rebuild with `named_struct` or `struct_col.* EXCEPT`-style CTE |
+| Pushdown blocked by function on struct field       | e.g. `UPPER(profile.tier)` prevents pushdown | Filter on raw field value, transform in SELECT                 |
+| Accessing missing field after schema evolution     | Analysis error                               | Confirm schema with `DESCRIBE table` before querying           |
+
+<script src="../../../../assets/js/querying-filter-viz.js"></script>

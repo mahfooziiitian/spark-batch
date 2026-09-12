@@ -2,7 +2,7 @@
 
 Shape, filter, aggregate, and pivot raw data into analysis-ready structures.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Pipeline Flow
 
@@ -15,18 +15,18 @@ flowchart LR
     PIVOT --> OUT["Transformed output"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Problem | Technique |
-|------|---------|-----------|
-| [Filter](filter/index.md) | Boolean logic, text patterns, NULL handling | `WHERE`, `LIKE`, `RLIKE`, `IN` |
-| [Aggregation](aggregation/index.md) | Summarise data by groups | `GROUP BY`, `HAVING`, conditional `SUM` |
-| [Grouping](grouping/index.md) | Hierarchical subtotals | `GROUPING SETS`, `ROLLUP`, `CUBE` |
-| [Pivot](pivot/index.md) | Rotate rows ↔ columns | `PIVOT`, `UNPIVOT` |
+| Page                                | Problem                                     | Technique                               |
+| ----------------------------------- | ------------------------------------------- | --------------------------------------- |
+| [Filter](filter/index.md)           | Boolean logic, text patterns, NULL handling | `WHERE`, `LIKE`, `RLIKE`, `IN`          |
+| [Aggregation](aggregation/index.md) | Summarise data by groups                    | `GROUP BY`, `HAVING`, conditional `SUM` |
+| [Grouping](grouping/index.md)       | Hierarchical subtotals                      | `GROUPING SETS`, `ROLLUP`, `CUBE`       |
+| [Pivot](pivot/index.md)             | Rotate rows ↔ columns                       | `PIVOT`, `UNPIVOT`                      |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 

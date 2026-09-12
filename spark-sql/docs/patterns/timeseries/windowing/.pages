@@ -1,6 +1,6 @@
 title: Windowing
 nav:
-  - tumbling_window.md
-  - hopping_window.md
-  - sliding_window.md
-  - session_window.md
+  - tumbling-window.md
+  - hopping-window.md
+  - sliding-window.md
+  - session-window.md

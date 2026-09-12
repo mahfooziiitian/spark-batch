@@ -4,21 +4,21 @@ Columns are the fundamental unit of a SQL query. Every `SELECT` clause produces 
 list of column expressions — raw column references, computed values, aliases, casts,
 and derived metrics.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: In This Section
 
-| Page | Covers |
-|------|--------|
-| [Aliases](alias.md) | `AS`, expression aliases, quoting rules, scope |
-| [Casting](casting.md) | `CAST`, `TRY_CAST`, implicit coercion, type precedence |
-| [Derived Columns](derived.md) | Computed columns, expressions, conditional derivation |
-| [Column Selection](selection.md) | `SELECT *`, column exclusion, reordering, `EXCEPT` clause |
-| [Struct & Nested Columns](nested.md) | Dot-notation access, `struct`, `map`, `array` column patterns |
-| [Column Defaults](defaults.md) | `DEFAULT`, `GENERATED ALWAYS AS`, `GENERATED ALWAYS AS IDENTITY` |
-| [Renaming & DDL](renaming.md) | `ALTER TABLE RENAME COLUMN`, `ALTER COLUMN`, `DROP COLUMN` |
+| Page                                 | Covers                                                           |
+| ------------------------------------ | ---------------------------------------------------------------- |
+| [Aliases](alias.md)                  | `AS`, expression aliases, quoting rules, scope                   |
+| [Casting](casting.md)                | `CAST`, `TRY_CAST`, implicit coercion, type precedence           |
+| [Derived Columns](derived.md)        | Computed columns, expressions, conditional derivation            |
+| [Column Selection](selection.md)     | `SELECT *`, column exclusion, reordering, `EXCEPT` clause        |
+| [Struct & Nested Columns](nested.md) | Dot-notation access, `struct`, `map`, `array` column patterns    |
+| [Column Defaults](defaults.md)       | `DEFAULT`, `GENERATED ALWAYS AS`, `GENERATED ALWAYS AS IDENTITY` |
+| [Renaming & DDL](renaming.md)        | `ALTER TABLE RENAME COLUMN`, `ALTER COLUMN`, `DROP COLUMN`       |
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Quick Reference
 

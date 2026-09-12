@@ -3,21 +3,21 @@
 Time series queries analyse data that changes over time — logs, sensor readings, sales, stock prices, IoT events.
 Every row is associated with a timestamp and queries typically involve windowed aggregation, ordering, and gap handling.
 
----
+______________________________________________________________________
 
 ## :material-view-grid: In This Section
 
-| Page | What You Will Learn |
-|------|---------------------|
-| [Time Aggregation](analysis/time_aggregation.md) | Date truncation, daily/weekly/monthly aggregation, YoY comparison |
-| [Tumbling Windows](windowing/tumbling_window.md) | Fixed non-overlapping time buckets — hourly reports, batch aggregation |
-| [Hopping Windows](windowing/hopping_window.md) | Fixed-size overlapping windows that advance at a smaller interval |
-| [Sliding Windows](windowing/sliding_window.md) | Row-based rolling windows — moving averages, smoothing |
-| [Session Windows](windowing/session_window.md) | Variable-length gap-based windows — user sessions, clickstreams |
-| [LAG & LEAD](analysis/lag_and_lead.md) | Period-over-period comparisons, state transitions, streak counting |
-| [Gap Fill](analysis/gap_filling.md) | Date spines, zero-fill, forward-fill, interpolation |
+| Page                                             | What You Will Learn                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------------------- |
+| [Time Aggregation](analysis/time-aggregation.md) | Date truncation, daily/weekly/monthly aggregation, YoY comparison      |
+| [Tumbling Windows](windowing/tumbling-window.md) | Fixed non-overlapping time buckets — hourly reports, batch aggregation |
+| [Hopping Windows](windowing/hopping-window.md)   | Fixed-size overlapping windows that advance at a smaller interval      |
+| [Sliding Windows](windowing/sliding-window.md)   | Row-based rolling windows — moving averages, smoothing                 |
+| [Session Windows](windowing/session-window.md)   | Variable-length gap-based windows — user sessions, clickstreams        |
+| [LAG & LEAD](analysis/lag-and-lead.md)           | Period-over-period comparisons, state transitions, streak counting     |
+| [Gap Fill](analysis/gap-filling.md)              | Date spines, zero-fill, forward-fill, interpolation                    |
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Window Type Overview
 
@@ -29,27 +29,27 @@ graph LR
     A --> E["Session\nvariable-length gap-based"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Overview
 
 <div id="viz-docs-overview" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-table: Window Type Comparison
 
-| Property | Tumbling | Hopping | Sliding (row-based) | Session |
-|----------|:--------:|:-------:|:-------------------:|:-------:|
-| Fixed size | Yes | Yes | Yes (rows) | No — gap-based |
-| Overlapping | No | Yes | Yes | No |
-| Events per window | Exclusive | Multiple | Rolling N rows | Unbounded |
-| SQL function | `window(t, size)` | `window(t, size, slide)` | `ROWS/RANGE frame` | LAG + cumulative SUM |
-| Spark native | Yes | Yes | Yes | Manual pattern |
-| Typical use | Hourly reports | Near-real-time trends | Moving averages | User sessions |
-| Example | 10:00–11:00, 11:00–12:00 | 10:00–11:00, 10:30–11:30 | Last 7 rows at each row | Events within 30-min gap |
+| Property          |         Tumbling         |         Hopping          |   Sliding (row-based)   |         Session          |
+| ----------------- | :----------------------: | :----------------------: | :---------------------: | :----------------------: |
+| Fixed size        |           Yes            |           Yes            |       Yes (rows)        |      No — gap-based      |
+| Overlapping       |            No            |           Yes            |           Yes           |            No            |
+| Events per window |        Exclusive         |         Multiple         |     Rolling N rows      |        Unbounded         |
+| SQL function      |    `window(t, size)`     | `window(t, size, slide)` |   `ROWS/RANGE frame`    |   LAG + cumulative SUM   |
+| Spark native      |           Yes            |           Yes            |           Yes           |      Manual pattern      |
+| Typical use       |      Hourly reports      |  Near-real-time trends   |     Moving averages     |      User sessions       |
+| Example           | 10:00–11:00, 11:00–12:00 | 10:00–11:00, 10:30–11:30 | Last 7 rows at each row | Events within 30-min gap |
 
----
+______________________________________________________________________
 
 ## :material-clock-outline: Core Concepts
 
@@ -64,9 +64,9 @@ Correct window calculations depend on deterministic ordering — always specify 
 
 ### 3 — Sparse Data
 
-Real-world series often have missing intervals. See [Gap Fill](analysis/gap_filling.md) for strategies to generate a complete time spine before aggregating.
+Real-world series often have missing intervals. See [Gap Fill](analysis/gap-filling.md) for strategies to generate a complete time spine before aggregating.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Quick Example
 
@@ -93,7 +93,7 @@ FROM daily_sales
 ORDER BY region, sale_date;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -103,9 +103,9 @@ ORDER BY region, sale_date;
 4. Session windows are not natively supported in Spark SQL batch mode — use the LAG + cumulative SUM pattern.
 5. `ROWS BETWEEN` operates on physical row positions; `RANGE BETWEEN` operates on logical value distances — use `ROWS` for time series unless you need true range semantics.
 
-
----
+______________________________________________________________________
 
 !!! note "Related"
+
     For applied, sales-oriented date patterns (date hierarchies, weekday and intra-day
-    banding, year-over-year), see [Applied Date Patterns](applied/date_patterns.md).
+    banding, year-over-year), see [Applied Date Patterns](applied/date-patterns.md).

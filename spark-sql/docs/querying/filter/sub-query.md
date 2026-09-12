@@ -2,7 +2,7 @@
 
 Subquery filters let you restrict rows based on the results of a nested query — using set membership (`IN`), existence checks (`EXISTS`), or scalar comparisons.
 
----
+______________________________________________________________________
 
 ## Setup
 
@@ -29,7 +29,7 @@ SELECT * FROM VALUES
 AS t(order_id, customer_id, amount, status);
 ```
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -45,17 +45,23 @@ flowchart TD
     SC_C -->|compare to single value| K3[Row kept or discarded]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Semi and Anti Filters
+
+<div id="viz-filter-sub-query" class="ts-viz"></div>
+
+Toggle `IN`, `EXISTS`, and `NOT EXISTS` to see which outer rows survive. The outcomes line up with Spark 4.2's verified semi-join and anti-join rewrites.
+
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
-1. **IN vs EXISTS performance** — `EXISTS` stops scanning the subquery as soon as one match is found (short-circuits); `IN` materialises the full set. Use `EXISTS` for large inner tables.
+1. **Spark often rewrites both `IN` and `EXISTS` to left semi-joins** — in Spark 4.2, simple forms of both produced the same semi-join physical plan. Choose based on readability and correlation needs rather than assuming very different execution strategies.
 2. **NOT IN NULL danger** — If the subquery for `NOT IN` returns any NULL value, the entire outer query returns zero rows due to three-valued logic. Use `NOT EXISTS` instead.
 3. **Correlated subqueries** — A correlated subquery references columns from the outer query. Catalyst may de-correlate it into a join for efficiency.
 4. **Scalar subqueries** — Must return exactly one row and one column; if they return more than one row, Spark raises a runtime error.
 5. **Semi-join rewrite** — Catalyst rewrites `IN` / `EXISTS` as left semi-joins and `NOT IN` / `NOT EXISTS` as left anti-joins internally.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -138,7 +144,6 @@ WHERE o.amount > (
 -- ---------|-------------|-------
 -- 103      | 1           | 430.00
 -- 106      | 2           | 200.00
--- 105      | 4           | 560.00
 -- 108      | 3           | 150.00
 ```
 
@@ -156,20 +161,20 @@ WHERE amount > (SELECT AVG(amount) FROM orders);
 -- 107      | 99          | 300.00
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended |
-|----------|-------------|
-| Filter rows that appear in another table | `IN` or `EXISTS` (prefer `EXISTS` for large sets) |
-| Filter rows that do not appear in another table | `NOT EXISTS` (avoid `NOT IN` when NULLs possible) |
-| Apply a per-row threshold based on a group average | Correlated subquery |
-| Compare against a single computed value | Scalar subquery |
-| High-performance semi-join | `EXISTS` — Catalyst rewrites to left semi-join |
-| Anti-join with NULL-safe semantics | `NOT EXISTS` |
+| Scenario                                           | Recommended                                       |
+| -------------------------------------------------- | ------------------------------------------------- |
+| Filter rows that appear in another table           | `IN` or `EXISTS` (prefer `EXISTS` for large sets) |
+| Filter rows that do not appear in another table    | `NOT EXISTS` (avoid `NOT IN` when NULLs possible) |
+| Apply a per-row threshold based on a group average | Correlated subquery                               |
+| Compare against a single computed value            | Scalar subquery                                   |
+| High-performance semi-join                         | `EXISTS` — Catalyst rewrites to left semi-join    |
+| Anti-join with NULL-safe semantics                 | `NOT EXISTS`                                      |
 
----
+______________________________________________________________________
 
 ## :material-filter-plus: Advanced Patterns
 
@@ -207,7 +212,7 @@ JOIN LATERAL (
     SELECT order_id, amount
     FROM orders
     WHERE customer_id = c.id
-    ORDER BY order_date DESC
+    ORDER BY order_id DESC
     LIMIT 1
 ) AS latest ON TRUE;
 ```
@@ -236,15 +241,17 @@ WHERE customer_id NOT IN (
 );
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: IN vs EXISTS — When to Use Each
 
-| Aspect | `IN (subquery)` | `EXISTS (subquery)` |
-|--------|:---------------:|:-------------------:|
-| Materialises full result set | Yes | No (short-circuits) |
-| Safe with NULLs in subquery | No | Yes |
-| Correlated subquery | Possible | Natural fit |
-| Large inner table | Slower | Faster (stops early) |
-| Internal Spark plan | Left semi-join | Left semi-join |
-| `NOT` form with NULLs | Dangerous — use NOT EXISTS | Safe |
+| Aspect                       |      `IN (subquery)`       | `EXISTS (subquery)`  |
+| ---------------------------- | :------------------------: | :------------------: |
+| Materialises full result set |            Yes             | No (short-circuits)  |
+| Safe with NULLs in subquery  |             No             |         Yes          |
+| Correlated subquery          |          Possible          |     Natural fit      |
+| Large inner table            |           Slower           | Faster (stops early) |
+| Internal Spark plan          |       Left semi-join       |    Left semi-join    |
+| `NOT` form with NULLs        | Dangerous — use NOT EXISTS |         Safe         |
+
+<script src="../../../assets/js/querying-filter-viz.js"></script>

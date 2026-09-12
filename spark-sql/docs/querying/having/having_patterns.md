@@ -1,31 +1,39 @@
 # :material-lightbulb-on: HAVING Patterns
 
-Reusable HAVING patterns for common analytical problems.
+These patterns focus on practical post-aggregation filtering: thresholds, scalar subqueries, top-N cutoffs, and group-level comparisons that are awkward to express earlier in the pipeline.
 
----
+______________________________________________________________________
+
+### :material-animation-play: Interactive Visualization — Threshold Pattern Explorer
+
+<div id="viz-having-patterns" class="ts-viz"></div>
+
+The slider acts like a configurable `HAVING` threshold. It shows which grouped totals survive a literal threshold and how that differs from a threshold computed from other grouped results.
+
+<script src="../../assets/js/querying-having-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-format-list-numbered: Top-N Groups
 
-Return only the top N groups by an aggregate measure.
+`LIMIT` does the final row trimming, but `HAVING` is still useful for removing trivial groups first.
 
 ```sql
--- Top 5 customers by lifetime spend
 SELECT
     customer_id,
     SUM(amount) AS lifetime_spend
 FROM orders
 GROUP BY customer_id
-HAVING SUM(amount) > 0          -- exclude zero-spend groups
+HAVING SUM(amount) > 0
 ORDER BY lifetime_spend DESC
 LIMIT 5;
 ```
 
 ```sql
--- Top 10 products by order count, excluding low-volume products
 SELECT
     product_id,
-    COUNT(*)        AS order_count,
-    SUM(amount)     AS total_revenue
+    COUNT(*) AS order_count,
+    SUM(amount) AS total_revenue
 FROM order_lines
 GROUP BY product_id
 HAVING COUNT(*) >= 50
@@ -33,46 +41,38 @@ ORDER BY order_count DESC
 LIMIT 10;
 ```
 
----
+______________________________________________________________________
 
-## :material-percent: Ratio / Proportion Filters
+## :material-database-cog-outline: Scalar-Subquery Thresholds
 
-Keep only groups where the ratio between two aggregates meets a threshold.
+Spark 4.2 allows a scalar subquery inside `HAVING`.
 
 ```sql
--- Regions where the return rate exceeds 5 %
 SELECT
     region,
-    COUNT(*)                                             AS total_orders,
-    COUNT(*) FILTER (WHERE status = 'returned')          AS returned_orders,
-    COUNT(*) FILTER (WHERE status = 'returned')
-        / NULLIF(COUNT(*), 0)                            AS return_rate
+    SUM(amount) AS total_revenue
 FROM orders
 GROUP BY region
-HAVING COUNT(*) FILTER (WHERE status = 'returned')
-     / NULLIF(COUNT(*), 0) > 0.05;
-
--- Products with a margin below 20 %
-SELECT
-    product_id,
-    SUM(revenue - cost)     AS total_margin,
-    SUM(revenue)            AS total_revenue
-FROM sales
-GROUP BY product_id
-HAVING SUM(revenue - cost) / NULLIF(SUM(revenue), 0) < 0.2;
+HAVING SUM(amount) > (
+    SELECT AVG(region_total)
+    FROM (
+        SELECT
+            region,
+            SUM(amount) AS region_total
+        FROM orders
+        GROUP BY region
+    ) t
+);
 ```
 
----
+This pattern is useful when the cutoff depends on other grouped results rather than a fixed literal.
 
-## :material-database-cog-outline: Config-Driven Thresholds
-
-Drive the HAVING threshold from a config table rather than a hardcoded literal.
+### Config-driven threshold table
 
 ```sql
--- Threshold stored in a config table
 SELECT
     warehouse_id,
-    SUM(units_shipped)  AS total_units
+    SUM(units_shipped) AS total_units
 FROM shipments
 WHERE ship_date >= '2024-01-01'
 GROUP BY warehouse_id
@@ -83,143 +83,75 @@ HAVING SUM(units_shipped) > (
 );
 ```
 
-```sql
--- Multiple thresholds via a lookup
-WITH thresholds AS (
-    SELECT
-        region,
-        revenue_target
-    FROM region_targets
-    WHERE target_year = 2024
-)
-SELECT
-    o.region,
-    SUM(o.amount)   AS total_revenue
-FROM orders o
-JOIN thresholds t ON o.region = t.region
-GROUP BY o.region
-HAVING SUM(o.amount) >= MAX(t.revenue_target);  -- per-region target
-```
+______________________________________________________________________
 
----
-
-## :material-account-group: Segment Identification
-
-Label or filter customer segments based on aggregate behaviour.
+## :material-percent: Ratio Filters
 
 ```sql
--- Flag customers by spend tier
-WITH customer_totals AS (
-    SELECT
-        customer_id,
-        SUM(amount) AS total_spent
-    FROM orders
-    GROUP BY customer_id
-    HAVING SUM(amount) > 0   -- exclude zero-spend
-)
 SELECT
-    customer_id,
-    total_spent,
-    CASE
-        WHEN total_spent >= 10000 THEN 'Platinum'
-        WHEN total_spent >= 5000  THEN 'Gold'
-        WHEN total_spent >= 1000  THEN 'Silver'
-        ELSE                           'Bronze'
-    END AS tier
-FROM customer_totals
-ORDER BY total_spent DESC;
+    region,
+    COUNT(*) AS total_orders,
+    COUNT(*) FILTER (WHERE status = 'returned') AS returned_orders,
+    COUNT(*) FILTER (WHERE status = 'returned')
+        / NULLIF(COUNT(*), 0) AS return_rate
+FROM orders
+GROUP BY region
+HAVING COUNT(*) FILTER (WHERE status = 'returned')
+    / NULLIF(COUNT(*), 0) > 0.05;
 ```
 
----
+`FILTER` builds the numerator, while `HAVING` decides whether the completed ratio is acceptable.
+
+______________________________________________________________________
 
 ## :material-calendar-range: Period Comparison
 
-Keep groups that improved (or declined) between two periods.
-
 ```sql
--- Customers whose spend grew from 2023 to 2024
 SELECT
     customer_id,
-    SUM(amount) FILTER (WHERE YEAR(order_date) = 2023)  AS spend_2023,
-    SUM(amount) FILTER (WHERE YEAR(order_date) = 2024)  AS spend_2024
+    SUM(amount) FILTER (WHERE YEAR(order_date) = 2023) AS spend_2023,
+    SUM(amount) FILTER (WHERE YEAR(order_date) = 2024) AS spend_2024
 FROM orders
 GROUP BY customer_id
 HAVING SUM(amount) FILTER (WHERE YEAR(order_date) = 2024)
-     > SUM(amount) FILTER (WHERE YEAR(order_date) = 2023);
+    > SUM(amount) FILTER (WHERE YEAR(order_date) = 2023);
 ```
 
----
+This pattern keeps only the groups whose aggregate improved between periods.
 
-## :material-alert-circle: Outlier Detection
+______________________________________________________________________
 
-Surface groups that deviate significantly from the mean.
+## :material-account-group: Two-Step Thresholds with a CTE
 
-```sql
--- Regions with revenue more than 2 standard deviations above the mean
-WITH region_revenue AS (
-    SELECT region, SUM(amount) AS revenue
-    FROM orders
-    GROUP BY region
-),
-stats AS (
-    SELECT AVG(revenue) AS avg_rev, STDDEV(revenue) AS std_rev
-    FROM region_revenue
-)
-SELECT r.region, r.revenue
-FROM region_revenue r
-CROSS JOIN stats s
-WHERE r.revenue > s.avg_rev + 2 * s.std_rev;
-```
+Complex thresholds are often easier to read when you separate aggregation from final filtering.
 
 ```sql
--- Warehouses with an unusually high error rate (HAVING version)
-SELECT
-    warehouse_id,
-    COUNT(*)                                              AS total_picks,
-    COUNT(*) FILTER (WHERE pick_error = true)             AS error_picks
-FROM warehouse_picks
-GROUP BY warehouse_id
-HAVING COUNT(*) FILTER (WHERE pick_error = true)
-     / NULLIF(COUNT(*), 0) > (
-           SELECT AVG(err_rate) + 2 * STDDEV(err_rate)
-           FROM (
-               SELECT COUNT(*) FILTER (WHERE pick_error = true)
-                    / NULLIF(COUNT(*), 0) AS err_rate
-               FROM warehouse_picks
-               GROUP BY warehouse_id
-           ) AS wh_rates
-       );
-```
-
----
-
-## :material-swap-horizontal: HAVING vs CTE for Complex Thresholds
-
-```sql
--- HAVING with nested subquery: works but hard to read
-SELECT region, SUM(amount) AS total
-FROM orders
-GROUP BY region
-HAVING SUM(amount) > (
-    SELECT AVG(region_total)
-    FROM (SELECT region, SUM(amount) AS region_total FROM orders GROUP BY region) t
-);
-
--- CTE equivalent: easier to read, test, and extend
 WITH region_totals AS (
-    SELECT region, SUM(amount) AS total
+    SELECT
+        region,
+        SUM(amount) AS total
     FROM orders
     GROUP BY region
 ),
 global_avg AS (
-    SELECT AVG(total) AS avg_total FROM region_totals
+    SELECT AVG(total) AS avg_total
+    FROM region_totals
 )
-SELECT rt.region, rt.total
+SELECT
+    rt.region,
+    rt.total
 FROM region_totals rt
 CROSS JOIN global_avg ga
 WHERE rt.total > ga.avg_total;
 ```
 
-!!! tip
-    For simple scalar thresholds, a `HAVING` subquery is fine.
-    For complex thresholds (median, percentile, multi-step), prefer a CTE — it keeps the logic readable and testable.
+Use direct `HAVING` when the threshold logic is short. Switch to a CTE when the threshold itself needs its own query stages.
+
+______________________________________________________________________
+
+## :material-magnify: Pattern Notes
+
+1. `HAVING` is ideal when the filter depends on aggregates from the current group.
+2. Scalar subqueries in `HAVING` are supported in Spark 4.2, including nested grouped subqueries.
+3. `ORDER BY ... LIMIT` and `HAVING` often work together: `HAVING` removes weak groups, then `ORDER BY` ranks the survivors.
+4. For complex threshold derivation, a CTE plus outer `WHERE` is usually easier to debug than a deeply nested `HAVING`.

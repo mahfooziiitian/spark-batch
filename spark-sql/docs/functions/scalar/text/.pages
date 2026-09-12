@@ -1,0 +1,4 @@
+nav:
+  - index.md
+  - string.md
+  - Regex: regex

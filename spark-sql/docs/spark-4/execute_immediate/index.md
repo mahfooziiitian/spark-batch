@@ -1,13 +1,14 @@
 # :material-play-box-outline: EXECUTE IMMEDIATE
 
 !!! info "Spark 4.0"
+
     `EXECUTE IMMEDIATE` is new in Apache Spark 4.0.
 
 **EXECUTE IMMEDIATE** runs a SQL string dynamically at runtime, with support for
 both positional (`?`) and named (`:name`) parameter markers. This is Spark's
 equivalent of prepared statements / dynamic SQL.
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -17,13 +18,13 @@ EXECUTE IMMEDIATE sql_string
     [USING expr [AS name] [, ...]];
 ```
 
-| Clause | Description |
-|--------|-------------|
-| `sql_string` | A STRING expression containing the SQL to execute |
-| `INTO` | Store scalar results into session/scripting variables |
-| `USING` | Bind values to `?` (positional) or `:name` (named) markers |
+| Clause       | Description                                                |
+| ------------ | ---------------------------------------------------------- |
+| `sql_string` | A STRING expression containing the SQL to execute          |
+| `INTO`       | Store scalar results into session/scripting variables      |
+| `USING`      | Bind values to `?` (positional) or `:name` (named) markers |
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Positional Parameters (`?`)
 
@@ -34,7 +35,7 @@ EXECUTE IMMEDIATE 'SELECT SUM(col1) FROM VALUES(?), (?)'
 -- Result: 11
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Named Parameters (`:name`)
 
@@ -45,7 +46,7 @@ EXECUTE IMMEDIATE sqlStr USING 5 AS first, 6 AS second;
 -- Result: 11
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Storing Results with INTO
 
@@ -58,7 +59,7 @@ EXECUTE IMMEDIATE 'SELECT SUM(col1) FROM VALUES(?), (?)'
 SELECT total;  -- 11
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Dynamic Table Names with IDENTIFIER
 
@@ -75,7 +76,7 @@ EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM IDENTIFIER(:t)'
     USING tbl_name AS t;
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Building SQL from Variables
 
@@ -87,7 +88,7 @@ DECLARE query = 'SELECT SUM(col1) FROM VALUES(?), (?)';
 EXECUTE IMMEDIATE query USING arg1, arg2;
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Practical Examples
 
@@ -135,7 +136,7 @@ BEGIN
 END;
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-check: Security
 

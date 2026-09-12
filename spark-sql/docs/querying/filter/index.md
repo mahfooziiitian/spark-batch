@@ -2,7 +2,7 @@
 
 Filter clauses control which rows enter aggregations, projections, and result sets.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -18,6 +18,12 @@ graph TD
     F --> CT[Complex Types]
 ```
 
+### :material-animation-play: Interactive Visualization — Clause Placement
+
+<div id="viz-filter-index" class="ts-viz"></div>
+
+This view contrasts row filters, aggregate filters, and window-result filters. It mirrors the Spark 4.2 execution flow verified for `WHERE`, `HAVING`, `FILTER`, and `QUALIFY`.
+
 ### SQL Execution Order
 
 ```mermaid
@@ -26,26 +32,28 @@ flowchart LR
     W --> GB[GROUP BY]
     GB --> HV[HAVING\ngroup filter]
     HV --> SE[SELECT\nFILTER / CASE WHEN]
-    SE --> OB[ORDER BY]
+    SE --> WF[WINDOW]
+    WF --> Q[QUALIFY]
+    Q --> OB[ORDER BY]
     OB --> LM[LIMIT]
 ```
 
----
+______________________________________________________________________
 
 ## Core Filtering Clauses
 
-| Clause | Scope | Removes rows? | Typical use |
-|--------|-------|---------------|-------------|
-| `WHERE` | Before aggregation | Yes | Row-level predicate |
-| `HAVING` | After aggregation | Yes | Post-aggregate predicate |
-| `QUALIFY` | After window functions | Yes | Window function result filter |
-| `FILTER` | Inside aggregate function | No (scopes aggregation) | Conditional aggregation |
-| `CASE WHEN` | Expression level | No | Value derivation / conditional logic |
-| Subquery (`IN`, `EXISTS`) | Correlated or scalar | Yes | Set membership, existence checks |
-| `IS NULL / IS NOT NULL` | Any position | Yes (when in WHERE) | NULL-safe filtering |
-| Complex type (`array_contains`, HOF) | Column expression | Yes (when in WHERE) | Array, map, struct predicates |
+| Clause                               | Scope                     | Removes rows?           | Typical use                          |
+| ------------------------------------ | ------------------------- | ----------------------- | ------------------------------------ |
+| `WHERE`                              | Before aggregation        | Yes                     | Row-level predicate                  |
+| `HAVING`                             | After aggregation         | Yes                     | Post-aggregate predicate             |
+| `QUALIFY`                            | After window functions    | Yes                     | Window function result filter        |
+| `FILTER`                             | Inside aggregate function | No (scopes aggregation) | Conditional aggregation              |
+| `CASE WHEN`                          | Expression level          | No                      | Value derivation / conditional logic |
+| Subquery (`IN`, `EXISTS`)            | Correlated or scalar      | Yes                     | Set membership, existence checks     |
+| `IS NULL / IS NOT NULL`              | Any position              | Yes (when in WHERE)     | NULL-safe filtering                  |
+| Complex type (`array_contains`, HOF) | Column expression         | Yes (when in WHERE)     | Array, map, struct predicates        |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -55,7 +63,7 @@ flowchart LR
 4. **UDFs block pushdown** — Wrapping a column in a UDF (`my_udf(col) = 1`) prevents Catalyst from pushing the predicate to the scan layer.
 5. **Order of operations** — `WHERE` runs before `GROUP BY`; `HAVING` runs after. Putting selective predicates in `WHERE` reduces the rows reaching the aggregation stage.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Quick Examples
 
@@ -133,46 +141,46 @@ WHERE EXISTS (
 -- Dave
 ```
 
----
+______________________________________________________________________
 
 ## Quick Reference: WHERE vs HAVING vs FILTER vs CASE WHEN
 
-| Feature | WHERE | HAVING | FILTER | CASE WHEN |
-|---------|-------|--------|--------|-----------|
-| Applies to | Individual rows | Aggregated groups | Aggregate inputs | Any expression |
-| Runs after | FROM / JOIN | GROUP BY | Within SELECT | Within SELECT |
-| Removes rows? | Yes | Yes | No | No |
-| Use case | Row predicate | Group predicate | Conditional aggregation | Conditional value |
+| Feature       | WHERE           | HAVING            | FILTER                  | CASE WHEN         |
+| ------------- | --------------- | ----------------- | ----------------------- | ----------------- |
+| Applies to    | Individual rows | Aggregated groups | Aggregate inputs        | Any expression    |
+| Runs after    | FROM / JOIN     | GROUP BY          | Within SELECT           | Within SELECT     |
+| Removes rows? | Yes             | Yes               | No                      | No                |
+| Use case      | Row predicate   | Group predicate   | Conditional aggregation | Conditional value |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended |
-|----------|-------------|
-| Filter rows before aggregation | `WHERE` |
-| Filter groups after aggregation | `HAVING` |
-| Compute multiple conditional aggregates in one pass | `FILTER` |
-| Derive a value based on conditions | `CASE WHEN` |
-| Check membership in a result set | `IN` / `EXISTS` subquery |
-| Handle NULLs safely | `IS NULL`, `COALESCE`, `<=>` |
-| Filter on array/map/struct columns | HOFs (`array_contains`, `exists`) |
+| Scenario                                            | Recommended                       |
+| --------------------------------------------------- | --------------------------------- |
+| Filter rows before aggregation                      | `WHERE`                           |
+| Filter groups after aggregation                     | `HAVING`                          |
+| Compute multiple conditional aggregates in one pass | `FILTER`                          |
+| Derive a value based on conditions                  | `CASE WHEN`                       |
+| Check membership in a result set                    | `IN` / `EXISTS` subquery          |
+| Handle NULLs safely                                 | `IS NULL`, `COALESCE`, `<=>`      |
+| Filter on array/map/struct columns                  | HOFs (`array_contains`, `exists`) |
 
----
+______________________________________________________________________
 
 ## Related Guides
 
 - [Aggregate FILTER](agg_filter/index.md)
-- [CASE WHEN](case_when.md)
-- [NULL Filter](null_filter.md)
+- [CASE WHEN](case-when.md)
+- [NULL Filter](null-filter.md)
 - [Predicate Pushdown](pp.md)
 - [Subquery Filter](sub-query.md)
 - [Array Filters](complex/array.md)
 - [Map Filters](complex/map.md)
 - [Struct Filters](complex/struct.md)
-- [LATERAL VIEW](complex/lateral_view.md)
+- [LATERAL VIEW](complex/lateral-view.md)
 
----
+______________________________________________________________________
 
 ## :material-filter-check: QUALIFY — Filter Window Function Results
 
@@ -191,22 +199,26 @@ QUALIFY RANK() OVER (PARTITION BY category ORDER BY revenue DESC) <= 3;
 ```
 
 !!! note "QUALIFY vs subquery"
+
     `QUALIFY` avoids wrapping the entire query in a subquery just to filter on a window rank.
     It is equivalent to:
+
     ```sql
     SELECT * FROM (
         SELECT *, ROW_NUMBER() OVER (...) AS rn FROM orders
     ) WHERE rn = 1
     ```
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Checklist
 
-| Check | Action |
-|-------|--------|
-| Filter on partition columns? | Move to `WHERE` — enables directory-level pruning |
-| Using a UDF in `WHERE`? | Push scalar predicates outside the UDF; consider rewriting as SQL |
+| Check                             | Action                                                               |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Filter on partition columns?      | Move to `WHERE` — enables directory-level pruning                    |
+| Using a UDF in `WHERE`?           | Push scalar predicates outside the UDF; consider rewriting as SQL    |
 | Dynamic partition pruning active? | Confirm join + `WHERE` on dimension table; check `EXPLAIN FORMATTED` |
-| `NOT IN` with subquery? | Replace with `NOT EXISTS` to avoid NULL trap and improve plan |
-| HOF in `WHERE` (e.g. `exists()`)? | Cannot be pushed down — pre-filter with cheaper predicates first |
+| `NOT IN` with subquery?           | Replace with `NOT EXISTS` to avoid NULL trap and improve plan        |
+| HOF in `WHERE` (e.g. `exists()`)? | Cannot be pushed down — pre-filter with cheaper predicates first     |
+
+<script src="../../assets/js/querying-filter-viz.js"></script>

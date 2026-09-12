@@ -3,7 +3,7 @@ nav:
   - scalar.md
   - correlated.md
   - exists.md
-  - in_not_in.md
-  - derived_table.md
-  - having_subquery.md
-  - subquery_vs_join.md
+  - in-not-in.md
+  - derived-table.md
+  - having-subquery.md
+  - subquery-vs-join.md

@@ -1,13 +1,14 @@
 # :material-table-minus: DELETE
 
 !!! note "[Databricks] Delta Lake Required"
+
     `DELETE` requires Delta tables. Standard Hive/Parquet tables do not support row-level deletes.
 
 `DELETE` removes rows from a Delta Lake table that match a given condition.
 Like `UPDATE`, it requires a transactional table format — standard Hive or
 Parquet tables do not support row-level deletes.
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -16,27 +17,27 @@ DELETE FROM table_name
 [WHERE condition];
 ```
 
-| Clause | Purpose |
-|--------|---------|
+| Clause  | Purpose                                                         |
+| ------- | --------------------------------------------------------------- |
 | `WHERE` | Identifies rows to remove. **Omitting WHERE deletes all rows.** |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. **File rewrite** — Delta does not delete individual rows in-place. Instead it
-   rewrites the affected data files without the deleted rows and updates the
-   transaction log.
+    rewrites the affected data files without the deleted rows and updates the
+    transaction log.
 2. **Predicate push-down** — The `WHERE` clause is pushed into the scan;
-   data files that cannot contain matching rows are skipped entirely.
+    data files that cannot contain matching rows are skipped entirely.
 3. **Partition pruning** — If the predicate references partition columns, only
-   files in matching partitions are read.
+    files in matching partitions are read.
 4. **Atomicity** — The delete is all-or-nothing. A failure rolls back the
-   transaction.
+    transaction.
 5. **VACUUM dependency** — Deleted data files are not physically removed until
-   you run `VACUUM`. Until then, time-travel queries can still access them.
+    you run `VACUUM`. Until then, time-travel queries can still access them.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -85,34 +86,34 @@ WHERE event_date = '2024-01-15'
 -- Prunes to a single partition, then filters within it
 ```
 
----
+______________________________________________________________________
 
 ## :material-table-minus: DELETE vs TRUNCATE vs DROP
 
-| Operation | Rows Removed | Table Remains | Transaction Log | Time Travel |
-|-----------|:------------:|:-------------:|:---------------:|:-----------:|
-| `DELETE FROM t` (no WHERE) | All | :material-check-circle-outline: | :material-check-circle-outline: Entry added | :material-check-circle-outline: |
-| `TRUNCATE TABLE t` | All | :material-check-circle-outline: | :material-close-circle-outline: Resets | :material-close-circle-outline: |
-| `DROP TABLE t` | All | :material-close-circle-outline: | :material-close-circle-outline: Removed | :material-close-circle-outline: |
+| Operation                  | Rows Removed |          Table Remains          |               Transaction Log               |           Time Travel           |
+| -------------------------- | :----------: | :-----------------------------: | :-----------------------------------------: | :-----------------------------: |
+| `DELETE FROM t` (no WHERE) |     All      | :material-check-circle-outline: | :material-check-circle-outline: Entry added | :material-check-circle-outline: |
+| `TRUNCATE TABLE t`         |     All      | :material-check-circle-outline: |   :material-close-circle-outline: Resets    | :material-close-circle-outline: |
+| `DROP TABLE t`             |     All      | :material-close-circle-outline: |   :material-close-circle-outline: Removed   | :material-close-circle-outline: |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Remove expired / aged-out data | `DELETE ... WHERE date < threshold` |
-| Remove orphaned child rows | `DELETE ... WHERE id NOT IN (subquery)` |
-| Purge a staging table between loads | `DELETE FROM staging` or `TRUNCATE` |
-| Conditional upsert with deletes | Use `MERGE INTO` with `WHEN MATCHED ... DELETE` |
-| Physically reclaim disk space | Run `VACUUM` after deleting |
+| Scenario                            | Recommended Approach                            |
+| ----------------------------------- | ----------------------------------------------- |
+| Remove expired / aged-out data      | `DELETE ... WHERE date < threshold`             |
+| Remove orphaned child rows          | `DELETE ... WHERE id NOT IN (subquery)`         |
+| Purge a staging table between loads | `DELETE FROM staging` or `TRUNCATE`             |
+| Conditional upsert with deletes     | Use `MERGE INTO` with `WHEN MATCHED ... DELETE` |
+| Physically reclaim disk space       | Run `VACUUM` after deleting                     |
 
----
+______________________________________________________________________
 
 > **See also:** [MERGE INTO](merge.md) supports a `DELETE` action inside the
 > `WHEN MATCHED` clause for conditional row removal during upserts.
 
----
+______________________________________________________________________
 
 ## :material-database-remove: Advanced Patterns
 
@@ -181,7 +182,7 @@ WHERE event_id NOT IN (
 );
 ```
 
----
+______________________________________________________________________
 
 ## :material-recycle: After Deleting — Maintenance Checklist
 
@@ -203,18 +204,19 @@ DESCRIBE HISTORY my_table;
 ```
 
 !!! warning "VACUUM before confirming GDPR deletion"
+
     Deleted rows remain in old Parquet files on disk until `VACUUM` runs.
     For right-to-erasure compliance, run `VACUUM RETAIN 0 HOURS` after confirming
     all downstream pipelines and consumers have been notified.
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Reason |
-|-----|--------|
-| Include partition column in `WHERE` | Partition pruning — only matching files rewritten |
-| Use `NOT EXISTS` instead of `NOT IN` | Avoids NULL trap; often better plan |
-| Delete then `OPTIMIZE` | Compacts the many small files left after deletion |
-| Batch large deletes by date range | Prevents one huge rewrite transaction |
-| Prefer `TRUNCATE` for full-table wipe | Much faster than `DELETE FROM table` |
+| Tip                                   | Reason                                            |
+| ------------------------------------- | ------------------------------------------------- |
+| Include partition column in `WHERE`   | Partition pruning — only matching files rewritten |
+| Use `NOT EXISTS` instead of `NOT IN`  | Avoids NULL trap; often better plan               |
+| Delete then `OPTIMIZE`                | Compacts the many small files left after deletion |
+| Batch large deletes by date range     | Prevents one huge rewrite transaction             |
+| Prefer `TRUNCATE` for full-table wipe | Much faster than `DELETE FROM table`              |

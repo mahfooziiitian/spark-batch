@@ -4,7 +4,7 @@ Estimate the **total value a customer generates** over their entire relationship
 with your business — using purchase frequency, average order value, and retention
 duration to predict future revenue contribution.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Execution Flow
 
@@ -17,7 +17,7 @@ flowchart LR
     LIFESPAN --> CLV["CLV estimate\nAOV × frequency × lifespan"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -68,7 +68,7 @@ FROM customer_metrics
 ORDER BY projected_clv_24m DESC;
 ```
 
----
+______________________________________________________________________
 
 ### Cohort-based CLV
 
@@ -105,7 +105,7 @@ GROUP BY cohort_month
 ORDER BY cohort_month;
 ```
 
----
+______________________________________________________________________
 
 ### CLV segmentation with NTILE
 
@@ -140,7 +140,7 @@ FROM customer_clv
 ORDER BY total_revenue DESC;
 ```
 
----
+______________________________________________________________________
 
 ### RFM-based CLV scoring
 
@@ -191,51 +191,52 @@ FROM scored
 ORDER BY composite_score DESC;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Key Concepts
 
-| Metric | Formula | Interpretation |
-|--------|---------|----------------|
-| Average Order Value (AOV) | `total_revenue / total_orders` | Spending per transaction |
-| Purchase Frequency | `total_orders / lifespan_months` | How often they buy |
-| Retention Duration | `last_purchase - first_purchase` | How long they stay active |
-| Simple CLV | `AOV × frequency × projected_lifespan` | Expected future revenue |
-| RFM Score | Quintile of recency + frequency + monetary | Composite value indicator |
+| Metric                    | Formula                                    | Interpretation            |
+| ------------------------- | ------------------------------------------ | ------------------------- |
+| Average Order Value (AOV) | `total_revenue / total_orders`             | Spending per transaction  |
+| Purchase Frequency        | `total_orders / lifespan_months`           | How often they buy        |
+| Retention Duration        | `last_purchase - first_purchase`           | How long they stay active |
+| Simple CLV                | `AOV × frequency × projected_lifespan`     | Expected future revenue   |
+| RFM Score                 | Quintile of recency + frequency + monetary | Composite value indicator |
 
 !!! tip "Projected vs historical CLV"
+
     Historical CLV sums past revenue. Projected CLV multiplies current behaviour
     by an expected future lifespan. Use projected CLV for marketing budget allocation;
     use historical CLV for reporting and segmentation.
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Approach |
-|----------|----------|
-| Marketing budget allocation | Invest more in high-CLV customer acquisition channels |
-| Churn prevention | Prioritise retention efforts for high-CLV at-risk customers |
-| Pricing strategy | Understand price sensitivity by CLV tier |
-| Product recommendations | Tailor offers based on predicted lifetime spend |
-| Cohort comparison | Measure whether newer cohorts have higher CLV than older ones |
+| Scenario                    | Approach                                                      |
+| --------------------------- | ------------------------------------------------------------- |
+| Marketing budget allocation | Invest more in high-CLV customer acquisition channels         |
+| Churn prevention            | Prioritise retention efforts for high-CLV at-risk customers   |
+| Pricing strategy            | Understand price sensitivity by CLV tier                      |
+| Product recommendations     | Tailor offers based on predicted lifetime spend               |
+| Cohort comparison           | Measure whether newer cohorts have higher CLV than older ones |
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Notes
 
-| Tip | Reason |
-|-----|--------|
+| Tip                                          | Reason                                             |
+| -------------------------------------------- | -------------------------------------------------- |
 | Pre-aggregate orders to customer level first | Reduces row count before window/NTILE computations |
-| Use `PERCENTILE_APPROX` over `PERCENTILE` | Approximate is much faster on large datasets |
-| Partition NTILE by region/segment if needed | Avoids global sort across all customers |
-| Filter to recent orders (e.g., last 2 years) | Excludes inactive customers that skew averages |
+| Use `PERCENTILE_APPROX` over `PERCENTILE`    | Approximate is much faster on large datasets       |
+| Partition NTILE by region/segment if needed  | Avoids global sort across all customers            |
+| Filter to recent orders (e.g., last 2 years) | Excludes inactive customers that skew averages     |
 
----
+______________________________________________________________________
 
 ## :material-arrow-right: Related
 
 - [Retention Analysis](retention.md) — cohort-based return rates
-- [Churn Detection](churn_detection.md) — identify customers about to leave
-- [ABC Classification](abc_classification.md) — Pareto-based customer segmentation
-- [Survival Analysis](survival_analysis.md) — time-to-churn modelling
+- [Churn Detection](churn-detection.md) — identify customers about to leave
+- [ABC Classification](abc-classification.md) — Pareto-based customer segmentation
+- [Survival Analysis](survival-analysis.md) — time-to-churn modelling

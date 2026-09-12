@@ -3,7 +3,7 @@
 Column selection controls which columns appear in the query result — from selecting
 all columns with `*` to precisely choosing, excluding, or reordering specific ones.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -26,7 +26,7 @@ JOIN customers AS c ON o.customer_id = c.customer_id;
 SELECT o.order_id, c.name FROM orders AS o JOIN customers AS c ON o.customer_id = c.customer_id;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
@@ -37,7 +37,7 @@ SELECT o.order_id, c.name FROM orders AS o JOIN customers AS c ON o.customer_id 
 5. `SELECT *` in a `CREATE TABLE AS SELECT` (CTAS) copies the source schema including nullability but **not** constraints or partitioning.
 6. For wide tables (100+ columns), always list columns explicitly in production pipelines — `SELECT *` couples the pipeline to the table schema.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -114,7 +114,7 @@ SELECT
 FROM orders;
 ```
 
-### Deduplicate column list after SELECT *
+### Deduplicate column list after SELECT \*
 
 ```sql
 -- After a self-join, column names can clash — select explicitly
@@ -155,20 +155,21 @@ FROM orders
 GROUP BY order_id, customer_id, DATE_TRUNC('month', order_date);
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Explore data interactively | `SELECT *` |
-| Production pipeline | List columns explicitly |
-| Drop audit / internal columns | `SELECT * EXCEPT (col1, col2)` |
-| Disambiguate joined columns | Qualify with table alias `t.col` |
-| Copy table structure + data | `CREATE TABLE ... AS SELECT *` |
-| Expose public view | `SELECT * EXCEPT (sensitive_col)` |
+| Scenario                      | Pattern                           |
+| ----------------------------- | --------------------------------- |
+| Explore data interactively    | `SELECT *`                        |
+| Production pipeline           | List columns explicitly           |
+| Drop audit / internal columns | `SELECT * EXCEPT (col1, col2)`    |
+| Disambiguate joined columns   | Qualify with table alias `t.col`  |
+| Copy table structure + data   | `CREATE TABLE ... AS SELECT *`    |
+| Expose public view            | `SELECT * EXCEPT (sensitive_col)` |
 
 !!! warning "Avoid SELECT * in production"
+
     Schema changes (new columns added to the source) silently propagate through
     `SELECT *` — this can break downstream consumers or insert unexpected columns
     into target tables. Always specify columns explicitly in production pipelines.

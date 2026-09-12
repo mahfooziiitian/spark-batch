@@ -1,13 +1,14 @@
 # :material-variable: Session Variables
 
 !!! info "Spark 4.0"
+
     Session-level `DECLARE` / `SET VAR` is new in Apache Spark 4.0.
 
 Session variables persist for the duration of the Spark session and can be
 referenced in any SQL statement. They are distinct from SQL scripting variables
 (which are scoped to `BEGIN...END` blocks).
 
----
+______________________________________________________________________
 
 ## :material-pin: DECLARE
 
@@ -30,7 +31,7 @@ DECLARE OR REPLACE five = 55;
 Any Spark SQL data type: `INT`, `BIGINT`, `DOUBLE`, `STRING`, `BOOLEAN`,
 `DATE`, `TIMESTAMP`, `ARRAY<T>`, `MAP<K,V>`, `STRUCT<...>`, `VARIANT`, etc.
 
----
+______________________________________________________________________
 
 ## :material-pencil: SET VAR
 
@@ -58,7 +59,7 @@ SET VAR (var1, var2) = (
 );
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Using Variables in Queries
 
@@ -73,7 +74,7 @@ DECLARE system.session.my_var INT DEFAULT 0;
 SELECT session.my_var;
 ```
 
----
+______________________________________________________________________
 
 ## :material-delete: Dropping Variables
 
@@ -82,7 +83,7 @@ DROP TEMPORARY VARIABLE five;
 DROP TEMPORARY VARIABLE IF EXISTS my_var;
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Practical Examples
 
@@ -120,14 +121,14 @@ EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM IDENTIFIER(:t)' INTO result USING tbl AS
 SELECT result;  -- row count of sales_2024
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare-horizontal: Session Variables vs Scripting Variables
 
-| Feature | Session Variables | Scripting Variables |
-|---------|-------------------|---------------------|
-| Scope | Entire session | `BEGIN...END` block |
-| Syntax | `DECLARE x = ...` | `DECLARE x INT DEFAULT ...` inside `BEGIN` |
-| Lifetime | Until session ends or `DROP` | Until block ends |
-| Visibility | All queries in session | Only within the block |
-| Reassignment | `SET VAR` | `SET` |
+| Feature      | Session Variables            | Scripting Variables                        |
+| ------------ | ---------------------------- | ------------------------------------------ |
+| Scope        | Entire session               | `BEGIN...END` block                        |
+| Syntax       | `DECLARE x = ...`            | `DECLARE x INT DEFAULT ...` inside `BEGIN` |
+| Lifetime     | Until session ends or `DROP` | Until block ends                           |
+| Visibility   | All queries in session       | Only within the block                      |
+| Reassignment | `SET VAR`                    | `SET`                                      |

@@ -4,34 +4,45 @@ File and I/O settings control how Spark reads and writes Parquet, ORC, Delta, an
 other formats — including compression, predicate pushdown, schema merging, and output
 file sizing.
 
----
+### :material-animation-play: Interactive Visualization — Codec & Scan Trade-Offs
+
+Switch between the most common file-level settings to compare write speed, storage size,
+and scan overhead. The visualization focuses on trade-offs already called out below:
+codec choice for Parquet/ORC and the startup cost of schema merging.
+
+<div id="viz-config-io" class="ts-viz"></div>
+
+<script src="../assets/js/configuration-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-code-tags: Key Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `spark.sql.parquet.compression.codec` | `snappy` | Parquet write compression: `snappy`, `gzip`, `zstd`, `lz4`, `none` |
-| `spark.sql.orc.compression.codec` | `snappy` | ORC write compression |
-| `spark.sql.parquet.filterPushdown` | `true` | Push predicates into the Parquet reader |
-| `spark.sql.parquet.mergeSchema` | `false` | Merge schemas across Parquet files (slow; use only when needed) |
-| `spark.sql.files.maxPartitionBytes` | `128MB` | Max bytes per input partition |
-| `spark.sql.files.openCostInBytes` | `4MB` | Virtual cost to open a small file (for packing) |
-| `spark.databricks.delta.optimizeWrite.enabled` | `false` | Auto-optimize output file size on Delta writes |
-| `spark.databricks.delta.autoCompact.enabled` | `false` | Auto-compact small Delta files after write |
-| `spark.sql.parquet.int96RebaseModeInRead` | `CORRECTED` | Timestamp rebase mode for legacy Parquet |
-| `spark.sql.ansi.enabled` | `false` | Enable ANSI SQL mode (stricter type coercion, overflow errors) |
+| Setting                                                         | Default     | Description                                                        |
+| --------------------------------------------------------------- | ----------- | ------------------------------------------------------------------ |
+| `spark.sql.parquet.compression.codec`                           | `snappy`    | Parquet write compression: `snappy`, `gzip`, `zstd`, `lz4`, `none` |
+| `spark.sql.orc.compression.codec`                               | `snappy`    | ORC write compression                                              |
+| `spark.sql.parquet.filterPushdown`                              | `true`      | Push predicates into the Parquet reader                            |
+| `spark.sql.parquet.mergeSchema`                                 | `false`     | Merge schemas across Parquet files (slow; use only when needed)    |
+| `spark.sql.files.maxPartitionBytes`                             | `128MB`     | Max bytes per input partition                                      |
+| `spark.sql.files.openCostInBytes`                               | `4MB`       | Virtual cost to open a small file (for packing)                    |
+| `spark.databricks.delta.optimizeWrite.enabled` **[Databricks]** | `false`     | Auto-optimize output file size on Delta writes                     |
+| `spark.databricks.delta.autoCompact.enabled` **[Databricks]**   | `false`     | Auto-compact small Delta files after write                         |
+| `spark.sql.parquet.int96RebaseModeInRead`                       | `CORRECTED` | Timestamp rebase mode for legacy Parquet                           |
+| `spark.sql.ansi.enabled`                                        | `true`      | Strict SQL semantics during casts, arithmetic, and data ingestion  |
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
-1. **Compression**: `snappy` is fast with moderate compression; `zstd` offers better compression ratio at similar speed (recommended for cold storage); `gzip` is slowest but highest ratio.
-2. **Predicate pushdown** (`filterPushdown = true`) allows the Parquet/ORC reader to skip entire row groups based on column statistics. Always leave enabled.
-3. **Schema merge** (`mergeSchema = true`) reads the schema from every file before processing — very expensive on large table with many files. Use only for schema evolution debugging.
-4. **Optimize write** (Delta/Databricks) coalesces output files to the target size (default 128 MB) before writing — reduces the small-file problem without a separate `OPTIMIZE` run.
-5. **ANSI mode** makes Spark SQL behave like standard SQL — integer overflow raises an error instead of wrapping, and invalid casts raise errors instead of returning `NULL`.
+1. **Compression**: `snappy` is fast with moderate compression; `zstd` offers a better compression ratio with good read/write performance for colder data; `gzip` is usually the slowest to write.
+2. **Predicate pushdown** (`filterPushdown = true`) lets the Parquet/ORC reader skip row groups based on file metadata. Keep it enabled unless you are diagnosing a reader bug.
+3. **Schema merge** (`mergeSchema = true`) reads schema metadata from every file before processing — expensive on wide, heavily evolved tables. Use only when you truly need merged schemas.
+4. `spark.sql.files.maxPartitionBytes` and `openCostInBytes` affect **scan task planning**, not the physical size of files already on disk. They control how many files Spark packs into each input partition.
+5. **[Databricks]** Delta optimize write coalesces output files toward a target size during the write itself, which reduces small-file pressure before a later `OPTIMIZE` run.
+6. `spark.sql.ansi.enabled = true` is the Spark 4 default, so malformed casts or overflow encountered during ingestion now raise errors unless you explicitly opt into `try_*` functions or disable ANSI mode.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -78,10 +89,9 @@ FROM staged_events
 WHERE event_date = CURRENT_DATE();
 ```
 
-### Enable Delta optimize write (Databricks)
+### [Databricks] Enable Delta optimize write
 
 ```sql
--- Auto-coalesce output to ~128 MB files on each write
 SET spark.databricks.delta.optimizeWrite.enabled = true;
 SET spark.databricks.delta.optimizeWrite.binSize = 134217728;  -- 128 MB
 
@@ -89,19 +99,6 @@ INSERT INTO delta_sales
 SELECT * FROM staging_sales;
 
 RESET spark.databricks.delta.optimizeWrite.enabled;
-```
-
-### Enable ANSI SQL mode
-
-```sql
--- Strict type checks and overflow errors
-SET spark.sql.ansi.enabled = true;
-
--- This now raises an error instead of silently overflowing
-SELECT CAST(2147483648 AS INT);
--- ArithmeticException: integer overflow
-
-RESET spark.sql.ansi.enabled;
 ```
 
 ### Verify predicate pushdown is active
@@ -119,23 +116,34 @@ WHERE order_date = '2024-06-01' AND region = 'EU';
 ### Tune file open cost to pack small files into larger partitions
 
 ```sql
--- Increase openCostInBytes to pack more small files per task
 SET spark.sql.files.openCostInBytes = 33554432;  -- 32 MB virtual cost per file open
 
-SELECT * FROM table_with_many_small_files WHERE event_date = '2024-06-01';
+SELECT *
+FROM table_with_many_small_files
+WHERE event_date = '2024-06-01';
 
 RESET spark.sql.files.openCostInBytes;
 ```
 
----
+### ANSI-safe ingestion when source quality is uneven
+
+```sql
+-- Spark 4 default: malformed integers now raise errors
+SET spark.sql.ansi.enabled = true;
+
+SELECT try_cast(raw_customer_id AS INT) AS customer_id
+FROM landing_orders;
+```
+
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Tune I/O Settings
 
-| Scenario | Setting |
-|----------|---------|
-| Writing to cold/archival storage | `parquet.compression.codec = zstd` |
-| Schema evolution debugging | `parquet.mergeSchema = true` (temporarily) |
-| Many small output files | `optimizeWrite.enabled = true` (Delta) or `COALESCE` |
-| Slow reads on table with many tiny files | Increase `openCostInBytes` |
-| Strict SQL compliance needed | `ansi.enabled = true` |
-| Predicate not pushed to reader | Verify `filterPushdown = true` and `EXPLAIN` |
+| Scenario                                  | Setting                                                       |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| Writing to cold or archival storage       | `parquet.compression.codec = zstd`                            |
+| Schema evolution debugging                | `parquet.mergeSchema = true` (temporarily)                    |
+| Many small output files                   | `optimizeWrite.enabled = true` **[Databricks]** or `COALESCE` |
+| Slow reads on tables with many tiny files | Increase `openCostInBytes`                                    |
+| Predicate not pushed to the reader        | Verify `filterPushdown = true` and inspect `EXPLAIN`          |
+| Spark 4 ingestion now fails on bad input  | Use `try_cast` / `try_to_*` or disable ANSI deliberately      |

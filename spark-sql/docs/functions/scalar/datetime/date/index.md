@@ -1,125 +1,107 @@
-# :material-brain: :material-calendar-clock: date Function in Spark SQL
+# :material-calendar: Date Functions
 
-The date function in Spark SQL is used to cast a value to a DATE type or extract the date part from a timestamp or string.
+Date functions focus on calendar-day logic: extracting the date portion from larger values,
+computing current dates, formatting, and reading individual parts such as year or week.
 
-### :material-sitemap: Overview
+______________________________________________________________________
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A[Input Date / Timestamp] --> B[DateTime Function]
-    B --> C[Result Value]
+    A[String / Timestamp] --> B[DATE / TO_DATE]
+    B --> C[Date arithmetic]
+    B --> D[Date parts]
+    B --> E[Formatting]
 ```
 
-## :material-calendar-clock: Purpose
+### :material-animation-play: Interactive Visualization — Timestamp to Date
 
-1. Convert a string or timestamp to a date (year-month-day).
-2. Extract only the date part (without time) from a timestamp.
+<div id="viz-date-cast" class="ts-viz"></div>
 
-## :material-calendar-clock: Current date
+Click through common inputs to see what `DATE(expr)` keeps and what it drops. The important mental
+model is that dates keep the calendar day only, not the time-of-day.
+
+## :material-pin: Common Functions
 
 ```sql
-
-curdate()
-current_date()
+CURDATE()
+CURRENT_DATE()
+DATE(expr)
+DATE_FORMAT(timestamp, fmt)
+DATE_PART(field, source)
+DATE_FROM_UNIX_DATE(days)
 ```
 
-### curdate
+## :material-information-outline: Behavior
 
-It returns the current date at the start of query evaluation.
-All calls of `curdate` within the same query return the same value.
+1. `CURDATE()` and `CURRENT_DATE()` return the current date at the start of query evaluation.
+2. `DATE(expr)` extracts or casts to a calendar day.
+3. `DATE_FORMAT` returns a string representation, not a `DATE`.
+4. `DATE_PART` works on dates, timestamps, and intervals.
+5. `DATE_FROM_UNIX_DATE` builds a date from a day offset since `1970-01-01`.
+6. **`DATE(expr)` truncates time-of-day silently** — when you cast a timestamp to a date, hours/minutes/seconds are discarded, which is often desirable for partitioning but dangerous if you still need intraday ordering.
+
+______________________________________________________________________
+
+## :material-flask-outline: Practical Examples
+
+### :material-toy-brick: 1. Current Date is Stable Within a Query
 
 ```sql
-SELECT curdate();
+SELECT CURRENT_DATE() = CURRENT_DATE() AS same_value_within_query;
+-- true
 ```
 
-### current_date
-
-It returns the current date at the start of query evaluation.
-All calls of current_date within the same query return the same value.
-current_date - Returns the current date at the start of query evaluation.
+### :material-toy-brick: 2. Extract a Date from a Timestamp
 
 ```sql
-SELECT current_date();
-SELECT current_date;
+SELECT DATE(TIMESTAMP '2024-07-19 23:15:00') AS event_day;
+-- 2024-07-19
 ```
 
-## :material-calendar-clock: date
-
-### Syntax
+### :material-toy-brick: 3. Format a Date for Display
 
 ```sql
-date(expr)
+SELECT DATE_FORMAT(DATE '2016-04-08', 'y-MM-dd') AS formatted_date;
+-- 2016-04-08
 ```
 
-expr can be a string (in date or timestamp format) or timestamp type.
-
-### date_diff
+### :material-toy-brick: 4. Build a Date from Unix Days
 
 ```sql
-date_diff(endDate, startDate)
+SELECT DATE_FROM_UNIX_DATE(1) AS day_one;
+-- 1970-01-02
 ```
 
-Returns the number of days from startDate to endDate.
-
-Examples:
+### :material-toy-brick: 5. Extract Different Parts from Different Temporal Types
 
 ```sql
-SELECT date_diff('2009-07-31', '2009-07-30'), date_diff('2009-07-30', '2009-07-31');
+SELECT
+  DATE_PART('YEAR', TIMESTAMP '2019-08-12 01:00:00.123456') AS ts_year,
+  DATE_PART('DOY', DATE '2019-08-12') AS day_of_year,
+  DATE_PART('MONTH', INTERVAL '2021-11' YEAR TO MONTH) AS interval_month;
 ```
 
-## :material-calendar-clock: Formatting the date
-
-### date_format
+### :material-alert-circle-outline: 6. Casting to `DATE` Drops the Clock Portion
 
 ```sql
-date_format(timestamp, fmt)
+SELECT
+  TIMESTAMP '2024-07-19 23:15:00' AS original_ts,
+  DATE(TIMESTAMP '2024-07-19 23:15:00') AS day_only;
+-- original_ts = 2024-07-19 23:15:00
+-- day_only    = 2024-07-19
 ```
 
-It Converts timestamp to a value of string in the format specified by the date format fmt.
+If you later need hours or minutes, keep the original timestamp in a separate column.
 
-Arguments:
+______________________________________________________________________
 
-1. `timestamp` - A date/timestamp or string to be converted to the given format.
-2. `fmt` - Date/time format pattern to follow.
+## :material-lightbulb-outline: When to Use
 
-```sql
-SELECT date_format('2016-04-08', 'y');
-```
-
-## :material-calendar-clock: date_from_unix_date
-
-```sql
-date_from_unix_date(days)
-```
-
-It creates date from the number of days since 1970-01-01.
-
-```sql
-SELECT date_from_unix_date(1);
-```
-
-## :material-calendar-clock: Parts of date
-
-### date_part
-
-```sql
-date_part(field, source)
-```
-
-Extracts a part of the date/timestamp or interval source.
-
-Arguments:
-
-1. `field` - selects which part of the source should be extracted, and supported string values are as same as the fields of the equivalent function EXTRACT.
-2. `source` - a date/timestamp or interval column from where field should be extracted
-
-```sql
-SELECT date_part('YEAR', TIMESTAMP '2019-08-12 01:00:00.123456');
-SELECT date_part('week', timestamp'2019-08-12 01:00:00.123456');
-SELECT date_part('doy', DATE'2019-08-12');
-SELECT date_part('SECONDS', timestamp'2019-10-01 00:00:01.000001');
-SELECT date_part('days', interval 5 days 3 hours 7 minutes);
-SELECT date_part('seconds', interval 5 hours 30 seconds 1 milliseconds 1 microseconds);
-SELECT date_part('MONTH', INTERVAL '2021-11' YEAR TO MONTH);
-SELECT date_part('MINUTE', INTERVAL '123 23:55:59.002001' DAY TO SECOND);
-```
+| Scenario                      | Why date functions fit                   |
+| ----------------------------- | ---------------------------------------- |
+| Daily partitions or snapshots | `DATE(expr)` normalizes event timestamps |
+| Today-based filters           | `CURRENT_DATE()` / `CURDATE()`           |
+| Human-readable output         | `DATE_FORMAT`                            |
+| Calendar analytics            | `DATE_PART`, `YEAR`, `MONTH`, `DAY`      |

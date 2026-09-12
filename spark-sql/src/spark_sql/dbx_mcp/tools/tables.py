@@ -1,3 +1,5 @@
+"""Unity Catalog table listing for the ``dbx_mcp`` server."""
+
 import logging
 
 from spark_sql.dbx_mcp.clients.databricks_client import (
@@ -11,6 +13,15 @@ def list_tables(
     catalog_name: str,
     schema_name: str,
 ) -> list[dict]:
+    """List tables in a Unity Catalog schema.
+
+    Args:
+        catalog_name: Name of the parent catalog.
+        schema_name: Name of the schema to list tables from.
+
+    Returns:
+        One dict per table with ``name``, ``full_name``, and ``table_type`` keys.
+    """
     logger.info("Listing tables in catalog=%s schema=%s", catalog_name, schema_name)
     workspace_client = get_workspace_client()
 

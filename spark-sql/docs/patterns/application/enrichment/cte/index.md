@@ -2,7 +2,7 @@
 
 Break complex queries into readable, reusable named result sets using Common Table Expressions.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -13,18 +13,18 @@ graph LR
     B --> D[Chained CTE]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| Single CTE | Simple intermediate step | `WITH name AS (...)` |
-| Multi-CTE | Pipeline stages | Multiple `WITH` blocks |
-| Chained CTEs | Sequential transforms | CTE referencing prior CTE |
-| Nested CTEs | Scoped sub-logic | CTE inside CTE definition |
+| Technique    | Use Case                 | Key Function              |
+| ------------ | ------------------------ | ------------------------- |
+| Single CTE   | Simple intermediate step | `WITH name AS (...)`      |
+| Multi-CTE    | Pipeline stages          | Multiple `WITH` blocks    |
+| Chained CTEs | Sequential transforms    | CTE referencing prior CTE |
+| Nested CTEs  | Scoped sub-logic         | CTE inside CTE definition |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -36,7 +36,7 @@ Single and multi-CTE patterns for intermediate calculations.
 --8<-- "sql/application/cte/cte_basics.sql"
 ```
 
----
+______________________________________________________________________
 
 ### CTE Advanced
 
@@ -46,15 +46,16 @@ Chained CTEs and reuse patterns for complex multi-step pipelines.
 --8<-- "sql/application/cte/cte_advanced.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Break a complex query into steps | Use CTEs for each logical stage |
-| Reuse a subquery result | Name it as a CTE |
-| Build readable multi-step pipelines | Chain CTEs sequentially |
+| Scenario                            | Recommended Approach            |
+| ----------------------------------- | ------------------------------- |
+| Break a complex query into steps    | Use CTEs for each logical stage |
+| Reuse a subquery result             | Name it as a CTE                |
+| Build readable multi-step pipelines | Chain CTEs sequentially         |
 
 !!! tip
+
     CTEs are not materialised by default in Spark SQL — the optimizer may inline them. Use Delta temp views if materialisation is needed.

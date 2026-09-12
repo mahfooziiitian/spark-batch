@@ -3,7 +3,7 @@
 Spark SQL integrates with Apache Hive to access the Hive Metastore, read and write Hive tables,
 and execute Hive UDFs. This enables seamless interoperability with existing Hive workloads.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -12,7 +12,7 @@ graph LR
     C --> D["Query Execution"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax — Enable Hive Support
 
@@ -51,36 +51,36 @@ graph LR
       my_app.py
     ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 ### HiveContext vs SparkSession
 
-| Feature | `HiveContext` (Legacy) | `SparkSession` (Modern) |
-|---------|------------------------|--------------------------|
-| Introduced | Spark 1.x | Spark 2.0+ |
-| Hive support | Built-in | `.enableHiveSupport()` |
-| SQL dialect | HiveQL | SQL + HiveQL subset |
-| Metastore | Embedded Derby / Remote | Embedded Derby / Remote |
-| Status | **Deprecated** | :material-check-circle-outline: Recommended |
-| UDF support | Yes | Yes |
-| DataFrames | Yes | Yes |
+| Feature      | `HiveContext` (Legacy)  | `SparkSession` (Modern)                     |
+| ------------ | ----------------------- | ------------------------------------------- |
+| Introduced   | Spark 1.x               | Spark 2.0+                                  |
+| Hive support | Built-in                | `.enableHiveSupport()`                      |
+| SQL dialect  | HiveQL                  | SQL + HiveQL subset                         |
+| Metastore    | Embedded Derby / Remote | Embedded Derby / Remote                     |
+| Status       | **Deprecated**          | :material-check-circle-outline: Recommended |
+| UDF support  | Yes                     | Yes                                         |
+| DataFrames   | Yes                     | Yes                                         |
 
 ### Key Capabilities
 
-| Capability | Description |
-|------------|-------------|
-| Hive Metastore | Persistent table metadata shared across sessions |
-| Managed tables | Data lifecycle managed by Spark/Hive |
-| External tables | Data at user-defined location; metadata only dropped |
-| Partitioning | Hive-style partitioned table support |
-| Bucketing | Hash-based bucketing for join optimisation |
-| Hive UDFs | Access all built-in and custom Hive functions |
-| SerDe support | Custom serialization/deserialization |
-| Dynamic partitions | Auto-detect partition values from data |
+| Capability         | Description                                          |
+| ------------------ | ---------------------------------------------------- |
+| Hive Metastore     | Persistent table metadata shared across sessions     |
+| Managed tables     | Data lifecycle managed by Spark/Hive                 |
+| External tables    | Data at user-defined location; metadata only dropped |
+| Partitioning       | Hive-style partitioned table support                 |
+| Bucketing          | Hash-based bucketing for join optimisation           |
+| Hive UDFs          | Access all built-in and custom Hive functions        |
+| SerDe support      | Custom serialization/deserialization                 |
+| Dynamic partitions | Auto-detect partition values from data               |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -122,14 +122,14 @@ df = spark.sql("SELECT * FROM sales WHERE region = 'EMEA'")
 df.show()
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Shared Hive metadata across teams | Enable Hive support |
-| Migrating legacy Hive workloads | Use Hive catalog, migrate incrementally |
-| Modern data lakehouse | Prefer Unity Catalog / Iceberg if available |
-| Ad-hoc Spark-only workloads | `in-memory` catalog is sufficient |
-| Cross-platform table sharing | Hive Metastore as common catalog |
+| Scenario                          | Recommendation                              |
+| --------------------------------- | ------------------------------------------- |
+| Shared Hive metadata across teams | Enable Hive support                         |
+| Migrating legacy Hive workloads   | Use Hive catalog, migrate incrementally     |
+| Modern data lakehouse             | Prefer Unity Catalog / Iceberg if available |
+| Ad-hoc Spark-only workloads       | `in-memory` catalog is sufficient           |
+| Cross-platform table sharing      | Hive Metastore as common catalog            |

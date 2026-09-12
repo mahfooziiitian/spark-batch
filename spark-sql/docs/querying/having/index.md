@@ -1,23 +1,33 @@
 # :material-filter-variant: HAVING Clause
 
-`HAVING` filters **groups** after aggregation. Use it when you need to apply a
-condition to aggregated results (e.g., `COUNT`, `SUM`, `AVG`).
+`HAVING` filters grouped results after aggregation. In PySpark 4.2, it can reference aggregate expressions, aggregate aliases, grouped-expression aliases, and scalar subqueries.
 
----
+______________________________________________________________________
+
+### :material-animation-play: Interactive Visualization — HAVING Pipeline Explorer
+
+<div id="viz-having-overview" class="ts-viz"></div>
+
+Move the predicate between `WHERE` and `HAVING` to see whether Spark removes rows before aggregation or removes groups after aggregation. The counts match the logical pipeline Spark 4.2 executes.
+
+<script src="../../assets/js/querying-having-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-view-grid: In This Section
 
-| Page | What You Will Learn |
-|------|---------------------|
-| [WHERE vs HAVING](having_vs_where.md) | Execution order, performance impact, common mistakes |
-| [FILTER Modifier](having_filter.md) | Conditional aggregation with `FILTER (WHERE ...)` |
-| [Advanced HAVING](having_advanced.md) | ROLLUP / CUBE / GROUPING SETS, QUALIFY, multi-condition |
-| [HAVING Patterns](having_patterns.md) | Top-N groups, ratio filters, config-driven thresholds |
+| Page                                  | What You Will Learn                                                         |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| [WHERE vs HAVING](having_vs_where.md) | Execution order, plan shape, and performance implications                   |
+| [FILTER Modifier](having_filter.md)   | Conditional aggregation with `FILTER (WHERE ...)` and how it differs        |
+| [Advanced HAVING](having_advanced.md) | `ROLLUP`, `CUBE`, `GROUPING SETS`, `QUALIFY`, aliases, and single-group use |
+| [HAVING Patterns](having_patterns.md) | Thresholds, ratios, top-N groups, and scalar-subquery filters               |
 
-!!! note "HAVING with subqueries"
-    For subqueries inside a HAVING clause see [Subquery in HAVING](../subquery/having_subquery.md).
+!!! note "Spark 4.2 behaviors verified"
 
----
+    The examples and behavior notes on this page were checked against PySpark 4.2 execution rather than copied from prose assumptions.
+
+______________________________________________________________________
 
 ## :material-sitemap: Execution Order
 
@@ -31,134 +41,123 @@ graph LR
     F --> G[Result]
 ```
 
----
+`WHERE` reduces rows before Spark builds groups. `HAVING` evaluates after the grouped aggregates exist, so it can filter on `SUM`, `COUNT`, `AVG`, and similar expressions.
+
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
 ```sql
-SELECT   group_cols, aggregate_exprs
-FROM     table
-[WHERE   row_predicate]
-GROUP BY group_cols
-HAVING   aggregate_predicate
+SELECT
+    group_cols,
+    aggregate_exprs
+FROM table
+[WHERE row_predicate]
+[GROUP BY group_cols]
+[HAVING aggregate_predicate]
 [ORDER BY ...]
 [LIMIT n];
 ```
 
----
+______________________________________________________________________
 
 ## :material-table: WHERE vs HAVING vs FILTER
 
-| Clause | Applies To | Timing | Example |
-|--------|------------|--------|---------|
-| `WHERE` | Individual rows | Before aggregation | `WHERE status = 'shipped'` |
-| `HAVING` | Aggregated groups | After aggregation | `HAVING SUM(amount) > 1000` |
+| Clause   | Applies To         | Timing             | Example                                       |
+| -------- | ------------------ | ------------------ | --------------------------------------------- |
+| `WHERE`  | Individual rows    | Before aggregation | `WHERE status = 'shipped'`                    |
+| `HAVING` | Aggregated groups  | After aggregation  | `HAVING SUM(amount) > 1000`                   |
 | `FILTER` | A single aggregate | During aggregation | `SUM(amount) FILTER (WHERE status='shipped')` |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
-### Filter Groups by Count
+### Filtering groups by an aggregate
 
 ```sql
-SELECT region, COUNT(*) AS total_orders
+SELECT
+    region,
+    COUNT(*) AS total_orders
 FROM orders
 GROUP BY region
 HAVING COUNT(*) > 100;
 ```
 
-### Filter by Aggregate Sum
+### Combining `WHERE` and `HAVING`
 
 ```sql
-SELECT customer_id, SUM(amount) AS total_spent
-FROM orders
-GROUP BY customer_id
-HAVING SUM(amount) > 5000;
-```
-
-### Combine WHERE + HAVING
-
-```sql
--- WHERE filters rows first, then HAVING filters the grouped result
-SELECT product, AVG(price) AS avg_price
+SELECT
+    product,
+    AVG(price) AS avg_price
 FROM sales
 WHERE sale_date >= '2024-01-01'
 GROUP BY product
 HAVING AVG(price) > 100;
 ```
 
-### Filter by Aggregate Ratio Using FILTER
+### Aggregate used in `HAVING` but omitted from `SELECT`
 
 ```sql
-SELECT region,
-       SUM(amount)                                        AS total_sales,
-       SUM(amount) FILTER (WHERE status = 'shipped')     AS shipped_sales
+SELECT
+    region
 FROM orders
 GROUP BY region
-HAVING SUM(amount) FILTER (WHERE status = 'shipped')
-     / NULLIF(SUM(amount), 0) > 0.9;
+HAVING SUM(amount) > 5000;
 ```
 
-### Multiple Conditions
+Spark 4.2 accepts this pattern: the aggregate can appear only in `HAVING`.
+
+### Scalar subquery inside `HAVING`
 
 ```sql
-SELECT warehouse_id,
-       COUNT(*)         AS order_count,
-       SUM(units)       AS total_units
-FROM shipments
-WHERE ship_date >= '2024-01-01'
-GROUP BY warehouse_id
-HAVING COUNT(*)   > 50
-   AND SUM(units) > 1000;
-```
-
-### Named Aggregate in HAVING (Databricks / Spark 3.4+)
-
-```sql
--- Alias defined in SELECT can be referenced in HAVING in Databricks
 SELECT
     region,
     SUM(amount) AS total_revenue
 FROM orders
 GROUP BY region
-HAVING total_revenue > 100000;
+HAVING SUM(amount) > (
+    SELECT AVG(region_total)
+    FROM (
+        SELECT region, SUM(amount) AS region_total
+        FROM orders
+        GROUP BY region
+    ) t
+);
 ```
 
----
+!!! note "More on subqueries"
 
-## :material-brain: When to Use
+    For dedicated subquery examples, see [Subquery in HAVING](../subquery/having-subquery.md).
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Remove groups with small counts | `HAVING COUNT(*) > n` |
-| Keep only high-value segments | `HAVING SUM(amount) > threshold` |
-| Ratio / proportion filter | `HAVING shipped / NULLIF(total, 0) > 0.9` |
-| Dynamic threshold from another table | HAVING with scalar subquery |
-| Row-level filtering | Use `WHERE` instead — it runs earlier and is cheaper |
-
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
-1. `HAVING` is evaluated **after** `GROUP BY` — it cannot reference non-aggregated columns that are not in `GROUP BY`.
-2. Prefer `WHERE` for row-level predicates so fewer rows enter the aggregation step.
-3. `NULLIF(denominator, 0)` prevents division-by-zero in ratio conditions.
-4. In Databricks Runtime, SELECT aliases are visible in `HAVING` — in standard SQL they are not.
-5. `HAVING` without `GROUP BY` treats the entire table as a single group.
+1. In Spark 4.2, `HAVING` is implemented as a filter above the aggregate in the optimized plan.
+2. Spark 4.2 allows `HAVING` to reference an aggregate that is not projected in the `SELECT` list.
+3. Spark 4.2 also resolves `SELECT` aliases in `HAVING`, including grouped-expression aliases such as `SELECT upper(region) AS region_key ... HAVING region_key = 'APAC'`.
+4. `HAVING` cannot reference a raw column that is neither grouped nor aggregated.
+5. Without `GROUP BY`, Spark treats the input as a single group only when the projection is aggregate-safe; aggregate-only output works, but raw columns do not.
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: Quick Anti-Pattern Check
 
 ```sql
--- Wrong: filtering a non-aggregate in HAVING instead of WHERE
-SELECT product, SUM(amount) FROM sales
+-- Wasteful: this predicate belongs in WHERE
+SELECT
+    product,
+    SUM(amount) AS total_amount
+FROM sales
 GROUP BY product
-HAVING product LIKE 'Electronics%';  -- works but wasteful
+HAVING product LIKE 'Electronics%';
 
--- Correct: push non-aggregate filters to WHERE
-SELECT product, SUM(amount) FROM sales
+-- Better: filter rows before the aggregate
+SELECT
+    product,
+    SUM(amount) AS total_amount
+FROM sales
 WHERE product LIKE 'Electronics%'
 GROUP BY product;
 ```

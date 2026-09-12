@@ -1,128 +1,61 @@
 # :material-speedometer: Join Optimization
 
-Practical techniques for making joins faster and more reliable.
+Join tuning in Spark 4.2 is mostly about steering Catalyst toward a cheaper physical operator, shrinking shuffle volume, and preventing a small number of hot keys from dominating one task.
 
----
+### :material-animation-play: Interactive Visualization — Join Optimization Toolkit
 
-## :material-sitemap: Overview
+<div id="viz-joins-optimization-overview" class="ts-viz"></div>
 
-```mermaid
-graph TD
-    O[Join Optimization] --> B[Broadcast small tables]
-    O --> R[Repartition on join keys]
-    O --> F[Filter before joining]
-    O --> S[Handle skew]
-    O --> A[AQE tuning]
-    B --> NL[No shuffle needed]
-    S --> AQE[AQE skew join / salting]
-    A --> DPP[Dynamic Partition Pruning]
-```
+Compare the main optimization levers and see which ones change the operator, which ones reduce shuffle, and which ones mainly reduce repeat work.
 
----
+<script src="../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-## :material-table: Optimization Levers
+______________________________________________________________________
 
-| Technique | When to Apply | Expected Benefit |
-|-----------|---------------|-----------------|
-| Broadcast small dimension | One side < 10 MB (or < broadcast threshold) | Eliminates shuffle entirely |
-| Repartition on join key | Repeated joins on the same key | Co-locates data; avoids repeated shuffles |
-| Filter early | Large table with selective predicate | Reduces rows before shuffle |
-| AQE skew join | Uneven key distribution | Splits skewed partitions dynamically |
-| AQE coalesce | Many small post-join partitions | Reduces task count and scheduling overhead |
-| Z-ordering / clustering | Delta tables joined on a range column | Prunes files before shuffle |
-| Dynamic Partition Pruning | Star-schema queries | Skips irrelevant fact-table partitions |
+## :material-check-decagram: Verified Levers From This Section
 
----
+| Lever                | What was verified                                                                                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Broadcast sizing     | Lowering `spark.sql.autoBroadcastJoinThreshold` from default to `-1` changed a tested equi-join from `BroadcastHashJoin` to `SortMergeJoin`.        |
+| Shuffle-hash hinting | `SHUFFLE_HASH` produced `ShuffledHashJoin`; `preferSortMergeJoin=false` alone did not force it in local tests.                                      |
+| Bucketing            | Matching bucketed tables joined without `Exchange` nodes in the physical plan, although Spark still inserted `Sort` nodes.                          |
+| Salting              | A salted-key plus `explode(sequence(...))` expansion on the other side returned the same rows as the unsalted baseline join in a PySpark 4.2 check. |
+| Iterative broadcast  | Manual chunked broadcast passes reproduced the same row count as a single broadcast join in a small verification example.                           |
 
-## :material-rocket-launch: Broadcast Small Tables
+______________________________________________________________________
 
-```sql
--- Explicit hint
-SELECT /*+ BROADCAST(dim) */
-    f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id
-WHERE f.order_date >= '2024-01-01';
+## :material-tune: Start With the Cheapest Fix
 
--- Or raise the threshold for a session
-SET spark.sql.autoBroadcastJoinThreshold = 52428800; -- 50 MB
-```
+1. **Broadcast a truly small side** for equi-joins.
+2. **Filter before joining** so fewer rows reach shuffle.
+3. **Use AQE skew handling** for skewed shuffle joins.
+4. **Salt or separate hot keys** only when automatic techniques are not enough.
+5. **Cache** only if the expensive intermediate is reused.
 
----
+______________________________________________________________________
 
-## :material-filter-outline: Filter Before Joining
-
-Push selective filters as close to the source as possible so fewer rows enter the join.
+## :material-cog-outline: Settings That Matter Most
 
 ```sql
--- Good: filter inside CTE before joining
-WITH recent_orders AS (
-    SELECT * FROM orders WHERE order_date >= '2024-01-01'
-)
-SELECT r.order_id, c.name
-FROM recent_orders r
-JOIN customers c ON r.customer_id = c.customer_id;
+set spark.sql.autoBroadcastJoinThreshold = 10485760;
+set spark.sql.join.preferSortMergeJoin = true;
+set spark.sql.adaptive.enabled = true;
+set spark.sql.adaptive.skewJoin.enabled = true;
+set spark.sql.adaptive.skewJoin.skewedPartitionFactor = 5;
+set spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 268435456;
 ```
 
----
+______________________________________________________________________
 
-## :material-cog-outline: AQE Configuration
+## :material-alert-outline: Avoid Common Myths
 
-```sql
--- Enable AQE (default in Spark 3.x and Databricks)
-SET spark.sql.adaptive.enabled = true;
+- Caching does not fix skew by itself.
+- `preferSortMergeJoin=false` does not mean Spark must use `ShuffledHashJoin`.
+- Bucketing can remove shuffle, but it does not guarantee Spark can also skip sorting.
+- Names such as BMPJ or iterative broadcast describe manual patterns, not built-in Spark operators.
 
--- Allow AQE to fix skewed join partitions
-SET spark.sql.adaptive.skewJoin.enabled = true;
-SET spark.sql.adaptive.skewJoin.skewedPartitionFactor = 5;
-SET spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 268435456; -- 256 MB
+______________________________________________________________________
 
--- Coalesce small post-shuffle partitions
-SET spark.sql.adaptive.coalescePartitions.enabled = true;
-SET spark.sql.adaptive.advisoryPartitionSizeInBytes = 67108864; -- 64 MB
-```
+## :material-lightbulb-outline: How to Validate Your Change
 
----
-
-## :material-chart-bar: Dynamic Partition Pruning
-
-For star-schema queries, Spark can prune fact-table partitions at runtime based on the dimension filter.
-
-```sql
--- DPP kicks in automatically when:
--- 1. The fact table is partitioned on the join key
--- 2. The dimension table has a selective filter
-
-SELECT f.order_id, d.region
-FROM fact_orders f                         -- partitioned by region_id
-JOIN dim_region d ON f.region_id = d.id
-WHERE d.country = 'US';                    -- prunes non-US region partitions in fact table
-```
-
----
-
-## :material-flask-outline: Repartition on Join Key
-
-```sql
--- Repartition both sides on the join key before a repeated join
--- (Useful when multiple downstream joins share the same key)
-CREATE OR REPLACE TEMP VIEW orders_by_customer AS
-SELECT * FROM orders DISTRIBUTE BY customer_id;
-
-CREATE OR REPLACE TEMP VIEW customers_by_id AS
-SELECT * FROM customers DISTRIBUTE BY customer_id;
-
-SELECT o.order_id, c.name
-FROM orders_by_customer o
-JOIN customers_by_id c ON o.customer_id = c.customer_id;
-```
-
----
-
-## :material-magnify: Behavior Notes
-
-1. Run `EXPLAIN FORMATTED` to confirm the join strategy Spark chose.
-2. AQE can switch a planned Sort-Merge Join to a Broadcast Hash Join at runtime if one side turns out small.
-3. Avoid UDFs in join conditions — they prevent predicate pushdown and force nested loop joins.
-4. Partition your fact tables on frequently joined keys to enable Dynamic Partition Pruning.
-5. `spark.sql.shuffle.partitions` (default 200) is the starting point; AQE will coalesce it down.
+Use `EXPLAIN FORMATTED` before and after a tuning change. If the operator, shuffle boundary, or number of repeated scans did not change, the optimization probably did not address the real bottleneck.

@@ -1,127 +1,128 @@
 # :material-lightbulb-on: Spark SQL Join Hint Operators
 
-Spark SQL provides **join strategy hints** to override the planner's automatic choice.
-Each hint is placed in a `/*+ ... */` comment immediately after `SELECT`.
+Spark 4.2 recognizes several join-strategy hints and a few alias spellings for them. The examples below focus on what `EXPLAIN FORMATTED` actually showed in PySpark 4.2.
 
----
+### :material-animation-play: Interactive Visualization — Hint Operator Cheatsheet
 
-## :material-sitemap: Overview
+<div id="viz-join-hint-operators-core" class="ts-viz"></div>
 
-```mermaid
-graph TD
-    H[Join Hints] --> B[BROADCAST]
-    H --> M[MERGE]
-    H --> SH[SHUFFLE_HASH]
-    H --> SN[SHUFFLE_REPLICATE_NL]
-    B -->|priority 1| P[Planner]
-    M -->|priority 2| P
-    SH -->|priority 3| P
-    SN -->|priority 4| P
-```
+Choose a hint family to see its accepted alias names and the physical operator it produced during verification.
 
----
+<script src="../../../assets/js/querying-joins-core-viz.js"></script>
 
-## :material-rocket-launch: BROADCAST
+______________________________________________________________________
 
-Broadcasts the hinted table to every executor so no shuffle is needed for the larger side.
+## :material-rocket-launch: `BROADCAST`
+
+Broadcasts one side to every executor so Spark can build a hash join without shuffling both sides.
 
 ```sql
--- Broadcast the small dimension table
 SELECT /*+ BROADCAST(dim) */
-    f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id;
-
--- Broadcast a subquery alias
-SELECT /*+ BROADCAST(active_customers) */
-    t.transaction_id, active_customers.name
-FROM transactions t
-JOIN (SELECT id, name FROM customers WHERE active = true) active_customers
-    ON t.customer_id = active_customers.id;
+    f.order_id,
+    dim.region
+FROM fact_orders AS f
+JOIN dim_region AS dim
+    ON f.region_id = dim.id;
 ```
 
-!!! tip
-    Broadcasts below `spark.sql.autoBroadcastJoinThreshold` (default 10 MB) happen automatically.
-    Use this hint when the table is small but above the threshold.
+Verified aliases in PySpark 4.2:
 
----
+- `BROADCAST(dim)`
+- `BROADCASTJOIN(dim)`
+- `MAPJOIN(dim)`
 
-## :material-sort: MERGE
+All three produced `BroadcastHashJoin` for the tested equi join, even with `spark.sql.autoBroadcastJoinThreshold = -1`.
 
-Forces a Sort-Merge Join regardless of table sizes.
+!!! note "Outer-join limitation"
+
+    In the verification run, `FULL OUTER JOIN` with `BROADCAST` did not stay broadcast-based; Spark planned `SortMergeJoin` instead.
+
+______________________________________________________________________
+
+## :material-sort: `MERGE`
+
+Requests a sort-merge join.
 
 ```sql
--- Force sort-merge join for two large tables
 SELECT /*+ MERGE(orders) */
-    o.order_id, p.payment_status
-FROM orders o
-JOIN payments p ON o.order_id = p.order_id;
+    o.order_id,
+    p.payment_status
+FROM orders AS o
+JOIN payments AS p
+    ON o.order_id = p.order_id;
 ```
 
-!!! note
-    Both join keys must be **sortable**. If not, Spark falls back to Shuffle Hash Join.
+Verified aliases in PySpark 4.2:
 
----
+- `MERGE(orders)`
+- `SHUFFLE_MERGE(orders)`
+- `MERGEJOIN(orders)`
 
-## :material-shuffle-variant: SHUFFLE_HASH
+Each produced `SortMergeJoin` in the test run.
 
-Forces a Shuffle Hash Join. Both sides are shuffled, then the smaller (build) side is hashed in memory.
+______________________________________________________________________
+
+## :material-shuffle-variant: `SHUFFLE_HASH`
+
+Requests a shuffle hash join.
 
 ```sql
--- Force shuffle hash join
 SELECT /*+ SHUFFLE_HASH(dim) */
-    f.sale_id, dim.category
-FROM fact_sales f
-JOIN dim_product dim ON f.product_id = dim.product_id;
+    f.sale_id,
+    dim.category
+FROM fact_sales AS f
+JOIN dim_product AS dim
+    ON f.product_id = dim.product_id;
 ```
 
-!!! warning
-    The build side (hinted table) must fit in executor memory. If it does not, the task may OOM.
+The verified PySpark 4.2 plan used `ShuffledHashJoin` for the tested equi join.
 
----
+______________________________________________________________________
 
-## :material-grid: SHUFFLE_REPLICATE_NL
+## :material-grid: `SHUFFLE_REPLICATE_NL`
 
-Replicates one side and uses a nested loop. Use for **cross joins** or **non-equi conditions** when no other strategy applies.
+Requests shuffle-and-replicate nested-loop execution.
 
 ```sql
--- Cross join with all date combinations
 SELECT /*+ SHUFFLE_REPLICATE_NL(dates) */
-    p.product_id, dates.date_value
-FROM products p
-CROSS JOIN dates;
-
--- Non-equi join: match transactions to applicable tax slabs
-SELECT /*+ SHUFFLE_REPLICATE_NL(tax_slabs) */
-    t.transaction_id, t.amount, s.tax_rate
-FROM transactions t
-JOIN tax_slabs s ON t.amount BETWEEN s.min_amount AND s.max_amount;
+    p.product_id,
+    d.date_value
+FROM products AS p
+JOIN dates AS d
+    ON p.calendar_id = d.calendar_id;
 ```
 
-!!! warning
-    Output size is `N × M` rows. Avoid for large inputs.
+In the PySpark 4.2 verification run, `EXPLAIN FORMATTED` surfaced this choice as `CartesianProduct` for the tested inner join. That is expected: Spark is no longer using a hash or sort-merge equi strategy.
 
----
+!!! warning "Use sparingly"
 
-## :material-pencil-outline: Hint Precedence
+    Nested-loop and cartesian-style plans scale poorly. Reserve this hint for cases where you understand the fan-out and the other strategies are not appropriate.
 
-When both sides of a join carry conflicting hints, the planner resolves them in order:
+______________________________________________________________________
 
-| Priority | Hint |
-|----------|------|
-| 1 (highest) | `BROADCAST` |
-| 2 | `MERGE` |
-| 3 | `SHUFFLE_HASH` |
-| 4 (lowest) | `SHUFFLE_REPLICATE_NL` |
+## :material-order-bool-descending: Operator Priority
 
----
+If different sides of the same join request different strategies, Spark resolves them in this order:
 
-## :material-code-tags: Verify the Plan
+| Priority | Hint family            | Verified winner             |
+| -------- | ---------------------- | --------------------------- |
+| 1        | `BROADCAST`            | Beat `MERGE`                |
+| 2        | `MERGE`                | Beat `SHUFFLE_HASH`         |
+| 3        | `SHUFFLE_HASH`         | Beat `SHUFFLE_REPLICATE_NL` |
+| 4        | `SHUFFLE_REPLICATE_NL` | Lowest priority             |
+
+______________________________________________________________________
+
+## :material-code-tags: Verification Pattern
 
 ```sql
-EXPLAIN
-SELECT /*+ BROADCAST(dim) */ f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id;
--- Expected: BroadcastHashJoin in plan output
+EXPLAIN FORMATTED
+SELECT /*+ BROADCASTJOIN(dim) */
+    f.order_id,
+    dim.region
+FROM fact_orders AS f
+JOIN dim_region AS dim
+    ON f.region_id = dim.id;
 ```
+
+Check the physical section for `BroadcastHashJoin`, `SortMergeJoin`, `ShuffledHashJoin`, or `CartesianProduct`.

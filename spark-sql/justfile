@@ -99,10 +99,10 @@ sql-lint-changed:
 # ── CI ────────────────────────────────────────────────────────────────────────
 
 # Run the full CI pipeline (no auto-fixing)
-ci: format-check lint type-check sql-lint test-cov docs-build
+ci: format-check lint type-check sql-lint test-cov docs-verify
 
 # Run the recommended pre-commit gate
-pre-commit: quality docs-build test
+pre-commit: quality docs-verify test
 
 # ── Security ──────────────────────────────────────────────────────────────────
 
@@ -141,8 +141,8 @@ report-cov-xml:
 
 # ── Documentation ─────────────────────────────────────────────────────────────
 
-# Clean, build, then serve docs
-docs: clean docs-build docs-serve
+# Clean, format, build, then serve docs
+docs: clean docs-format docs-build docs-serve
 
 # Build MkDocs site
 docs-build:
@@ -159,6 +159,17 @@ docs-lint:
 # Check markdown files without modifying them
 docs-lint-check:
     {{uv}} run pymarkdownlnt scan -r docs README.md
+
+# Format markdown (tables, emphasis, etc.) with mdformat
+docs-format:
+    {{uv}} run mdformat --number docs README.md
+
+# Check markdown formatting without modifying files
+docs-format-check:
+    {{uv}} run mdformat --number --check docs README.md
+
+# Non-mutating gate: formatting is up to date and the site builds
+docs-verify: docs-format-check docs-build
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 

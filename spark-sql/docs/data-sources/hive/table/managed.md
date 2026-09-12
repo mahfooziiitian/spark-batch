@@ -4,7 +4,7 @@ A **managed table** (a.k.a. internal table) is one whose data *and* metadata lif
 owned by the catalog. Spark stores the files under the warehouse directory
 (`spark.sql.warehouse.dir`) and — critically — **`DROP TABLE` deletes the underlying data**.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -13,7 +13,7 @@ graph LR
     D["DROP TABLE"] --> E["Deletes metadata AND data"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -26,7 +26,7 @@ CREATE TABLE managed_sales (
 
 No `LOCATION` clause is given — that is what makes the table managed.
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -39,28 +39,29 @@ No `LOCATION` clause is given — that is what makes the table managed.
 DESCRIBE FORMATTED managed_sales;   -- Type -> MANAGED, Location under warehouse dir
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: Managed vs External
 
-| Aspect | Managed | External |
-|--------|---------|----------|
-| `LOCATION` clause | Omitted | Required |
-| Data location | Warehouse dir | User-specified path |
-| `DROP TABLE` deletes data | :material-check: Yes | :material-close: No |
-| Best for | Spark-owned lifecycle | Shared / pre-existing data |
+| Aspect                    | Managed               | External                   |
+| ------------------------- | --------------------- | -------------------------- |
+| `LOCATION` clause         | Omitted               | Required                   |
+| Data location             | Warehouse dir         | User-specified path        |
+| `DROP TABLE` deletes data | :material-check: Yes  | :material-close: No        |
+| Best for                  | Spark-owned lifecycle | Shared / pre-existing data |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Spark fully owns the dataset | Managed table |
-| Intermediate / derived tables | Managed table |
-| Data shared with other tools | [External table](external.md) |
-| Files must survive a drop | [External table](external.md) |
+| Scenario                      | Recommendation                |
+| ----------------------------- | ----------------------------- |
+| Spark fully owns the dataset  | Managed table                 |
+| Intermediate / derived tables | Managed table                 |
+| Data shared with other tools  | [External table](external.md) |
+| Files must survive a drop     | [External table](external.md) |
 
 !!! warning "DROP deletes data"
+
     Dropping a managed table is destructive — the data files go with it. Use an
     [external table](external.md) when the files must outlive the table definition.

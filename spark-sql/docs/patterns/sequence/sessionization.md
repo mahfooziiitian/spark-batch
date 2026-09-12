@@ -2,7 +2,7 @@
 
 Group a stream of timestamped events into logical sessions by detecting inactivity gaps — essential for web analytics, user journey analysis, and clickstream processing.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Execution Flow
 
@@ -15,7 +15,7 @@ flowchart LR
     SID --> AGG["aggregate\nper session"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -54,16 +54,17 @@ sessioned AS (
 SELECT * FROM sessioned;
 ```
 
-| Step | Purpose |
-|------|---------|
-| `LAG(event_time)` | Look at the previous event timestamp for the same user |
-| Gap detection | Compare current − previous; if gap exceeds threshold, start a new session |
-| `SUM(new_session)` running total | Assigns a monotonically increasing session number per user |
+| Step                             | Purpose                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `LAG(event_time)`                | Look at the previous event timestamp for the same user                    |
+| Gap detection                    | Compare current − previous; if gap exceeds threshold, start a new session |
+| `SUM(new_session)` running total | Assigns a monotonically increasing session number per user                |
 
 !!! note "Threshold choice"
+
     The inactivity gap threshold depends on the domain. Web analytics typically uses 30 minutes (1800 seconds). Mobile apps may use 5–15 minutes. Server log analysis often uses 60 minutes.
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -72,7 +73,7 @@ SELECT * FROM sessioned;
 3. **Time precision** — gap comparison works on seconds, milliseconds, or any numeric representation of time; just match the threshold unit.
 4. **No global session IDs** — the running-total approach produces session numbers that are unique within each user partition but not globally. Concatenate `user_id` + `session_id` for a globally unique key.
 
----
+______________________________________________________________________
 
 ## :material-database: Sample Data
 
@@ -154,7 +155,7 @@ SELECT * FROM VALUES
 AS t(device_id, event_time, event_name, screen);
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -199,29 +200,30 @@ ORDER BY user_id, event_time;
 
 ??? success "Expected output"
 
-    | user_id | session_num | event_time | page | event_type |
-    |---------|-------------|------------|------|------------|
-    | user_1 | 1 | 2024-04-10 09:00:00 | /home | page_view |
-    | user_1 | 1 | 2024-04-10 09:02:30 | /products | page_view |
-    | user_1 | 1 | 2024-04-10 09:05:00 | /products/shoes | page_view |
-    | user_1 | 1 | 2024-04-10 09:06:15 | /cart | add_to_cart |
-    | user_1 | 1 | 2024-04-10 09:08:00 | /checkout | page_view |
-    | user_1 | 1 | 2024-04-10 09:09:30 | /checkout | purchase |
-    | user_1 | 2 | 2024-04-10 14:20:00 | /home | page_view |
-    | user_1 | 2 | 2024-04-10 14:22:00 | /deals | page_view |
-    | user_1 | 2 | 2024-04-10 14:25:00 | /deals/summer | page_view |
-    | user_2 | 1 | 2024-04-10 10:00:00 | /home | page_view |
-    | user_2 | 1 | 2024-04-10 10:03:00 | /blog | page_view |
-    | user_2 | 2 | 2024-04-10 10:45:00 | /products | page_view |
-    | user_2 | 2 | 2024-04-10 10:47:00 | /products/bags | page_view |
-    | user_2 | 2 | 2024-04-10 10:48:30 | /cart | add_to_cart |
-    | user_3 | 1 | 2024-04-10 11:00:00 | /home | page_view |
-    | user_3 | 1 | 2024-04-10 11:01:00 | /about | page_view |
-    | user_3 | 2 | 2024-04-10 11:55:00 | /home | page_view |
-    | user_3 | 2 | 2024-04-10 11:57:00 | /pricing | page_view |
-    | user_3 | 2 | 2024-04-10 11:58:30 | /signup | signup |
+    | user_id | session_num | event_time          | page            | event_type  |
+    | ------- | ----------- | ------------------- | --------------- | ----------- |
+    | user_1  | 1           | 2024-04-10 09:00:00 | /home           | page_view   |
+    | user_1  | 1           | 2024-04-10 09:02:30 | /products       | page_view   |
+    | user_1  | 1           | 2024-04-10 09:05:00 | /products/shoes | page_view   |
+    | user_1  | 1           | 2024-04-10 09:06:15 | /cart           | add_to_cart |
+    | user_1  | 1           | 2024-04-10 09:08:00 | /checkout       | page_view   |
+    | user_1  | 1           | 2024-04-10 09:09:30 | /checkout       | purchase    |
+    | user_1  | 2           | 2024-04-10 14:20:00 | /home           | page_view   |
+    | user_1  | 2           | 2024-04-10 14:22:00 | /deals          | page_view   |
+    | user_1  | 2           | 2024-04-10 14:25:00 | /deals/summer   | page_view   |
+    | user_2  | 1           | 2024-04-10 10:00:00 | /home           | page_view   |
+    | user_2  | 1           | 2024-04-10 10:03:00 | /blog           | page_view   |
+    | user_2  | 2           | 2024-04-10 10:45:00 | /products       | page_view   |
+    | user_2  | 2           | 2024-04-10 10:47:00 | /products/bags  | page_view   |
+    | user_2  | 2           | 2024-04-10 10:48:30 | /cart           | add_to_cart |
+    | user_3  | 1           | 2024-04-10 11:00:00 | /home           | page_view   |
+    | user_3  | 1           | 2024-04-10 11:01:00 | /about          | page_view   |
+    | user_3  | 2           | 2024-04-10 11:55:00 | /home           | page_view   |
+    | user_3  | 2           | 2024-04-10 11:57:00 | /pricing        | page_view   |
+    | user_3  | 2           | 2024-04-10 11:58:30 | /signup         | signup      |
 
 !!! note "user_2 session split"
+
     user_2's gap between 10:03 and 10:45 is 42 minutes, which exceeds the 30-minute threshold, so the second event group becomes session 2.
 
 ### 2 — Session-level aggregation (duration, depth, conversion)
@@ -259,14 +261,14 @@ ORDER BY user_id, session_num;
 
 ??? success "Expected output"
 
-    | user_id | session_num | session_start | session_end | duration_min | event_count | pages_viewed | converted | entry_page | exit_page |
-    |---------|-------------|---------------|-------------|--------------|-------------|--------------|-----------|------------|-----------|
-    | user_1 | 1 | 2024-04-10 09:00:00 | 2024-04-10 09:09:30 | 9.5 | 6 | 4 | 1 | /home | /checkout |
-    | user_1 | 2 | 2024-04-10 14:20:00 | 2024-04-10 14:25:00 | 5.0 | 3 | 3 | 0 | /home | /deals/summer |
-    | user_2 | 1 | 2024-04-10 10:00:00 | 2024-04-10 10:03:00 | 3.0 | 2 | 2 | 0 | /home | /blog |
-    | user_2 | 2 | 2024-04-10 10:45:00 | 2024-04-10 10:48:30 | 3.5 | 3 | 3 | 0 | /products | /cart |
-    | user_3 | 1 | 2024-04-10 11:00:00 | 2024-04-10 11:01:00 | 1.0 | 2 | 2 | 0 | /home | /about |
-    | user_3 | 2 | 2024-04-10 11:55:00 | 2024-04-10 11:58:30 | 3.5 | 3 | 3 | 0 | /home | /signup |
+    | user_id | session_num | session_start       | session_end         | duration_min | event_count | pages_viewed | converted | entry_page | exit_page     |
+    | ------- | ----------- | ------------------- | ------------------- | ------------ | ----------- | ------------ | --------- | ---------- | ------------- |
+    | user_1  | 1           | 2024-04-10 09:00:00 | 2024-04-10 09:09:30 | 9.5          | 6           | 4            | 1         | /home      | /checkout     |
+    | user_1  | 2           | 2024-04-10 14:20:00 | 2024-04-10 14:25:00 | 5.0          | 3           | 3            | 0         | /home      | /deals/summer |
+    | user_2  | 1           | 2024-04-10 10:00:00 | 2024-04-10 10:03:00 | 3.0          | 2           | 2            | 0         | /home      | /blog         |
+    | user_2  | 2           | 2024-04-10 10:45:00 | 2024-04-10 10:48:30 | 3.5          | 3           | 3            | 0         | /products  | /cart         |
+    | user_3  | 1           | 2024-04-10 11:00:00 | 2024-04-10 11:01:00 | 1.0          | 2           | 2            | 0         | /home      | /about        |
+    | user_3  | 2           | 2024-04-10 11:55:00 | 2024-04-10 11:58:30 | 3.5          | 3           | 3            | 0         | /home      | /signup       |
 
 ### 3 — Session funnel analysis
 
@@ -312,8 +314,8 @@ FROM funnel;
 ??? success "Expected output"
 
     | total_sessions | reached_home | reached_products | reached_cart | reached_checkout | completed_purchase |
-    |----------------|--------------|------------------|--------------|------------------|--------------------|
-    | 6 | 6 | 3 | 2 | 1 | 1 |
+    | -------------- | ------------ | ---------------- | ------------ | ---------------- | ------------------ |
+    | 6              | 6            | 3                | 2            | 1                | 1                  |
 
 ### 4 — API burst detection (5-minute gap)
 
@@ -350,15 +352,16 @@ ORDER BY service, burst_num;
 
 ??? success "Expected output"
 
-    | service | burst_num | burst_start | burst_end | call_count | error_count | avg_latency_ms | max_latency_ms |
-    |---------|-----------|-------------|-----------|------------|-------------|----------------|----------------|
-    | svc-auth | 1 | 2024-05-01 08:00:10 | 2024-05-01 08:00:18 | 3 | 0 | 65 | 120 |
-    | svc-auth | 2 | 2024-05-01 08:15:00 | 2024-05-01 08:15:05 | 2 | 0 | 80 | 110 |
-    | svc-auth | 3 | 2024-05-01 08:30:00 | 2024-05-01 08:30:05 | 3 | 2 | 777 | 1200 |
-    | svc-order | 1 | 2024-05-01 09:00:00 | 2024-05-01 09:00:12 | 4 | 0 | 188 | 350 |
-    | svc-order | 2 | 2024-05-01 10:30:00 | 2024-05-01 10:30:15 | 4 | 1 | 1418 | 5000 |
+    | service   | burst_num | burst_start         | burst_end           | call_count | error_count | avg_latency_ms | max_latency_ms |
+    | --------- | --------- | ------------------- | ------------------- | ---------- | ----------- | -------------- | -------------- |
+    | svc-auth  | 1         | 2024-05-01 08:00:10 | 2024-05-01 08:00:18 | 3          | 0           | 65             | 120            |
+    | svc-auth  | 2         | 2024-05-01 08:15:00 | 2024-05-01 08:15:05 | 2          | 0           | 80             | 110            |
+    | svc-auth  | 3         | 2024-05-01 08:30:00 | 2024-05-01 08:30:05 | 3          | 2           | 777            | 1200           |
+    | svc-order | 1         | 2024-05-01 09:00:00 | 2024-05-01 09:00:12 | 4          | 0           | 188            | 350            |
+    | svc-order | 2         | 2024-05-01 10:30:00 | 2024-05-01 10:30:15 | 4          | 1           | 1418           | 5000           |
 
 !!! tip "Error burst isolation"
+
     svc-auth burst 3 contains 2 errors with a max latency of 1200ms — a clear incident cluster. Sessionizing API logs this way makes incident detection straightforward.
 
 ### 5 — Mobile app sessions (10-minute gap)
@@ -393,13 +396,13 @@ ORDER BY device_id, session_num;
 
 ??? success "Expected output"
 
-    | device_id | session_num | session_start | session_end | duration_min | event_count | screens_visited |
-    |-----------|-------------|---------------|-------------|--------------|-------------|-----------------|
-    | device_A | 1 | 2024-06-15 07:30:00 | 2024-06-15 07:36:00 | 6.0 | 7 | [feed, post, system] |
-    | device_A | 2 | 2024-06-15 08:10:00 | 2024-06-15 08:13:30 | 3.5 | 4 | [feed, stories] |
-    | device_A | 3 | 2024-06-15 12:00:00 | 2024-06-15 12:02:00 | 2.0 | 3 | [feed] |
-    | device_B | 1 | 2024-06-15 09:00:00 | 2024-06-15 09:06:00 | 6.0 | 3 | [feed] |
-    | device_B | 2 | 2024-06-15 09:20:00 | 2024-06-15 09:21:00 | 1.0 | 2 | [feed] |
+    | device_id | session_num | session_start       | session_end         | duration_min | event_count | screens_visited      |
+    | --------- | ----------- | ------------------- | ------------------- | ------------ | ----------- | -------------------- |
+    | device_A  | 1           | 2024-06-15 07:30:00 | 2024-06-15 07:36:00 | 6.0          | 7           | [feed, post, system] |
+    | device_A  | 2           | 2024-06-15 08:10:00 | 2024-06-15 08:13:30 | 3.5          | 4           | [feed, stories]      |
+    | device_A  | 3           | 2024-06-15 12:00:00 | 2024-06-15 12:02:00 | 2.0          | 3           | [feed]               |
+    | device_B  | 1           | 2024-06-15 09:00:00 | 2024-06-15 09:06:00 | 6.0          | 3           | [feed]               |
+    | device_B  | 2           | 2024-06-15 09:20:00 | 2024-06-15 09:21:00 | 1.0          | 2           | [feed]               |
 
 ### 6 — Globally unique session IDs
 
@@ -433,14 +436,14 @@ ORDER BY user_id, event_time;
 
 ??? success "Expected output"
 
-    | session_id | user_id | session_num | event_time | page | event_type |
-    |------------|---------|-------------|------------|------|------------|
-    | user_1_s1 | user_1 | 1 | 2024-04-10 09:00:00 | /home | page_view |
-    | user_1_s1 | user_1 | 1 | 2024-04-10 09:02:30 | /products | page_view |
-    | user_1_s1 | user_1 | 1 | 2024-04-10 09:05:00 | /products/shoes | page_view |
-    | ... | | | | | |
-    | user_1_s2 | user_1 | 2 | 2024-04-10 14:20:00 | /home | page_view |
-    | ... | | | | | |
+    | session_id | user_id | session_num | event_time          | page            | event_type |
+    | ---------- | ------- | ----------- | ------------------- | --------------- | ---------- |
+    | user_1_s1  | user_1  | 1           | 2024-04-10 09:00:00 | /home           | page_view  |
+    | user_1_s1  | user_1  | 1           | 2024-04-10 09:02:30 | /products       | page_view  |
+    | user_1_s1  | user_1  | 1           | 2024-04-10 09:05:00 | /products/shoes | page_view  |
+    | ...        |         |             |                     |                 |            |
+    | user_1_s2  | user_1  | 2           | 2024-04-10 14:20:00 | /home           | page_view  |
+    | ...        |         |             |                     |                 |            |
 
 ### 7 — Session-over-session comparison
 
@@ -486,14 +489,14 @@ ORDER BY user_id, session_num;
 
 ??? success "Expected output"
 
-    | user_id | session_num | session_start | event_count | pages_viewed | prev_event_count | prev_pages_viewed | event_count_delta |
-    |---------|-------------|---------------|-------------|--------------|------------------|-------------------|-------------------|
-    | user_1 | 1 | 2024-04-10 09:00:00 | 6 | 4 | NULL | NULL | 6 |
-    | user_1 | 2 | 2024-04-10 14:20:00 | 3 | 3 | 6 | 4 | -3 |
-    | user_2 | 1 | 2024-04-10 10:00:00 | 2 | 2 | NULL | NULL | 2 |
-    | user_2 | 2 | 2024-04-10 10:45:00 | 3 | 3 | 2 | 2 | 1 |
-    | user_3 | 1 | 2024-04-10 11:00:00 | 2 | 2 | NULL | NULL | 2 |
-    | user_3 | 2 | 2024-04-10 11:55:00 | 3 | 3 | 2 | 2 | 1 |
+    | user_id | session_num | session_start       | event_count | pages_viewed | prev_event_count | prev_pages_viewed | event_count_delta |
+    | ------- | ----------- | ------------------- | ----------- | ------------ | ---------------- | ----------------- | ----------------- |
+    | user_1  | 1           | 2024-04-10 09:00:00 | 6           | 4            | NULL             | NULL              | 6                 |
+    | user_1  | 2           | 2024-04-10 14:20:00 | 3           | 3            | 6                | 4                 | -3                |
+    | user_2  | 1           | 2024-04-10 10:00:00 | 2           | 2            | NULL             | NULL              | 2                 |
+    | user_2  | 2           | 2024-04-10 10:45:00 | 3           | 3            | 2                | 2                 | 1                 |
+    | user_3  | 1           | 2024-04-10 11:00:00 | 2           | 2            | NULL             | NULL              | 2                 |
+    | user_3  | 2           | 2024-04-10 11:55:00 | 3           | 3            | 2                | 2                 | 1                 |
 
 ### 8 — Bounce rate per user (single-event sessions)
 
@@ -532,12 +535,13 @@ ORDER BY user_id;
 ??? success "Expected output"
 
     | user_id | total_sessions | bounced_sessions | bounce_rate_pct |
-    |---------|----------------|------------------|-----------------|
-    | user_1 | 2 | 0 | 0.0 |
-    | user_2 | 2 | 0 | 0.0 |
-    | user_3 | 2 | 0 | 0.0 |
+    | ------- | -------------- | ---------------- | --------------- |
+    | user_1  | 2              | 0                | 0.0             |
+    | user_2  | 2              | 0                | 0.0             |
+    | user_3  | 2              | 0                | 0.0             |
 
 !!! note "No bounces in this dataset"
+
     All sessions in the sample data have 2+ events. In production data, single-page sessions are common and the bounce rate provides a key engagement metric.
 
 ### 9 — Configurable threshold via variable
@@ -572,6 +576,7 @@ ORDER BY user_id, event_time;
 ```
 
 !!! tip "Single place to tune"
+
     Changing `1800` in the `config` CTE adjusts the gap threshold everywhere. This pattern avoids scattering magic numbers throughout the query.
 
 ### 10 — Event-type-aware sessions (split on explicit logout)
@@ -612,54 +617,115 @@ ORDER BY user_id, event_time;
 
 ??? success "Expected output"
 
-    | user_id | session_num | event_time | page | event_type |
-    |---------|-------------|------------|------|------------|
-    | user_1 | 1 | 2024-04-10 09:00:00 | /home | page_view |
-    | user_1 | 1 | 2024-04-10 09:02:30 | /products | page_view |
-    | user_1 | 1 | 2024-04-10 09:05:00 | /products/shoes | page_view |
-    | user_1 | 1 | 2024-04-10 09:06:15 | /cart | add_to_cart |
-    | user_1 | 1 | 2024-04-10 09:08:00 | /checkout | page_view |
-    | user_1 | 1 | 2024-04-10 09:09:30 | /checkout | purchase |
-    | user_1 | 2 | 2024-04-10 14:20:00 | /home | page_view |
-    | user_1 | 2 | 2024-04-10 14:22:00 | /deals | page_view |
-    | user_1 | 2 | 2024-04-10 14:25:00 | /deals/summer | page_view |
-    | ... | | | | |
+    | user_id | session_num | event_time          | page            | event_type  |
+    | ------- | ----------- | ------------------- | --------------- | ----------- |
+    | user_1  | 1           | 2024-04-10 09:00:00 | /home           | page_view   |
+    | user_1  | 1           | 2024-04-10 09:02:30 | /products       | page_view   |
+    | user_1  | 1           | 2024-04-10 09:05:00 | /products/shoes | page_view   |
+    | user_1  | 1           | 2024-04-10 09:06:15 | /cart           | add_to_cart |
+    | user_1  | 1           | 2024-04-10 09:08:00 | /checkout       | page_view   |
+    | user_1  | 1           | 2024-04-10 09:09:30 | /checkout       | purchase    |
+    | user_1  | 2           | 2024-04-10 14:20:00 | /home           | page_view   |
+    | user_1  | 2           | 2024-04-10 14:22:00 | /deals          | page_view   |
+    | user_1  | 2           | 2024-04-10 14:25:00 | /deals/summer   | page_view   |
+    | ...     |             |                     |                 |             |
 
 !!! note "Purchase as session boundary"
+
     The `purchase` event at 09:09:30 ends session 1. The next event at 14:20:00 would start a new session anyway due to the time gap, but this pattern ensures sessions also split after a conversion regardless of timing.
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Behavior Notes
 
 !!! warning "Timestamp precision"
+
     `BIGINT(event_time)` converts a `TIMESTAMP` to epoch seconds in Spark SQL. If your timestamps have sub-second precision and you need millisecond-level gap detection, use `UNIX_MILLIS(event_time)` and set the threshold in milliseconds.
 
 !!! warning "Out-of-order events"
+
     The `LAG` approach assumes events are processed in chronological order. If your data has late-arriving or out-of-order events, sort by `event_time` in the window spec — Spark handles this correctly. However, if the same timestamp appears on multiple events, add a tie-breaker column.
 
 !!! tip "Materialise sessions as a table"
+
     For repeated analysis, materialise the sessioned output into a Delta table. Recomputing sessions on every query is expensive for large event streams.
 
----
+______________________________________________________________________
+
+## :material-magnify-scan: Diagnosing Performance: EXPLAIN FORMATTED
+
+The `LAG` + running `SUM` pattern compiles to exactly **one shuffle shared by both
+window functions**, confirmed on Spark 4.2:
+
+```text
+AdaptiveSparkPlan
++- Window        -- SUM(new_session) running total → session_id
+   +- Project    -- CASE ... > threshold → new_session flag
+      +- Window  -- LAG(event_time) → prev_time
+         +- Sort
+            +- Exchange   -- hashpartitioning(user_id, 200)
+               +- <scan>
+```
+
+Both `Window` operators reuse the *same* `Exchange`/`Sort` because they share an
+identical `PARTITION BY user_id ORDER BY event_time` spec — Spark's Catalyst
+optimizer only repartitions/sorts once and stacks the two window computations on
+top. This is the expected, cheap shape: one shuffle regardless of how many
+window functions share that partition/order spec.
+
+Compare that to the **self-join anti-pattern** (join each event to every prior
+event within the threshold, instead of using `LAG`):
+
+```text
+AdaptiveSparkPlan
++- HashAggregate
+   +- Exchange
+      +- HashAggregate
+         +- BroadcastHashJoin Inner BuildRight
+            Join condition: (b.event_time < a.event_time)
+                        AND (a.event_time − b.event_time <= threshold)
+            :- <scan a>
+            +- BroadcastExchange
+               +- <scan b>
+```
+
+For a small lookup table Spark may broadcast one side and this still runs. At
+production scale it becomes a full self-join filtered by a range condition —
+every event is compared against every other event for the same user, which is
+**quadratic in events-per-user** rather than the linear, single-pass cost of
+`LAG`. Look for a self-join keyed on the entity column with an inequality on
+the timestamp as the diagnostic signature of this anti-pattern.
+
+## :material-alert-outline: Common Anti-Patterns
+
+| Anti-Pattern                                                                                     | Why It's Wrong                                                                                                                                                     | Fix                                                                                                    |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Self-join to find "the previous event within N minutes"                                          | Quadratic in events-per-user; degrades from a `Window` to a `BroadcastHashJoin`/`SortMergeJoin` at scale                                                           | Use `LAG` — one shuffle, linear in row count                                                           |
+| Comparing raw `TIMESTAMP` values with `-` instead of casting                                     | `TIMESTAMP - TIMESTAMP` in Spark SQL produces an `INTERVAL`, not a numeric second count — comparisons to a numeric threshold silently fail to compile or misbehave | Cast both sides with `BIGINT(...)` (epoch seconds) or `UNIX_MILLIS(...)` before subtracting            |
+| Treating `session_id` from `SUM(new_session) OVER (PARTITION BY user_id ...)` as globally unique | It only increments within each user's partition — two different users both have a "session 1"                                                                      | Concatenate `user_id`, `'-'`, `session_id` for a globally unique key                                   |
+| Sorting by `event_time` without a tiebreaker when duplicate timestamps exist                     | `LAG` order is undefined among rows with identical `event_time`, so which event is "previous" can vary across runs                                                 | Add a deterministic secondary `ORDER BY` column (ingestion sequence, event id)                         |
+| Recomputing sessions from raw events on every downstream query                                   | Re-shuffles and re-scans the full event history each time, even though sessions rarely change once historical data lands                                           | Materialize sessionized output into a table; only recompute the open/most-recent session incrementally |
+
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Web clickstream session detection | 30-min gap, `LAG` + running `SUM` |
-| Mobile app engagement sessions | 5–15 min gap depending on app type |
-| API burst / incident clustering | 1–5 min gap on server logs |
-| Session-level KPIs (duration, depth) | Sessionize first, then `GROUP BY session` |
-| Conversion funnel per session | Conditional aggregation over session groups |
-| Bounce rate calculation | Count single-event sessions |
-| Event-driven session boundary | Split on explicit events (logout, purchase) |
-| Session-over-session comparison | `LAG` on session-level aggregates |
-| Globally unique session IDs | `CONCAT(user_id, '_s', session_num)` |
-| Configurable threshold | `CROSS JOIN` a config CTE for the gap value |
+| Scenario                             | Pattern                                     |
+| ------------------------------------ | ------------------------------------------- |
+| Web clickstream session detection    | 30-min gap, `LAG` + running `SUM`           |
+| Mobile app engagement sessions       | 5–15 min gap depending on app type          |
+| API burst / incident clustering      | 1–5 min gap on server logs                  |
+| Session-level KPIs (duration, depth) | Sessionize first, then `GROUP BY session`   |
+| Conversion funnel per session        | Conditional aggregation over session groups |
+| Bounce rate calculation              | Count single-event sessions                 |
+| Event-driven session boundary        | Split on explicit events (logout, purchase) |
+| Session-over-session comparison      | `LAG` on session-level aggregates           |
+| Globally unique session IDs          | `CONCAT(user_id, '_s', session_num)`        |
+| Configurable threshold               | `CROSS JOIN` a config CTE for the gap value |
 
----
+______________________________________________________________________
 
 !!! note "Related"
+
     For the windowing view of the same idea — variable-length, gap-based windows — see
-    [Session Windows](../timeseries/windowing/session_window.md).
+    [Session Windows](../timeseries/windowing/session-window.md).

@@ -1,149 +1,185 @@
 # :material-code-equal: Join Expressions in Spark SQL
 
-A **join expression** defines how Spark matches rows between two datasets. The `ON` clause specifies the logic for joining tables, enabling powerful data combinations.
+A join expression tells Spark how two relations match. In Spark 4.2, the difference between `ON`, `USING`, `NATURAL JOIN`, and comma syntax affects both the result schema and the physical strategy Catalyst can choose.
 
+### :material-animation-play: Interactive Visualization — Join Syntax Resolver
 
-### :material-sitemap: Overview
+<div id="viz-join-expression-core" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    L[Left Table] --> ON{ON clause}
-    R[Right Table] --> ON
-    ON -->|equality| HJ[Hash / Sort-Merge Join]
-    ON -->|range or non-equi| NL[Nested Loop Join]
+Toggle between `ON`, `USING`, `NATURAL JOIN`, and comma syntax to compare resolved columns and planner behavior.
+
+<script src="../../assets/js/querying-joins-core-viz.js"></script>
+
+______________________________________________________________________
+
+## :material-table: Verified Syntax Differences
+
+| Syntax                       | What Spark 4.2 resolves                                            | Verified behavior                                                                                                                |
+| ---------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `JOIN ... ON condition`      | Uses the exact boolean condition you provide                       | Keeps both sides' join columns unless you project them away                                                                      |
+| `JOIN ... USING (col1, ...)` | Builds equality predicates on same-named columns listed in `USING` | Collapses only the `USING` columns into one output copy                                                                          |
+| `NATURAL JOIN`               | Builds equality predicates on every shared column name             | Collapses all shared columns; output order is common columns, left-only columns, then right-only columns                         |
+| `FROM a, b`                  | Comma join syntax                                                  | With no predicate it is a cartesian product; with an equi predicate in `WHERE`, Catalyst can optimize it into an inner equi join |
+
+!!! warning "Why explicit syntax is safer"
+
+    `NATURAL JOIN` and comma syntax depend on column names or later filters. `JOIN ... ON` is usually the clearest and least surprising form for production SQL.
+
+______________________________________________________________________
+
+## :material-link-variant: `ON` Clause
+
+Use `ON` when the match logic is explicit or the column names differ.
+
+```sql
+SELECT
+    c.id,
+    o.order_id,
+    o.amount
+FROM customers AS c
+JOIN orders AS o
+    ON c.id = o.customer_id;
 ```
 
----
-
-## :material-circle-small: 1. Equality Join (Equi-Join)
+Multiple conditions are fine:
 
 ```sql
 SELECT *
-FROM customers c
-JOIN orders o
-  ON c.id = o.customer_id;
+FROM employees AS e
+JOIN departments AS d
+    ON e.dept_id = d.id
+   AND e.location = d.location;
 ```
 
-*Matches rows where `id` in `customers` equals `customer_id` in `orders`.*
-
----
-
-## :material-circle-small: 2. Multiple Conditions
+PySpark 4.2 still planned a sort-merge equi join when both sides used the same deterministic function on the join key, for example:
 
 ```sql
 SELECT *
-FROM employees e
-JOIN departments d
-  ON e.dept_id = d.id
- AND e.location = d.location;
+FROM a
+JOIN b
+    ON lower(CAST(a.id AS STRING)) = lower(CAST(b.id AS STRING));
 ```
 
-*Joins on more than one condition using `AND`.*
+______________________________________________________________________
 
----
+## :material-table-column: `USING`
 
-## :material-circle-small: 3. Non-Equality (Range) Join
-
-```sql
-SELECT *
-FROM transactions t
-JOIN tax_slabs s
-  ON t.amount BETWEEN s.min_amount AND s.max_amount;
-```
-
-or
-
-```sql
-SELECT *
-FROM A
-JOIN B
-  ON A.value >= B.min
- AND A.value <= B.max;
-```
-
-*Joins rows based on a range or non-equality condition.*
-
----
-
-## :material-circle-small: 4. Function-Based Expression
-
-```sql
-SELECT *
-FROM logs l
-JOIN users u
-  ON lower(l.username) = lower(u.login);
-```
-
-*Uses SQL functions in the join condition.*
-
----
-
-## :material-circle-small: 5. OR Condition
-
-```sql
-SELECT *
-FROM flights f
-JOIN routes r
-  ON f.src = r.src
-  OR f.dest = r.dest;
-```
-
-*Joins rows if **either** condition matches.*
-
----
-
-## :material-circle-small: 6. Cross Join (No Expression)
-
-```sql
-SELECT *
-FROM A
-CROSS JOIN B;
-```
-
-*Produces the Cartesian product of both tables (all combinations).*
-
----
-
-## :material-circle-small: 7. USING Clause
+Use `USING` when the join keys have the same name on both sides.
 
 ```sql
 SELECT *
 FROM customers
 JOIN orders
-USING (id);
+USING (customer_id);
 ```
 
-*Shortcut for equality join on columns with the same name:*
+Verified behavior in PySpark 4.2:
+
+- Spark expands `USING (customer_id)` into an equality join on that column.
+- The output contains one `customer_id` column, not two.
+- Other same-named columns are **not** automatically collapsed unless they are also listed in `USING`.
+
+That last point matters. In a test query `SELECT * FROM a JOIN b USING (id)`, Spark returned one `id` column but still returned duplicate `grp` and `val` columns because they were not named in `USING`.
+
+______________________________________________________________________
+
+## :material-family-tree: `NATURAL JOIN`
+
+`NATURAL JOIN` is shorthand for "join on every shared column name."
 
 ```sql
-ON customers.id = orders.id
+SELECT *
+FROM nat_l
+NATURAL JOIN nat_r;
 ```
 
----
+Verified behavior in PySpark 4.2:
 
-## :material-lightbulb-outline: Best Practices
+- Spark matched on **all** common columns, not just one.
+- Shared columns appeared once in the output.
+- Output column order was: common columns first, then left-only columns, then right-only columns.
 
-- **Always use explicit `ON` conditions** (avoid just `WHERE`).
-- **Group multiple conditions** with `AND` / `OR` for clarity.
-- **Broadcast small tables** to optimize joins:
+In the test data, both tables shared `id` and `common`. Only the row where **both** values matched survived, so `(id = 1, common = 'x')` joined, while `(id = 1, common = 'z')` did not.
 
-  ```python
-  broadcast(df_small)
-  ```
+!!! note "Schema drift risk"
 
-- **Prefer equality joins** for performance (enables hash or sort-merge joins).
-- **Non-equi (range) joins** are more expensive (often use nested loop join).
+    Because `NATURAL JOIN` follows shared column names automatically, adding a same-named column later can silently change the join condition.
 
----
+______________________________________________________________________
 
-## :material-check-circle-outline: Summary
+## :material-arrow-expand-horizontal: Range and Other Non-Equi Predicates
 
-In Spark SQL, join expressions in the `ON` clause can be:
+Range predicates are valid `ON` clauses:
 
-- **Equality** (`=`)
-- **Multiple conditions** (`AND`, `OR`)
-- **Range** (`BETWEEN`, `<`, `>`)
-- **Function-based** (`lower()`, `concat()`, etc.)
-- **Omitted** (for `CROSS JOIN`)
+```sql
+SELECT *
+FROM transactions AS t
+JOIN tax_slabs AS s
+    ON t.amount BETWEEN s.min_amount AND s.max_amount;
+```
 
-Use the right join expression for your data and performance needs!
+```sql
+SELECT *
+FROM points AS p
+JOIN ranges AS r
+    ON p.value >= r.start
+   AND p.value < r.end;
+```
+
+In the PySpark 4.2 verification run, a pure range join with no usable equi key planned as `CartesianProduct` in `EXPLAIN FORMATTED`.
+
+______________________________________________________________________
+
+## :material-call-split: `OR` Conditions
+
+```sql
+SELECT *
+FROM flights AS f
+JOIN routes AS r
+    ON f.src = r.src
+    OR f.dest = r.dest;
+```
+
+A disjunctive predicate can be valid SQL, but it is harder for Spark to optimize as a hash or sort-merge equi join. In the verification run, an `OR` predicate planned as `CartesianProduct`.
+
+______________________________________________________________________
+
+## :material-grid: Cross and Comma Joins
+
+Explicit cross join:
+
+```sql
+SELECT *
+FROM products AS p
+CROSS JOIN dates AS d;
+```
+
+Implicit comma join:
+
+```sql
+SELECT *
+FROM a, b;
+```
+
+Comma syntax with a later predicate:
+
+```sql
+SELECT *
+FROM a, b
+WHERE a.id = b.id;
+```
+
+Verified behavior in PySpark 4.2:
+
+- `FROM a, b` planned as `CartesianProduct`.
+- `FROM a, b WHERE a.id = b.id` was optimized back into an inner equi join plan (`SortMergeJoin` in the test run).
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: Practical Guidance
+
+- Prefer `JOIN ... ON` for explicitness.
+- Use `USING` when you want a single output copy of specific same-named join keys.
+- Use `NATURAL JOIN` sparingly because schema changes alter its semantics.
+- Treat range and `OR` joins as more expensive unless you can keep an equi key in the predicate.
+- Confirm the chosen operator with `EXPLAIN FORMATTED` instead of assuming the planner found an equi join.

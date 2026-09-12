@@ -2,7 +2,7 @@
 
 The `FILTER` clause scopes an aggregate function to only the rows satisfying a condition, without removing those rows from the query result. Multiple `FILTER` conditions can run in a single scan pass.
 
----
+______________________________________________________________________
 
 ## Setup
 
@@ -20,7 +20,7 @@ SELECT * FROM VALUES
 AS t(order_id, region, product, amount, status);
 ```
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -34,7 +34,13 @@ flowchart LR
     F2 --> R2[pending_count per region]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Per-Aggregate Conditions
+
+<div id="viz-filter-agg-filter" class="ts-viz"></div>
+
+Each aggregate gets its own filter predicate while reading the same grouped rows. The totals shown mirror Spark 4.2 queries that used multiple `FILTER (WHERE ...)` clauses in one `SELECT`.
+
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -54,7 +60,7 @@ FROM orders
 GROUP BY region;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -64,20 +70,20 @@ GROUP BY region;
 4. **NULL aggregate result** — If no rows satisfy the filter for a group, `SUM` returns NULL and `COUNT` returns 0.
 5. **Combines with HAVING** — `FILTER` scopes the aggregate; `HAVING` then filters groups on the aggregated value.
 
----
+______________________________________________________________________
 
 ## FILTER vs HAVING
 
-| Feature | FILTER | HAVING |
-|---------|--------|--------|
-| Scope | Individual aggregate function | Entire group |
-| Removes the group? | No | Yes |
-| Supports per-function conditions | Yes | No |
-| Runs after GROUP BY | Yes | Yes |
-| Multiple conditions in one query | Yes — one per aggregate | One condition for the group |
-| Returns NULL for empty groups | Yes | Group is excluded |
+| Feature                          | FILTER                        | HAVING                      |
+| -------------------------------- | ----------------------------- | --------------------------- |
+| Scope                            | Individual aggregate function | Entire group                |
+| Removes the group?               | No                            | Yes                         |
+| Supports per-function conditions | Yes                           | No                          |
+| Runs after GROUP BY              | Yes                           | Yes                         |
+| Multiple conditions in one query | Yes — one per aggregate       | One condition for the group |
+| Returns NULL for empty groups    | Yes                           | Group is excluded           |
 
----
+______________________________________________________________________
 
 ## FILTER vs CASE WHEN (equivalent forms)
 
@@ -98,7 +104,7 @@ GROUP BY region;
 -- Both produce identical results; FILTER is more readable.
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -120,7 +126,7 @@ GROUP BY region;
 -- APAC   | 300.00        | NULL          | 950.00
 ```
 
-### :material-numeric-2-circle: COUNT(*) FILTER shipped vs cancelled per region
+### :material-numeric-2-circle: COUNT(\*) FILTER shipped vs cancelled per region
 
 ```sql
 SELECT
@@ -201,19 +207,19 @@ GROUP BY region;
 -- APAC   | 0
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Use FILTER |
-|----------|-----------|
-| Multiple conditional aggregates over the same table | Yes — one scan, multiple conditions |
-| Need NULL for groups with no matching rows | Yes |
-| Post-aggregate group exclusion | No — use `HAVING` instead |
-| Conditional aggregation, cleaner syntax than CASE WHEN | Yes |
-| Combine scoped aggregate with group-level filter | Yes — `FILTER` + `HAVING` together |
+| Scenario                                               | Use FILTER                          |
+| ------------------------------------------------------ | ----------------------------------- |
+| Multiple conditional aggregates over the same table    | Yes — one scan, multiple conditions |
+| Need NULL for groups with no matching rows             | Yes                                 |
+| Post-aggregate group exclusion                         | No — use `HAVING` instead           |
+| Conditional aggregation, cleaner syntax than CASE WHEN | Yes                                 |
+| Combine scoped aggregate with group-level filter       | Yes — `FILTER` + `HAVING` together  |
 
----
+______________________________________________________________________
 
 ## :material-percent: Rate and Ratio Patterns
 
@@ -242,7 +248,7 @@ FROM sales
 GROUP BY category;
 ```
 
----
+______________________________________________________________________
 
 ## :material-window-restore: FILTER with Window Functions
 
@@ -266,7 +272,7 @@ SELECT
 FROM daily_orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare-horizontal: MAX(CASE) vs MAX FILTER
 
@@ -289,19 +295,22 @@ FROM orders GROUP BY customer_id;
 ```
 
 !!! tip "FILTER is optimised"
+
     Spark's Catalyst recognises `AGG FILTER (WHERE ...)` as a single pass over the data.
     The `CASE` pattern may produce the same plan but is harder to read and maintain.
 
----
+______________________________________________________________________
 
 ## :material-table-check: Aggregate FILTER Quick Reference
 
-| Pattern | Syntax |
-|---------|--------|
-| Conditional count | `COUNT(*) FILTER (WHERE cond)` |
-| Conditional sum | `SUM(col) FILTER (WHERE cond)` |
-| Conditional average | `AVG(col) FILTER (WHERE cond)` |
-| Conditional max/min | `MAX(col) FILTER (WHERE cond)` |
-| Conditional distinct count | `COUNT(DISTINCT col) FILTER (WHERE cond)` |
+| Pattern                    | Syntax                                          |
+| -------------------------- | ----------------------------------------------- |
+| Conditional count          | `COUNT(*) FILTER (WHERE cond)`                  |
+| Conditional sum            | `SUM(col) FILTER (WHERE cond)`                  |
+| Conditional average        | `AVG(col) FILTER (WHERE cond)`                  |
+| Conditional max/min        | `MAX(col) FILTER (WHERE cond)`                  |
+| Conditional distinct count | `COUNT(DISTINCT col) FILTER (WHERE cond)`       |
 | Rate (count / total count) | `COUNT(*) FILTER (WHERE cond) * 1.0 / COUNT(*)` |
-| Running conditional sum | `SUM(col) FILTER (WHERE cond) OVER (...)` |
+| Running conditional sum    | `SUM(col) FILTER (WHERE cond) OVER (...)`       |
+
+<script src="../../../assets/js/querying-filter-viz.js"></script>

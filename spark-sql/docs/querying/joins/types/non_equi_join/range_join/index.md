@@ -2,8 +2,7 @@
 
 A **range join** occurs when two relations are joined using a *point-in-interval* or *interval-overlap* condition. Range join optimization in Databricks Runtime can deliver orders-of-magnitude performance improvements, but requires careful manual tuning.
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -12,7 +11,7 @@ graph LR
     J --> O[Matched point-interval pairs]
 ```
 
----
+______________________________________________________________________
 
 ## :material-map-marker: Point-in-Interval Range Join
 
@@ -62,7 +61,7 @@ WHERE points.symbol = ranges.symbol
     AND points.p < ranges.end;
 ```
 
----
+______________________________________________________________________
 
 ## :material-link: Interval-Overlap Range Join
 
@@ -94,7 +93,7 @@ JOIN r2 ON r1.symbol = r2.symbol
     AND r1.end >= r2.start;
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightning-bolt: Range Join Optimization
 
@@ -106,22 +105,23 @@ Range join optimization is applied when:
 4. The join is an `INNER JOIN`, or for point-in-interval joins, a `LEFT OUTER JOIN` (point value on left) or `RIGHT OUTER JOIN` (point value on right).
 5. A bin size tuning parameter is specified.
 
----
+______________________________________________________________________
 
 ## :material-file-cabinet:️ Bin Size
 
 The **bin size** is a numeric parameter that divides the value domain of the range condition into equal-sized bins.
 
 - **Example:** With a bin size of 10, the domain is split into intervals of length 10.
-        - If `p BETWEEN start AND end` and `start = 8`, `end = 22`, the interval overlaps bins `[0,10)`, `[10,20)`, and `[20,30)`.
-        - Only points in these bins are considered for join matches.
-        - If `p = 32`, it falls in `[30,40)`, so it can be excluded.
+    \- If `p BETWEEN start AND end` and `start = 8`, `end = 22`, the interval overlaps bins `[0,10)`, `[10,20)`, and `[20,30)`.
+    \- Only points in these bins are considered for join matches.
+    \- If `p = 32`, it falls in `[30,40)`, so it can be excluded.
 
 - **DATE values:** Bin size is in days (e.g., `7` = week).
+
 - **TIMESTAMP values:** Bin size is in seconds (e.g., `60` = minute, `0.1` = 100 ms).
 
 Specify the bin size via a range join hint or session configuration. The optimization is applied **only** if you manually set the bin size.
 
 > **Tip:** See the section *Choose the bin size* for guidance on selecting an optimal value.
 
----
+______________________________________________________________________

@@ -1,3 +1,10 @@
+"""Databricks SDK ``WorkspaceClient`` construction for ``dbx_mcp`` tools.
+
+Centralizes auth resolution (config profile vs. explicit host/token, sourced
+from :data:`spark_sql.dbx_mcp.config.settings.settings`) so every tool module
+builds its client the same way.
+"""
+
 import logging
 
 from databricks.sdk import WorkspaceClient

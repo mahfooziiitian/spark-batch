@@ -2,7 +2,7 @@
 
 Measure how many users return after their first interaction — cohort-based retention tables, N-day retention curves, and churn detection — the core metric for product-market fit and customer lifecycle management.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Execution Flow
 
@@ -14,7 +14,7 @@ flowchart LR
     PIVOT --> RATE["retained / cohort_size\n× 100 = retention %"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -46,14 +46,14 @@ GROUP BY cohort_date
 ORDER BY cohort_date;
 ```
 
-| Term | Definition |
-|------|------------|
-| **Cohort** | Group of users who share a common start date (signup, first purchase, etc.) |
-| **Period offset** | Time elapsed since the cohort date (day 0, day 1, week 1, month 1, etc.) |
-| **Retention rate** | Percentage of the cohort that was active in a given period |
-| **Churn** | 1 - retention rate; the fraction of users who did not return |
+| Term               | Definition                                                                  |
+| ------------------ | --------------------------------------------------------------------------- |
+| **Cohort**         | Group of users who share a common start date (signup, first purchase, etc.) |
+| **Period offset**  | Time elapsed since the cohort date (day 0, day 1, week 1, month 1, etc.)    |
+| **Retention rate** | Percentage of the cohort that was active in a given period                  |
+| **Churn**          | 1 - retention rate; the fraction of users who did not return                |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -62,7 +62,7 @@ ORDER BY cohort_date;
 3. **Cohort granularity** — daily cohorts give the finest detail but produce many rows; weekly or monthly cohorts are more practical for reporting.
 4. **Unbounded retention** — "day 7" means exactly day 7, not "within the first 7 days." For cumulative retention (active any time within the first 7 days), use `days_since_signup <= 7`.
 
----
+______________________________________________________________________
 
 ## :material-database: Sample Data
 
@@ -170,7 +170,7 @@ SELECT * FROM VALUES
 AS t(org_id, plan, week_start, api_calls);
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -205,11 +205,11 @@ ORDER BY cohort_date;
 
 ??? success "Expected output"
 
-    | cohort_date | cohort_size | d1 | d2 | d3 | d7 | d14 |
-    |-------------|-------------|----|----|----|----|-----|
-    | 2024-06-01 | 4 | 3 | 2 | 1 | 2 | 1 |
-    | 2024-06-02 | 3 | 2 | 1 | 1 | 2 | 1 |
-    | 2024-06-03 | 3 | 2 | 2 | 0 | 1 | 1 |
+    | cohort_date | cohort_size | d1  | d2  | d3  | d7  | d14 |
+    | ----------- | ----------- | --- | --- | --- | --- | --- |
+    | 2024-06-01  | 4           | 3   | 2   | 1   | 2   | 1   |
+    | 2024-06-02  | 3           | 2   | 1   | 1   | 2   | 1   |
+    | 2024-06-03  | 3           | 2   | 2   | 0   | 1   | 1   |
 
 ### 2 — Retention rates as percentages
 
@@ -252,10 +252,10 @@ ORDER BY cohort_date;
 ??? success "Expected output"
 
     | cohort_date | cohort_size | d1_pct | d2_pct | d3_pct | d7_pct | d14_pct |
-    |-------------|-------------|--------|--------|--------|--------|---------|
-    | 2024-06-01 | 4 | 75.0 | 50.0 | 25.0 | 50.0 | 25.0 |
-    | 2024-06-02 | 3 | 66.7 | 33.3 | 33.3 | 66.7 | 33.3 |
-    | 2024-06-03 | 3 | 66.7 | 66.7 | 0.0 | 33.3 | 33.3 |
+    | ----------- | ----------- | ------ | ------ | ------ | ------ | ------- |
+    | 2024-06-01  | 4           | 75.0   | 50.0   | 25.0   | 50.0   | 25.0    |
+    | 2024-06-02  | 3           | 66.7   | 33.3   | 33.3   | 66.7   | 33.3    |
+    | 2024-06-03  | 3           | 66.7   | 66.7   | 0.0    | 33.3   | 33.3    |
 
 ### 3 — Weekly cohort retention (unpivoted for BI tools)
 
@@ -301,10 +301,10 @@ ORDER BY cohort_week, week_offset;
 ??? success "Expected output"
 
     | cohort_week | week_offset | active_users | cohort_size | retention_pct |
-    |-------------|-------------|--------------|-------------|---------------|
-    | 2024-06-01 | 0 | 10 | 10 | 100.0 |
-    | 2024-06-01 | 1 | 8 | 10 | 80.0 |
-    | 2024-06-01 | 2 | 4 | 10 | 40.0 |
+    | ----------- | ----------- | ------------ | ----------- | ------------- |
+    | 2024-06-01  | 0           | 10           | 10          | 100.0         |
+    | 2024-06-01  | 1           | 8            | 10          | 80.0          |
+    | 2024-06-01  | 2           | 4            | 10          | 40.0          |
 
 ### 4 — Monthly subscription retention
 
@@ -345,24 +345,24 @@ ORDER BY p.cohort_month, month_num;
 ??? success "Expected output"
 
     | cohort_month | cohort_size | month_num | retained | retention_pct |
-    |--------------|-------------|-----------|----------|---------------|
-    | 2024-01-01 | 2 | 0 | 2 | 100.0 |
-    | 2024-01-01 | 2 | 1 | 2 | 100.0 |
-    | 2024-01-01 | 2 | 2 | 2 | 100.0 |
-    | 2024-01-01 | 2 | 3 | 1 | 50.0 |
-    | 2024-01-01 | 2 | 4 | 1 | 50.0 |
-    | 2024-01-01 | 2 | 5 | 1 | 50.0 |
-    | 2024-02-01 | 2 | 0 | 2 | 100.0 |
-    | 2024-02-01 | 2 | 1 | 2 | 100.0 |
-    | 2024-02-01 | 2 | 2 | 1 | 50.0 |
-    | 2024-02-01 | 2 | 3 | 1 | 50.0 |
-    | 2024-03-01 | 2 | 0 | 2 | 100.0 |
-    | 2024-03-01 | 2 | 1 | 2 | 100.0 |
-    | 2024-03-01 | 2 | 2 | 1 | 50.0 |
-    | 2024-03-01 | 2 | 3 | 1 | 50.0 |
-    | 2024-04-01 | 2 | 0 | 2 | 100.0 |
-    | 2024-04-01 | 2 | 1 | 2 | 100.0 |
-    | 2024-04-01 | 2 | 2 | 1 | 50.0 |
+    | ------------ | ----------- | --------- | -------- | ------------- |
+    | 2024-01-01   | 2           | 0         | 2        | 100.0         |
+    | 2024-01-01   | 2           | 1         | 2        | 100.0         |
+    | 2024-01-01   | 2           | 2         | 2        | 100.0         |
+    | 2024-01-01   | 2           | 3         | 1        | 50.0          |
+    | 2024-01-01   | 2           | 4         | 1        | 50.0          |
+    | 2024-01-01   | 2           | 5         | 1        | 50.0          |
+    | 2024-02-01   | 2           | 0         | 2        | 100.0         |
+    | 2024-02-01   | 2           | 1         | 2        | 100.0         |
+    | 2024-02-01   | 2           | 2         | 1        | 50.0          |
+    | 2024-02-01   | 2           | 3         | 1        | 50.0          |
+    | 2024-03-01   | 2           | 0         | 2        | 100.0         |
+    | 2024-03-01   | 2           | 1         | 2        | 100.0         |
+    | 2024-03-01   | 2           | 2         | 1        | 50.0          |
+    | 2024-03-01   | 2           | 3         | 1        | 50.0          |
+    | 2024-04-01   | 2           | 0         | 2        | 100.0         |
+    | 2024-04-01   | 2           | 1         | 2        | 100.0         |
+    | 2024-04-01   | 2           | 2         | 1        | 50.0          |
 
 ### 5 — Revenue retention (dollar retention rate)
 
@@ -406,16 +406,17 @@ ORDER BY m.cohort_month, m.month_num;
 ??? success "Expected output"
 
     | cohort_month | cohort_initial_revenue | month_num | period_revenue | dollar_retention_pct |
-    |--------------|------------------------|-----------|----------------|----------------------|
-    | 2024-01-01 | 99.98 | 0 | 99.98 | 100.0 |
-    | 2024-01-01 | 99.98 | 1 | 99.98 | 100.0 |
-    | 2024-01-01 | 99.98 | 2 | 99.98 | 100.0 |
-    | 2024-01-01 | 99.98 | 3 | 49.99 | 50.0 |
-    | 2024-01-01 | 99.98 | 4 | 49.99 | 50.0 |
-    | 2024-01-01 | 99.98 | 5 | 49.99 | 50.0 |
-    | ... | | | | |
+    | ------------ | ---------------------- | --------- | -------------- | -------------------- |
+    | 2024-01-01   | 99.98                  | 0         | 99.98          | 100.0                |
+    | 2024-01-01   | 99.98                  | 1         | 99.98          | 100.0                |
+    | 2024-01-01   | 99.98                  | 2         | 99.98          | 100.0                |
+    | 2024-01-01   | 99.98                  | 3         | 49.99          | 50.0                 |
+    | 2024-01-01   | 99.98                  | 4         | 49.99          | 50.0                 |
+    | 2024-01-01   | 99.98                  | 5         | 49.99          | 50.0                 |
+    | ...          |                        |           |                |                      |
 
 !!! tip "Net dollar retention > 100%"
+
     In SaaS, if upsells exceed churn revenue, dollar retention can exceed 100%. This metric is more valuable than user retention for measuring business health.
 
 ### 6 — N-day retention curve (d1 through d14)
@@ -458,17 +459,17 @@ ORDER BY day_num;
 ??? success "Expected output"
 
     | day_num | cohort_size | retained | retention_pct |
-    |---------|-------------|----------|---------------|
-    | 0 | 10 | 10 | 100.0 |
-    | 1 | 10 | 7 | 70.0 |
-    | 2 | 10 | 6 | 60.0 |
-    | 3 | 10 | 3 | 30.0 |
-    | 4 | 10 | 3 | 30.0 |
-    | 5 | 10 | 1 | 10.0 |
-    | 6 | 10 | 0 | 0.0 |
-    | 7 | 10 | 4 | 40.0 |
-    | 8 | 10 | 0 | 0.0 |
-    | ... | | | |
+    | ------- | ----------- | -------- | ------------- |
+    | 0       | 10          | 10       | 100.0         |
+    | 1       | 10          | 7        | 70.0          |
+    | 2       | 10          | 6        | 60.0          |
+    | 3       | 10          | 3        | 30.0          |
+    | 4       | 10          | 3        | 30.0          |
+    | 5       | 10          | 1        | 10.0          |
+    | 6       | 10          | 0        | 0.0           |
+    | 7       | 10          | 4        | 40.0          |
+    | 8       | 10          | 0        | 0.0           |
+    | ...     |             |          |               |
 
 ### 7 — Churn detection (users who stopped returning)
 
@@ -502,18 +503,18 @@ ORDER BY days_inactive DESC;
 
 ??? success "Expected output"
 
-    | user_id | first_seen | last_seen | days_inactive | lifetime_days | status |
-    |---------|------------|-----------|---------------|---------------|--------|
-    | u04 | 2024-06-01 | 2024-06-03 | 17 | 2 | churned |
-    | u10 | 2024-06-03 | 2024-06-03 | 17 | 0 | churned |
-    | u03 | 2024-06-01 | 2024-06-03 | 17 | 2 | churned |
-    | u07 | 2024-06-02 | 2024-06-04 | 16 | 2 | churned |
-    | u09 | 2024-06-03 | 2024-06-05 | 15 | 2 | churned |
-    | u02 | 2024-06-01 | 2024-06-08 | 12 | 7 | dormant |
-    | u06 | 2024-06-02 | 2024-06-09 | 11 | 7 | dormant |
-    | u08 | 2024-06-03 | 2024-06-17 | 3 | 14 | at_risk |
-    | u01 | 2024-06-01 | 2024-06-15 | 5 | 14 | at_risk |
-    | u05 | 2024-06-02 | 2024-06-16 | 4 | 14 | at_risk |
+    | user_id | first_seen | last_seen  | days_inactive | lifetime_days | status  |
+    | ------- | ---------- | ---------- | ------------- | ------------- | ------- |
+    | u04     | 2024-06-01 | 2024-06-03 | 17            | 2             | churned |
+    | u10     | 2024-06-03 | 2024-06-03 | 17            | 0             | churned |
+    | u03     | 2024-06-01 | 2024-06-03 | 17            | 2             | churned |
+    | u07     | 2024-06-02 | 2024-06-04 | 16            | 2             | churned |
+    | u09     | 2024-06-03 | 2024-06-05 | 15            | 2             | churned |
+    | u02     | 2024-06-01 | 2024-06-08 | 12            | 7             | dormant |
+    | u06     | 2024-06-02 | 2024-06-09 | 11            | 7             | dormant |
+    | u08     | 2024-06-03 | 2024-06-17 | 3             | 14            | at_risk |
+    | u01     | 2024-06-01 | 2024-06-15 | 5             | 14            | at_risk |
+    | u05     | 2024-06-02 | 2024-06-16 | 4             | 14            | at_risk |
 
 ### 8 — Churn summary by cohort
 
@@ -551,10 +552,10 @@ ORDER BY cohort_date;
 ??? success "Expected output"
 
     | cohort_date | cohort_size | retained | churned | churn_rate_pct |
-    |-------------|-------------|----------|---------|----------------|
-    | 2024-06-01 | 4 | 1 | 3 | 75.0 |
-    | 2024-06-02 | 3 | 1 | 2 | 66.7 |
-    | 2024-06-03 | 3 | 1 | 2 | 66.7 |
+    | ----------- | ----------- | -------- | ------- | -------------- |
+    | 2024-06-01  | 4           | 1        | 3       | 75.0           |
+    | 2024-06-02  | 3           | 1        | 2       | 66.7           |
+    | 2024-06-03  | 3           | 1        | 2       | 66.7           |
 
 ### 9 — Engagement decay (average days active per period)
 
@@ -587,12 +588,13 @@ ORDER BY week_num;
 ??? success "Expected output"
 
     | week_num | users_present | avg_days_active | total_active_days |
-    |----------|---------------|-----------------|-------------------|
-    | 0 | 10 | 2.5 | 25 |
-    | 1 | 8 | 1.4 | 11 |
-    | 2 | 4 | 1.0 | 4 |
+    | -------- | ------------- | --------------- | ----------------- |
+    | 0        | 10            | 2.5             | 25                |
+    | 1        | 8             | 1.4             | 11                |
+    | 2        | 4             | 1.0             | 4                 |
 
 !!! note "Engagement depth"
+
     Week 0 users averaged 2.5 active days out of 7; by week 1 it dropped to 1.4. This metric reveals not just *if* users return, but *how much* they engage — a more nuanced view than binary retention.
 
 ### 10 — Product usage retention by plan tier
@@ -631,49 +633,54 @@ ORDER BY plan, week_offset;
 
 ??? success "Expected output"
 
-    | plan | week_offset | active_orgs | avg_api_calls | total_api_calls |
-    |------|-------------|-------------|---------------|-----------------|
-    | Basic | 0 | 2 | 138 | 275 |
-    | Basic | 1 | 2 | 123 | 245 |
-    | Basic | 2 | 2 | 115 | 230 |
-    | Basic | 3 | 2 | 94 | 187 |
-    | Pro | 0 | 3 | 117 | 350 |
-    | Pro | 1 | 3 | 115 | 345 |
-    | Pro | 2 | 2 | 146 | 291 |
-    | Pro | 3 | 2 | 129 | 257 |
+    | plan  | week_offset | active_orgs | avg_api_calls | total_api_calls |
+    | ----- | ----------- | ----------- | ------------- | --------------- |
+    | Basic | 0           | 2           | 138           | 275             |
+    | Basic | 1           | 2           | 123           | 245             |
+    | Basic | 2           | 2           | 115           | 230             |
+    | Basic | 3           | 2           | 94            | 187             |
+    | Pro   | 0           | 3           | 117           | 350             |
+    | Pro   | 1           | 3           | 115           | 345             |
+    | Pro   | 2           | 2           | 146           | 291             |
+    | Pro   | 3           | 2           | 129           | 257             |
 
 !!! tip "Usage-weighted retention"
+
     org_2 (Pro) disappears after week 2 — their api_calls were declining (88 -> 72 -> 45). Tracking usage volume alongside retention reveals "quiet churn" where users are still technically active but disengaging.
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Behavior Notes
 
 !!! warning "Cohort date is assignment date, not calendar date"
+
     Each user's cohort is based on their *first* activity. A "day 7" retention check for a user who signed up June 1 means June 8. Do not confuse cohort-relative offsets with absolute calendar dates.
 
 !!! warning "Incomplete cohorts"
+
     Recent cohorts will have artificially low retention at later periods simply because not enough time has passed. Filter out cohorts that are too young: `WHERE DATEDIFF(CURRENT_DATE(), cohort_date) >= 14` for a d14 retention report.
 
 !!! tip "Retention vs stickiness"
+
     Retention answers "did the user come back?" Stickiness (DAU/MAU ratio) answers "how frequently does the user come back?" Both are important — a user who returns once in 30 days is "retained" but not "sticky."
 
 !!! tip "Materialise cohort assignments"
+
     Computing `MIN(activity_date)` per user on every query is expensive. Materialise a `user_cohorts` Delta table during ETL and join against it for all retention analyses.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Day-N retention table (d1/d7/d30) | Cohort + `DATEDIFF` + conditional `COUNT DISTINCT` |
-| Retention percentage matrix | Divide retained count by cohort size |
-| Weekly/monthly cohort retention | `DATE_TRUNC` cohort assignment + period offsets |
-| Subscription revenue retention | Dollar retention rate per cohort month |
-| Retention curve (d0 through d14) | `SEQUENCE` + `CROSS JOIN` for all day offsets |
-| Churn detection | Last-seen date + inactivity threshold |
-| Churn rate by cohort | Count churned/retained per cohort |
-| Engagement decay tracking | Average days-active per week-offset |
-| Plan-level usage retention | Retention grouped by product tier |
-| BI-friendly unpivoted output | One row per cohort-period pair (not pivoted columns) |
+| Scenario                          | Pattern                                              |
+| --------------------------------- | ---------------------------------------------------- |
+| Day-N retention table (d1/d7/d30) | Cohort + `DATEDIFF` + conditional `COUNT DISTINCT`   |
+| Retention percentage matrix       | Divide retained count by cohort size                 |
+| Weekly/monthly cohort retention   | `DATE_TRUNC` cohort assignment + period offsets      |
+| Subscription revenue retention    | Dollar retention rate per cohort month               |
+| Retention curve (d0 through d14)  | `SEQUENCE` + `CROSS JOIN` for all day offsets        |
+| Churn detection                   | Last-seen date + inactivity threshold                |
+| Churn rate by cohort              | Count churned/retained per cohort                    |
+| Engagement decay tracking         | Average days-active per week-offset                  |
+| Plan-level usage retention        | Retention grouped by product tier                    |
+| BI-friendly unpivoted output      | One row per cohort-period pair (not pivoted columns) |

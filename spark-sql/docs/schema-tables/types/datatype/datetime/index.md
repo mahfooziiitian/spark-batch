@@ -5,12 +5,12 @@ temporal data — from simple calendar dates to precise timestamps with timezone
 
 ## :material-pin: Type Summary
 
-| Type | Stores | Precision | Timezone |
-|------|--------|-----------|----------|
-| `DATE` | Year, month, day | Day | No |
-| `TIMESTAMP` | Date + time | Microsecond | Session timezone |
-| `TIMESTAMP_NTZ` | Date + time | Microsecond | No timezone |
-| `INTERVAL` | Duration | Variable | N/A |
+| Type            | Stores           | Precision   | Timezone         |
+| --------------- | ---------------- | ----------- | ---------------- |
+| `DATE`          | Year, month, day | Day         | No               |
+| `TIMESTAMP`     | Date + time      | Microsecond | Session timezone |
+| `TIMESTAMP_NTZ` | Date + time      | Microsecond | No timezone      |
+| `INTERVAL`      | Duration         | Variable    | N/A              |
 
 ## :material-flask-outline: Quick Examples
 
@@ -31,4 +31,7 @@ SELECT DATEDIFF(DATE '2024-12-31', DATE '2024-01-01');
 -- Result: 365
 ```
 
-See the sub-pages for detailed coverage of each type and formatting patterns.
+See the sub-pages for detailed coverage of each type and formatting patterns, and
+[Concepts & Business Usage](concepts.md) for terminology (epoch, UTC, event vs.
+processing time, effective-dating) and business-driven patterns (SCD "as of" lookups,
+fiscal calendars, business-day SLAs, audit columns).

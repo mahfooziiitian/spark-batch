@@ -1,13 +1,13 @@
 title: Customer Analytics
 nav:
-  - funnel_analysis.md
+  - funnel-analysis.md
   - retention.md
-  - churn_detection.md
-  - survival_analysis.md
+  - churn-detection.md
+  - survival-analysis.md
   - clv.md
-  - rfm_segmentation.md
-  - basket_analysis.md
-  - path_analysis.md
-  - attribution_modeling.md
-  - abc_classification.md
+  - rfm-segmentation.md
+  - basket-analysis.md
+  - path-analysis.md
+  - attribution-modeling.md
+  - abc-classification.md
   - pareto.md

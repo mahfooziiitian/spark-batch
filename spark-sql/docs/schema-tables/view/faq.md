@@ -2,7 +2,7 @@
 
 Common errors and troubleshooting for Spark SQL views.
 
----
+______________________________________________________________________
 
 ## :material-alert: 1. "Table or view not found"
 
@@ -10,12 +10,12 @@ Common errors and troubleshooting for Spark SQL views.
 
 **Causes and fixes:**
 
-| Cause | Fix |
-|-------|-----|
-| Temp view used in different session | Recreate in current session, or promote to global temp / permanent |
-| Global temp view queried without prefix | Use `SELECT * FROM global_temp.my_view` |
-| Permanent view in different database | Run `USE my_database;` first, or qualify: `my_database.my_view` |
-| Cluster restarted — temp view lost | Temp views are in-memory; recreate via init script or job setup step |
+| Cause                                   | Fix                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| Temp view used in different session     | Recreate in current session, or promote to global temp / permanent   |
+| Global temp view queried without prefix | Use `SELECT * FROM global_temp.my_view`                              |
+| Permanent view in different database    | Run `USE my_database;` first, or qualify: `my_database.my_view`      |
+| Cluster restarted — temp view lost      | Temp views are in-memory; recreate via init script or job setup step |
 
 ```sql
 -- Always qualify permanent views
@@ -25,7 +25,7 @@ SELECT * FROM analytics.active_customers;
 SELECT * FROM global_temp.shared_products;
 ```
 
----
+______________________________________________________________________
 
 ## :material-table-column: 2. View fails after schema change
 
@@ -46,10 +46,11 @@ SHOW CREATE TABLE analytics.customer_summary;
 ```
 
 !!! tip "Defensive alias pattern"
+
     Always alias columns in views instead of relying on base column names.
     This makes future renames less breaking.
 
----
+______________________________________________________________________
 
 ## :material-lock: 3. Permission denied on view
 
@@ -67,10 +68,11 @@ SHOW GRANTS ON VIEW main.reporting.daily_revenue;
 ```
 
 !!! warning "Hive Metastore difference"
+
     On a Hive Metastore (non-Unity Catalog), users need `SELECT` on both
     the view **and** all underlying tables.
 
----
+______________________________________________________________________
 
 ## :material-speedometer-slow: 4. View query is slow
 
@@ -96,7 +98,7 @@ USING DELTA AS
 SELECT * FROM analytics.customer_summary;
 ```
 
----
+______________________________________________________________________
 
 ## :material-refresh-auto: 5. Materialized View data is stale
 
@@ -117,7 +119,7 @@ ALTER MATERIALIZED VIEW main.reporting.mv_daily_sales
   SCHEDULE REFRESH CRON '0 3 * * *' AT TIME ZONE 'UTC';
 ```
 
----
+______________________________________________________________________
 
 ## :material-eye-off: 6. `SELECT *` from view returns unexpected columns
 
@@ -136,7 +138,7 @@ FROM orders;
 DESCRIBE analytics.safe_orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-tools: 7. OPTIMIZE / VACUUM fails on a view
 
@@ -155,7 +157,7 @@ VACUUM main.sales.orders RETAIN 168 HOURS;
 OPTIMIZE delta.`/path/to/mv_storage`;
 ```
 
----
+______________________________________________________________________
 
 ## :material-sync-alert: 8. Global temp view disappeared
 

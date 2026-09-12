@@ -4,7 +4,7 @@ An alias assigns a readable name to a column expression, computed value, or
 subquery result. Aliases appear in query output, are referenced by downstream
 `ORDER BY` clauses, and define the column names of CTEs and derived tables.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -28,7 +28,7 @@ WITH totals AS (SELECT customer_id, SUM(amount) AS total FROM orders GROUP BY cu
 SELECT * FROM totals;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
@@ -39,7 +39,7 @@ SELECT * FROM totals;
 5. `AS` is optional but always include it for readability.
 6. Table aliases declared in `FROM` / `JOIN` must be used consistently — once aliased, the original name is no longer valid in the same query.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -170,19 +170,20 @@ FROM orders;
 -- running_total can be referenced in ORDER BY
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Readable computed column name | `expression AS alias` |
-| Alias with spaces or reserved words | `` expression AS `alias name` `` |
-| Shorten long table name in joins | `long_table_name AS t` |
-| Filter on a computed column | Wrap in CTE, then `WHERE alias` |
-| Aggregate alias in ORDER BY | `ORDER BY alias_name` directly |
-| GROUP BY computed expression | Repeat expression or use alias (non-ANSI) |
+| Scenario                            | Pattern                                   |
+| ----------------------------------- | ----------------------------------------- |
+| Readable computed column name       | `expression AS alias`                     |
+| Alias with spaces or reserved words | `` expression AS `alias name` ``          |
+| Shorten long table name in joins    | `long_table_name AS t`                    |
+| Filter on a computed column         | Wrap in CTE, then `WHERE alias`           |
+| Aggregate alias in ORDER BY         | `ORDER BY alias_name` directly            |
+| GROUP BY computed expression        | Repeat expression or use alias (non-ANSI) |
 
 !!! tip "Always use AS"
+
     `SELECT amount total` (without `AS`) is valid but ambiguous to readers.
     Always write `SELECT amount AS total` — it takes one word and removes all ambiguity.

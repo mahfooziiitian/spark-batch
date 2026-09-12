@@ -2,7 +2,7 @@
 
 `collect_set` collects unique values from a group into an array, removing duplicates.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -52,10 +52,10 @@ FROM visits
 GROUP BY user_name;
 ```
 
-| user_name | unique_pages |
-|-----------|-------------|
-| Alice | [home, products] |
-| Bob | [home, cart] |
+| user_name | unique_pages     |
+| --------- | ---------------- |
+| Alice     | [home, products] |
+| Bob       | [home, cart]     |
 
 ### NULL Handling
 
@@ -74,9 +74,17 @@ FROM visits;
 
 ## :material-brain: When to Use
 
-| Scenario | Function |
-|----------|----------|
-| Unique tags/categories per group | `collect_set` |
-| All values including duplicates | `collect_list` |
-| Count distinct in nested output | `SIZE(collect_set(col))` |
-| Distinct comma-separated list | `CONCAT_WS(', ', collect_set(col))` |
+| Scenario                         | Function                            |
+| -------------------------------- | ----------------------------------- |
+| Unique tags/categories per group | `collect_set`                       |
+| All values including duplicates  | `collect_list`                      |
+| Count distinct in nested output  | `SIZE(collect_set(col))`            |
+| Distinct comma-separated list    | `CONCAT_WS(', ', collect_set(col))` |
+
+!!! tip "Deeper set reference"
+
+    `collect_set` returns an unordered array with no built-in ordering
+    guarantee. For set operations across two already-collected arrays
+    (union, intersect, except), see
+    [Set Functions](../collection/set.md) in the Collection Functions
+    section.

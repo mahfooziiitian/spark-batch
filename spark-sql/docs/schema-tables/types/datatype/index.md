@@ -6,39 +6,39 @@ values are stored, compared, and processed.
 
 ## :material-pin: Primitive Types
 
-| Type | SQL Syntax | Description | Example |
-|------|-----------|-------------|---------|
-| `BOOLEAN` | `BOOLEAN` | True / false | `TRUE` |
-| `TINYINT` | `TINYINT` / `BYTE` | 8-bit signed integer | `127` |
-| `SMALLINT` | `SMALLINT` / `SHORT` | 16-bit signed integer | `32767` |
-| `INT` | `INT` / `INTEGER` | 32-bit signed integer | `2147483647` |
-| `BIGINT` | `BIGINT` / `LONG` | 64-bit signed integer | `9223372036854775807` |
-| `FLOAT` | `FLOAT` / `REAL` | 32-bit floating point | `3.14` |
-| `DOUBLE` | `DOUBLE` | 64-bit floating point | `3.14159265` |
-| `DECIMAL` | `DECIMAL(p, s)` | Arbitrary precision | `DECIMAL(10, 2)` |
-| `STRING` | `STRING` | Variable-length text | `'hello'` |
-| `BINARY` | `BINARY` | Byte array | `X'48656C6C6F'` |
+| Type       | SQL Syntax           | Description           | Example               |
+| ---------- | -------------------- | --------------------- | --------------------- |
+| `BOOLEAN`  | `BOOLEAN`            | True / false          | `TRUE`                |
+| `TINYINT`  | `TINYINT` / `BYTE`   | 8-bit signed integer  | `127`                 |
+| `SMALLINT` | `SMALLINT` / `SHORT` | 16-bit signed integer | `32767`               |
+| `INT`      | `INT` / `INTEGER`    | 32-bit signed integer | `2147483647`          |
+| `BIGINT`   | `BIGINT` / `LONG`    | 64-bit signed integer | `9223372036854775807` |
+| `FLOAT`    | `FLOAT` / `REAL`     | 32-bit floating point | `3.14`                |
+| `DOUBLE`   | `DOUBLE`             | 64-bit floating point | `3.14159265`          |
+| `DECIMAL`  | `DECIMAL(p, s)`      | Arbitrary precision   | `DECIMAL(10, 2)`      |
+| `STRING`   | `STRING`             | Variable-length text  | `'hello'`             |
+| `BINARY`   | `BINARY`             | Byte array            | `X'48656C6C6F'`       |
 
 ## :material-pin: DateTime Types
 
-| Type | SQL Syntax | Description | Example |
-|------|-----------|-------------|---------|
-| `DATE` | `DATE` | Calendar date (no time) | `DATE '2024-01-15'` |
-| `TIMESTAMP` | `TIMESTAMP` | Date + time (session timezone) | `TIMESTAMP '2024-01-15 10:30:00'` |
-| `TIMESTAMP_NTZ` | `TIMESTAMP_NTZ` | Date + time (no timezone) | `TIMESTAMP_NTZ '2024-01-15 10:30:00'` |
-| `INTERVAL` | `INTERVAL` | Duration | `INTERVAL '1' DAY` |
+| Type            | SQL Syntax      | Description                    | Example                               |
+| --------------- | --------------- | ------------------------------ | ------------------------------------- |
+| `DATE`          | `DATE`          | Calendar date (no time)        | `DATE '2024-01-15'`                   |
+| `TIMESTAMP`     | `TIMESTAMP`     | Date + time (session timezone) | `TIMESTAMP '2024-01-15 10:30:00'`     |
+| `TIMESTAMP_NTZ` | `TIMESTAMP_NTZ` | Date + time (no timezone)      | `TIMESTAMP_NTZ '2024-01-15 10:30:00'` |
+| `INTERVAL`      | `INTERVAL`      | Duration                       | `INTERVAL '1' DAY`                    |
 
 See [DateTime](datetime/index.md) for detailed datetime functions and formatting.
 
 ## :material-pin: Complex Types
 
-| Type | SQL Syntax | Description |
-|------|-----------|-------------|
-| `ARRAY` | `ARRAY<element_type>` | Ordered collection of elements |
-| `MAP` | `MAP<key_type, value_type>` | Key-value pairs |
-| `STRUCT` | `STRUCT<field: type, ...>` | Named fields (like a row) |
+| Type     | SQL Syntax                  | Description                    |
+| -------- | --------------------------- | ------------------------------ |
+| `ARRAY`  | `ARRAY<element_type>`       | Ordered collection of elements |
+| `MAP`    | `MAP<key_type, value_type>` | Key-value pairs                |
+| `STRUCT` | `STRUCT<field: type, ...>`  | Named fields (like a row)      |
 
-See [Arrays](complextype/arrays/array_data_type.md), [Lists](complextype/lists/list_data_type.md), and [Structs](complextype/structs/struct_data_type.md) for detailed usage.
+See [Arrays](complextype/arrays/array-data-type.md), [Lists](complextype/lists/list-data-type.md), and [Structs](complextype/structs/struct-data-type.md) for detailed usage.
 
 ## :material-flask-outline: Type Inspection
 

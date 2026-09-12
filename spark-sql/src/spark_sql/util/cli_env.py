@@ -18,7 +18,7 @@ from spark_sql.model.env import EnvConfig
 logger = logging.getLogger(__name__)
 
 
-def load_env_layers(target_env_var: str = "DAB_TARGET", default_target: str = "dev") -> str:
+def load_env_layers(target_env_var: str = "APP_ENV", default_target: str = "dev") -> str:
     """Load ``.env`` in the same base + target-override layers the Makefile uses.
 
     Standard per-environment dotenv layering (the same pattern Node/Next.js/Rails use):
@@ -28,7 +28,7 @@ def load_env_layers(target_env_var: str = "DAB_TARGET", default_target: str = "d
         1. ``.env``                    — shared/non-target-specific values.
         2. ``.env.<target>``           — environment-specific overrides (``dev``/``staging``/
                                           ``prod``), where ``<target>`` is the value of
-                                          *target_env_var* (``DAB_TARGET`` by default, matching
+                                          *target_env_var* (``APP_ENV`` by default, matching
                                           the Makefile's own layering so `make dab-*`/`make deploy`
                                           and a directly-invoked entry point (e.g. running
                                           ``deploy-dashboard`` without ``make``) resolve the same

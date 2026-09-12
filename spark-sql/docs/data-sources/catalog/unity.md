@@ -1,6 +1,7 @@
 # :material-unity: Unity Catalog
 
 !!! note "[Databricks] Databricks-Only Feature"
+
     Unity Catalog is exclusive to Databricks. Open-source Spark uses Hive Metastore
     or third-party catalogs (e.g., Apache Polaris).
 
@@ -9,7 +10,7 @@ fine-grained access control, data lineage, and auditing across all workspaces in
 Databricks account. It extends Spark SQL with a three-level namespace:
 `catalog.schema.table`.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Architecture
 
@@ -27,7 +28,7 @@ flowchart TD
     C1 --> V1["volume: /files/docs"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-layers: Three-Level Namespace
 
@@ -43,7 +44,7 @@ USE silver;
 SELECT * FROM orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-plus: Creating Catalog Objects
 
@@ -74,7 +75,7 @@ LOCATION 'abfss://container@storage.dfs.core.windows.net/raw/events'
 COMMENT 'Raw click events from the web';
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-account: Access Control — GRANT / REVOKE
 
@@ -82,16 +83,16 @@ Unity Catalog uses privilege-based access at every level of the hierarchy.
 
 ### Privilege Reference
 
-| Privilege | Applies to | Description |
-|-----------|-----------|-------------|
-| `USE CATALOG` | Catalog | Can reference the catalog |
-| `USE SCHEMA` | Schema | Can reference the schema |
-| `CREATE TABLE` | Schema | Can create tables in schema |
-| `CREATE VIEW` | Schema | Can create views |
-| `SELECT` | Table / View | Can read data |
-| `MODIFY` | Table | Can INSERT/UPDATE/DELETE |
-| `ALL PRIVILEGES` | Any | Grants all applicable privileges |
-| `EXECUTE` | Function | Can call function |
+| Privilege        | Applies to   | Description                      |
+| ---------------- | ------------ | -------------------------------- |
+| `USE CATALOG`    | Catalog      | Can reference the catalog        |
+| `USE SCHEMA`     | Schema       | Can reference the schema         |
+| `CREATE TABLE`   | Schema       | Can create tables in schema      |
+| `CREATE VIEW`    | Schema       | Can create views                 |
+| `SELECT`         | Table / View | Can read data                    |
+| `MODIFY`         | Table        | Can INSERT/UPDATE/DELETE         |
+| `ALL PRIVILEGES` | Any          | Grants all applicable privileges |
+| `EXECUTE`        | Function     | Can call function                |
 
 ```sql
 -- Grant a role access to a catalog
@@ -114,7 +115,7 @@ REVOKE SELECT ON TABLE analytics.marts.daily_revenue FROM `contractor_role`;
 SHOW GRANTS ON TABLE analytics.marts.daily_revenue;
 ```
 
----
+______________________________________________________________________
 
 ## :material-folder-multiple: Volumes — Managed File Storage
 
@@ -138,7 +139,7 @@ FROM '/Volumes/analytics/raw/landing/events/'
 FILEFORMAT = PARQUET;
 ```
 
----
+______________________________________________________________________
 
 ## :material-tag: Table Tags and Column Tags
 
@@ -162,7 +163,7 @@ FROM system.information_schema.table_tags
 WHERE tag_name = 'pii' AND tag_value = 'true';
 ```
 
----
+______________________________________________________________________
 
 ## :material-eye-lock: Column-Level Security — Column Masks
 
@@ -179,9 +180,9 @@ ALTER TABLE analytics.silver.customers
   ALTER COLUMN ssn SET MASK analytics.security.mask_ssn;
 ```
 
----
+______________________________________________________________________
 
-## :material-filter-lock: Row-Level Security — Row Filters
+## :material-table-lock: Row-Level Security — Row Filters
 
 ```sql
 -- Users only see rows for their assigned region
@@ -194,7 +195,7 @@ ALTER TABLE analytics.silver.orders
   ADD ROW FILTER analytics.security.region_filter ON (region);
 ```
 
----
+______________________________________________________________________
 
 ## :material-history: Data Lineage
 
@@ -209,7 +210,7 @@ ORDER BY event_time DESC
 LIMIT 20;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information: system.information_schema — Catalog Introspection
 
@@ -231,7 +232,94 @@ FROM analytics.information_schema.schema_privileges
 WHERE schema_name = 'marts';
 ```
 
----
+______________________________________________________________________
+
+## :material-database-search: Real-World System Catalog Queries
+
+The `system` catalog is a Databricks-hosted analytical store of account-wide
+operational data (cost, audit, lineage, query history). It requires Unity Catalog
+and is populated automatically — no setup beyond `USE CATALOG`/`SELECT` grants.
+
+### Cost monitoring — `system.billing.usage`
+
+```sql
+-- DBUs consumed per product this month
+SELECT billing_origin_product,
+       usage_date,
+       SUM(usage_quantity) AS usage_quantity
+FROM system.billing.usage
+WHERE month(usage_date) = month(current_date())
+  AND year(usage_date) = year(current_date())
+GROUP BY billing_origin_product, usage_date
+ORDER BY usage_date;
+
+-- Which jobs consumed the most DBUs?
+SELECT usage_metadata.job_id AS job_id,
+       SUM(usage_quantity)   AS dbu_usage
+FROM system.billing.usage
+WHERE usage_metadata.job_id IS NOT NULL
+GROUP BY usage_metadata.job_id
+ORDER BY dbu_usage DESC
+LIMIT 10;
+
+-- Attribute cost to a team via a custom cluster/job tag
+SELECT sku_name, usage_unit, SUM(usage_quantity) AS usage
+FROM system.billing.usage
+WHERE custom_tags['team'] = 'data-eng'
+GROUP BY sku_name, usage_unit;
+```
+
+### Security & compliance auditing — `system.access.audit`
+
+```sql
+-- Who dropped tables in the analytics catalog this week?
+SELECT event_time, user_identity.email AS actor, action_name, request_params
+FROM system.access.audit
+WHERE service_name = 'unityCatalog'
+  AND action_name IN ('deleteTable', 'dropTable')
+  AND request_params['full_name_arg'] LIKE 'analytics.%'
+  AND event_time >= current_date() - INTERVAL 7 DAYS
+ORDER BY event_time DESC;
+
+-- Failed login attempts by source IP
+SELECT source_ip_address, user_identity.email, COUNT(*) AS attempts
+FROM system.access.audit
+WHERE action_name = 'databricksAccountLogin'
+  AND response.status_code != 200
+GROUP BY source_ip_address, user_identity.email
+ORDER BY attempts DESC;
+```
+
+### Query performance — `system.query.history`
+
+```sql
+-- Slowest queries in the last 24 hours on a given warehouse
+SELECT statement_id, executed_by, total_duration_ms, statement_text
+FROM system.query.history
+WHERE warehouse_id = '0123-456789-abcdefg'
+  AND start_time >= current_timestamp() - INTERVAL 1 DAY
+ORDER BY total_duration_ms DESC
+LIMIT 20;
+```
+
+### Data lineage across a table's lifecycle — `system.access.table_lineage`
+
+```sql
+-- Everything downstream of a raw ingestion table (impact analysis)
+SELECT DISTINCT target_table_full_name
+FROM system.access.table_lineage
+WHERE source_table_full_name = 'analytics.raw.events'
+ORDER BY target_table_full_name;
+```
+
+!!! tip "Combine system tables for richer answers"
+
+    Join `system.billing.usage.usage_metadata.cluster_id` with
+    `system.compute.clusters` to attribute DBU cost to a cluster's owner and
+    node type, or join `system.access.audit` with `system.access.table_lineage`
+    to see who read a table that later fed a downstream report.
+
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -241,15 +329,15 @@ WHERE schema_name = 'marts';
 4. **Managed tables** in Unity Catalog store data in the catalog's managed storage location — Databricks manages the lifecycle.
 5. **External tables** in Unity require a storage credential and external location registered in the account.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Multi-workspace data sharing | Unity Catalog with shared catalog |
-| GDPR / PII compliance | Column masks + row filters |
-| Centralized RBAC | GRANT on catalog/schema/table level |
-| Data discovery | Tags on tables and columns |
-| Audit who accessed what | `system.access.audit` table |
-| File-based assets alongside tables | Volumes |
+| Scenario                           | Recommendation                      |
+| ---------------------------------- | ----------------------------------- |
+| Multi-workspace data sharing       | Unity Catalog with shared catalog   |
+| GDPR / PII compliance              | Column masks + row filters          |
+| Centralized RBAC                   | GRANT on catalog/schema/table level |
+| Data discovery                     | Tags on tables and columns          |
+| Audit who accessed what            | `system.access.audit` table         |
+| File-based assets alongside tables | Volumes                             |

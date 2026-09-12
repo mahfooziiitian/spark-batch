@@ -1,6 +1,7 @@
 # :material-delta: Delta Lake Data Source
 
 !!! note "[Databricks] Primary Format"
+
     Delta Lake is Databricks' default table format. Open-source Spark supports Delta
     via the `delta-spark` connector, but some features (liquid clustering, predictive I/O)
     are Databricks-only.
@@ -9,7 +10,7 @@ Delta Lake is the **recommended production format** on Databricks.
 It layers an **ACID transaction log** on top of Parquet files, enabling
 `MERGE`, `UPDATE`, `DELETE`, time travel, schema enforcement, and streaming upserts.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Delta Architecture
 
@@ -22,22 +23,22 @@ graph LR
     C --> F[Streaming Source / Sink]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Key Capabilities
 
-| Capability | Command |
-|-----------|---------|
-| ACID writes | `INSERT`, `UPDATE`, `DELETE`, `MERGE` |
-| Time travel | `SELECT … VERSION AS OF n` |
-| Schema evolution | `ALTER TABLE … ADD COLUMNS` |
-| Schema enforcement | Rejects writes that violate the schema |
-| Compaction | `OPTIMIZE` |
-| Clustering | `OPTIMIZE … ZORDER BY` |
-| Vacuuming old files | `VACUUM` |
-| Audit log | `DESCRIBE HISTORY` |
+| Capability          | Command                                |
+| ------------------- | -------------------------------------- |
+| ACID writes         | `INSERT`, `UPDATE`, `DELETE`, `MERGE`  |
+| Time travel         | `SELECT … VERSION AS OF n`             |
+| Schema evolution    | `ALTER TABLE … ADD COLUMNS`            |
+| Schema enforcement  | Rejects writes that violate the schema |
+| Compaction          | `OPTIMIZE`                             |
+| Clustering          | `OPTIMIZE … ZORDER BY`                 |
+| Vacuuming old files | `VACUUM`                               |
+| Audit log           | `DESCRIBE HISTORY`                     |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -132,13 +133,47 @@ DESCRIBE HISTORY analytics.orders;
 ### OPTIMIZE — compact small files
 
 ```sql
--- Compact all files
+-- [Databricks] Compact all files
 OPTIMIZE analytics.orders;
 
--- Compact and Z-order for fast customer_id + order_date filters
+-- [Databricks] Compact and Z-order for fast customer_id + order_date filters
 OPTIMIZE analytics.orders
 ZORDER BY (customer_id, order_date);
 ```
+
+### Optimized Writes — prevent small files at write time
+
+`OPTIMIZE` fixes small files **after** they exist; **optimized writes** stop them from
+being created in the first place by having Spark shuffle data through an extra stage
+that sizes output files to a target before committing the write — most useful for
+high-partition-count `INSERT`/`MERGE`/streaming jobs that would otherwise emit one small
+file per task per partition.
+
+```sql
+-- [Databricks] Enable for a single table
+ALTER TABLE analytics.orders
+SET TBLPROPERTIES ('delta.autoOptimize.optimizeWrite' = 'true');
+
+-- [Databricks] Enable automatic compaction too (merges small files after each write)
+ALTER TABLE analytics.orders
+SET TBLPROPERTIES (
+    'delta.autoOptimize.optimizeWrite' = 'true',
+    'delta.autoOptimize.autoCompact'   = 'true'
+);
+
+-- [Databricks] Or enable per-session for all writes
+SET spark.databricks.delta.optimizeWrite.enabled = true;
+```
+
+!!! note "Optimized writes vs. OPTIMIZE — use both"
+
+    - **Optimized writes** (`optimizeWrite`) — runs at write time; keeps file counts
+        reasonable on *every* write, at the cost of an extra shuffle stage per write.
+    - **Auto compaction** (`autoCompact`) — runs a lightweight `OPTIMIZE` automatically
+        after a write finishes, only on partitions that were just written.
+    - **Manual `OPTIMIZE`** — still worth scheduling periodically (e.g. nightly) for a
+        full compaction pass and `ZORDER`, since auto-compaction only looks at
+        recently-written partitions.
 
 ### VACUUM — remove old file versions
 
@@ -177,7 +212,7 @@ CONVERT TO DELTA parquet.`s3://my-bucket/parquet/orders/`
 PARTITIONED BY (order_date DATE);
 ```
 
----
+______________________________________________________________________
 
 ## :material-tune: Important Configuration
 
@@ -187,27 +222,28 @@ SET spark.sql.extensions = 'io.delta.sql.DeltaSparkSessionExtension';
 SET spark.sql.catalog.spark_catalog = 'org.apache.spark.sql.delta.catalog.DeltaCatalog';
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert-circle: Common Mistakes
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| `VACUUM` with `RETAIN 0 HOURS` | Deletes all history — time travel broken | Keep at least 168 hours (7 days) |
-| Single MERGE for SCD Type 2 | Cannot expire and insert same key in one pass | Use two-step MERGE (see [SCD Type 2](../patterns/scd/full_history/index.md)) |
-| Writing to Delta without `OPTIMIZE` | Thousands of tiny files degrade performance | Schedule `OPTIMIZE` after bulk loads |
-| Reading stale cache | `REFRESH TABLE` needed after external writes | `REFRESH TABLE table_name` |
-| Dropping `_delta_log/` manually | Breaks the table — Spark can't recover | Use `DROP TABLE` or `VACUUM` |
+| Mistake                                 | Problem                                         | Fix                                                                          |
+| --------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| `VACUUM` with `RETAIN 0 HOURS`          | Deletes all history — time travel broken        | Keep at least 168 hours (7 days)                                             |
+| Single MERGE for SCD Type 2             | Cannot expire and insert same key in one pass   | Use two-step MERGE (see [SCD Type 2](../patterns/scd/full_history/index.md)) |
+| Writing to Delta without `OPTIMIZE`     | Thousands of tiny files degrade reads           | Schedule `OPTIMIZE` after bulk loads, or enable optimized writes             |
+| High-frequency `MERGE`/streaming writes | One small file per task per micro-batch adds up | Enable `delta.autoOptimize.optimizeWrite` + `autoCompact`                    |
+| Reading stale cache                     | `REFRESH TABLE` needed after external writes    | `REFRESH TABLE table_name`                                                   |
+| Dropping `_delta_log/` manually         | Breaks the table — Spark can't recover          | Use `DROP TABLE` or `VACUUM`                                                 |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use Delta
 
-| Scenario | Use Delta |
-|----------|-----------|
-| Incremental loads / upserts | `MERGE` |
-| Delete by GDPR / right-to-erasure | `DELETE` |
-| Streaming ingestion | Delta as sink |
-| Audit / time-travel queries | `VERSION AS OF` |
-| Schema evolution with enforcement | `ALTER TABLE + autoMerge` |
-| High-throughput append-only tables | Parquet may be simpler |
+| Scenario                           | Use Delta                 |
+| ---------------------------------- | ------------------------- |
+| Incremental loads / upserts        | `MERGE`                   |
+| Delete by GDPR / right-to-erasure  | `DELETE`                  |
+| Streaming ingestion                | Delta as sink             |
+| Audit / time-travel queries        | `VERSION AS OF`           |
+| Schema evolution with enforcement  | `ALTER TABLE + autoMerge` |
+| High-throughput append-only tables | Parquet may be simpler    |

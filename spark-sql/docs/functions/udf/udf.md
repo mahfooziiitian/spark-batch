@@ -2,7 +2,7 @@
 
 Complete reference for creating, registering, and using User-Defined Functions in Spark SQL.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,7 +11,23 @@ graph LR
     C --> D[Result Column]
 ```
 
----
+______________________________________________________________________
+
+!!! info "Spark 4.0+: scalar Python UDFs use Arrow by default"
+
+    `spark.sql.execution.pythonUDF.arrow.enabled` defaults to `true` in Spark
+    4.0+, so a plain `@udf` now plans as `ArrowEvalPython` (columnar batch
+    transfer) instead of the legacy row-at-a-time `BatchEvalPython`. Set it to
+    `false` to restore the pre-4.0 row-oriented path (useful when a UDF relies
+    on Python-native types Arrow can't cheaply represent).
+
+### :material-animation-play: Interactive Visualization — Row UDF vs. Arrow UDF Transfer
+
+<div id="viz-udf-row-path" class="ts-viz"></div>
+
+Toggle between the legacy row-at-a-time path and the Spark 4.0+ default
+Arrow-batched path to see why batching a whole column cuts serialization
+overhead.
 
 ## :material-pin: Python Scalar UDFs
 
@@ -88,7 +104,53 @@ SELECT safe_length(NULL);     -- NULL
 
 > **Important:** Always handle `None` in Python UDFs — Spark passes NULL values as `None`.
 
----
+### Type Mismatches Fail at Runtime, Not Registration Time
+
+`@udf(returnType=...)` does **not** validate that your function actually returns
+that type when you register it — Spark trusts the declared type until a task
+tries to serialize a mismatched value back through Arrow. Verified on Spark 4.2:
+
+```python
+@udf(returnType=IntegerType())
+def bad(x):
+    return "not an int"          # declared IntegerType, but returns a string
+
+spark.range(3).select(bad("id")).show()
+```
+
+```text
+pyspark.errors.exceptions.captured.PythonException:
+  [PYTHON_EXCEPTION] An exception was thrown from the Python worker:
+  pyarrow.lib.ArrowInvalid: Failed to parse string: 'not an int' as a scalar of type int32
+```
+
+The error surfaces as a task failure at **execution time** (inside the Arrow
+cast), not as a schema-validation error at `.select()` time — so a UDF with a
+wrong return type can pass code review and CI on empty/mocked data and still
+blow up on real data.
+
+### Exceptions Raised Inside a UDF Propagate as Job Failures
+
+There's no implicit try/except around your UDF body. An uncaught exception
+inside `eval()`/the UDF function aborts the Spark job with a
+`PythonException` wrapping your original traceback (verified on Spark 4.2):
+
+```python
+@udf(returnType=IntegerType())
+def boom(x):
+    raise ValueError("custom failure")
+
+df.select(boom(df.x)).show()
+# pyspark.errors.exceptions.captured.PythonException: [PYTHON_EXCEPTION]
+#   An exception was thrown from the Python worker:
+#   ValueError: custom failure
+```
+
+> **Pattern:** wrap risky logic in `try/except` inside the UDF and return
+> `None` (or a sentinel) on failure — don't let a single bad row abort the
+> whole job unless that's genuinely the desired behavior.
+
+______________________________________________________________________
 
 ## :material-pin: Pandas UDFs (Vectorized)
 
@@ -145,7 +207,70 @@ spark.udf.register("classify", batch_classify)
 SELECT amount, classify(amount) AS category FROM transactions;
 ```
 
----
+______________________________________________________________________
+
+## :material-pin: Python UDTFs (User-Defined Table Functions)
+
+A UDTF maps **one input row to zero, one, or many output rows** — the
+row-generator counterpart to a scalar UDF. Define `eval()` as a generator
+(`yield` one tuple per output row) and register with `spark.udtf.register()`.
+
+### :material-animation-play: Interactive Visualization — Scalar UDF vs UDTF Fan-Out
+
+<div id="viz-udtf-fanout" class="ts-viz"></div>
+
+A scalar UDF always emits exactly one output value per input row. A UDTF's
+`eval()` can `yield` any number of rows — zero, one, or many — per call.
+
+```python
+from pyspark.sql.functions import udtf
+
+@udtf(returnType="word: string, len: int")
+class SplitWords:
+    def eval(self, s: str):
+        for w in s.split():
+            yield (w, len(w))
+
+spark.udtf.register("split_words", SplitWords)
+```
+
+```sql
+SELECT * FROM split_words('the quick fox');
+-- +-----+---+
+-- | word|len|
+-- +-----+---+
+-- |  the|  3|
+-- |quick|  5|
+-- |  fox|  3|
+-- +-----+---+
+```
+
+### LATERAL Correlated Calls
+
+Use `LATERAL` to invoke a UDTF once **per row** of an outer table, passing
+that row's column(s) as arguments — analogous to a `CROSS APPLY` in T-SQL:
+
+```sql
+SELECT * FROM VALUES ('a b'), ('c d e') AS t(s), LATERAL split_words(s);
+```
+
+```text
++-----+----+---+
+|    s|word|len|
++-----+----+---+
+|  a b|   a|  1|
+|  a b|   b|  1|
+|c d e|   c|  1|
+|c d e|   d|  1|
+|c d e|   e|  1|
++-----+----+---+
+```
+
+> **Verified (Spark 4.2):** `'a b'` fans out into 2 rows and `'c d e'` into 3
+> — the outer row's `s` value is repeated on every generated row, exactly
+> like a `LATERAL`/`CROSS APPLY` in other SQL engines.
+
+______________________________________________________________________
 
 ## :material-pin: Scala / Java UDFs
 
@@ -179,7 +304,7 @@ SELECT square(5);
 -- Result: 25
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: User-Defined Aggregate Functions (UDAFs)
 
@@ -229,7 +354,7 @@ spark.udf.register("custom_avg", functions.udaf(CustomAvg))
 SELECT department, custom_avg(salary) FROM employees GROUP BY department;
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: SQL CREATE FUNCTION
 
@@ -253,17 +378,18 @@ DROP TEMPORARY FUNCTION IF EXISTS my_func;
 DROP FUNCTION IF EXISTS my_catalog.my_schema.my_func;
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert:️ Performance Considerations
 
-| Factor | Impact | Mitigation |
-|--------|--------|------------|
-| Serialization overhead | Python UDFs serialize/deserialize every row | Use Pandas UDFs (vectorized) |
-| Catalyst opacity | Optimizer cannot push predicates through UDFs | Filter before UDF call |
-| NULL handling | Python receives `None`, Scala receives `null` | Always check for NULLs |
-| Type conversion | Python ↔ JVM type marshalling adds latency | Use native types, avoid complex structs |
-| Parallelism | UDFs run within Spark tasks | Avoid blocking I/O in UDFs |
+| Factor                 | Impact                                                  | Mitigation                                                                               |
+| ---------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Serialization overhead | Python UDFs serialize/deserialize every row             | Spark 4.0+ batches this via Arrow by default; Pandas UDFs still win for bulk numeric ops |
+| Catalyst opacity       | Optimizer cannot push predicates through UDFs           | Filter before UDF call                                                                   |
+| NULL handling          | Python receives `None`, Scala receives `null`           | Always check for NULLs                                                                   |
+| Type conversion        | Python ↔ JVM type marshalling adds latency              | Use native types, avoid complex structs                                                  |
+| Parallelism            | UDFs run within Spark tasks                             | Avoid blocking I/O in UDFs                                                               |
+| Silent type mismatch   | Wrong `returnType` fails at execution, not registration | Add a test that runs the UDF through Spark, not just in isolation                        |
 
 ### Performance Hierarchy (Fastest → Slowest)
 
@@ -271,7 +397,7 @@ DROP FUNCTION IF EXISTS my_catalog.my_schema.my_func;
 Built-in Functions > SQL Macros > Pandas UDFs > Scala UDFs > Python Scalar UDFs
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Common Patterns
 
@@ -333,19 +459,19 @@ spark.udf.register("risk_tier", risk_tier)
 SELECT customer_id, credit_score, risk_tier(credit_score) AS tier FROM accounts;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use UDFs
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Simple math / string ops | :material-close-circle-outline: Use built-in functions |
-| Reusable SQL expressions | :material-close-circle-outline: Use SQL macros |
-| Numeric batch operations | :material-check-circle-outline: Pandas UDF |
-| Complex business logic | :material-check-circle-outline: Scalar UDF |
-| External API calls / lookups | :material-check-circle-outline: Scalar UDF with broadcast |
-| Custom aggregation | :material-check-circle-outline: Pandas grouped UDF or Scala UDAF |
-| Row generation (1→N rows) | :material-check-circle-outline: UDTF |
+| Scenario                     | Recommended Approach                                             |
+| ---------------------------- | ---------------------------------------------------------------- |
+| Simple math / string ops     | :material-close-circle-outline: Use built-in functions           |
+| Reusable SQL expressions     | :material-close-circle-outline: Use SQL macros                   |
+| Numeric batch operations     | :material-check-circle-outline: Pandas UDF                       |
+| Complex business logic       | :material-check-circle-outline: Scalar UDF                       |
+| External API calls / lookups | :material-check-circle-outline: Scalar UDF with broadcast        |
+| Custom aggregation           | :material-check-circle-outline: Pandas grouped UDF or Scala UDAF |
+| Row generation (1→N rows)    | :material-check-circle-outline: UDTF                             |
 
 > **Tip:** Always benchmark UDF vs built-in alternatives. A chain of built-in functions
 > is almost always faster than a single UDF doing the same work.

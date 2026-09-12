@@ -1,3 +1,11 @@
+"""FastMCP stdio server exposing Unity Catalog / SQL warehouse tools.
+
+Wraps each ``spark_sql.dbx_mcp.tools.*`` implementation function as an
+``@mcp.tool()`` for consumption by an MCP host (Copilot CLI/IDE). See
+``.mcp.json`` for the stdio launch configuration and ``dbx-copilot-mcp`` entry
+point wiring.
+"""
+
 import logging
 
 from mcp.server.fastmcp import FastMCP
@@ -151,6 +159,7 @@ def revoke_catalog_privileges(
 
 
 def main() -> None:
+    """Start the MCP server over stdio (blocks until the host disconnects)."""
     logger.info("Starting Databricks Copilot MCP server (stdio transport)")
     mcp.run()
 

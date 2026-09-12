@@ -3,9 +3,10 @@
 Compute median and arbitrary percentiles within each partition.
 
 !!! note "Source"
+
     Full runnable example: `sql/application/ranking/percentile_median.sql`
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -44,10 +45,10 @@ ORDER BY region;
 
 ??? success "Expected Output"
 
-    | region | median_amount | p25 | p75 | p5_p95      |
-    |--------|:-------------:|----:|----:|-------------|
-    | North  |           200 | 150 | 250 | [100, 300]  |
-    | South  |           500 | 450 | 550 | [400, 600]  |
+    | region | median_amount | p25 | p75 | p5_p95     |
+    | ------ | :-----------: | --: | --: | ---------- |
+    | North  |      200      | 150 | 250 | [100, 300] |
+    | South  |      500      | 450 | 550 | [400, 600] |
 
     **How to read:**
 
@@ -57,6 +58,7 @@ ORDER BY region;
     - `p5_p95` — array containing the 5th and 95th percentile boundaries.
 
 !!! note "Accuracy parameter"
+
     `PERCENTILE_APPROX(col, pct, accuracy)` accepts an optional third argument
     (default 10000). Higher values = more precise but more memory. For most
     use cases the default is sufficient.
@@ -79,7 +81,7 @@ ORDER BY region;
 ??? success "Expected Output"
 
     | region | exact_median | exact_p25 | exact_p75 |
-    |--------|-------------:|----------:|----------:|
+    | ------ | -----------: | --------: | --------: |
     | North  |        200.0 |     150.0 |     250.0 |
     | South  |        500.0 |     450.0 |     550.0 |
 
@@ -90,10 +92,11 @@ ORDER BY region;
     - p75 = value at 75% position = **250** (interpolated)
 
 !!! warning "Performance"
+
     `PERCENTILE` triggers a full sort per group. Use `PERCENTILE_APPROX` for tables
     with more than a few thousand rows per partition.
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Window vs GROUP BY
 
@@ -132,7 +135,7 @@ ORDER BY s.region, s.amount;
 ??? success "Expected Output"
 
     | region | rep   | amount | median_amount | p25 | p75 | iqr_position  |
-    |--------|-------|-------:|--------------:|----:|----:|---------------|
+    | ------ | ----- | -----: | ------------: | --: | --: | ------------- |
     | North  | Alice |    100 |           200 | 150 | 250 | Below Q1      |
     | North  | Bob   |    150 |           200 | 150 | 250 | Interquartile |
     | North  | Alice |    200 |           200 | 150 | 250 | Interquartile |
@@ -161,7 +164,7 @@ ORDER BY region, amount;
 ??? success "Expected Output"
 
     | region | rep   | amount | pct_rank |
-    |--------|-------|-------:|---------:|
+    | ------ | ----- | -----: | -------: |
     | North  | Alice |    100 |     0.00 |
     | North  | Bob   |    150 |     0.25 |
     | North  | Alice |    200 |     0.50 |
@@ -174,26 +177,27 @@ ORDER BY region, amount;
     | South  | Dave  |    600 |     1.00 |
 
 !!! tip "Choosing the right tool"
-    | Need | Function | Type |
-    |------|----------|------|
-    | Group-level median/percentile | `PERCENTILE_APPROX` | Aggregate (`GROUP BY`) |
-    | Row-level percentile score | `PERCENT_RANK()` | Window function |
-    | Row-level bucket assignment | `NTILE(n)` | Window function |
 
----
+    | Need                          | Function            | Type                   |
+    | ----------------------------- | ------------------- | ---------------------- |
+    | Group-level median/percentile | `PERCENTILE_APPROX` | Aggregate (`GROUP BY`) |
+    | Row-level percentile score    | `PERCENT_RANK()`    | Window function        |
+    | Row-level bucket assignment   | `NTILE(n)`          | Window function        |
+
+______________________________________________________________________
 
 ## :material-compare: PERCENTILE vs PERCENTILE_APPROX
 
-| Aspect | `PERCENTILE` | `PERCENTILE_APPROX` |
-|--------|:------------:|:-------------------:|
-| Algorithm | Full sort | t-digest approximation |
-| Accuracy | Exact | Configurable (default ~0.01% error) |
-| Performance | O(N log N) per group | O(N) streaming |
-| Memory | Holds all values | Fixed-size sketch |
-| Column types | Numeric only | Numeric only |
-| Best for | < 10K rows per group | Any size |
+| Aspect       |     `PERCENTILE`     |         `PERCENTILE_APPROX`         |
+| ------------ | :------------------: | :---------------------------------: |
+| Algorithm    |      Full sort       |       t-digest approximation        |
+| Accuracy     |        Exact         | Configurable (default ~0.01% error) |
+| Performance  | O(N log N) per group |           O(N) streaming            |
+| Memory       |   Holds all values   |          Fixed-size sketch          |
+| Column types |     Numeric only     |            Numeric only             |
+| Best for     | < 10K rows per group |              Any size               |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
@@ -201,7 +205,7 @@ ORDER BY region, amount;
 - Outlier detection — flag values outside the p5–p95 range.
 - Data profiling — understand distribution shape across partitions.
 
----
+______________________________________________________________________
 
 ## :material-arrow-right: Related
 

@@ -7,8 +7,7 @@ A **non-equi join** is a join where the condition is *not* based solely on equal
 
 > :material-alert:️ **Note:** Non-equi joins are not hashable. Spark cannot use efficient broadcast/hash joins for them, so it must fall back to more expensive join strategies (like sort-merge or nested loop joins).
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -18,9 +17,9 @@ graph LR
     NL --> O[Result]
 ```
 
----
+______________________________________________________________________
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Example
 
@@ -52,7 +51,7 @@ ORDER BY t.txn_id;
 
 <div id="viz-join-non-equi" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## What is a Non-Equi Inner Join?
 
@@ -65,20 +64,20 @@ Unlike a traditional inner join (which matches rows where column values are equa
 
 These joins are often more complex and computationally expensive, especially with large datasets.
 
----
+______________________________________________________________________
 
 ## :material-bookshelf: Use Cases
 
 Non-equi joins are particularly useful for:
 
-1. **Range-based joins:**  
+1. **Range-based joins:**\
     Joining data based on value ranges (e.g., date or numerical ranges).
-2. **Time-series data joins:**  
+2. **Time-series data joins:**\
     Joining on overlapping or adjacent time intervals.
-3. **Interval matching:**  
+3. **Interval matching:**\
     Finding records that fall within specific intervals or thresholds.
 
----
+______________________________________________________________________
 
 ## :material-refresh: How Non-Equi Joins Work in Spark
 
@@ -99,7 +98,7 @@ flowchart TB
 - For each row, the non-equi join condition is evaluated.
 - If the condition is met, the row is added to the result.
 
----
+______________________________________________________________________
 
 ## :material-lightning-bolt:️ Key Points
 
@@ -107,6 +106,6 @@ flowchart TB
 - Always consider data size and join conditions when designing Spark jobs.
 - Where possible, filter or reduce data before performing non-equi joins.
 
----
+______________________________________________________________________
 
 > :material-lightbulb-outline: **Tip:** If possible, rewrite your logic to use equi joins for better performance, or pre-filter data to minimize the join workload.

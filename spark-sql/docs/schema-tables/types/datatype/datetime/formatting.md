@@ -5,25 +5,25 @@ dates and timestamps.
 
 ## :material-pin: Pattern Reference
 
-| Pattern | Meaning | Example |
-|---------|---------|---------|
-| `yyyy` | 4-digit year | `2024` |
-| `yy` | 2-digit year | `24` |
-| `MM` | Month (01-12) | `07` |
-| `MMM` | Month abbreviation | `Jul` |
-| `MMMM` | Month full name | `July` |
-| `dd` | Day of month (01-31) | `15` |
-| `HH` | Hour 24h (00-23) | `14` |
-| `hh` | Hour 12h (01-12) | `02` |
-| `mm` | Minute (00-59) | `30` |
-| `ss` | Second (00-59) | `45` |
-| `SSS` | Milliseconds | `123` |
-| `a` | AM/PM marker | `PM` |
-| `E` | Day of week abbreviation | `Mon` |
-| `EEEE` | Day of week full | `Monday` |
-| `D` | Day of year (1-366) | `196` |
-| `z` | Timezone abbreviation | `PST` |
-| `Z` | Timezone offset | `+0000` |
+| Pattern | Meaning                  | Example  |
+| ------- | ------------------------ | -------- |
+| `yyyy`  | 4-digit year             | `2024`   |
+| `yy`    | 2-digit year             | `24`     |
+| `MM`    | Month (01-12)            | `07`     |
+| `MMM`   | Month abbreviation       | `Jul`    |
+| `MMMM`  | Month full name          | `July`   |
+| `dd`    | Day of month (01-31)     | `15`     |
+| `HH`    | Hour 24h (00-23)         | `14`     |
+| `hh`    | Hour 12h (01-12)         | `02`     |
+| `mm`    | Minute (00-59)           | `30`     |
+| `ss`    | Second (00-59)           | `45`     |
+| `SSS`   | Milliseconds             | `123`    |
+| `a`     | AM/PM marker             | `PM`     |
+| `E`     | Day of week abbreviation | `Mon`    |
+| `EEEE`  | Day of week full         | `Monday` |
+| `D`     | Day of year (1-366)      | `196`    |
+| `z`     | Timezone abbreviation    | `PST`    |
+| `Z`     | Timezone offset          | `+0000`  |
 
 ## :material-flask-outline: Practical Examples
 
@@ -75,17 +75,17 @@ SELECT FROM_JSON('{"dt":"2024-07-15"}', 'dt DATE',
 
 ## :material-brain: Common Format Strings
 
-| Use Case | Pattern | Example Output |
-|----------|---------|----------------|
-| ISO date | `yyyy-MM-dd` | `2024-07-15` |
-| ISO datetime | `yyyy-MM-dd HH:mm:ss` | `2024-07-15 14:30:45` |
-| US date | `MM/dd/yyyy` | `07/15/2024` |
-| EU date | `dd/MM/yyyy` | `15/07/2024` |
-| Readable | `MMMM dd, yyyy` | `July 15, 2024` |
-| Time only (24h) | `HH:mm:ss` | `14:30:45` |
-| Time only (12h) | `hh:mm:ss a` | `02:30:45 PM` |
-| Year-month | `yyyy-MM` | `2024-07` |
-| Day of week | `EEEE` | `Monday` |
+| Use Case        | Pattern               | Example Output        |
+| --------------- | --------------------- | --------------------- |
+| ISO date        | `yyyy-MM-dd`          | `2024-07-15`          |
+| ISO datetime    | `yyyy-MM-dd HH:mm:ss` | `2024-07-15 14:30:45` |
+| US date         | `MM/dd/yyyy`          | `07/15/2024`          |
+| EU date         | `dd/MM/yyyy`          | `15/07/2024`          |
+| Readable        | `MMMM dd, yyyy`       | `July 15, 2024`       |
+| Time only (24h) | `HH:mm:ss`            | `14:30:45`            |
+| Time only (12h) | `hh:mm:ss a`          | `02:30:45 PM`         |
+| Year-month      | `yyyy-MM`             | `2024-07`             |
+| Day of week     | `EEEE`                | `Monday`              |
 
 > **Tip:** Patterns are case-sensitive — `MM` is month, `mm` is minute. `HH` is 24-hour,
 > `hh` is 12-hour.

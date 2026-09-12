@@ -1,152 +1,190 @@
 # :material-null: NULL in Filter Conditions
 
-Filter conditions in `WHERE`, `HAVING`, and `JOIN ON` clauses discard rows where the condition evaluates to NULL — only rows where the condition is TRUE are kept.
+Spark 4.2 keeps rows only when a filter condition evaluates to `TRUE`; rows with `FALSE` or `NULL` results are excluded.
 
-### :material-sitemap: Overview
+______________________________________________________________________
 
-```mermaid
-graph TD
-    A[WHERE Condition] --> B{Result}
-    B -->|TRUE| C[Row Included]
-    B -->|FALSE| D[Row Excluded]
-    B -->|NULL| E[Row Excluded]
-```
+## :material-sitemap: Overview
 
----
+| Clause                        | Verified NULL behavior                    |
+| ----------------------------- | ----------------------------------------- |
+| `WHERE`                       | Keeps only rows whose condition is `TRUE` |
+| `HAVING`                      | Applies the same rule after aggregation   |
+| `JOIN ... ON a.key = b.key`   | Does not match NULL keys                  |
+| `JOIN ... ON a.key <=> b.key` | Can match NULL keys                       |
 
-## :material-pin: Core Patterns
+### :material-animation-play: Interactive Visualization — Filter Outcomes
 
-| Goal | Pattern |
-|------|---------|
-| Exclude NULLs (default) | `WHERE col > 0` |
-| Include NULLs explicitly | `WHERE col > 0 OR col IS NULL` |
-| Select only NULL rows | `WHERE col IS NULL` |
-| Null-safe join | `ON a.key <=> b.key` |
-| HAVING with NULLs | Aggregate result compared normally; NULL groups appear in output |
+<div id="viz-null-filter" class="ts-viz"></div>
 
----
+Select a predicate to see which rows Spark 4.2 keeps and which rows are dropped because the condition evaluates to `NULL`.
 
-## :material-magnify: Behavior
+______________________________________________________________________
 
-### Three-Valued Logic in WHERE
+## :material-magnify: Verified Behavior
 
-A `WHERE` clause evaluates each row to TRUE, FALSE, or NULL. Only TRUE rows pass the filter. A NULL result — caused by comparing with a NULL column — silently drops the row without an error.
-
-### `IS NULL` vs `= NULL`
-
-`col = NULL` always returns NULL (never TRUE), so it never selects any rows. Use `IS NULL` to reliably test for the absence of a value.
+### `WHERE` drops NULL results
 
 ```sql
--- WRONG: returns 0 rows even when age IS NULL
-SELECT * FROM person WHERE age = NULL;
-
--- CORRECT
-SELECT * FROM person WHERE age IS NULL;
+SELECT name
+FROM
+VALUES
+    ('Joe', 30),
+    ('Marry', CAST(NULL AS INT)),
+    ('Mike', 18),
+    ('Fred', 50),
+    ('Albert', CAST(NULL AS INT)),
+    ('Michelle', 30),
+    ('Dan', 50)
+AS person(name, age)
+WHERE age > 0
+ORDER BY name;
 ```
 
-### HAVING with NULL Groups
-
-`GROUP BY` places all NULL values into a single group. `HAVING` then evaluates that group's aggregate result using the same three-valued logic.
-
-### JOIN with NULL Keys
-
-A standard `JOIN ON a.key = b.key` never matches rows where `key` is NULL on either side, because `NULL = NULL` is NULL (not TRUE). Use `<=>` to match NULL-keyed rows.
-
----
-
-## :material-flask-outline: Practical Examples
-
-### WHERE — NULLs Silently Excluded
-
-```sql
--- Persons with unknown (NULL) age do not satisfy age > 0 (result is NULL),
--- so they are filtered out.
-SELECT * FROM person WHERE age > 0;
--- Result:
--- 100  Joe       30
--- 300  Mike      18
--- 400  Fred      50
--- 600  Michelle  30
--- 700  Dan       50
+```text
++--------+
+|name    |
++--------+
+|Dan     |
+|Fred    |
+|Joe     |
+|Michelle|
+|Mike    |
++--------+
 ```
 
-### WHERE — Including NULLs Explicitly
+### Include NULL rows explicitly
 
 ```sql
--- Use OR age IS NULL to retain rows where age is unknown.
-SELECT * FROM person WHERE age > 0 OR age IS NULL;
--- Result:
--- 100  Joe       30
--- 200  Marry     NULL
--- 300  Mike      18
--- 400  Fred      50
--- 500  Albert    NULL
--- 600  Michelle  30
--- 700  Dan       50
+SELECT name
+FROM
+VALUES
+    ('Joe', 30),
+    ('Marry', CAST(NULL AS INT)),
+    ('Mike', 18),
+    ('Fred', 50),
+    ('Albert', CAST(NULL AS INT)),
+    ('Michelle', 30),
+    ('Dan', 50)
+AS person(name, age)
+WHERE age > 0 OR age IS NULL
+ORDER BY name;
 ```
 
-### GROUP BY / HAVING — NULL Groups
+```text
++--------+
+|name    |
++--------+
+|Albert  |
+|Dan     |
+|Fred    |
+|Joe     |
+|Marry   |
+|Michelle|
+|Mike    |
++--------+
+```
+
+### `HAVING` evaluates after NULLs have already been grouped
 
 ```sql
--- Persons with unknown (NULL) age are grouped together.
--- HAVING max(age) > 18 cannot be satisfied by the NULL group,
--- so the NULL group is excluded from the result.
-SELECT age, COUNT(*) AS cnt
-FROM person
+SELECT age, COUNT(*) AS cnt, MAX(age) AS mx
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT)),
+    (30),
+    (50)
+AS t(age)
 GROUP BY age
-HAVING MAX(age) > 18;
--- Result:
--- age=30  cnt=2
--- age=50  cnt=2
+HAVING MAX(age) > 18
+ORDER BY age;
 ```
 
-### JOIN — NULL Keys Excluded by Standard Equality
+```text
++---+---+---+
+|age|cnt|mx |
++---+---+---+
+|30 |2  |30 |
+|50 |2  |50 |
++---+---+---+
+```
+
+### Standard joins do not match NULL keys
 
 ```sql
--- Standard equality: NULL ages on either side are excluded from matches.
-SELECT p1.name AS name1, p2.name AS name2, p1.age
-FROM person p1
-JOIN person p2
-    ON p1.age = p2.age
-   AND p1.name = p2.name;
--- Result: only rows where both sides have a known, matching age
--- 100  Joe       Joe       30
--- 300  Mike      Mike      18
--- 400  Fred      Fred      50
--- 600  Michelle  Michelle  30
--- 700  Dan       Dan       50
--- (Marry and Albert are excluded because age IS NULL)
+SELECT a.id AS left_id, b.id AS right_id
+FROM
+VALUES
+    (1, 10),
+    (2, CAST(NULL AS INT)),
+    (3, 20),
+    (4, CAST(NULL AS INT))
+AS a(id, k)
+JOIN
+VALUES
+    (10, 10),
+    (20, CAST(NULL AS INT)),
+    (30, 20),
+    (40, CAST(NULL AS INT))
+AS b(id, k)
+ON a.k = b.k
+ORDER BY left_id, right_id;
 ```
 
-### JOIN — Null-Safe Equality Includes NULL Keys
+```text
++-------+--------+
+|left_id|right_id|
++-------+--------+
+|1      |10      |
+|3      |30      |
++-------+--------+
+```
+
+### Null-safe joins can match NULL keys
 
 ```sql
--- Using <=> treats NULL = NULL as TRUE, so persons with unknown
--- age are matched against each other.
-SELECT p1.name AS name1, p2.name AS name2, p1.age
-FROM person p1
-JOIN person p2
-    ON p1.age <=> p2.age
-   AND p1.name = p2.name;
--- Result includes Marry and Albert (both age=NULL, <=> returns TRUE)
--- 100  Joe       Joe       30
--- 200  Marry     Marry     NULL
--- 300  Mike      Mike      18
--- 400  Fred      Fred      50
--- 500  Albert    Albert    NULL
--- 600  Michelle  Michelle  30
--- 700  Dan       Dan       50
+SELECT a.id AS left_id, b.id AS right_id
+FROM
+VALUES
+    (1, 10),
+    (2, CAST(NULL AS INT)),
+    (3, 20),
+    (4, CAST(NULL AS INT))
+AS a(id, k)
+JOIN
+VALUES
+    (10, 10),
+    (20, CAST(NULL AS INT)),
+    (30, 20),
+    (40, CAST(NULL AS INT))
+AS b(id, k)
+ON a.k <=> b.k
+ORDER BY left_id, right_id;
 ```
 
----
+```text
++-------+--------+
+|left_id|right_id|
++-------+--------+
+|1      |10      |
+|2      |20      |
+|2      |40      |
+|3      |30      |
+|4      |20      |
+|4      |40      |
++-------+--------+
+```
 
-## :material-brain: When to Use
+______________________________________________________________________
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Discard NULLs from results | Standard comparison: `WHERE col > 0` |
-| Retain NULLs in results | `WHERE col > 0 OR col IS NULL` |
-| Find rows with missing data | `WHERE col IS NULL` |
-| Exclude rows with missing data | `WHERE col IS NOT NULL` |
-| Join on a nullable key | `ON a.key <=> b.key` |
-| Filter NULL groups in HAVING | `HAVING col IS NOT NULL` before grouping, or `HAVING MAX(col) IS NOT NULL` |
+## :material-lightbulb-outline: Practical Takeaways
+
+- `WHERE` and `HAVING` keep `TRUE`, not `TRUE or NULL`.
+- Add `OR col IS NULL` only when unknown values should survive the filter.
+- Use `<=>` when NULL join keys should match.
+
+<script src="../../assets/js/querying-nulls-viz.js"></script>

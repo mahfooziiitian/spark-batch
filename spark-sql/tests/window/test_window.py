@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from tests._helpers import execute_sql_file, statement_containing
+
+from spark_sql._helpers import execute_sql_file, statement_containing
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession

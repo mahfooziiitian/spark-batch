@@ -1,122 +1,109 @@
-# :material-calendar-clock: Format
+# :material-timeline-clock: Timestamp Parsing and Formatting
 
-Symbol |Meaning |Presentation |Examples
---|---|---|--
-G |era |text| AD; Anno Domini
-y |year| year| 2020; 20
-D |day-of-year| number(3)| 189
-M/L |month-of-year |month| 7; 07; Jul; July
-d |day-of-month| number(2)| 28
-Q/q |quarter-of-year| number/text| 3; 03; Q3; 3rd quarter
-E |day-of-week| text| Tue; Tuesday
-F |aligned day of week in month| number(1)| 3
-a |am-pm-of-day| am-pm| PM
-h |clock-hour-of-am-pm (1-12)| number(2)| 12
-K |hour-of-am-pm (0-11)| number(2)| 0
-k |clock-hour-of-day (1-24)| number(2)| 1
-H |hour-of-day (0-23)| number(2)| 0
-m |minute-of-hour| number(2)| 30
-s |second-of-minute| number(2) |55
-S |fraction-of-second| fraction| 978
-V |time-zone ID |zone-id |America/Los_Angeles; Z; -08:30
-z |time-zone name| zone-name| Pacific Standard Time; PST
-O |localized zone-offset |offset-O| GMT+8; GMT+08:00 ;UTC-08:00;
-X |zone-offset 'Z' for zero |offset-X| Z; -08; -0830; -08:30; -083015; -08:30:15;
-x |zone-offset |offset-x| +0000; -08; -0830; -08:30; -083015; -08:30:15;
-Z |zone-offset |offset-Z |+0000; -0800; -08:00;
-' |escape for text |delimiter|  
-''| single quote |literal |'
-[ |optional section start||
-] |optional section end ||
+Spark SQL timestamps are the bridge between raw strings and analyzable event time. The most common
+workflows are parsing text with `TO_TIMESTAMP`, tolerating bad data with `TRY_TO_TIMESTAMP`, and
+formatting timestamps back to strings with `DATE_FORMAT`.
 
-### :material-sitemap: Overview
+______________________________________________________________________
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A[Input Date / Timestamp] --> B[DateTime Function]
-    B --> C[Result Value]
+    A[Raw String] --> B[TO_TIMESTAMP / TRY_TO_TIMESTAMP]
+    B --> C[TIMESTAMP or TIMESTAMP_NTZ]
+    C --> D[DATE_FORMAT / DATE_TRUNC / arithmetic]
 ```
 
-## :material-calendar-clock: Text
+### :material-animation-play: Interactive Visualization — Parsing Outcomes
 
-The text style is determined based on the number of pattern letters used.
+<div id="viz-timestamp-parse-flow" class="ts-viz"></div>
 
-Less than 4 pattern letters will use the short text form, typically an abbreviation, e.g. day-of-week Monday might output `Mon`.
+Switch between valid, invalid, and timezone-bearing inputs to see when parsing succeeds, when ANSI
+mode raises an error, and when `TRY_TO_TIMESTAMP` is the safer ingestion choice.
 
-Exactly 4 pattern letters will use the full text form, typically the full description, e.g, day-of-week Monday might output `Monday`.
+## :material-pin: Common Pattern Letters
 
-5 or more letters will fail.
+| Pattern   | Meaning           | Example               |
+| --------- | ----------------- | --------------------- |
+| `y`       | Year              | `2024`                |
+| `M`       | Month number/text | `07`, `Jul`           |
+| `d`       | Day of month      | `19`                  |
+| `H`       | Hour (0-23)       | `14`                  |
+| `m`       | Minute            | `05`                  |
+| `s`       | Second            | `09`                  |
+| `S`       | Fractional second | `123456`              |
+| `X` / `Z` | Zone offset       | `-07:00`, `+0000`     |
+| `V`       | Zone ID           | `America/Los_Angeles` |
 
-## :material-calendar-clock: Number(n)
+## :material-information-outline: Behavior
 
-The n here represents the maximum count of letters this type of datetime pattern can be used
+1. `TO_TIMESTAMP` parses a string into a timezone-aware `TIMESTAMP` instant.
+2. `TRY_TO_TIMESTAMP` uses the same parsing rules but returns `NULL` instead of failing.
+3. Offsets embedded in the string are honored during parsing.
+4. `DATE_FORMAT` always returns a string, not a timestamp.
+5. `TIMESTAMP_NTZ` stores wall-clock time without timezone conversion.
+6. **ANSI mode makes bad timestamp parsing fail loudly** — a format mismatch raises an error with `TO_TIMESTAMP`, so ingestion pipelines that expect messy data should often use `TRY_TO_TIMESTAMP` first and then filter or audit the `NULL`s.
 
-In formatting, if the count of letters is one, then the value is output using the minimum number of digits and without padding otherwise, the count of digits is used as the width of the output field, with the value zero-padded as necessary.
+______________________________________________________________________
 
-In parsing, the exact count of digits is expected in the input field.
+## :material-flask-outline: Practical Examples
 
-## :material-calendar-clock: Number/Text
+### :material-toy-brick: 1. Parse a Known Format
 
-If the count of pattern letters is 3 or greater, use the Text rules above. Otherwise use the Number rules above
+```sql
+SELECT TO_TIMESTAMP('2024-07-19 14:05', 'yyyy-MM-dd HH:mm') AS parsed_ts;
+-- 2024-07-19 14:05:00
+```
 
-## :material-calendar-clock: Fraction
+### :material-toy-brick: 2. Keep a Wall-Clock Value with `TIMESTAMP_NTZ`
 
-Use one or more (up to 9) contiguous 'S' characters, e,g SSSSSS, to parse and format fraction of second.
+```sql
+SELECT TIMESTAMP_NTZ '2024-07-19 14:05:00' AS local_wall_clock;
+-- 2024-07-19 14:05:00
+```
 
-For parsing, the acceptable fraction length can be [1, the number of contiguous ‘S’].
+### :material-toy-brick: 3. Parse a Timestamp that Includes an Offset
 
-For formatting, the fraction length would be padded to the number of contiguous ‘S’ with zeros.
+```sql
+SET spark.sql.session.timeZone = 'UTC';
 
-Spark supports datetime of micro-of-second precision, which has up to 6 significant digits, but can parse nano-of-second with exceeded part truncated.
+SELECT TO_TIMESTAMP('2024-07-19T12:00:00-07:00') AS parsed_utc;
+-- 2024-07-19 19:00:00
+```
 
-## :material-calendar-clock: Year
+### :material-toy-brick: 4. Format a Timestamp for Output
 
-The count of letters determines the minimum field width below which padding is used. If the count of letters is two, then a reduced two digit form is used. For printing, this outputs the rightmost two digits. For parsing, this will parse using the base value of 2000, resulting in a year within the range 2000 to 2099 inclusive. If the count of letters is less than four (but not two), then the sign is only output for negative years. Otherwise, the sign is output if the pad width is exceeded when ‘G’ is not present. 7 or more letters will fail.
+```sql
+SELECT DATE_FORMAT(TIMESTAMP '2024-07-19 14:05:09.123456', 'yyyy-MM-dd HH:mm:ss.SSS') AS formatted;
+-- 2024-07-19 14:05:09.123
+```
 
-## :material-calendar-clock: Month
+### :material-toy-brick: 5. Fractional Seconds Can Be Extracted Precisely
 
-### 'M' or 'L'
+```sql
+SELECT DATE_PART('SECONDS', TIMESTAMP '2019-10-01 00:00:01.000001') AS seconds_part;
+-- 1.000001
+```
 
-Month number in a year starting from 1.
+### :material-alert-circle-outline: 6. `TRY_TO_TIMESTAMP` for Messy Inputs
 
-There is no difference between 'M' and 'L'.
+```sql
+SELECT TRY_TO_TIMESTAMP('07/19/2024', 'yyyy-MM-dd') AS safe_parse;
+-- NULL
+```
 
-Month from 1 to 9 are printed without padding
+The matching `TO_TIMESTAMP('07/19/2024', 'yyyy-MM-dd')` call raises a parse error in ANSI mode,
+which is helpful for strict pipelines but noisy for exploratory ingestion.
 
-    select date_format(date '1970-01-01', "M");
-    select date_format(date '1970-12-01', "L");
+______________________________________________________________________
 
-### 'MM' or 'LL'
+## :material-lightbulb-outline: When to Use
 
-Month number in a year starting from 1. Zero padding is added for month 1-9.
-
-    select date_format(date '1970-1-01', "LL");
-    select date_format(date '1970-09-01', "MM");
-
-### 'MMM'
-
-Short textual representation in the standard form.
-
-    select date_format(date '1970-01-01', "d MMM");
-    select to_csv(named_struct('date', date '1970-01-01'), map('dateFormat', 'dd MMM', 'locale', 'RU'));
-
-### 'LLL'
-
-Short textual representation in the stand-alone form. It should be used to format/parse only months without any other date fields.
-
-    select date_format(date '1970-01-01', "LLL");
-    select to_csv(named_struct('date', date '1970-01-01'), map('dateFormat', 'LLL', 'locale', 'RU'));
-
-### 'MMMM'
-
-full textual month representation in the standard form. It is used for parsing/formatting months as a part of dates/timestamps.
-
-    select date_format(date '1970-01-01', "d MMMM");
-    select to_csv(named_struct('date', date '1970-01-01'), map('dateFormat', 'd MMMM', 'locale', 'RU'));
-
-### 'LLLL'
-
-full textual month representation in the stand-alone form. The pattern can be used to format/parse only months.
-
-    select date_format(date '1970-01-01', "LLLL");
-    select to_csv(named_struct('date', date '1970-01-01'), map('dateFormat', 'LLLL', 'locale', 'RU'));
+| Scenario                                         | Recommended function |
+| ------------------------------------------------ | -------------------- |
+| Known clean input                                | `TO_TIMESTAMP`       |
+| Dirty CSV / JSON ingest                          | `TRY_TO_TIMESTAMP`   |
+| Display-only formatting                          | `DATE_FORMAT`        |
+| Local schedule values before timezone assignment | `TIMESTAMP_NTZ`      |
+| Rounding event time to a boundary                | `DATE_TRUNC`         |

@@ -2,7 +2,7 @@
 
 String aggregate functions combine string values across rows within a group.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,13 +11,20 @@ graph LR
     C --> D[One Row per Group]
 ```
 
+### :material-animation-play: Interactive Visualization — Collect → Sort → Join Pipeline
+
+<div id="viz-string-agg-pipeline" class="ts-viz"></div>
+
+Follow rows through `COLLECT_LIST` → `SORT_ARRAY` → `CONCAT_WS` to see why
+the sort step is necessary for a deterministic comma-separated result.
+
 ## :material-pin: Functions
 
-| Function | Description |
-|----------|-------------|
-| `CONCAT_WS(sep, col)` | Concatenate grouped values with a separator |
-| `COLLECT_LIST(col)` | Collect values into a list (preserves duplicates), then use `ARRAY_JOIN` |
-| `LISTAGG` pattern | Simulate `LISTAGG` using `CONCAT_WS` + `COLLECT_LIST` |
+| Function              | Description                                                              |
+| --------------------- | ------------------------------------------------------------------------ |
+| `CONCAT_WS(sep, col)` | Concatenate grouped values with a separator                              |
+| `COLLECT_LIST(col)`   | Collect values into a list (preserves duplicates), then use `ARRAY_JOIN` |
+| `LISTAGG` pattern     | Simulate `LISTAGG` using `CONCAT_WS` + `COLLECT_LIST`                    |
 
 ## :material-flask-outline: Practical Examples
 
@@ -41,10 +48,10 @@ FROM employees
 GROUP BY department;
 ```
 
-| department | team_members |
-|------------|--------------|
-| Engineering | Alice, Bob |
-| Sales | Charlie, Diana, Eve |
+| department  | team_members        |
+| ----------- | ------------------- |
+| Engineering | Alice, Bob          |
+| Sales       | Charlie, Diana, Eve |
 
 ### Sorted String Aggregation
 
@@ -75,14 +82,14 @@ GROUP BY id;
 
 ## :material-brain: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Comma-separated list per group | `CONCAT_WS(', ', COLLECT_LIST(col))` |
-| Deduplicated list | `CONCAT_WS(', ', COLLECT_SET(col))` |
-| Sorted list | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_LIST(col)))` |
-| Count + list | Combine `COUNT(col)` with string aggregation |
+| Scenario                       | Pattern                                          |
+| ------------------------------ | ------------------------------------------------ |
+| Comma-separated list per group | `CONCAT_WS(', ', COLLECT_LIST(col))`             |
+| Deduplicated list              | `CONCAT_WS(', ', COLLECT_SET(col))`              |
+| Sorted list                    | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_LIST(col)))` |
+| Count + list                   | Combine `COUNT(col)` with string aggregation     |
 
----
+______________________________________________________________________
 
 ## :material-filter: Conditional String Aggregation with FILTER
 
@@ -96,7 +103,7 @@ FROM employees
 GROUP BY department;
 ```
 
----
+______________________________________________________________________
 
 ## :material-sort-descending: Top-N Names per Group
 
@@ -119,7 +126,7 @@ WHERE rn <= 3
 GROUP BY department;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare-horizontal: Ordered Aggregation Pattern
 
@@ -141,18 +148,19 @@ GROUP BY department;
 ```
 
 !!! warning "ORDER BY inside subquery"
+
     Spark may re-order rows during shuffle. For guaranteed order use
     `SORT_ARRAY(COLLECT_LIST(...))` or aggregate on a window-function rank column.
 
----
+______________________________________________________________________
 
 ## :material-table: String Aggregation Quick Reference
 
-| Goal | Pattern |
-|------|---------|
-| Comma-separated list | `CONCAT_WS(', ', COLLECT_LIST(col))` |
-| Deduplicated list | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_SET(col)))` |
-| Sorted list | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_LIST(col)))` |
-| Filtered list | `CONCAT_WS(', ', COLLECT_LIST(col) FILTER (WHERE cond))` |
-| Top-N list | subquery rank + `COLLECT_LIST` |
-| Count + list | `CONCAT(CAST(COUNT(col) AS STRING), ': ', CONCAT_WS(', ', COLLECT_LIST(col)))` |
+| Goal                 | Pattern                                                                        |
+| -------------------- | ------------------------------------------------------------------------------ |
+| Comma-separated list | `CONCAT_WS(', ', COLLECT_LIST(col))`                                           |
+| Deduplicated list    | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_SET(col)))`                                |
+| Sorted list          | `CONCAT_WS(', ', SORT_ARRAY(COLLECT_LIST(col)))`                               |
+| Filtered list        | `CONCAT_WS(', ', COLLECT_LIST(col) FILTER (WHERE cond))`                       |
+| Top-N list           | subquery rank + `COLLECT_LIST`                                                 |
+| Count + list         | `CONCAT(CAST(COUNT(col) AS STRING), ': ', CONCAT_WS(', ', COLLECT_LIST(col)))` |

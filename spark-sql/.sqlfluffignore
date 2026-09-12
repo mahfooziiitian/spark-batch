@@ -7,3 +7,7 @@ sql/application/map_key_replace/v4/map_key_replace_v4.sql
 sql/application/numeric/random_sampling.sql
 sql/dml/merge.sql
 sql/scd/type2/scd_type2.sql
+sql/databricks/optimize/optimize_zorder.sql
+sql/databricks/copy_into/copy_into.sql
+sql/databricks/change_data_feed/change_data_feed.sql
+sql/databricks/clone/clone.sql

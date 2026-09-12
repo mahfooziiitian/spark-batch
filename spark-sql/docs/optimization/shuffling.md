@@ -2,7 +2,7 @@
 
 A **shuffle** is the redistribution of data across partitions — rows with the same key must be moved to the same partition before aggregation or joining can proceed. Shuffles are the single biggest source of latency in Spark jobs.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Shuffle Mechanics
 
@@ -29,41 +29,50 @@ flowchart LR
     SF -->|Network| R3
 ```
 
----
+______________________________________________________________________
+
+### :material-animation-play: Interactive Visualization — Shuffle Mechanics
+
+<div id="viz-shuffle-mechanics" class="ts-viz"></div>
+
+Drag the slider to see how map tasks fan into an `Exchange` and back out to a matching
+number of reduce tasks.
+
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
 1. A shuffle is introduced whenever two stages need data co-located by the same key: `GROUP BY`,
-   `JOIN` (non-broadcast), `DISTINCT`, and `ORDER BY` all require shuffles.
+    `JOIN` (non-broadcast), `DISTINCT`, and `ORDER BY` all require shuffles.
 2. Spark hashes each row's partition key, writes output to local shuffle files, and then each
-   downstream task reads its assigned hash buckets from every upstream executor.
+    downstream task reads its assigned hash buckets from every upstream executor.
 3. The number of shuffle partitions is controlled by `spark.sql.shuffle.partitions`
-   (default **200**). With AQE enabled, this is adjusted at runtime.
+    (default **200**). With AQE enabled, this is adjusted at runtime.
 4. `REPARTITION(n)` forces a new hash shuffle into exactly `n` partitions.
 5. `COALESCE(n)` merges partitions locally **without** a shuffle — it narrows the partition
-   count but may produce skewed partitions.
+    count but may produce skewed partitions.
 6. `REPARTITION(n, col)` hash-partitions by `col` — useful before joins or aggregations on
-   that column to pre-shuffle the data.
+    that column to pre-shuffle the data.
 7. `SORT BY` sorts rows within each partition without changing the number of partitions or
-   shuffling data between executors.
+    shuffling data between executors.
 
----
+______________________________________________________________________
 
 ## :material-alert-circle: Operations That Trigger Shuffles
 
-| Operation | Exchange type | Notes |
-|-----------|---------------|-------|
-| `GROUP BY` | `hashpartitioning` | Two-phase aggregation: partial aggregate, then shuffle, then final aggregate |
-| `DISTINCT` | `hashpartitioning` | Equivalent to grouping by all projected columns |
-| `JOIN` (non-broadcast) | `hashpartitioning` | Sort-merge and shuffled-hash joins typically shuffle both sides |
-| `ORDER BY` | `rangepartitioning` | Global sort requires repartitioning by range and may collapse to one final ordered result |
-| `UNION` | `hashpartitioning` | `UNION DISTINCT` deduplication introduces a shuffle; `UNION ALL` alone does not |
-| `REPARTITION(n)` / `REPARTITION(n, col)` | `hashpartitioning` | Explicit full shuffle to rebalance or co-locate data |
-| `COALESCE(n)` | None | Narrow dependency that reduces partition count without a shuffle |
-| `REBALANCE` | Adaptive | AQE may insert a shuffle to smooth uneven output partition sizes |
-| Window function with `PARTITION BY` | `hashpartitioning` | Rows are shuffled to group each partition key together before window evaluation |
+| Operation                                | Exchange type       | Notes                                                                                     |
+| ---------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
+| `GROUP BY`                               | `hashpartitioning`  | Two-phase aggregation: partial aggregate, then shuffle, then final aggregate              |
+| `DISTINCT`                               | `hashpartitioning`  | Equivalent to grouping by all projected columns                                           |
+| `JOIN` (non-broadcast)                   | `hashpartitioning`  | Sort-merge and shuffled-hash joins typically shuffle both sides                           |
+| `ORDER BY`                               | `rangepartitioning` | Global sort requires repartitioning by range and may collapse to one final ordered result |
+| `UNION`                                  | `hashpartitioning`  | `UNION DISTINCT` deduplication introduces a shuffle; `UNION ALL` alone does not           |
+| `REPARTITION(n)` / `REPARTITION(n, col)` | `hashpartitioning`  | Explicit full shuffle to rebalance or co-locate data                                      |
+| `COALESCE(n)`                            | None                | Narrow dependency that reduces partition count without a shuffle                          |
+| `REBALANCE`                              | Adaptive            | AQE may insert a shuffle to smooth uneven output partition sizes                          |
+| Window function with `PARTITION BY`      | `hashpartitioning`  | Rows are shuffled to group each partition key together before window evaluation           |
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -89,7 +98,7 @@ FROM sales
 SORT BY order_date;
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -186,34 +195,41 @@ FROM (
 WHERE rnk <= 10;
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: REPARTITION vs COALESCE
 
-| Aspect | `REPARTITION(n)` | `COALESCE(n)` |
-|--------|------------------|---------------|
-| Shuffle | Yes — full hash shuffle | No — local merge only |
-| Can increase partitions | Yes | No |
-| Partition balance | Balanced after redistribution | May produce skewed partitions |
-| Use case | Before joins, aggregations, or balanced output writes | Reduce small result sets before writing |
+### :material-animation-play: Interactive Visualization — REPARTITION vs COALESCE
 
----
+<div id="viz-repartition-vs-coalesce" class="ts-viz"></div>
+
+Switch between the two hints to confirm which one introduces an `Exchange` (shuffle) node.
+
+| Aspect                  | `REPARTITION(n)`                                      | `COALESCE(n)`                           |
+| ----------------------- | ----------------------------------------------------- | --------------------------------------- |
+| Shuffle                 | Yes — full hash shuffle                               | No — local merge only                   |
+| Can increase partitions | Yes                                                   | No                                      |
+| Partition balance       | Balanced after redistribution                         | May produce skewed partitions           |
+| Use case                | Before joins, aggregations, or balanced output writes | Reduce small result sets before writing |
+
+______________________________________________________________________
 
 ## :material-currency-usd: Shuffle Cost Model
 
-| Factor | Effect |
-|--------|--------|
+| Factor                   | Effect                             |
+| ------------------------ | ---------------------------------- |
 | High shuffle write bytes | Slow write phase, large spill risk |
-| High shuffle read bytes | Slow network transfer |
-| Many partitions | High task scheduling overhead |
-| Few partitions (large) | Long GC pauses, spill to disk |
-| Skewed partitions | One task dominates stage time |
+| High shuffle read bytes  | Slow network transfer              |
+| Many partitions          | High task scheduling overhead      |
+| Few partitions (large)   | Long GC pauses, spill to disk      |
+| Skewed partitions        | One task dominates stage time      |
 
 !!! tip "Ideal partition size"
+
     Target **64 MB – 256 MB** per partition after a shuffle.
     Use AQE (`spark.sql.adaptive.coalescePartitions.enabled = true`) to auto-size.
 
----
+______________________________________________________________________
 
 ## :material-wrench: Reducing Shuffles
 
@@ -275,28 +291,98 @@ SELECT * FROM orders ORDER BY amount DESC;
 SELECT * FROM orders ORDER BY amount DESC LIMIT 100;
 ```
 
----
+### 6 — Diagnosing "Aggregation Explosion" in `GROUP BY`
+
+A `GROUP BY` shuffle can dominate a query's runtime even when no join is involved,
+especially on a high-cardinality grouping key over a large table. Three complementary
+techniques keep it under control: **partition pruning**, **pre-aggregation**, and **AQE**.
+
+```sql
+-- orders_part is PARTITIONED BY (order_date)
+EXPLAIN
+SELECT customer_id, SUM(amount)
+FROM orders_part
+GROUP BY customer_id;
+```
+
+```text
+== Physical Plan ==
+HashAggregate(keys=[customer_id], functions=[sum(amount)])
++- Exchange hashpartitioning(customer_id, 200)              ← full shuffle: EVERY partition scanned
+   +- HashAggregate(keys=[customer_id], functions=[partial_sum(amount)])
+      +- FileScan parquet ... PartitionFilters: []            ← no partitions pruned
+```
+
+**Partition pruning** — if the query only needs a date range, filter on the partition
+column *before* the `GROUP BY` so fewer rows ever reach the aggregation shuffle:
+
+```sql
+EXPLAIN
+SELECT customer_id, SUM(amount)
+FROM orders_part
+WHERE order_date = DATE'2024-01-01'
+GROUP BY customer_id;
+```
+
+```text
+== Physical Plan ==
+HashAggregate(keys=[customer_id], functions=[sum(amount)])
++- Exchange hashpartitioning(customer_id, 200)
+   +- HashAggregate(keys=[customer_id], functions=[partial_sum(amount)])
+      +- FileScan parquet ...
+         PartitionFilters: [isnotnull(order_date), (order_date = 2024-01-01)]  ← only 1 of N partitions read
+```
+
+The `Exchange` shape is identical either way — pruning reduces the **volume** shuffled,
+not the plan structure, but with 1 partition out of 5+ scanned the shuffle-write bytes
+drop proportionally.
+
+**Pre-aggregation** — the `HashAggregate ... partial_sum` node above *is* Spark's
+built-in partial aggregation: every executor locally reduces its rows to one row per
+`customer_id` **before** the shuffle, so only pre-aggregated partial sums cross the
+network, not raw rows. This happens automatically for any algebraic aggregate (`SUM`,
+`COUNT`, `AVG`, `MIN`, `MAX`) — no configuration needed. It stops helping only when the
+grouping key is close to unique (e.g. grouping by a surrogate/event ID), since then the
+partial aggregation barely reduces row count at all; in that case, consider whether the
+query really needs row-level grouping or can roll up to a coarser key first (see
+[Pre-aggregate before joining](#2-pre-aggregate-before-joining) for the same idea
+applied ahead of a join).
+
+**AQE** — once the shuffle has happened, `spark.sql.adaptive.coalescePartitions.enabled`
+lets Spark merge small post-shuffle partitions at runtime based on the actual
+pre-aggregated data size, instead of leaving `customer_id` spread across a fixed 200
+partitions regardless of how many distinct keys actually exist:
+
+```sql
+SET spark.sql.adaptive.enabled = true;
+SET spark.sql.adaptive.coalescePartitions.enabled = true;
+```
+
+See [Coalescing Post-Shuffle Partitions](aqe/coalescing-post-shuffle-partitions.md)
+for how AQE decides the final partition count.
+
+______________________________________________________________________
 
 ## :material-compare: Join Strategy Shuffle Cost
 
-| Strategy | Shuffle | When Used |
-|----------|:-------:|-----------|
-| Broadcast Hash Join (BHJ) | None | Small table ≤ `autoBroadcastJoinThreshold` |
-| Shuffled Hash Join (SHJ) | Both sides | Medium tables, low distinct keys |
-| Sort-Merge Join (SMJ) | Both sides | Large tables, sort-based |
-| Broadcast Nested Loop (BNLJ) | None (but slow) | Non-equi joins with small table |
+| Strategy                     |     Shuffle     | When Used                                  |
+| ---------------------------- | :-------------: | ------------------------------------------ |
+| Broadcast Hash Join (BHJ)    |      None       | Small table ≤ `autoBroadcastJoinThreshold` |
+| Shuffled Hash Join (SHJ)     |   Both sides    | Medium tables, low distinct keys           |
+| Sort-Merge Join (SMJ)        |   Both sides    | Large tables, sort-based                   |
+| Broadcast Nested Loop (BNLJ) | None (but slow) | Non-equi joins with small table            |
 
----
+______________________________________________________________________
 
 ## :material-monitor: Diagnosing Shuffle Problems in Spark UI
 
-| Metric | Where | Warning sign |
-|--------|-------|--------------|
-| Shuffle write size | Stages tab | Single stage > 100 GB |
-| Shuffle read size | Stages tab | Much larger than write (amplification) |
-| Task duration variance | Stages tab | Max >> Median → skew |
-| Spill (memory) | Tasks tab | Any spill → increase executor memory |
-| Spill (disk) | Tasks tab | Any spill → critical, raise `spark.executor.memory` |
+| Metric                 | Where      | Warning sign                                        |
+| ---------------------- | ---------- | --------------------------------------------------- |
+| Shuffle write size     | Stages tab | Single stage > 100 GB                               |
+| Shuffle read size      | Stages tab | Much larger than write (amplification)              |
+| Task duration variance | Stages tab | Max >> Median → skew                                |
+| Spill (memory)         | Tasks tab  | Any spill → increase executor memory                |
+| Spill (disk)           | Tasks tab  | Any spill → critical, raise `spark.executor.memory` |
 
 ```sql
 -- Check estimated shuffle in query plan
@@ -306,19 +392,20 @@ FROM orders
 GROUP BY customer_id;
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Tune Shuffles
 
-| Scenario | Recommendation |
-|----------|----------------|
-| `spark.sql.shuffle.partitions = 200` on a small dataset | Lower it to roughly `4 × executor_count` |
-| AQE is enabled | Keep a higher default and let Spark coalesce partitions at runtime |
-| Many downstream operations share the same join key | Pre-repartition into a cached view |
-| Writing a partitioned table creates too many small files | Use `COALESCE` or `REPARTITION` before `INSERT` |
-| Shuffle spill to disk slows the query | Increase executor memory or reduce shuffle partition sizes |
+| Scenario                                                 | Recommendation                                                     |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| `spark.sql.shuffle.partitions = 200` on a small dataset  | Lower it to roughly `4 × executor_count`                           |
+| AQE is enabled                                           | Keep a higher default and let Spark coalesce partitions at runtime |
+| Many downstream operations share the same join key       | Pre-repartition into a cached view                                 |
+| Writing a partitioned table creates too many small files | Use `COALESCE` or `REPARTITION` before `INSERT`                    |
+| Shuffle spill to disk slows the query                    | Increase executor memory or reduce shuffle partition sizes         |
 
 !!! tip "Let AQE handle shuffle partitions"
+
     With Adaptive Query Execution (`spark.sql.adaptive.enabled = true`) enabled, Spark can
     automatically coalesce small shuffle partitions at runtime. A higher initial partition count
     is often safer than starting too low and creating oversized partitions.

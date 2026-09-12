@@ -6,4 +6,4 @@ nav:
   - string.md
   - bitwise.md
   - set.md
-  - null_safe.md
+  - null-safe.md

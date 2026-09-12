@@ -1,154 +1,116 @@
 # :material-format-text: String Operators
 
-Spark SQL provides the `||` concatenation operator and several pattern-matching
-operators — `LIKE`, `ILIKE`, `RLIKE` — for building, searching, and validating
-string values directly in SQL without calling a function.
+Spark SQL 4.2 supports operator-style string concatenation and several pattern-matching operators. The most important gotcha is that `||` and `CONCAT()` are both null-propagating in Spark SQL.
 
----
+## :material-animation-play: Interactive Visualization — Concatenation and Pattern Results
+
+<div id="viz-operator-string-null" class="ts-viz"></div>
+
+Compare concatenation forms and pattern operators using outcomes verified directly in PySpark 4.2.
+
+<script src="../../../assets/js/querying-operator-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `\|\|` | Concatenate two strings | `'Hello' \|\| ' ' \|\| 'World'` → `'Hello World'` |
-| `LIKE pattern` | SQL wildcard match (`%` = any chars, `_` = one char) | `name LIKE 'Al%'` |
-| `NOT LIKE pattern` | Inverse wildcard match | `email NOT LIKE '%@test.%'` |
-| `ILIKE pattern` | Case-insensitive `LIKE` | `name ILIKE 'alice%'` |
-| `NOT ILIKE pattern` | Inverse case-insensitive match | |
-| `RLIKE pattern` | Java regex match | `phone RLIKE '^\\+[0-9]{10,15}$'` |
-| `NOT RLIKE pattern` | Inverse regex match | |
+| Operator / expression | Purpose                                 | Verified example                  |
+| --------------------- | --------------------------------------- | --------------------------------- |
+| `\|\|`                | Concatenate strings                     | `'Hello' \|\| ' ' \|\| 'World'`   |
+| `LIKE`                | Case-sensitive wildcard match           | `name LIKE 'Al%'`                 |
+| `NOT LIKE`            | Negated wildcard match                  | `email NOT LIKE '%@test.%'`       |
+| `ILIKE`               | Case-insensitive wildcard match         | `name ILIKE 'alice%'`             |
+| `NOT ILIKE`           | Negated case-insensitive wildcard match | `'Abc' NOT ILIKE 'a%'`            |
+| `RLIKE`               | Java regex match                        | `phone RLIKE '^\\+[0-9]{10,15}$'` |
+| `NOT RLIKE`           | Negated regex match                     | `'abc' NOT RLIKE '^[a-z]+$'`      |
 
----
+______________________________________________________________________
 
-## :material-information-outline: Behavior
+## :material-table: Verified Spark 4.2 Outcomes
 
-1. `||` propagates `NULL` — if either side is `NULL`, the result is `NULL`. Use `CONCAT_WS` or `COALESCE` to handle nulls in concatenation.
-2. `LIKE` `%` matches **zero or more** characters; `_` matches **exactly one** character.
-3. `ILIKE` is only available in Spark SQL 3.3+ (and Databricks). It is equivalent to `LOWER(col) LIKE LOWER(pattern)` but more efficient.
-4. `RLIKE` uses Java's `java.util.regex` syntax — remember to double-escape backslashes: `\\d` for a digit class.
-5. Pattern operators return `NULL` when either the column or the pattern is `NULL`.
-6. For prefix `LIKE` patterns (e.g., `'abc%'`), Catalyst can push the filter to the storage reader as a range predicate. Infix patterns (`'%abc%'`) cannot be pushed.
+| Expression checked in PySpark 4.2                  | Result          |
+| -------------------------------------------------- | --------------- |
+| `'Hello' \|\| ' ' \|\| 'World'`                    | `'Hello World'` |
+| `typeof('a' \|\| 'b')`                             | `string`        |
+| `'a' \|\| NULL`                                    | `NULL`          |
+| `CONCAT('a', NULL)`                                | `NULL`          |
+| `CONCAT_WS('-', 'a', NULL, 'b')`                   | `'a-b'`         |
+| `'Abc' LIKE 'a%'`                                  | `FALSE`         |
+| `'Abc' ILIKE 'a%'`                                 | `TRUE`          |
+| `'Abc' NOT ILIKE 'a%'`                             | `FALSE`         |
+| `'abc' RLIKE '^[a-z]+$'`                           | `TRUE`          |
+| `'abc' NOT RLIKE '^[a-z]+$'`                       | `FALSE`         |
+| `'abc' LIKE NULL`                                  | `NULL`          |
+| `'100% complete' LIKE '100\% complete'`            | `TRUE`          |
+| `'A_001' LIKE 'A\_001'`                            | `TRUE`          |
+| `'100% complete' LIKE '100!% complete' ESCAPE '!'` | `TRUE`          |
 
----
+______________________________________________________________________
+
+## :material-information-outline: Behavior Notes
+
+1. `||` is fully supported in Spark SQL 4.2.
+2. `||` and `CONCAT()` behave the same on `NULL`: if any operand is `NULL`, the result is `NULL`.
+3. `CONCAT_WS()` differs because it skips `NULL` arguments instead of nulling the whole result.
+4. `ILIKE` provides case-insensitive wildcard matching.
+5. `RLIKE` uses Java regular-expression syntax.
+6. Spark SQL 4.2 does not support `SIMILAR TO`; use `RLIKE` when you need regex-style matching.
+
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
-### String concatenation with `||`
+### Concatenation
 
 ```sql
 SELECT
-    first_name || ' ' || last_name              AS full_name,
-    city       || ', ' || country               AS location,
-    '[' || CAST(order_id AS STRING) || ']'      AS order_ref
+    first_name || ' ' || last_name AS full_name,
+    '[' || CAST(order_id AS STRING) || ']' AS order_ref
 FROM customers;
 ```
 
-### NULL-safe concatenation
+### Null-aware string building
 
 ```sql
--- || returns NULL if middle_name is NULL
-SELECT first_name || ' ' || middle_name || ' ' || last_name AS full_name
-FROM employees;
-
--- Use CONCAT_WS to skip NULLs
-SELECT CONCAT_WS(' ', first_name, middle_name, last_name) AS full_name
+SELECT
+    first_name || ' ' || middle_name || ' ' || last_name AS null_propagating_name,
+    CONCAT_WS(' ', first_name, middle_name, last_name) AS null_skipping_name
 FROM employees;
 ```
 
-### LIKE — prefix, suffix, contains, single character
+### Wildcard patterns
 
 ```sql
--- Prefix: names starting with 'John'
 SELECT * FROM customers WHERE name LIKE 'John%';
-
--- Suffix: email ending with '.org'
-SELECT * FROM contacts WHERE email LIKE '%.org';
-
--- Contains: product name includes 'Pro'
-SELECT * FROM products WHERE name LIKE '%Pro%';
-
--- Single-char wildcard: 3-letter codes like 'U_A'
-SELECT * FROM airports WHERE iata_code LIKE 'U_A';
-```
-
-### Escape special LIKE characters
-
-```sql
--- Match a literal '%' by escaping with backslash
-SELECT * FROM notes WHERE content LIKE '%100\% complete%' ESCAPE '\';
-
--- Match a literal '_'
-SELECT * FROM codes WHERE code LIKE 'A\_001' ESCAPE '\';
-```
-
-### ILIKE — case-insensitive search
-
-```sql
--- Matches 'alice', 'Alice', 'ALICE', 'aLiCe'
 SELECT * FROM users WHERE username ILIKE 'alice%';
-
--- Case-insensitive contains
-SELECT * FROM articles WHERE title ILIKE '%spark sql%';
 ```
 
-### RLIKE — regex patterns
+### Regex validation
 
 ```sql
--- US phone number formats: (555) 123-4567 or 555-123-4567 or 5551234567
-SELECT phone
-FROM contacts
-WHERE phone RLIKE '^(\\(\\d{3}\\)\\s?|\\d{3}[-.]?)\\d{3}[-.]?\\d{4}$';
-
--- Valid email (basic)
-SELECT email
+SELECT *
 FROM users
 WHERE email RLIKE '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
-
--- Extract rows where code contains only uppercase letters and digits
-SELECT * FROM products WHERE sku RLIKE '^[A-Z0-9]+$';
-
--- Starts with a digit
-SELECT * FROM ids WHERE identifier RLIKE '^[0-9]';
 ```
 
-### NOT LIKE — exclusion patterns
-
-```sql
--- Exclude test and example emails
-SELECT * FROM users
-WHERE email NOT LIKE '%@test.%'
-  AND email NOT LIKE '%@example.%'
-  AND email NOT LIKE '%+test%';
-```
-
-### Combine `||` with CASE WHEN
+### Escaping `%` and `_`
 
 ```sql
 SELECT
-    order_id,
-    CASE WHEN is_urgent THEN '[URGENT] ' ELSE '' END || subject AS display_subject
-FROM support_tickets;
+    '100% complete' LIKE '100\% complete' AS percent_match,
+    'A_001' LIKE 'A\_001' AS underscore_match,
+    '100% complete' LIKE '100!% complete' ESCAPE '!' AS explicit_escape_match;
 ```
 
-### Build a dynamic label with `||`
-
-```sql
-SELECT
-    product_id,
-    name || ' (' || category || ') — $' || CAST(ROUND(price, 2) AS STRING) AS product_label
-FROM products;
-```
-
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Build a display string from columns | `col1 \|\| sep \|\| col2` |
-| NULL-safe string building | `CONCAT_WS(sep, col1, col2, ...)` |
-| Prefix / suffix / contains filter | `LIKE` with `%` |
-| Case-insensitive text search | `ILIKE` (Spark 3.3+) |
-| Complex pattern validation (email, phone) | `RLIKE` (Java regex) |
-| Exclude known bad patterns | `NOT LIKE` / `NOT RLIKE` |
-| Escape literal `%` or `_` in LIKE | `LIKE 'val\%' ESCAPE '\'` |
+| Scenario                              | Recommended pattern             |
+| ------------------------------------- | ------------------------------- |
+| Concatenate required non-null parts   | \`a                             |
+| Concatenate while skipping `NULL`s    | `CONCAT_WS(sep, ...)`           |
+| Case-sensitive wildcard filter        | `LIKE`                          |
+| Case-insensitive wildcard filter      | `ILIKE`                         |
+| Regex validation or extraction filter | `RLIKE`                         |
+| Match literal `%` or `_`              | Escape with `\` or use `ESCAPE` |

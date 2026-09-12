@@ -1,161 +1,145 @@
 # :material-chart-bar: Statistical Aggregations
 
-Spark SQL provides a suite of statistical aggregate functions for measuring dispersion, correlation, and distribution of numeric data.
+Spark SQL includes aggregate functions for spread, covariance, correlation, and percentiles. The notes below were re-checked against PySpark 4.2 so edge cases match current behavior instead of older Spark assumptions.
 
 !!! note "Source"
+
     Full runnable example: `sql/aggregation/stats/stats.sql`
 
----
+______________________________________________________________________
 
-## :material-pin: Functions
+## :material-sitemap: Overview
 
-| Function | Syntax | Description |
-|----------|--------|-------------|
-| `STDDEV` | `STDDEV(expr)` | Sample standard deviation (alias: `STDDEV_SAMP`) |
-| `STDDEV_POP` | `STDDEV_POP(expr)` | Population standard deviation |
-| `VARIANCE` | `VARIANCE(expr)` | Sample variance (alias: `VAR_SAMP`) |
-| `VAR_POP` | `VAR_POP(expr)` | Population variance |
-| `COVAR_SAMP` | `COVAR_SAMP(y, x)` | Sample covariance of two columns |
-| `COVAR_POP` | `COVAR_POP(y, x)` | Population covariance of two columns |
-| `CORR` | `CORR(y, x)` | Pearson correlation coefficient (−1 to 1) |
-| `PERCENTILE_APPROX` | `PERCENTILE_APPROX(expr, p [, accuracy])` | Approximate percentile via HyperLogLog; `p` can be a scalar or array |
-| `MEDIAN` | `MEDIAN(expr)` | Exact median (50th percentile); alias for `PERCENTILE(expr, 0.5)` |
-| `KURTOSIS` | `KURTOSIS(expr)` | Excess kurtosis (tailedness of the distribution) |
-| `SKEWNESS` | `SKEWNESS(expr)` | Skewness (asymmetry of the distribution) |
-
----
-
-## :material-magnify: Behavior
-
-1. **Sample vs population** — `STDDEV` / `VARIANCE` divide by `n − 1` (Bessel's correction for a sample); `STDDEV_POP` / `VAR_POP` divide by `n`. Use sample variants when working with a subset drawn from a larger population.
-2. **NULL handling** — all statistical functions ignore `NULL` values; if every input is `NULL` the result is `NULL`.
-3. **FILTER support** — all aggregate functions accept `FILTER (WHERE condition)` to scope the computation to a subset of rows without a separate subquery.
-4. **`PERCENTILE_APPROX` accuracy** — the optional third argument controls the accuracy trade-off (default `10000`); higher values are more accurate but use more memory. Pass an array such as `ARRAY(0.25, 0.5, 0.75)` to compute multiple percentiles in one pass.
-5. **`CORR` range** — returns values in `[−1, 1]`; returns `NULL` when the input has fewer than 2 non-NULL pairs or when either column has zero variance.
-6. **Minimum group sizes** — `KURTOSIS` requires at least 4 non-NULL rows; `SKEWNESS` requires at least 3; results are `NULL` below these thresholds.
-
----
-
-## :material-flask-outline: Practical Examples
-
-### Setup
-
-```sql
-CREATE TABLE measurements (
-    sensor_id   STRING,
-    region      STRING,
-    reading     DOUBLE,
-    baseline    DOUBLE,
-    measured_at DATE
-);
-
-INSERT INTO measurements VALUES
-    ('S1', 'East',  23.5, 20.0, DATE '2024-01-01'),
-    ('S2', 'East',  25.1, 20.0, DATE '2024-01-01'),
-    ('S3', 'East',  22.8, 20.0, DATE '2024-01-02'),
-    ('S4', 'West',  31.4, 28.0, DATE '2024-01-01'),
-    ('S5', 'West',  29.7, 28.0, DATE '2024-01-02'),
-    ('S6', 'West',  33.2, 28.0, DATE '2024-01-03'),
-    ('S7', 'North', 18.0, 18.0, DATE '2024-01-01'),
-    ('S8', 'North', 19.5, 18.0, DATE '2024-01-02'),
-    ('S9', 'North', 17.2, 18.0, DATE '2024-01-03');
+```mermaid
+graph TD
+    A[Statistical aggregates] --> B[STDDEV / VARIANCE]
+    A --> C[COVAR / CORR]
+    A --> D[PERCENTILE / PERCENTILE_APPROX / MEDIAN]
+    A --> E[SKEWNESS / KURTOSIS]
 ```
 
-### 1 — Standard deviation and variance per group
+### :material-animation-play: Interactive Visualization — Distribution Summary
+
+<div id="viz-stats-distribution" class="ts-viz"></div>
+
+Move the percentile marker to see how median, quartiles, and spread describe different parts of the same distribution.
+
+______________________________________________________________________
+
+## :material-pin: Function reference
+
+| Function                  | Meaning                        | Verified PySpark 4.2 note                                                             |
+| ------------------------- | ------------------------------ | ------------------------------------------------------------------------------------- |
+| `STDDEV`, `STDDEV_SAMP`   | Sample standard deviation      | Divide by `n - 1`                                                                     |
+| `STDDEV_POP`              | Population standard deviation  | Divide by `n`                                                                         |
+| `VARIANCE`, `VAR_SAMP`    | Sample variance                | Divide by `n - 1`                                                                     |
+| `VAR_POP`                 | Population variance            | Divide by `n`                                                                         |
+| `COVAR_SAMP`, `COVAR_POP` | Sample / population covariance | Returned `0.0` when one side was constant in our test                                 |
+| `CORR`                    | Pearson correlation            | Under ANSI mode, zero variance can raise `DIVIDE_BY_ZERO` instead of returning `NULL` |
+| `PERCENTILE`              | Exact percentile               | `PERCENTILE(x, 0.5)` matched `MEDIAN(x)`                                              |
+| `PERCENTILE_APPROX`       | Approximate percentile         | Sketch-based approximation; not a HyperLogLog cardinality function                    |
+| `MEDIAN`                  | Exact 50th percentile          | Returned `DOUBLE` in our PySpark 4.2 checks                                           |
+| `SKEWNESS`, `KURTOSIS`    | Shape of the distribution      | Spark 4.2 returned numeric values even on very small samples                          |
+
+______________________________________________________________________
+
+## :material-magnify: Verified behavior
+
+1. All of these aggregates skip `NULL` inputs.
+2. `PERCENTILE_APPROX(expr, ARRAY(...), accuracy)` can calculate several quantiles in one pass.
+3. For integer inputs, `PERCENTILE_APPROX` can still return an integral type, while `MEDIAN` and exact `PERCENTILE` returned `DOUBLE` in our tests.
+4. `CORR(x, y)` over `(1, 5), (2, 5), (3, 5)` raised `[DIVIDE_BY_ZERO]` with Spark 4.2's ANSI mode because `y` had zero variance.
+5. `COVAR_SAMP` and `COVAR_POP` on the same constant-`y` input returned `0.0` rather than failing.
+6. `SKEWNESS` and `KURTOSIS` did not return `NULL` for 2-row and 3-row samples in PySpark 4.2, so treat tiny-sample results as unstable rather than absent.
+
+______________________________________________________________________
+
+## :material-flask-outline: Practical examples
+
+### Dispersion by region
 
 ```sql
+CREATE OR REPLACE TEMP VIEW measurements AS
+SELECT * FROM VALUES
+    ('East',  23.5),
+    ('East',  25.1),
+    ('East',  22.8),
+    ('West',  31.4),
+    ('West',  29.7),
+    ('West',  33.2),
+    ('North', 18.0),
+    ('North', 19.5),
+    ('North', 17.2)
+AS measurements(region, reading);
+
 SELECT
     region,
-    ROUND(AVG(reading), 2)        AS avg_reading,
-    ROUND(STDDEV(reading), 4)     AS stddev_sample,
+    ROUND(AVG(reading), 2) AS avg_reading,
+    ROUND(STDDEV(reading), 4) AS stddev_sample,
     ROUND(STDDEV_POP(reading), 4) AS stddev_pop,
-    ROUND(VARIANCE(reading), 4)   AS variance_sample,
-    ROUND(VAR_POP(reading), 4)    AS variance_pop
-FROM measurements
-GROUP BY region
-ORDER BY region;
--- Result:
--- region | avg_reading | stddev_sample | stddev_pop | variance_sample | variance_pop
--- --------|-------------|---------------|------------|-----------------|-------------
--- East    | 23.8        | 1.1790        | 0.9626     | 1.39            | 0.9267
--- North   | 18.23       | 1.1504        | 0.9398     | 1.3234          | 0.8832
--- West    | 31.43       | 1.7502        | 1.4289     | 3.0633          | 2.0422
-```
-
-### 2 — Correlation and covariance analysis
-
-```sql
-SELECT
-    region,
-    ROUND(CORR(reading, baseline), 4)       AS pearson_corr,
-    ROUND(COVAR_SAMP(reading, baseline), 4) AS covar_sample,
-    ROUND(COVAR_POP(reading, baseline), 4)  AS covar_pop
-FROM measurements
-GROUP BY region
-ORDER BY region;
--- CORR close to 1.0  → reading and baseline move together strongly.
--- CORR close to 0.0  → no linear relationship between the two columns.
-```
-
-### 3 — Approximate percentiles (scalar and array)
-
-```sql
-SELECT
-    region,
-    PERCENTILE_APPROX(reading, 0.5)               AS median_reading,
-    PERCENTILE_APPROX(reading, ARRAY(0.25, 0.75)) AS iqr_bounds,
-    PERCENTILE_APPROX(reading, ARRAY(0.05, 0.95), 50000) AS p5_p95_high_accuracy
-FROM measurements
-GROUP BY region;
--- Result:
--- region | median_reading | iqr_bounds         | p5_p95_high_accuracy
--- --------|----------------|--------------------|---------------------
--- East    | 23.5           | [22.8, 25.1]       | [22.8, 25.1]
--- West    | 31.4           | [29.7, 33.2]       | [29.7, 33.2]
--- North   | 18.0           | [17.2, 19.5]       | [17.2, 19.5]
-```
-
-### 4 — FILTER on statistical functions
-
-```sql
-SELECT
-    ROUND(STDDEV(reading), 4)                                 AS overall_stddev,
-    ROUND(STDDEV(reading) FILTER (WHERE region = 'East'), 4)  AS east_stddev,
-    ROUND(STDDEV(reading) FILTER (WHERE region != 'East'), 4) AS non_east_stddev
-FROM measurements;
--- Compute statistics for subsets of rows without a separate GROUP BY or subquery.
-```
-
-### 5 — Combined distribution summary
-
-```sql
-SELECT
-    region,
-    COUNT(*)                         AS n,
-    ROUND(AVG(reading), 2)           AS mean,
-    ROUND(MEDIAN(reading), 2)        AS median,
-    ROUND(STDDEV(reading), 4)        AS stddev,
-    ROUND(SKEWNESS(reading), 4)      AS skewness,
-    ROUND(KURTOSIS(reading), 4)      AS kurtosis,
-    PERCENTILE_APPROX(reading, 0.25) AS q1,
-    PERCENTILE_APPROX(reading, 0.75) AS q3
+    ROUND(VARIANCE(reading), 4) AS variance_sample,
+    ROUND(VAR_POP(reading), 4) AS variance_pop,
+    MEDIAN(reading) AS median_reading,
+    PERCENTILE_APPROX(reading, ARRAY(0.25, 0.75), 50000) AS iqr_bounds
 FROM measurements
 GROUP BY region
 ORDER BY region;
 ```
 
----
+### Exact vs approximate median
 
-## :material-brain: When to Use
+```sql
+SELECT
+    MEDIAN(x) AS median_exact,
+    PERCENTILE(x, 0.5) AS percentile_exact,
+    PERCENTILE_APPROX(x, 0.5) AS percentile_approx
+FROM (SELECT * FROM VALUES (1D), (2D), (100D), (101D) AS t(x));
+```
 
-| Scenario | Recommended Function |
-|----------|---------------------|
-| Measure data spread or volatility | `STDDEV`, `VARIANCE` |
-| Full-population statistics (census, complete data) | `STDDEV_POP`, `VAR_POP` |
-| Detect linear relationship between two metrics | `CORR` |
-| Measure joint variation of two metrics | `COVAR_SAMP`, `COVAR_POP` |
-| Fast percentile on large datasets | `PERCENTILE_APPROX` |
-| Exact median on small or medium datasets | `MEDIAN` |
-| Detect distribution tail behaviour | `KURTOSIS` |
-| Detect distribution asymmetry | `SKEWNESS` |
-| Scoped statistics for a subset of rows | `agg() FILTER (WHERE ...)` |
+Verified result in PySpark 4.2: `MEDIAN` = `51.0`, exact `PERCENTILE(..., 0.5)` = `51.0`, but `PERCENTILE_APPROX(..., 0.5)` returned `2.0` on this tiny skewed sample.
+
+### Correlation with a valid, non-constant pair
+
+```sql
+SELECT
+    ROUND(CORR(x, y), 4) AS corr,
+    ROUND(COVAR_SAMP(x, y), 4) AS covar_samp,
+    ROUND(COVAR_POP(x, y), 4) AS covar_pop
+FROM (SELECT * FROM VALUES
+    (1D, 2D),
+    (2D, 4D),
+    (3D, 6D)
+AS t(x, y));
+```
+
+### Guarding zero-variance correlation under ANSI mode
+
+```sql
+WITH pairs AS (
+    SELECT * FROM VALUES
+        (1D, 5D),
+        (2D, 5D),
+        (3D, 5D)
+    AS t(x, y)
+)
+SELECT
+    CASE
+        WHEN VAR_POP(x) = 0 OR VAR_POP(y) = 0 THEN NULL
+        ELSE CORR(x, y)
+    END AS safe_corr
+FROM pairs;
+```
+
+______________________________________________________________________
+
+## :material-brain: When to use
+
+| Scenario                                 | Recommended function      |
+| ---------------------------------------- | ------------------------- |
+| Spread around the mean                   | `STDDEV`, `VARIANCE`      |
+| Full-population spread                   | `STDDEV_POP`, `VAR_POP`   |
+| Linear relationship between two measures | `CORR`                    |
+| Joint movement without normalization     | `COVAR_SAMP`, `COVAR_POP` |
+| Exact median or percentile               | `MEDIAN`, `PERCENTILE`    |
+| Large-scale percentile estimate          | `PERCENTILE_APPROX`       |
+| Shape diagnostics                        | `SKEWNESS`, `KURTOSIS`    |

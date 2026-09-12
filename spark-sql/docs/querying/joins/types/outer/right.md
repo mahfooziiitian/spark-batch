@@ -6,12 +6,11 @@ A **Right Outer Join** returns:
 - :material-check-circle-outline: **Matching rows from the left table**
 - :material-close-circle-outline: **If no match:** fills left-side columns with `NULL`.
 
-> **Tip:** It’s the mirror image of a Left Outer Join.  
-> **Question it answers:**  
+> **Tip:** It’s the mirror image of a Left Outer Join.\
+> **Question it answers:**\
 > _“Give me everything from the right side, and add left-side info if it exists.”_
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -21,7 +20,7 @@ graph LR
     J -->|no match| N[NULLs for left + Right row]
 ```
 
----
+______________________________________________________________________
 
 ## SQL Syntax in Spark
 
@@ -34,7 +33,7 @@ RIGHT OUTER JOIN B
 
 **Alias:** `RIGHT JOIN`
 
----
+______________________________________________________________________
 
 ## DataFrame API
 
@@ -42,7 +41,7 @@ RIGHT OUTER JOIN B
 df_left.join(df_right, df_left.id == df_right.id, "right")
 ```
 
----
+______________________________________________________________________
 
 ## Example
 
@@ -52,19 +51,19 @@ df_left.join(df_right, df_left.id == df_right.id, "right")
 
 **Left Table (`Customers`)**
 
-| id | name  |
-|----|-------|
-| 1  | Alice |
-| 2  | Bob   |
-| 3  | Carol |
+| id  | name  |
+| --- | ----- |
+| 1   | Alice |
+| 2   | Bob   |
+| 3   | Carol |
 
 **Right Table (`Orders`)**
 
-| id | product |
-|----|---------|
-| 2  | Laptop  |
-| 3  | Phone   |
-| 4  | Tablet  |
+| id  | product |
+| --- | ------- |
+| 2   | Laptop  |
+| 3   | Phone   |
+| 4   | Tablet  |
 
 **Query:**
 
@@ -77,29 +76,29 @@ RIGHT JOIN Orders o
 
 **Result:**
 
-| id | name  | product |
-|----|-------|---------|
-| 2  | Bob   | Laptop  |
-| 3  | Carol | Phone   |
-| 4  | NULL  | Tablet  |
+| id  | name  | product |
+| --- | ----- | ------- |
+| 2   | Bob   | Laptop  |
+| 3   | Carol | Phone   |
+| 4   | NULL  | Tablet  |
 
 > **Key Observations:**
 >
 > - Orders without customers (`id=4`, Tablet) still appear (left-side `NULL`).
 > - All orders are kept (right side preserved).
 
----
+______________________________________________________________________
 
 ## Physical Execution in Spark
 
 - **Equi-joins (`=`):**
-  - **Broadcast Hash Join (BHJ):** if left side is small
-  - **Shuffle Hash Join (SHJ)**
-  - **Sort-Merge Join (SMJ)**
+    - **Broadcast Hash Join (BHJ):** if left side is small
+    - **Shuffle Hash Join (SHJ)**
+    - **Sort-Merge Join (SMJ)**
 - **Non-equi joins (`<`, `>`, `BETWEEN`):**
-  - Falls back to **nested loop joins** (broadcast or shuffle-replicate)
+    - Falls back to **nested loop joins** (broadcast or shuffle-replicate)
 
----
+______________________________________________________________________
 
 ## Real-World Use Cases
 
@@ -108,7 +107,7 @@ RIGHT JOIN Orders o
 - **Logs vs Reference Data:** Retain all logs, even if reference lookup fails
 - **ETL Auditing:** Detect rows that don’t have a matching dimension record
 
----
+______________________________________________________________________
 
 ## Performance Considerations
 
@@ -132,7 +131,7 @@ LEFT JOIN A
   ON B.id = A.id;
 ```
 
----
+______________________________________________________________________
 
 ## Diagram (Venn-style)
 
@@ -150,17 +149,17 @@ classDef right fill:#ffc8dd,stroke:#000,stroke-width:1px;
 classDef result fill:#caffbf,stroke:#000,stroke-width:2px;
 ```
 
----
+______________________________________________________________________
 
 ## Quick Comparison (vs Left Join)
 
-| Join Type  | Keeps All Left? | Keeps All Right? | Matches? |
-|------------|:---------------:|:----------------:|:--------:|
-| Left Join  | :material-check-circle-outline:              | :material-close-circle-outline:               | :material-check-circle-outline:       |
-| Right Join | :material-close-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:       |
-| Full Join  | :material-check-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:       |
+| Join Type  |         Keeps All Left?         |        Keeps All Right?         |            Matches?             |
+| ---------- | :-----------------------------: | :-----------------------------: | :-----------------------------: |
+| Left Join  | :material-check-circle-outline: | :material-close-circle-outline: | :material-check-circle-outline: |
+| Right Join | :material-close-circle-outline: | :material-check-circle-outline: | :material-check-circle-outline: |
+| Full Join  | :material-check-circle-outline: | :material-check-circle-outline: | :material-check-circle-outline: |
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Summary
 

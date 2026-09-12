@@ -2,7 +2,7 @@
 
 Map columns store key-value pairs. Spark SQL provides `element_at`, `map_keys`, `map_values`, `map_filter`, and `map_contains_key` for filtering and interrogating map columns.
 
----
+______________________________________________________________________
 
 ## Setup
 
@@ -18,7 +18,7 @@ SELECT * FROM VALUES
 AS t(order_id, status, attributes);
 ```
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -32,30 +32,43 @@ flowchart LR
     M --> SZ[size\nnumber of entries]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Map Key Filters
+
+<div id="viz-filter-map" class="ts-viz"></div>
+
+Choose a key lookup strategy and watch how missing keys and `NULL` maps behave. The badges reflect Spark 4.2 results for `element_at`, `map_contains_key`, and `map_filter`.
+
+______________________________________________________________________
 
 ## Map Functions Reference
 
-| Function | Description |
-|----------|-------------|
-| `element_at(map, key)` | Returns the value for `key`; NULL if key absent |
-| `map_keys(map)` | Returns an array of all keys |
-| `map_values(map)` | Returns an array of all values |
+| Function                               | Description                                      |
+| -------------------------------------- | ------------------------------------------------ |
+| `element_at(map, key)`                 | Returns the value for `key`; NULL if key absent  |
+| `map_keys(map)`                        | Returns an array of all keys                     |
+| `map_values(map)`                      | Returns an array of all values                   |
 | `map_filter(map, (k, v) -> condition)` | Returns sub-map of entries satisfying the lambda |
-| `size(map)` | Returns the number of key-value pairs |
-| `map_contains_key(map, key)` | Returns TRUE if the key exists |
+| `size(map)`                            | Returns the number of key-value pairs            |
+| `map_contains_key(map, key)`           | Returns TRUE if the key exists                   |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
 1. **element_at returns NULL for missing keys** — `element_at(attributes, 'promo')` returns NULL when the key is absent; always guard comparisons with `IS NOT NULL` or `map_contains_key`.
-2. **map_contains_key for existence** — Prefer `map_contains_key` over comparing `element_at(...) IS NOT NULL` for readability.
+2. **`map_contains_key` for existence** — Prefer `map_contains_key` over comparing `element_at(...) IS NOT NULL` for readability; note that a `NULL` map returns `NULL`, not `FALSE`.
 3. **CAST for numeric comparisons** — Map values are strings when created from `VALUES`; use `CAST(element_at(map, key) AS DOUBLE)` for numeric predicates.
 4. **map_filter returns a map** — The `map_filter` HOF returns a new map; use `size(map_filter(...)) > 0` to use as a row predicate.
 5. **map_keys / map_values return arrays** — Combine with `array_contains` to check for key or value membership.
 
----
+______________________________________________________________________
+
+## :material-information-outline: Verified Behavior on Databricks SQL
+
+1. **`map_contains_key` keeps three-valued logic** — on a real Databricks SQL warehouse, `map_contains_key(CAST(NULL AS MAP<STRING, STRING>), 'promo')` returned `NULL`, not `FALSE`.
+2. **Duplicate keys are rejected by default** — `MAP('a', 1, 'a', 2)` and `map_concat(...)` with overlapping keys both failed on Databricks SQL with `DUPLICATED_MAP_KEY`. Do not rely on silent "last wins" behavior unless the session owner explicitly changes `spark.sql.mapKeyDedupPolicy`.
+
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -142,32 +155,38 @@ WHERE size(attributes) >= 3;
 -- 6        | pending | 3
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended |
-|----------|-------------|
-| Filter by a specific key's value | `element_at(map, key) = value` |
-| Check whether a key exists | `map_contains_key(map, key)` |
-| Filter map entries by condition | `map_filter` HOF |
+| Scenario                               | Recommended                            |
+| -------------------------------------- | -------------------------------------- |
+| Filter by a specific key's value       | `element_at(map, key) = value`         |
+| Check whether a key exists             | `map_contains_key(map, key)`           |
+| Filter map entries by condition        | `map_filter` HOF                       |
 | Check if any value matches a condition | `array_contains(map_values(map), val)` |
-| Filter rows by number of map entries | `size(map) >= N` |
+| Filter rows by number of map entries   | `size(map) >= N`                       |
 
----
+______________________________________________________________________
 
-## :material-merge: map_concat — Merge Maps
+## :material-merge: map_concat — Merge Non-Overlapping Maps
 
 ```sql
--- Merge default attributes with override attributes (right map wins on duplicate keys)
+-- Merge disjoint maps safely
 SELECT order_id,
-       map_concat(MAP('priority', 'low', 'region', 'US'), attributes) AS merged_attrs
+       map_concat(MAP('channel', 'web', 'source', 'checkout'), attributes) AS merged_attrs
 FROM orders;
 ```
 
----
+!!! note "Databricks duplicate-key rule"
 
-## :material-transform: transform_values and transform_keys HOFs
+    On Databricks SQL warehouses, `map_concat` does **not** silently let the right map
+    win when keys overlap. If both inputs contain the same key, Databricks raises
+    `DUPLICATED_MAP_KEY` unless the session policy is changed.
+
+______________________________________________________________________
+
+## :material-function-variant: transform_values and transform_keys HOFs
 
 ```sql
 -- Uppercase all values in the map
@@ -188,7 +207,7 @@ SELECT order_id,
 FROM orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-text-box-search: str_to_map — Parse a Delimited String into a Map
 
@@ -203,13 +222,15 @@ SELECT order_id,
 FROM order_configs;
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert-circle: Common Pitfalls
 
-| Mistake | Behaviour | Fix |
-|---------|-----------|-----|
-| `element_at(map, 'missing_key') = 'x'` | NULL comparison → UNKNOWN → row excluded | Guard with `map_contains_key` first |
-| Duplicate keys in `MAP(...)` literal | Last value wins (undefined in older versions) | Ensure unique keys |
-| `map_filter` returning empty map treated as false | `size({}) = 0` but map itself is not NULL | Use `size(map_filter(...)) > 0` explicitly |
-| Comparing map values with numeric ops without CAST | ClassCastException or wrong type coercion | `CAST(element_at(map,'score') AS INT)` |
+| Mistake                                                               | Behaviour                                             | Fix                                                   |
+| --------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| `element_at(map, 'missing_key') = 'x'`                                | NULL comparison → UNKNOWN → row excluded              | Guard with `map_contains_key` first                   |
+| Duplicate keys in `MAP(...)` or overlapping keys in `map_concat(...)` | Databricks SQL raises `DUPLICATED_MAP_KEY` by default | Keep keys unique, or dedupe before concatenating maps |
+| `map_filter` returning empty map treated as false                     | `size({}) = 0` but map itself is not NULL             | Use `size(map_filter(...)) > 0` explicitly            |
+| Comparing map values with numeric ops without CAST                    | ClassCastException or wrong type coercion             | `CAST(element_at(map,'score') AS INT)`                |
+
+<script src="../../../../assets/js/querying-filter-viz.js"></script>

@@ -14,29 +14,31 @@ graph LR
     F --> E
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
 <div id="viz-scd-type2" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: When to Use
 
 !!! success "Good fit"
+
     - Full **audit trail** of every attribute change is required
     - Fact tables must be joined to the dimension value **at the time of the event**
     - Compliance or regulatory reporting demands point-in-time accuracy
     - Analysts need to answer *"what was the customer's city six months ago?"*
 
 !!! failure "Not a good fit"
+
     - History is irrelevant — use Type 1 (simpler, lower storage)
     - Very high change frequency — version count explodes, query complexity increases
     - Current-state-only dashboards — filtering `WHERE is_current = TRUE` everywhere is error-prone at scale
     - You only care about the immediately previous value — use Type 3
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Table Design
 
@@ -57,14 +59,16 @@ PARTITIONED BY (is_current);
 ```
 
 !!! tip "Partition on `is_current`"
-    Most queries filter on `is_current = TRUE`.  Partitioning isolates the small active
+
+    Most queries filter on `is_current = TRUE`. Partitioning isolates the small active
     partition from the much larger historical partition, cutting scan costs dramatically.
 
 !!! note "Surrogate key"
-    `customer_sk` uniquely identifies a **version row**.  Foreign keys in fact tables
+
+    `customer_sk` uniquely identifies a **version row**. Foreign keys in fact tables
     reference `customer_sk`, not `customer_id`, so point-in-time joins work correctly.
 
----
+______________________________________________________________________
 
 ## :material-database-import: Seed Data
 
@@ -86,7 +90,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-tray-arrow-down: Incoming Staging Data
 
@@ -100,7 +104,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-repeat: SCD Type 2 — Two-Step MERGE Pattern
 
@@ -162,7 +166,7 @@ WHEN NOT MATCHED THEN
             current_timestamp(), NULL, TRUE);
 ```
 
----
+______________________________________________________________________
 
 ## :material-format-list-bulleted-type: Variant Patterns
 
@@ -246,22 +250,22 @@ SELECT * FROM deduped WHERE rn = 1
 
 Use this as the USING source instead of the raw staging view when duplicates are possible.
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Final Output
 
 After one change batch, `dim_customer` contains:
 
-| customer_sk | customer_id | name    | email                  | city | is_current | start_date          | end_date            |
-|-------------|-------------|---------|------------------------|------|------------|---------------------|---------------------|
-| 1           | cust1       | Alice   | alice@example.com      | NY   | true       | 2024-01-01 00:00:00 | NULL                |
-| 2           | cust2       | Bob     | bob@example.com        | CA   | **false**  | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3           | cust2       | Bobby   | bob@newdomain.com      | TX   | **true**   | 2024-06-15 09:00:00 | NULL                |
-| 4           | cust3       | Charlie | charlie@example.com    | WA   | true       | 2024-06-15 09:00:00 | NULL                |
+| customer_sk | customer_id | name    | email               | city | is_current | start_date          | end_date            |
+| ----------- | ----------- | ------- | ------------------- | ---- | ---------- | ------------------- | ------------------- |
+| 1           | cust1       | Alice   | alice@example.com   | NY   | true       | 2024-01-01 00:00:00 | NULL                |
+| 2           | cust2       | Bob     | bob@example.com     | CA   | **false**  | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3           | cust2       | Bobby   | bob@newdomain.com   | TX   | **true**   | 2024-06-15 09:00:00 | NULL                |
+| 4           | cust3       | Charlie | charlie@example.com | WA   | true       | 2024-06-15 09:00:00 | NULL                |
 
 `cust2` now has two rows — its complete version history is preserved.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Analytical Queries
 
@@ -346,20 +350,20 @@ GROUP BY customer_id
 ORDER BY avg_days_per_version;
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
-| Pitfall | Consequence | Solution |
-|---------|-------------|---------|
-| Single-MERGE attempt | Delta can't UPDATE + INSERT same key in one pass | Always use two separate MERGE statements |
-| No `row_hash` guard | Every row re-expires and re-inserts each run | Add `AND tgt.row_hash <> src.row_hash` to Step 1 |
-| Duplicate keys in staging | Non-deterministic expiry / double inserts | Deduplicate with `ROW_NUMBER()` before MERGE |
-| Fact table references `customer_id` | Point-in-time joins broken | FK must reference `customer_sk` (surrogate) |
-| Forgetting `AND is_current = TRUE` in Step 1 | Historical rows incorrectly re-expired | Always scope MERGE to active partition |
-| Querying without `is_current` filter | Full history scan — multiple rows per customer | Enforce `WHERE is_current = TRUE` or create a current-state view |
+| Pitfall                                      | Consequence                                      | Solution                                                         |
+| -------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| Single-MERGE attempt                         | Delta can't UPDATE + INSERT same key in one pass | Always use two separate MERGE statements                         |
+| No `row_hash` guard                          | Every row re-expires and re-inserts each run     | Add `AND tgt.row_hash <> src.row_hash` to Step 1                 |
+| Duplicate keys in staging                    | Non-deterministic expiry / double inserts        | Deduplicate with `ROW_NUMBER()` before MERGE                     |
+| Fact table references `customer_id`          | Point-in-time joins broken                       | FK must reference `customer_sk` (surrogate)                      |
+| Forgetting `AND is_current = TRUE` in Step 1 | Historical rows incorrectly re-expired           | Always scope MERGE to active partition                           |
+| Querying without `is_current` filter         | Full history scan — multiple rows per customer   | Enforce `WHERE is_current = TRUE` or create a current-state view |
 
----
+______________________________________________________________________
 
 ## :material-cog-outline: Best Practices
 
@@ -383,15 +387,15 @@ SELECT
 FROM dim_customer;
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: SCD Type Comparison
 
-| Scenario | Recommended Type |
-|----------|-----------------|
-| Only current values, no history | Type 1 |
-| **Full history with point-in-time accuracy** | **Type 2** |
-| Current + one previous value per attribute | Type 3 |
-| Current table + separate history table | Type 4 |
-| Current table + history table with FK link | Type 5 |
-| Current + history + previous value, single table | Type 6 |
+| Scenario                                         | Recommended Type |
+| ------------------------------------------------ | ---------------- |
+| Only current values, no history                  | Type 1           |
+| **Full history with point-in-time accuracy**     | **Type 2**       |
+| Current + one previous value per attribute       | Type 3           |
+| Current table + separate history table           | Type 4           |
+| Current table + history table with FK link       | Type 5           |
+| Current + history + previous value, single table | Type 6           |

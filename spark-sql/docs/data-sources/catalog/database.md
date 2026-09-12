@@ -3,7 +3,7 @@
 In Spark SQL, **DATABASE** and **SCHEMA** are synonyms. A database is a logical
 namespace that groups tables, views, and functions within a catalog.
 
----
+______________________________________________________________________
 
 ## :material-console: DDL Reference
 
@@ -48,6 +48,7 @@ DROP DATABASE IF EXISTS analytics CASCADE;
 ```
 
 !!! warning "CASCADE deletes managed table data"
+
     `DROP DATABASE CASCADE` deletes metadata **and** the underlying data of
     any managed tables inside the database. External table data is not deleted.
 
@@ -60,7 +61,7 @@ USE analytics;
 SELECT current_database();  -- analytics
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Inspect a Database
 
@@ -81,11 +82,12 @@ DESCRIBE DATABASE EXTENDED analytics;
 -- Properties     ((owner,data-eng), (env,prod))
 ```
 
----
+______________________________________________________________________
 
 ## :material-folder-open: Database Location and Warehouse Directory
 
 By default Spark stores managed table data under:
+
 ```
 spark.sql.warehouse.dir / <database_name>.db / <table_name>
 ```
@@ -98,7 +100,7 @@ CREATE DATABASE silver
 -- All managed tables in 'silver' will be stored under that path
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Patterns
 
@@ -131,7 +133,7 @@ SHOW TABLES IN analytics;
 SELECT * FROM analytics.orders WHERE order_date = '2024-06-01';
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -141,13 +143,13 @@ SELECT * FROM analytics.orders WHERE order_date = '2024-06-01';
 4. **Managed table cleanup** — dropping a managed table inside a database removes its data from the database location.
 5. **External tables survive DROP DATABASE** — only metadata is deleted; the physical files remain.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Separate business domains | One database per domain |
+| Scenario                    | Recommendation                             |
+| --------------------------- | ------------------------------------------ |
+| Separate business domains   | One database per domain                    |
 | Multi-environment isolation | `orders_dev`, `orders_test`, `orders_prod` |
-| Shared warehouse path | Specify `LOCATION` explicitly |
-| Scratch / ad-hoc work | `default` or a personal dev database |
+| Shared warehouse path       | Specify `LOCATION` explicitly              |
+| Scratch / ad-hoc work       | `default` or a personal dev database       |

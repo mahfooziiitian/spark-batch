@@ -4,7 +4,7 @@ Column defaults and generated columns let the database automatically supply or
 compute a column value when a row is inserted. Delta Lake supports both `DEFAULT`
 expressions and `GENERATED ALWAYS AS` computed columns.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -45,7 +45,7 @@ ALTER TABLE events ALTER COLUMN status SET DEFAULT 'PENDING';
 ALTER TABLE events ALTER COLUMN status DROP DEFAULT;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
@@ -56,7 +56,7 @@ ALTER TABLE events ALTER COLUMN status DROP DEFAULT;
 5. `DEFAULT current_timestamp()` captures the wall-clock time of the write, not query parsing time.
 6. All these features require **Delta Lake** (`USING DELTA`) — they are not available for Parquet/ORC tables.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -157,18 +157,19 @@ DESCRIBE TABLE EXTENDED orders;
 -- status column now shows: DEFAULT 'PENDING'
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Auto-populate audit timestamp | `created_at TIMESTAMP DEFAULT current_timestamp()` |
-| Auto-populate a status flag | `status STRING DEFAULT 'PENDING'` |
-| Auto-compute a derived metric | `GENERATED ALWAYS AS (expression)` |
-| Partition by a derived date field | `GENERATED` date column + `PARTITIONED BY` |
-| Surrogate key for dimension table | `GENERATED ALWAYS AS IDENTITY` |
+| Scenario                          | Pattern                                            |
+| --------------------------------- | -------------------------------------------------- |
+| Auto-populate audit timestamp     | `created_at TIMESTAMP DEFAULT current_timestamp()` |
+| Auto-populate a status flag       | `status STRING DEFAULT 'PENDING'`                  |
+| Auto-compute a derived metric     | `GENERATED ALWAYS AS (expression)`                 |
+| Partition by a derived date field | `GENERATED` date column + `PARTITIONED BY`         |
+| Surrogate key for dimension table | `GENERATED ALWAYS AS IDENTITY`                     |
 
 !!! note "Delta only"
+
     `DEFAULT`, `GENERATED ALWAYS AS`, and `GENERATED ALWAYS AS IDENTITY` are Delta Lake
     features. They are not available for Parquet, ORC, or Hive tables in Spark SQL.

@@ -3,7 +3,7 @@
 `GROUPING` and `GROUPING_ID` identify which columns are aggregated in `CUBE`, `ROLLUP`,
 and `GROUPING SETS` queries, distinguishing actual NULLs from aggregation-level NULLs.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,6 +11,14 @@ graph LR
     B --> C[GROUPING / GROUPING_ID]
     C --> D[One Row per Group]
 ```
+
+### :material-animation-play: Interactive Visualization — CUBE Grouping Sets
+
+<div id="viz-grouping-cube" class="ts-viz"></div>
+
+Pick a grouping-set row from a two-column `CUBE(name, height)` to see which
+columns are "real" (grouped) vs aggregated-away (NULL), and how that maps
+to the `GROUPING_ID` bitmask.
 
 ## :material-pin: Syntax
 
@@ -41,11 +49,11 @@ FROM VALUES (2, 'Alice'), (5, 'Bob') AS people(age, name)
 GROUP BY CUBE(name);
 ```
 
-| name | is_total | total_age |
-|------|----------|-----------|
-| Alice | 0 | 2 |
-| Bob | 0 | 5 |
-| NULL | 1 | 7 |
+| name  | is_total | total_age |
+| ----- | -------- | --------- |
+| Alice | 0        | 2         |
+| Bob   | 0        | 5         |
+| NULL  | 1        | 7         |
 
 The row with `is_total=1` is the grand total (NULL means "all names").
 
@@ -61,15 +69,15 @@ FROM VALUES (2, 'Alice', 165), (5, 'Bob', 180) AS people(age, name, height)
 GROUP BY CUBE(name, height);
 ```
 
-| name | height | grp_id | total_age | Meaning |
-|------|--------|--------|-----------|---------|
-| Alice | 165 | 0 | 2 | Group by both |
-| Bob | 180 | 0 | 5 | Group by both |
-| NULL | 165 | 2 | 2 | Group by height only |
-| NULL | 180 | 2 | 5 | Group by height only |
-| Alice | NULL | 1 | 2 | Group by name only |
-| Bob | NULL | 1 | 5 | Group by name only |
-| NULL | NULL | 3 | 7 | Grand total |
+| name  | height | grp_id | total_age | Meaning              |
+| ----- | ------ | ------ | --------- | -------------------- |
+| Alice | 165    | 0      | 2         | Group by both        |
+| Bob   | 180    | 0      | 5         | Group by both        |
+| NULL  | 165    | 2      | 2         | Group by height only |
+| NULL  | 180    | 2      | 5         | Group by height only |
+| Alice | NULL   | 1      | 2         | Group by name only   |
+| Bob   | NULL   | 1      | 5         | Group by name only   |
+| NULL  | NULL   | 3      | 7         | Grand total          |
 
 ### Use GROUPING to Label Totals
 
@@ -90,9 +98,9 @@ GROUP BY CUBE(department, role);
 
 ## :material-brain: GROUPING_ID Bitmask Reference
 
-| GROUPING_ID(A, B) | A grouped? | B grouped? | Level |
-|--------------------|-----------|-----------|-------|
-| 0 | No | No | Group by A, B |
-| 1 | No | Yes | Group by A only |
-| 2 | Yes | No | Group by B only |
-| 3 | Yes | Yes | Grand total |
+| GROUPING_ID(A, B) | A grouped? | B grouped? | Level           |
+| ----------------- | ---------- | ---------- | --------------- |
+| 0                 | No         | No         | Group by A, B   |
+| 1                 | No         | Yes        | Group by A only |
+| 2                 | Yes        | No         | Group by B only |
+| 3                 | Yes        | Yes        | Grand total     |

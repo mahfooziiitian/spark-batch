@@ -4,19 +4,19 @@ DML statements modify the **contents** of tables without changing their schema.
 In Spark SQL, write support depends on the table format —
 Delta Lake enables the full set of operations, while Hive/Parquet tables support only `INSERT`.
 
----
+______________________________________________________________________
 
 ## :material-table-of-contents: In This Section
 
-| Statement | Description |
-|-----------|-------------|
-| [INSERT](table/insert.md) | Append rows, overwrite partitions, or seed literal values |
-| [UPDATE](table/update.md) | Modify existing rows in-place (Delta only) |
-| [DELETE](table/delete.md) | Remove rows matching a condition (Delta only) |
-| [MERGE INTO](table/merge.md) | Atomic upsert — INSERT + UPDATE + DELETE in one statement |
-| [COPY INTO](table/copy_into.md) | Idempotent bulk-load from cloud storage files |
+| Statement                       | Description                                               |
+| ------------------------------- | --------------------------------------------------------- |
+| [INSERT](table/insert.md)       | Append rows, overwrite partitions, or seed literal values |
+| [UPDATE](table/update.md)       | Modify existing rows in-place (Delta only)                |
+| [DELETE](table/delete.md)       | Remove rows matching a condition (Delta only)             |
+| [MERGE INTO](table/merge.md)    | Atomic upsert — INSERT + UPDATE + DELETE in one statement |
+| [COPY INTO](table/copy-into.md) | Idempotent bulk-load from cloud storage files             |
 
----
+______________________________________________________________________
 
 ## :material-sitemap: DML Decision Flow
 
@@ -38,38 +38,39 @@ graph TD
     M -- Yes --> K
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: Format Support Matrix
 
-| Operation | Delta | Parquet | Hive/ORC | CSV/JSON |
-|-----------|:-----:|:-------:|:--------:|:--------:|
-| `INSERT INTO` | :material-check: | :material-check: | :material-check: | :material-check: |
+| Operation          |      Delta       |     Parquet      |     Hive/ORC     |     CSV/JSON     |
+| ------------------ | :--------------: | :--------------: | :--------------: | :--------------: |
+| `INSERT INTO`      | :material-check: | :material-check: | :material-check: | :material-check: |
 | `INSERT OVERWRITE` | :material-check: | :material-check: | :material-check: | :material-close: |
-| `TRUNCATE TABLE` | :material-check: | :material-close: | :material-check: | :material-close: |
-| `UPDATE` | :material-check: | :material-close: | :material-close: | :material-close: |
-| `DELETE` | :material-check: | :material-close: | :material-close: | :material-close: |
-| `MERGE INTO` | :material-check: | :material-close: | :material-close: | :material-close: |
-| `COPY INTO` | :material-check: | :material-close: | :material-close: | :material-close: |
+| `TRUNCATE TABLE`   | :material-check: | :material-close: | :material-check: | :material-close: |
+| `UPDATE`           | :material-check: | :material-close: | :material-close: | :material-close: |
+| `DELETE`           | :material-check: | :material-close: | :material-close: | :material-close: |
+| `MERGE INTO`       | :material-check: | :material-close: | :material-close: | :material-close: |
+| `COPY INTO`        | :material-check: | :material-close: | :material-close: | :material-close: |
 
 !!! tip "Use Delta for all writable tables"
-    If `UPDATE`, `DELETE`, or `MERGE` are needed, the table **must** be Delta format.
-    Convert with `CONVERT TO DELTA parquet.\`path\`` to migrate existing tables.
 
----
+    If `UPDATE`, `DELETE`, or `MERGE` are needed, the table **must** be Delta format.
+    Convert with `CONVERT TO DELTA parquet.\`path\`\` to migrate existing tables.
+
+______________________________________________________________________
 
 ## :material-key: Key Concepts
 
-| Concept | Details |
-|---------|---------|
-| **ACID transactions** | Delta wraps every DML in a transaction — failures leave the table unchanged |
-| **Schema enforcement** | Spark validates column types on write; mismatches raise `AnalysisException` |
-| **Partition pruning on write** | `INSERT OVERWRITE PARTITION(...)` rewrites only targeted partitions |
-| **Optimistic concurrency** | Concurrent writes to different partitions succeed; same-partition conflicts retry or fail |
-| **File rewrite model** | `UPDATE`/`DELETE` rewrite affected data files — old files remain until `VACUUM` |
-| **Idempotency** | `COPY INTO` tracks loaded files — safe to re-run |
+| Concept                        | Details                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| **ACID transactions**          | Delta wraps every DML in a transaction — failures leave the table unchanged               |
+| **Schema enforcement**         | Spark validates column types on write; mismatches raise `AnalysisException`               |
+| **Partition pruning on write** | `INSERT OVERWRITE PARTITION(...)` rewrites only targeted partitions                       |
+| **Optimistic concurrency**     | Concurrent writes to different partitions succeed; same-partition conflicts retry or fail |
+| **File rewrite model**         | `UPDATE`/`DELETE` rewrite affected data files — old files remain until `VACUUM`           |
+| **Idempotency**                | `COPY INTO` tracks loaded files — safe to re-run                                          |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Quick Examples
 
@@ -96,7 +97,7 @@ WHEN NOT MATCHED THEN INSERT *;
 COPY INTO raw_events FROM 's3://landing/events/' FILEFORMAT = JSON;
 ```
 
----
+______________________________________________________________________
 
 ## :material-link: Related Sections
 

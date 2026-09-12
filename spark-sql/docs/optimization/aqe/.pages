@@ -1,8 +1,8 @@
 nav:
   - index.md
   - spark-sql-aqe.md
-  - coalescing_post_shuffle_partitions.md
-  - converting_sort_merge_join_broadcast_join.md
-  - converting_sort_merge_join_to_shuffled_hash_join.md
-  - splitting_skewed_shuffle_partitions.md
-  - optimizing_skew_join.md
+  - coalescing-post-shuffle-partitions.md
+  - converting-sort-merge-join-broadcast-join.md
+  - converting-sort-merge-join-to-shuffled-hash-join.md
+  - splitting-skewed-shuffle-partitions.md
+  - optimizing-skew-join.md

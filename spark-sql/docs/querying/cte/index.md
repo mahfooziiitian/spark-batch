@@ -1,23 +1,27 @@
 # :material-recycle: Common Table Expressions (CTEs)
 
-A CTE (`WITH` clause) defines a named, temporary result set scoped to a single SQL
-statement. CTEs make complex queries readable, enable step-by-step data pipelines, and
-support recursion in Spark SQL 3.5+.
+A CTE (`WITH` clause) defines a named result set scoped to one SQL statement. In Spark SQL 4.2, CTEs are excellent for readable pipelines, reusable intermediate logic, and recursive queries with `WITH RECURSIVE`.
 
----
+### :material-animation-play: Interactive Visualization — Statement Scope and Reuse
+
+<div id="viz-cte-overview" class="ts-viz"></div>
+
+This demo contrasts a single-reference CTE with a multi-reference CTE. It mirrors the verified Spark 4.2 behavior: scope is statement-local, and repeated references should not be assumed to compute only once.
+
+______________________________________________________________________
 
 ## :material-sitemap: In This Section
 
-| Page | Covers |
-|------|--------|
-| [Chained CTEs](chained.md) | Multi-step pipelines with sequential CTE dependencies |
-| [CTE in DML](cte_in_dml.md) | Using CTEs inside `INSERT`, `MERGE`, `UPDATE`, `DELETE` |
-| [Recursive CTE](recursive.md) | `WITH RECURSIVE` — sequences, hierarchies, graph traversal |
-| [CTE vs Temp View](cte_vs_temp_view.md) | When to use a CTE vs `CREATE TEMP VIEW` vs `CACHE TABLE` |
-| [CTE for Deduplication](deduplication.md) | Row deduplication patterns using CTEs and window functions |
-| [CTE for Pivoting](pivot.md) | Manual pivot / unpivot using CTEs |
+| Page                                      | Covers                                                    |
+| ----------------------------------------- | --------------------------------------------------------- |
+| [Chained CTEs](chained.md)                | Multi-step pipelines with sequential CTE dependencies     |
+| [CTE in DML](cte-in-dml.md)               | Using CTEs with `INSERT`, `MERGE`, `UPDATE`, and `DELETE` |
+| [Recursive CTE](recursive.md)             | `WITH RECURSIVE` for sequences and hierarchies            |
+| [CTE vs Temp View](cte-vs-temp-view.md)   | Scope, caching, and plan reuse                            |
+| [CTE for Deduplication](deduplication.md) | `ROW_NUMBER()` and `QUALIFY` patterns                     |
+| [CTE for Pivoting](pivot.md)              | `PIVOT`, manual pivot, and `UNPIVOT`                      |
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -26,8 +30,8 @@ support recursion in Spark SQL 3.5+.
 ```sql
 WITH cte_name AS (
     SELECT ...
-    FROM   ...
-    WHERE  ...
+    FROM ...
+    WHERE ...
 )
 SELECT * FROM cte_name;
 ```
@@ -40,13 +44,13 @@ WITH cte1 AS (
 ),
 cte2 AS (
     SELECT ...
-    FROM   cte1    -- later CTEs can reference earlier ones
-    WHERE  ...
+    FROM cte1
+    WHERE ...
 )
 SELECT * FROM cte2;
 ```
 
-**CTE in DML (INSERT / MERGE):**
+**CTE before DML:**
 
 ```sql
 WITH prepared AS (
@@ -56,96 +60,70 @@ INSERT INTO target_table
 SELECT * FROM prepared;
 ```
 
-**Single CTE:**
+**Recursive CTE:**
 
 ```sql
-WITH cte_name AS (
-    SELECT ...
-    FROM   ...
-    WHERE  ...
+WITH RECURSIVE numbers AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1
+    FROM numbers
+    WHERE n < 5
 )
-SELECT * FROM cte_name;
+SELECT * FROM numbers;
 ```
 
-**Multiple chained CTEs:**
-
-```sql
-WITH cte1 AS (
-    SELECT ...
-),
-cte2 AS (
-    SELECT ...
-    FROM   cte1    -- later CTEs can reference earlier ones
-    WHERE  ...
-)
-SELECT * FROM cte2;
-```
-
-**CTE in DML (INSERT / MERGE):**
-
-```sql
-WITH prepared AS (
-    SELECT ...
-)
-INSERT INTO target_table
-SELECT * FROM prepared;
-```
-
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
-1. **No materialization by default** — Spark may inline a CTE at every reference site, re-evaluating it each time. Use a temp view or `CACHE TABLE` when the CTE is expensive and referenced multiple times.
-2. **Forward references are not allowed** — a CTE can only reference CTEs defined earlier in the same `WITH` block.
-3. **Statement scope** — CTEs are visible only within the single statement they appear in. They are not accessible to other queries in the session.
-4. **Recursive CTEs** — Spark SQL 3.5+ supports `WITH RECURSIVE` for iterative result-set generation such as traversing hierarchies or producing sequences.
+1. **Statement scope only** — a CTE is visible only inside the statement that defines it.
+2. **Definition order matters** — later CTEs can reference earlier ones, but forward references fail. In Spark 4.2, `WITH a AS (SELECT * FROM b), b AS (...)` raises `TABLE_OR_VIEW_NOT_FOUND`.
+3. **No guaranteed materialization** — in a verified Spark 4.2 self-join example, `EXPLAIN FORMATTED` expanded the same CTE into two aggregate branches and did not show `ReusedExchange`. Treat repeated references as potentially re-evaluated.
+4. **Nested `WITH` blocks are valid** — a CTE body can contain its own inner `WITH` block when that improves readability.
+5. **Recursive CTEs work in Spark 4.2** — `WITH RECURSIVE` runs even with `spark.sql.ansi.enabled = false`.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
 ```sql
 CREATE OR REPLACE TEMP VIEW orders AS
 SELECT * FROM VALUES
-  (1, 'Alice',   '2024-01-15', 250.00),
-  (2, 'Bob',     '2024-01-16', 120.00),
-  (3, 'Alice',   '2024-01-17', 300.00),
-  (4, 'Charlie', '2024-01-18',  80.00),
-  (5, 'Bob',     '2024-01-19', 450.00),
-  (6, 'Alice',   '2024-01-20', 175.00)
+    (1, 'Alice',   DATE '2024-01-15', 250.00),
+    (2, 'Bob',     DATE '2024-01-16', 120.00),
+    (3, 'Alice',   DATE '2024-01-17', 300.00),
+    (4, 'Charlie', DATE '2024-01-18',  80.00),
+    (5, 'Bob',     DATE '2024-01-19', 450.00),
+    (6, 'Alice',   DATE '2024-01-20', 175.00)
 AS orders(order_id, customer, order_date, amount);
 ```
 
-### Example 1 — Single CTE: Filter Then Transform
+### Single CTE: filter, then aggregate
 
 ```sql
 WITH recent_orders AS (
     SELECT order_id, customer, amount
-    FROM   orders
-    WHERE  order_date >= '2024-01-17'
+    FROM orders
+    WHERE order_date >= DATE '2024-01-17'
 )
 SELECT
     customer,
     SUM(amount) AS total_amount,
-    COUNT(*)    AS order_count
+    COUNT(*) AS order_count
 FROM recent_orders
-GROUP BY customer;
--- Result:
--- | customer | total_amount | order_count |
--- |----------|--------------|-------------|
--- | Alice    |       475.00 |           2 |
--- | Charlie  |        80.00 |           1 |
--- | Bob      |       450.00 |           1 |
+GROUP BY customer
+ORDER BY total_amount DESC;
 ```
 
-### Example 2 — Multiple Chained CTEs: Step-by-Step Pipeline
+### Chained CTEs: step-by-step pipeline
 
 ```sql
 WITH order_totals AS (
     SELECT
         customer,
         SUM(amount) AS total_spent
-    FROM   orders
+    FROM orders
     GROUP BY customer
 ),
 ranked_customers AS (
@@ -156,105 +134,81 @@ ranked_customers AS (
     FROM order_totals
 )
 SELECT customer, total_spent, spend_rank
-FROM   ranked_customers
-WHERE  spend_rank <= 2;
--- Result:
--- | customer | total_spent | spend_rank |
--- |----------|-------------|------------|
--- | Alice    |      725.00 |          1 |
--- | Bob      |      570.00 |          2 |
+FROM ranked_customers
+WHERE spend_rank <= 2
+ORDER BY spend_rank, customer;
 ```
 
-### Example 3 — CTE Referenced Multiple Times (Self-Join)
-
-Compare each customer's total spend against the overall average by referencing the same CTE twice:
+### Reused CTE reference inside one statement
 
 ```sql
 WITH customer_totals AS (
     SELECT
         customer,
         SUM(amount) AS total_spent
-    FROM   orders
+    FROM orders
     GROUP BY customer
 )
 SELECT
     ct.customer,
     ct.total_spent,
-    ROUND(avg_all.avg_spend, 2)             AS overall_avg,
+    ROUND(avg_all.avg_spend, 2) AS overall_avg,
     ROUND(ct.total_spent - avg_all.avg_spend, 2) AS diff_from_avg
 FROM customer_totals AS ct
-CROSS JOIN (SELECT AVG(total_spent) AS avg_spend FROM customer_totals) AS avg_all;
--- Result:
--- | customer | total_spent | overall_avg | diff_from_avg |
--- |----------|-------------|-------------|---------------|
--- | Alice    |      725.00 |      458.33 |        266.67 |
--- | Bob      |      570.00 |      458.33 |        111.67 |
--- | Charlie  |       80.00 |      458.33 |       -378.33 |
+CROSS JOIN (
+    SELECT AVG(total_spent) AS avg_spend
+    FROM customer_totals
+) AS avg_all
+ORDER BY ct.customer;
 ```
 
-### Example 4 — CTE in a MERGE Statement
-
-Prepare source rows with a CTE before merging into a Delta target:
+### CTE before `INSERT`
 
 ```sql
-WITH new_orders AS (
-    SELECT order_id, customer, order_date, amount
-    FROM   orders
-    WHERE  order_date = '2024-01-20'
+WITH prepared AS (
+    SELECT customer, SUM(amount) AS total_spent
+    FROM orders
+    GROUP BY customer
 )
-MERGE INTO orders_target AS t
-USING new_orders AS s
-    ON t.order_id = s.order_id
-WHEN MATCHED THEN
-    UPDATE SET t.amount = s.amount
-WHEN NOT MATCHED THEN
-    INSERT (order_id, customer, order_date, amount)
-    VALUES (s.order_id, s.customer, s.order_date, s.amount);
+INSERT INTO customer_summary
+SELECT * FROM prepared;
 ```
 
-### Example 5 — Recursive CTE: Number Sequence (Spark 3.5+)
-
-Generate integers from 1 to 5 using `WITH RECURSIVE`:
+### Recursive CTE: integer sequence
 
 ```sql
 WITH RECURSIVE numbers AS (
-    SELECT 1 AS n                -- anchor: starting value
+    SELECT 1 AS n
     UNION ALL
     SELECT n + 1
-    FROM   numbers
-    WHERE  n < 5                 -- termination condition
+    FROM numbers
+    WHERE n < 5
 )
-SELECT n FROM numbers;
--- Result:
--- | n |
--- |---|
--- | 1 |
--- | 2 |
--- | 3 |
--- | 4 |
--- | 5 |
+SELECT n
+FROM numbers
+ORDER BY n;
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: CTE vs Subquery
 
-| Aspect | CTE | Subquery |
-|--------|-----|----------|
-| Readability | Named, defined once at the top | Anonymous, embedded inline |
-| Reusability | Can be referenced multiple times in one statement | Must be duplicated |
-| Recursion | Supported (`WITH RECURSIVE`, Spark 3.5+) | Not supported |
-| Materialization | Not guaranteed — Spark may inline | Inlined by the optimizer |
-| Debugging | Easy to isolate and test each step | Hard to inspect intermediate results |
+| Aspect                 | CTE                        | Subquery                   |
+| ---------------------- | -------------------------- | -------------------------- |
+| Readability            | Named once at the top      | Embedded inline            |
+| Reuse in one statement | Yes                        | Usually duplicated         |
+| Recursion              | Yes, with `WITH RECURSIVE` | No                         |
+| Scope                  | One statement              | One expression/query block |
+| Materialization        | Not guaranteed             | Not guaranteed             |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Breaking a complex query into readable steps | Multiple chained CTEs |
-| Reusing an intermediate result set | Single CTE referenced twice in one statement |
-| Generating sequences or traversing hierarchies | `WITH RECURSIVE` (Spark 3.5+) |
-| Cleaning source data before a MERGE | CTE in the `USING` clause |
-| Performance-sensitive repeated logic | Materialise as a temp view or `CACHE TABLE` |
+| Scenario                                               | Recommended Pattern          |
+| ------------------------------------------------------ | ---------------------------- |
+| Breaking a query into named steps                      | Chained CTEs                 |
+| Reusing an intermediate once or twice in one statement | CTE                          |
+| Reusing the same logic across multiple statements      | Temp view, optionally cached |
+| Generating sequences or traversing hierarchies         | Recursive CTE                |
+| Preparing rows before `INSERT`                         | CTE + DML                    |

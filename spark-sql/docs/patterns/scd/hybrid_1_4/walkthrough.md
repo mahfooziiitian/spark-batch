@@ -4,7 +4,7 @@ A complete walkthrough: create both tables, seed them consistently, process a ch
 through all four steps, verify state after each, run a second batch, and explore the
 `hist_key` FK join pattern.
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Create Both Tables
 
@@ -38,7 +38,7 @@ CREATE TABLE dim_customer (
 USING DELTA;
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Seed Both Tables
 
@@ -74,19 +74,19 @@ WHERE h.valid_to IS NULL;
 
 `dim_customer`
 
-| customer_id | name  | email               | city | hist_key | updated_at          |
-|-------------|-------|---------------------|------|----------|---------------------|
-| cust1       | Alice | alice@example.com   | NY   | 1        | 2024-01-01 00:00:00 |
-| cust2       | Bob   | bob@example.com     | CA   | 2        | 2024-01-01 00:00:00 |
+| customer_id | name  | email             | city | hist_key | updated_at          |
+| ----------- | ----- | ----------------- | ---- | -------- | ------------------- |
+| cust1       | Alice | alice@example.com | NY   | 1        | 2024-01-01 00:00:00 |
+| cust2       | Bob   | bob@example.com   | CA   | 2        | 2024-01-01 00:00:00 |
 
 `dim_customer_history`
 
-| hist_key | customer_id | name  | email               | city | valid_from          | valid_to |
-|----------|-------------|-------|---------------------|------|---------------------|----------|
-| 1        | cust1       | Alice | alice@example.com   | NY   | 2024-01-01 00:00:00 | NULL     |
-| 2        | cust2       | Bob   | bob@example.com     | CA   | 2024-01-01 00:00:00 | NULL     |
+| hist_key | customer_id | name  | email             | city | valid_from          | valid_to |
+| -------- | ----------- | ----- | ----------------- | ---- | ------------------- | -------- |
+| 1        | cust1       | Alice | alice@example.com | NY   | 2024-01-01 00:00:00 | NULL     |
+| 2        | cust2       | Bob   | bob@example.com   | CA   | 2024-01-01 00:00:00 | NULL     |
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: First Incoming Batch
 
@@ -100,7 +100,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Pre-Batch Inspection
 
@@ -133,12 +133,12 @@ LEFT JOIN (
 ```
 
 | customer_id | new_name | old_name | old_city | new_city | current_hist_key | action    |
-|-------------|----------|----------|----------|----------|------------------|-----------|
+| ----------- | -------- | -------- | -------- | -------- | ---------------- | --------- |
 | cust1       | Alice    | Alice    | NY       | NY       | 1                | UNCHANGED |
 | cust2       | Bobby    | Bob      | CA       | TX       | 2                | CHANGED   |
 | cust3       | Charlie  | NULL     | NULL     | WA       | NULL             | NEW       |
 
----
+______________________________________________________________________
 
 ## :material-numeric-5-circle: Step 1 — Hash the Staging Data
 
@@ -153,7 +153,7 @@ SELECT
 FROM staging_batch1;
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-6-circle: Step 2 — Close Active History Rows for Changed Customers
 
@@ -175,12 +175,12 @@ WHEN MATCHED THEN
 
 **`dim_customer_history` after Step 2** — `cust2`'s original row is now closed:
 
-| hist_key | customer_id | name | email           | city | valid_from          | valid_to            |
-|----------|-------------|------|-----------------|------|---------------------|---------------------|
-| 1        | cust1       | Alice | alice@example.com | NY | 2024-01-01 00:00:00 | NULL                |
-| 2        | cust2       | Bob  | bob@example.com | CA   | 2024-01-01 00:00:00 | **2024-06-15 09:00** |
+| hist_key | customer_id | name  | email             | city | valid_from          | valid_to             |
+| -------- | ----------- | ----- | ----------------- | ---- | ------------------- | -------------------- |
+| 1        | cust1       | Alice | alice@example.com | NY   | 2024-01-01 00:00:00 | NULL                 |
+| 2        | cust2       | Bob   | bob@example.com   | CA   | 2024-01-01 00:00:00 | **2024-06-15 09:00** |
 
----
+______________________________________________________________________
 
 ## :material-numeric-7-circle: Step 3 — Insert New History Rows
 
@@ -209,14 +209,14 @@ WHERE
 
 **`dim_customer_history` after Step 3:**
 
-| hist_key | customer_id | name    | email                  | city | valid_from          | valid_to            |
-|----------|-------------|---------|------------------------|------|---------------------|---------------------|
-| 1        | cust1       | Alice   | alice@example.com      | NY   | 2024-01-01 00:00:00 | NULL                |
-| 2        | cust2       | Bob     | bob@example.com        | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3        | cust2       | Bobby   | bob@newdomain.com      | TX   | 2024-06-15 09:00:00 | NULL                |
-| 4        | cust3       | Charlie | charlie@example.com    | WA   | 2024-06-15 09:00:00 | NULL                |
+| hist_key | customer_id | name    | email               | city | valid_from          | valid_to            |
+| -------- | ----------- | ------- | ------------------- | ---- | ------------------- | ------------------- |
+| 1        | cust1       | Alice   | alice@example.com   | NY   | 2024-01-01 00:00:00 | NULL                |
+| 2        | cust2       | Bob     | bob@example.com     | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3        | cust2       | Bobby   | bob@newdomain.com   | TX   | 2024-06-15 09:00:00 | NULL                |
+| 4        | cust3       | Charlie | charlie@example.com | WA   | 2024-06-15 09:00:00 | NULL                |
 
----
+______________________________________________________________________
 
 ## :material-numeric-8-circle: Step 4 — Upsert Main Dimension with New `hist_key`
 
@@ -254,15 +254,15 @@ WHEN NOT MATCHED THEN
 
 **`dim_customer` after Step 4:**
 
-| customer_id | name    | email                  | city | hist_key | updated_at          |
-|-------------|---------|------------------------|------|----------|---------------------|
-| cust1       | Alice   | alice@example.com      | NY   | 1        | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | bob@newdomain.com      | TX   | **3**    | 2024-06-15 09:00:00 |
-| cust3       | Charlie | charlie@example.com    | WA   | **4**    | 2024-06-15 09:00:00 |
+| customer_id | name    | email               | city | hist_key | updated_at          |
+| ----------- | ------- | ------------------- | ---- | -------- | ------------------- |
+| cust1       | Alice   | alice@example.com   | NY   | 1        | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | bob@newdomain.com   | TX   | **3**    | 2024-06-15 09:00:00 |
+| cust3       | Charlie | charlie@example.com | WA   | **4**    | 2024-06-15 09:00:00 |
 
 `cust2.hist_key` now points to hist_key 3 — the active TX version.
 
----
+______________________________________________________________________
 
 ## :material-numeric-9-circle: Assertions After Batch 1
 
@@ -293,7 +293,7 @@ SELECT hist_key FROM dim_customer WHERE customer_id = 'cust1';
 -- Expected: 1
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-10-circle: Second Batch — `cust2` Changes Again
 
@@ -348,15 +348,15 @@ WHEN MATCHED THEN
 
 **`dim_customer_history` — full trail for `cust2`:**
 
-| hist_key | name  | email                | city | valid_from          | valid_to            |
-|----------|-------|----------------------|------|---------------------|---------------------|
-| 2        | Bob   | bob@example.com      | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3        | Bobby | bob@newdomain.com    | TX   | 2024-06-15 09:00:00 | 2024-08-01 14:00:00 |
-| 5        | Bobby | bobby@newcorp.com    | FL   | 2024-08-01 14:00:00 | NULL                |
+| hist_key | name  | email             | city | valid_from          | valid_to            |
+| -------- | ----- | ----------------- | ---- | ------------------- | ------------------- |
+| 2        | Bob   | bob@example.com   | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3        | Bobby | bob@newdomain.com | TX   | 2024-06-15 09:00:00 | 2024-08-01 14:00:00 |
+| 5        | Bobby | bobby@newcorp.com | FL   | 2024-08-01 14:00:00 | NULL                |
 
----
+______________________________________________________________________
 
-## :material-numeric-11-circle: The `hist_key` FK Join Pattern
+## :material-numeric-9-plus-circle: The `hist_key` FK Join Pattern
 
 Because `dim_customer.hist_key` always points to the active history row, enriching a query
 with the latest history record requires a simple equi-join — no date-range predicate needed:
@@ -388,9 +388,9 @@ WHERE customer_id = 'cust2'
 ORDER BY valid_from;
 ```
 
----
+______________________________________________________________________
 
-## :material-numeric-12-circle: Optimise and Clean Up
+## :material-numeric-9-plus-circle: Optimise and Clean Up
 
 ```sql
 OPTIMIZE dim_customer         ZORDER BY (customer_id);

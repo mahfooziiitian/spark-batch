@@ -1,28 +1,25 @@
 # :material-null: NULL Ordering
 
-By default, Spark SQL sorts NULLs **first** in ascending order and **last** in descending order. Override this with `NULLS FIRST` / `NULLS LAST`.
+Spark 4.2 sorts NULLs first for ascending order and last for descending order unless you override the placement explicitly.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
-```mermaid
-graph LR
-    A["ORDER BY col ASC"] --> B["NULLS FIRST (default)"]
-    C["ORDER BY col DESC"] --> D["NULLS LAST (default)"]
-    E["NULLS FIRST / NULLS LAST"] --> F["Explicit override"]
-```
+| Query shape                | Verified default  |
+| -------------------------- | ----------------- |
+| `ORDER BY col ASC`         | `NULLS FIRST`     |
+| `ORDER BY col DESC`        | `NULLS LAST`      |
+| `ORDER BY ... NULLS FIRST` | Explicit override |
+| `ORDER BY ... NULLS LAST`  | Explicit override |
 
----
+### :material-animation-play: Interactive Visualization — NULL Sort Placement
 
-## :material-table: Default Behaviour
+<div id="viz-null-ordering" class="ts-viz"></div>
 
-| Direction | Default NULL placement |
-|-----------|----------------------|
-| `ASC` | NULLS FIRST |
-| `DESC` | NULLS LAST |
+Toggle direction and NULL placement to see how the sorted row order changes. This matches the Spark 4.2 defaults and overrides shown below.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -30,72 +27,150 @@ graph LR
 ORDER BY col [ASC | DESC] [NULLS FIRST | NULLS LAST]
 ```
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Examples
+## :material-flask-outline: Verified Examples
 
-### Push NULLs to the end in ascending order
+### Ascending default
 
 ```sql
-SELECT name, age FROM person
+SELECT age
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT))
+AS t(age)
+ORDER BY age ASC;
+```
+
+```text
++----+
+|age |
++----+
+|NULL|
+|NULL|
+|18  |
+|30  |
+|50  |
++----+
+```
+
+### Ascending with `NULLS LAST`
+
+```sql
+SELECT age
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT))
+AS t(age)
 ORDER BY age ASC NULLS LAST;
--- 18, 30, 30, 50, 50, NULL, NULL
 ```
 
-### Pull NULLs to the front in descending order
+```text
++----+
+|age |
++----+
+|18  |
+|30  |
+|50  |
+|NULL|
+|NULL|
++----+
+```
+
+### Descending default
 
 ```sql
-SELECT name, age FROM person
+SELECT age
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT))
+AS t(age)
+ORDER BY age DESC;
+```
+
+```text
++----+
+|age |
++----+
+|50  |
+|30  |
+|18  |
+|NULL|
+|NULL|
++----+
+```
+
+### Descending with `NULLS FIRST`
+
+```sql
+SELECT age
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT))
+AS t(age)
 ORDER BY age DESC NULLS FIRST;
--- NULL, NULL, 50, 50, 30, 30, 18
 ```
 
-### Multiple columns — mixed NULL placement
+```text
++----+
+|age |
++----+
+|NULL|
+|NULL|
+|50  |
+|30  |
+|18  |
++----+
+```
+
+### Window ordering accepts the same NULL directives
 
 ```sql
-SELECT region, revenue FROM sales
-ORDER BY region ASC NULLS LAST,
-         revenue DESC NULLS LAST;
+SELECT age, ROW_NUMBER() OVER (ORDER BY age DESC NULLS FIRST) AS rn
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT))
+AS t(age);
 ```
 
-### NULLS LAST for "most recent first" with nullable dates
-
-```sql
-SELECT user_id, last_login
-FROM users
-ORDER BY last_login DESC NULLS LAST;
--- Active users first, never-logged-in users at the end
+```text
++----+---+
+|age |rn |
++----+---+
+|NULL|1  |
+|NULL|2  |
+|50  |3  |
+|30  |4  |
+|18  |5  |
++----+---+
 ```
 
-### Window function ordering with NULLS LAST
+______________________________________________________________________
 
-```sql
-SELECT
-    customer_id,
-    order_date,
-    ROW_NUMBER() OVER (
-        PARTITION BY customer_id
-        ORDER BY order_date DESC NULLS LAST
-    ) AS rn
-FROM orders;
-```
+## :material-lightbulb-outline: Practical Takeaways
 
----
+- Remember the defaults: ascending puts NULLs first, descending puts NULLs last.
+- Add `NULLS FIRST` or `NULLS LAST` when output order must be obvious to readers.
+- The same syntax works in window `ORDER BY` clauses.
 
-## :material-compare: Compare Default vs Explicit
-
-| Query | NULL rows appear |
-|-------|-----------------|
-| `ORDER BY age ASC` | First (default) |
-| `ORDER BY age ASC NULLS LAST` | Last |
-| `ORDER BY age DESC` | Last (default) |
-| `ORDER BY age DESC NULLS FIRST` | First |
-
----
-
-## :material-magnify: Behavior Notes
-
-1. The same `NULLS FIRST` / `NULLS LAST` syntax works inside `OVER (ORDER BY ...)` for window functions.
-2. In Databricks Delta Lake, `OPTIMIZE ZORDER BY` ignores NULLs and places them in a consistent internal position.
-3. When sorting on multiple columns, each column can have its own `NULLS FIRST` / `NULLS LAST` directive.
-
+<script src="../../assets/js/querying-nulls-viz.js"></script>

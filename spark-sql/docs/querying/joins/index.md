@@ -1,125 +1,124 @@
 # :material-link: Join Overview
 
-Joins combine rows from two datasets based on a matching condition.
-Spark supports multiple join **types**, **strategies**, and **hints**.
+Joins combine rows from two relations according to a match predicate. In Spark 4.2, the predicate shape determines whether Catalyst can plan an equi-join operator such as `BroadcastHashJoin`, `SortMergeJoin`, or `ShuffledHashJoin`, or whether it must fall back to cartesian or nested-loop style execution.
 
----
+### :material-animation-play: Interactive Visualization — Join Shape to Physical Plan
+
+<div id="viz-joins-overview-core" class="ts-viz"></div>
+
+Switch between common join shapes to see the physical operator that PySpark 4.2 produced during verification.
+
+<script src="../../assets/js/querying-joins-core-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-view-grid: In This Section
 
-| Topic | What You Will Learn |
-|-------|---------------------|
-| [Join Types](types/index.md) | INNER, LEFT/RIGHT/FULL OUTER, LEFT SEMI, LEFT ANTI, CROSS, Non-Equi |
-| [Join Expressions](expression.md) | ON clause, USING, range, function-based, OR conditions |
-| [Join Strategies](strategy/index.md) | BHJ, SMJ, SHJ, BNLJ, SSMJ, SRNLP — when Spark picks each |
-| [Join Hints](hints/index.md) | BROADCAST, MERGE, SHUFFLE_HASH, SHUFFLE_REPLICATE_NL, SKEW |
-| [Join Issues](issues/index.md) | Duplicate columns, skewed keys, data explosion, null traps |
-| [Join Optimization](optimization/index.md) | Broadcast, repartition, early filtering, AQE, skew handling |
+| Topic                                      | What You Will Learn                                                                            |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| [Join Types](types/index.md)               | INNER, LEFT/RIGHT/FULL OUTER, LEFT SEMI, LEFT ANTI, CROSS, and non-equi joins                  |
+| [Join Expressions](expression.md)          | `ON`, `USING`, `NATURAL JOIN`, comma syntax, and range predicates                              |
+| [Join Strategies](strategy/index.md)       | Broadcast hash, sort-merge, shuffle hash, nested-loop, and cartesian plans                     |
+| [Join Hints](hints/index.md)               | `BROADCAST`, `MERGE`, `SHUFFLE_HASH`, `SHUFFLE_REPLICATE_NL`, and how Spark resolves conflicts |
+| [Join Issues](issues/index.md)             | Duplicate columns, skewed keys, fan-out, and null traps                                        |
+| [Join Optimization](optimization/index.md) | Broadcast sizing, repartitioning, early filtering, and AQE                                     |
 
----
+______________________________________________________________________
 
-## :material-sitemap: Architecture
+## :material-check-decagram: Verified Planner Behavior in PySpark 4.2
 
-```mermaid
-graph TD
-    A[":material-link: Join"] --> T["Join Types"]
-    A --> S["Join Strategies"]
-    A --> H["Join Hints"]
-    T --> I["Inner"]
-    T --> O["Outer (Left / Right / Full)"]
-    T --> SM["Semi / Anti"]
-    T --> X["Cross / Non-Equi"]
-    S --> BHJ["Broadcast Hash Join"]
-    S --> SMJ["Sort-Merge Join"]
-    S --> SHJ["Shuffle Hash Join"]
-    S --> NL["Nested Loop Join"]
-    H --> BR["BROADCAST"]
-    H --> MR["MERGE"]
-    H --> SH["SHUFFLE_HASH"]
-```
+| Join shape                                | Example pattern                                       | Verified physical outcome                                          |
+| ----------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| Equi join with broadcast hint             | `... ON l.k = r.k` + `/*+ BROADCAST(r) */`            | `BroadcastHashJoin`                                                |
+| Equi join with merge hint                 | `... ON l.k = r.k` + `/*+ MERGE(r) */`                | `SortMergeJoin`                                                    |
+| Equi join with shuffle hash hint          | `... ON l.k = r.k` + `/*+ SHUFFLE_HASH(r) */`         | `ShuffledHashJoin`                                                 |
+| Equi join with replicate-NL hint          | `... ON l.k = r.k` + `/*+ SHUFFLE_REPLICATE_NL(r) */` | `CartesianProduct` in `EXPLAIN FORMATTED`                          |
+| Pure non-equi join                        | `... ON p >= start AND p < end`                       | `CartesianProduct` in the tested plan                              |
+| Comma join with no predicate              | `FROM a, b`                                           | `CartesianProduct`                                                 |
+| Comma join with equi predicate in `WHERE` | `FROM a, b WHERE a.id = b.id`                         | Optimized back into an equi join (`SortMergeJoin` in the test run) |
 
----
+!!! note "What the plan names tell you"
+
+    `EXPLAIN FORMATTED` prints the physical operator name that Spark actually chose. That is the most reliable way to confirm whether a hint or predicate shape changed the strategy.
+
+______________________________________________________________________
 
 ## :material-table: Join Type Quick Reference
 
-| Join Type | Left Rows | Right Rows | NULLs | Typical Use |
-|-----------|:---------:|:----------:|:-----:|-------------|
-| `INNER JOIN` | Matched | Matched | None | Combine related tables |
-| `LEFT JOIN` | All | Matched | Right cols | Keep all left rows |
-| `RIGHT JOIN` | Matched | All | Left cols | Keep all right rows |
-| `FULL OUTER JOIN` | All | All | Both sides | Reconcile two datasets |
-| `LEFT SEMI JOIN` | Matched | Not returned | None | Existence filter |
-| `LEFT ANTI JOIN` | Unmatched | Not returned | None | Find missing records |
-| `CROSS JOIN` | All | All (×) | None | Generate combinations |
-| Non-equi (`<`, `BETWEEN`) | Conditional | Conditional | None | Range matching |
+| Join type         | Rows returned                                  | Output columns | Typical use                          |
+| ----------------- | ---------------------------------------------- | -------------- | ------------------------------------ |
+| `INNER JOIN`      | Matched rows only                              | Left + right   | Combine related facts and dimensions |
+| `LEFT JOIN`       | All left rows + right matches                  | Left + right   | Preserve the driving table           |
+| `RIGHT JOIN`      | All right rows + left matches                  | Left + right   | Mirror of left outer join            |
+| `FULL OUTER JOIN` | All rows from both sides                       | Left + right   | Reconciliation and gap analysis      |
+| `LEFT SEMI JOIN`  | Left rows that have a match                    | Left only      | Existence filtering                  |
+| `LEFT ANTI JOIN`  | Left rows with no match                        | Left only      | Missing-key detection                |
+| `CROSS JOIN`      | Every left/right combination                   | Left + right   | Intentional cartesian expansion      |
+| Non-equi join     | Rows satisfying range or inequality predicates | Left + right   | Interval matching and overlap logic  |
 
----
+______________________________________________________________________
+
+## :material-sitemap: Join Strategy Selection
+
+```mermaid
+graph TD
+    A[Join request] --> B{Usable equi keys?}
+    B -- Yes --> C{Broadcast hint or small side?}
+    C -- Yes --> BHJ[BroadcastHashJoin]
+    C -- No --> D{MERGE or sorted large inputs?}
+    D -- Yes --> SMJ[SortMergeJoin]
+    D -- No --> E{SHUFFLE_HASH hint or hash-friendly sizes?}
+    E -- Yes --> SHJ[ShuffledHashJoin]
+    E -- No --> SMJ2[SortMergeJoin fallback]
+    B -- No --> NL[Cartesian / nested-loop family]
+```
+
+______________________________________________________________________
 
 ## :material-flask-outline: Basic Example
 
 ```sql
--- Equi join: orders enriched with customer name
-SELECT o.order_id, o.amount, c.name AS customer_name
-FROM orders o
-JOIN customers c
+SELECT
+    o.order_id,
+    o.amount,
+    c.name AS customer_name
+FROM orders AS o
+JOIN customers AS c
     ON o.customer_id = c.customer_id;
+```
 
--- Broadcast hint for small dimension table
+```sql
 SELECT /*+ BROADCAST(c) */
-    o.order_id, o.amount, c.name AS customer_name
-FROM orders o
-JOIN customers c
+    o.order_id,
+    o.amount,
+    c.name AS customer_name
+FROM orders AS o
+JOIN customers AS c
     ON o.customer_id = c.customer_id;
 ```
 
----
+______________________________________________________________________
 
-## :material-cog-outline: Strategy Selection (Quick Reference)
+## :material-magnify: Practical Notes
 
-```mermaid
-flowchart TD
-    A[Join Request] --> B{Equi-join?}
-    B -- No --> NL[Broadcast Nested Loop Join]
-    B -- Yes --> C{One side broadcastable?}
-    C -- Yes --> BHJ[Broadcast Hash Join]
-    C -- No --> D{preferSortMergeJoin?}
-    D -- Yes --> SMJ[Sort-Merge Join]
-    D -- No --> E{Enough memory for hash?}
-    E -- Yes --> SHJ[Shuffle Hash Join]
-    E -- No --> SMJ2[Sort-Merge Join fallback]
-```
+1. Standard `=` does not match `NULL` join keys; use `<=>` for null-safe equality.
+2. `USING (col)` collapses only the listed join column from the output; other same-named columns still appear twice.
+3. `NATURAL JOIN` matches on every common column name and collapses those common columns to one output copy.
+4. Complex predicates such as ranges or `OR` conditions can prevent Spark from extracting equi keys, which is why they often land in cartesian or nested-loop style plans.
+5. Hints influence planning, but unsupported combinations can still fall back; for example, a tested `FULL OUTER JOIN` with `BROADCAST` still planned as `SortMergeJoin`.
 
----
-
-## :material-check-all: Performance Checklist
-
-| Check | Action |
-|-------|--------|
-| Small dimension table? | Add `BROADCAST` hint or lower `autoBroadcastJoinThreshold` |
-| Large fact-fact join? | Ensure both sides are partitioned on join key |
-| Skewed join key? | Enable AQE skew join or use salting |
-| Non-equi condition? | Pre-filter to reduce rows before the join |
-| Slow join plan? | Run `EXPLAIN` and inspect join strategy in the plan |
-
----
-
-## :material-magnify: Behavior Notes
-
-1. Nulls in join key columns are **never equal** under standard `=`; use `<=>` for null-safe matching.
-2. `LEFT SEMI JOIN` is more efficient than `INNER JOIN` when only left-side columns are needed.
-3. Broadcast joins are fast but require the small side to fit in executor memory.
-4. AQE (`spark.sql.adaptive.enabled = true`) can dynamically switch strategies at runtime.
-5. Use `EXPLAIN FORMATTED` to verify which join strategy Spark has chosen.
-
----
+______________________________________________________________________
 
 ## :material-code-tags: EXPLAIN Tip
 
 ```sql
 EXPLAIN FORMATTED
-SELECT o.order_id, c.name
-FROM orders o
-JOIN customers c
+SELECT /*+ BROADCAST(c) */
+    o.order_id,
+    c.name
+FROM orders AS o
+JOIN customers AS c
     ON o.customer_id = c.customer_id;
--- Look for: BroadcastHashJoin, SortMergeJoin, ShuffledHashJoin in the plan
 ```
+
+Look for operator names such as `BroadcastHashJoin`, `SortMergeJoin`, `ShuffledHashJoin`, or `CartesianProduct`.

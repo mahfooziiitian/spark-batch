@@ -3,7 +3,7 @@
 A complete walkthrough: create both tables, seed initial state, process a change batch
 across two steps, verify each table, run a second batch, and explore point-in-time queries.
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Create Both Tables
 
@@ -34,7 +34,7 @@ USING DELTA
 PARTITIONED BY (customer_id);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Seed the Current Table
 
@@ -59,14 +59,14 @@ AS t(customer_id, name, email, city);
 
 `dim_customer_current`
 
-| customer_id | name  | email               | city | updated_at          |
-|-------------|-------|---------------------|------|---------------------|
-| cust1       | Alice | alice@example.com   | NY   | 2024-01-01 00:00:00 |
-| cust2       | Bob   | bob@example.com     | CA   | 2024-01-01 00:00:00 |
+| customer_id | name  | email             | city | updated_at          |
+| ----------- | ----- | ----------------- | ---- | ------------------- |
+| cust1       | Alice | alice@example.com | NY   | 2024-01-01 00:00:00 |
+| cust2       | Bob   | bob@example.com   | CA   | 2024-01-01 00:00:00 |
 
 `dim_customer_history` — **empty** (0 rows)
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: First Incoming Batch
 
@@ -80,7 +80,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Pre-Batch Inspection
 
@@ -105,12 +105,12 @@ LEFT JOIN dim_customer_current AS c USING (customer_id);
 ```
 
 | customer_id | new_name | old_name | old_city | new_city | action    |
-|-------------|----------|----------|----------|----------|-----------|
+| ----------- | -------- | -------- | -------- | -------- | --------- |
 | cust1       | Alice    | Alice    | NY       | NY       | UNCHANGED |
 | cust2       | Bobby    | Bob      | CA       | TX       | CHANGED   |
 | cust3       | Charlie  | NULL     | NULL     | WA       | NEW       |
 
----
+______________________________________________________________________
 
 ## :material-numeric-5-circle: Step 1 — Archive Changed Rows
 
@@ -136,10 +136,10 @@ WHERE c.row_hash <> (
 **`dim_customer_history` after Step 1:**
 
 | customer_id | name | email           | city | valid_from          | valid_to            |
-|-------------|------|-----------------|------|---------------------|---------------------|
+| ----------- | ---- | --------------- | ---- | ------------------- | ------------------- |
 | cust2       | Bob  | bob@example.com | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
 
----
+______________________________________________________________________
 
 ## :material-numeric-6-circle: Step 2 — Upsert the Current Table
 
@@ -173,13 +173,13 @@ WHEN NOT MATCHED THEN
 
 **`dim_customer_current` after Step 2:**
 
-| customer_id | name    | email                  | city | updated_at          |
-|-------------|---------|------------------------|------|---------------------|
-| cust1       | Alice   | alice@example.com      | NY   | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | bob@newdomain.com      | TX   | 2024-06-15 09:00:00 |
-| cust3       | Charlie | charlie@example.com    | WA   | 2024-06-15 09:00:00 |
+| customer_id | name    | email               | city | updated_at          |
+| ----------- | ------- | ------------------- | ---- | ------------------- |
+| cust1       | Alice   | alice@example.com   | NY   | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | bob@newdomain.com   | TX   | 2024-06-15 09:00:00 |
+| cust3       | Charlie | charlie@example.com | WA   | 2024-06-15 09:00:00 |
 
----
+______________________________________________________________________
 
 ## :material-numeric-7-circle: Assertions After Batch 1
 
@@ -205,7 +205,7 @@ SELECT COUNT(*) FROM dim_customer_history WHERE customer_id = 'cust3';
 -- Expected: 0
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-8-circle: Second Batch — `cust2` Changes Again
 
@@ -244,12 +244,12 @@ WHEN MATCHED AND tgt.row_hash <> src.row_hash THEN
 
 **`dim_customer_history` now shows two rows for `cust2`:**
 
-| customer_id | name  | email                | city | valid_from          | valid_to            |
-|-------------|-------|----------------------|------|---------------------|---------------------|
-| cust2       | Bob   | bob@example.com      | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| cust2       | Bobby | bob@newdomain.com    | TX   | 2024-06-15 09:00:00 | 2024-08-01 14:00:00 |
+| customer_id | name  | email             | city | valid_from          | valid_to            |
+| ----------- | ----- | ----------------- | ---- | ------------------- | ------------------- |
+| cust2       | Bob   | bob@example.com   | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| cust2       | Bobby | bob@newdomain.com | TX   | 2024-06-15 09:00:00 | 2024-08-01 14:00:00 |
 
----
+______________________________________________________________________
 
 ## :material-numeric-9-circle: Point-in-Time Query
 
@@ -273,10 +273,10 @@ WHERE customer_id = 'cust2'
 ```
 
 | customer_id | name | email           | city | valid_from          | valid_to            | source     |
-|-------------|------|-----------------|------|---------------------|---------------------|------------|
+| ----------- | ---- | --------------- | ---- | ------------------- | ------------------- | ---------- |
 | cust2       | Bob  | bob@example.com | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 | historical |
 
----
+______________________________________________________________________
 
 ## :material-numeric-10-circle: Full Timeline View
 
@@ -308,9 +308,9 @@ FROM dim_customer_current
 ORDER BY customer_id, valid_from;
 ```
 
----
+______________________________________________________________________
 
-## :material-numeric-11-circle: Optimise and Clean Up
+## :material-numeric-9-plus-circle: Optimise and Clean Up
 
 ```sql
 -- Compact current table

@@ -1,10 +1,11 @@
 # :material-swap-horizontal: Migration Guide — Spark 3.5 → 4.0
 
 !!! warning "Breaking Changes"
+
     Spark 4.0 includes several breaking changes from 3.5. Review this guide
     before upgrading.
 
----
+______________________________________________________________________
 
 ## :material-pin: Key Breaking Changes
 
@@ -12,11 +13,11 @@
 
 The most impactful change. `spark.sql.ansi.enabled` defaults to **`true`**.
 
-| Behavior | Spark 3.5 | Spark 4.0 |
-|----------|-----------|-----------|
-| `CAST('abc' AS INT)` | `NULL` | **Error** |
-| `2147483647 + 1` | Wraps silently | **Error** |
-| Invalid INSERT types | Coerced/NULL | **Error** |
+| Behavior             | Spark 3.5      | Spark 4.0 |
+| -------------------- | -------------- | --------- |
+| `CAST('abc' AS INT)` | `NULL`         | **Error** |
+| `2147483647 + 1`     | Wraps silently | **Error** |
+| Invalid INSERT types | Coerced/NULL   | **Error** |
 
 **Fix:** Use `try_cast`, `try_add`, etc. or set `spark.sql.ansi.enabled=false`.
 
@@ -62,29 +63,29 @@ SELECT * FROM t WHERE id NOT IN (1, 2, 3);  -- correct
 
 **Legacy config:** `spark.sql.legacy.ctePrecedencePolicy=EXCEPTION`
 
----
+______________________________________________________________________
 
 ## :material-format-list-bulleted: Full Breaking Changes Table
 
-| Change | Spark 3.5 | Spark 4.0 | Legacy Config |
-|--------|-----------|-----------|---------------|
-| ANSI mode | `false` | `true` | `spark.sql.ansi.enabled=false` |
-| CREATE TABLE default | Hive | `sources.default` (Parquet) | `createHiveTableByDefault=true` |
-| Map key `-0.0` | Kept as-is | Normalized to `0.0` | `disableMapKeyNormalization=true` |
-| `encode()`/`decode()` charsets | Any JDK charset | Limited set only | `spark.sql.legacy.javaCharsets=true` |
-| `!` as NOT | Allowed | Syntax error | `bangEqualsNot=true` |
-| CTE name conflict | Exception | Inner wins | `ctePrecedencePolicy=EXCEPTION` |
-| Time parser policy | Exception | NULL or error | `timeParserPolicy=EXCEPTION` |
-| ORC compression | `snappy` | `zstd` | `orc.compression.codec=snappy` |
-| PostgreSQL TIMESTAMP | No TZ | With TZ | `postgres.datetimeMapping.enabled=true` |
-| MySQL FLOAT | `DoubleType` | `FloatType` | Cast explicitly |
-| MySQL SMALLINT | `IntegerType` | `ShortType` | Cast explicitly |
-| Timestamp → int overflow | Wraps | `NULL` | N/A |
-| View schema compensation | Up-cast only | Full cast | `viewSchemaCompensation=false` |
-| Storage-Partitioned Join | Disabled | Enabled | Set to `false` |
-| `maxSinglePartitionBytes` | `Long.MAX` | `128m` | Set to old value |
+| Change                         | Spark 3.5       | Spark 4.0                   | Legacy Config                           |
+| ------------------------------ | --------------- | --------------------------- | --------------------------------------- |
+| ANSI mode                      | `false`         | `true`                      | `spark.sql.ansi.enabled=false`          |
+| CREATE TABLE default           | Hive            | `sources.default` (Parquet) | `createHiveTableByDefault=true`         |
+| Map key `-0.0`                 | Kept as-is      | Normalized to `0.0`         | `disableMapKeyNormalization=true`       |
+| `encode()`/`decode()` charsets | Any JDK charset | Limited set only            | `spark.sql.legacy.javaCharsets=true`    |
+| `!` as NOT                     | Allowed         | Syntax error                | `bangEqualsNot=true`                    |
+| CTE name conflict              | Exception       | Inner wins                  | `ctePrecedencePolicy=EXCEPTION`         |
+| Time parser policy             | Exception       | NULL or error               | `timeParserPolicy=EXCEPTION`            |
+| ORC compression                | `snappy`        | `zstd`                      | `orc.compression.codec=snappy`          |
+| PostgreSQL TIMESTAMP           | No TZ           | With TZ                     | `postgres.datetimeMapping.enabled=true` |
+| MySQL FLOAT                    | `DoubleType`    | `FloatType`                 | Cast explicitly                         |
+| MySQL SMALLINT                 | `IntegerType`   | `ShortType`                 | Cast explicitly                         |
+| Timestamp → int overflow       | Wraps           | `NULL`                      | N/A                                     |
+| View schema compensation       | Up-cast only    | Full cast                   | `viewSchemaCompensation=false`          |
+| Storage-Partitioned Join       | Disabled        | Enabled                     | Set to `false`                          |
+| `maxSinglePartitionBytes`      | `Long.MAX`      | `128m`                      | Set to old value                        |
 
----
+______________________________________________________________________
 
 ## :material-check-all: Migration Checklist
 
@@ -98,20 +99,20 @@ SELECT * FROM t WHERE id NOT IN (1, 2, 3);  -- correct
 - [ ] **Verify `encode()`/`decode()`** charset usage
 - [ ] Run full test suite with ANSI mode on before deploying
 
----
+______________________________________________________________________
 
 ## :material-new-box: New Features to Adopt
 
 After migration, take advantage of new Spark 4.0 features:
 
-| Feature | Documentation |
-|---------|---------------|
-| Pipe Syntax `\|>` | [Pipe Syntax](../pipe/index.md) |
-| VARIANT data type | [VARIANT](../../schema-tables/types/variant/index.md) |
-| String Collation | [Collation](../collation/index.md) |
-| SQL UDFs | [SQL UDFs](../../functions/sql_udf/index.md) |
-| Session Variables | [Variables](../variables/index.md) |
-| EXECUTE IMMEDIATE | [Execute Immediate](../execute_immediate/index.md) |
-| IDENTIFIER clause | [IDENTIFIER](../identifier/index.md) |
-| SQL Scripting | [Control Flow](../../sql-scripting/index.md) |
-| Lateral Column Alias | [Lateral Alias](../../schema-tables/column/lateral_alias.md) |
+| Feature              | Documentation                                                |
+| -------------------- | ------------------------------------------------------------ |
+| Pipe Syntax `\|>`    | [Pipe Syntax](../pipe/index.md)                              |
+| VARIANT data type    | [VARIANT](../../schema-tables/types/variant/index.md)        |
+| String Collation     | [Collation](../collation/index.md)                           |
+| SQL UDFs             | [SQL UDFs](../../functions/sql-udf/index.md)                 |
+| Session Variables    | [Variables](../variables/index.md)                           |
+| EXECUTE IMMEDIATE    | [Execute Immediate](../execute_immediate/index.md)           |
+| IDENTIFIER clause    | [IDENTIFIER](../identifier/index.md)                         |
+| SQL Scripting        | [Control Flow](../../scripting/index.md)                     |
+| Lateral Column Alias | [Lateral Alias](../../schema-tables/column/lateral-alias.md) |

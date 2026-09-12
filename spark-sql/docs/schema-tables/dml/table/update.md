@@ -1,13 +1,14 @@
 # :material-table-edit: UPDATE
 
 !!! note "[Databricks] Delta Lake Required"
+
     `UPDATE` requires Delta tables. Not supported on Hive, Parquet, or CSV tables.
 
 `UPDATE` modifies existing rows in a Delta Lake table. It is **not** supported
 on Hive, Parquet, or CSV tables — only Delta (and Iceberg/Hudi with their
 respective connectors).
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -17,27 +18,27 @@ SET col1 = expr1 [, col2 = expr2, ...]
 [WHERE condition];
 ```
 
-| Clause | Purpose |
-|--------|---------|
-| `SET` | Assigns new values to one or more columns |
+| Clause  | Purpose                                                        |
+| ------- | -------------------------------------------------------------- |
+| `SET`   | Assigns new values to one or more columns                      |
 | `WHERE` | Restricts which rows are updated (omit to update **all** rows) |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. **Transactional** — The update is atomic; either all matching rows change or
-   none do.
+    none do.
 2. **Predicate push-down** — Spark pushes the `WHERE` clause into the scan,
-   so only relevant data files are rewritten.
+    so only relevant data files are rewritten.
 3. **Column expressions** — The `SET` clause accepts any valid SQL expression,
-   including references to other columns, functions, and CASE expressions.
+    including references to other columns, functions, and CASE expressions.
 4. **No cross-table SET** — You cannot reference another table in `SET`
-   directly. Use `MERGE INTO` for correlated updates.
+    directly. Use `MERGE INTO` for correlated updates.
 5. **Schema evolution** — `UPDATE` cannot add new columns. Use `ALTER TABLE`
-   first if needed.
+    first if needed.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -93,24 +94,24 @@ SET payload.status = 'processed'
 WHERE payload.status = 'raw';
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Fix incorrect values | `UPDATE ... SET ... WHERE` |
-| Bulk recalculate a column | `UPDATE ... SET col = expr` (no WHERE) |
-| Correlated update from another table | Use `MERGE INTO` instead |
-| Backfill a new column with defaults | `UPDATE ... SET new_col = default_val` |
-| Conditional logic per row | `UPDATE ... SET col = CASE ... END` |
+| Scenario                             | Recommended Approach                   |
+| ------------------------------------ | -------------------------------------- |
+| Fix incorrect values                 | `UPDATE ... SET ... WHERE`             |
+| Bulk recalculate a column            | `UPDATE ... SET col = expr` (no WHERE) |
+| Correlated update from another table | Use `MERGE INTO` instead               |
+| Backfill a new column with defaults  | `UPDATE ... SET new_col = default_val` |
+| Conditional logic per row            | `UPDATE ... SET col = CASE ... END`    |
 
----
+______________________________________________________________________
 
 > **See also:** [MERGE INTO](merge.md) for combining `UPDATE`, `INSERT`, and
 > `DELETE` in a single atomic statement.
 
----
+______________________________________________________________________
 
 ## :material-database-arrow-up: Advanced Patterns
 
@@ -173,26 +174,26 @@ SET event_url = REGEXP_REPLACE(event_url, '^http://', 'https://')
 WHERE event_url LIKE 'http://%';
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: UPDATE vs MERGE
 
-| Scenario | Use `UPDATE` | Use `MERGE` |
-|----------|:------------:|:-----------:|
-| Fix values in the same table | :material-check: | Overkill |
-| Apply changes from another table | Via subquery (limited) | :material-check: |
-| Insert missing rows alongside update | :material-close: | :material-check: |
-| Delete some rows while updating others | :material-close: | :material-check: |
-| Complex conditional per-row logic | CASE in SET | :material-check: |
+| Scenario                               |      Use `UPDATE`      |   Use `MERGE`    |
+| -------------------------------------- | :--------------------: | :--------------: |
+| Fix values in the same table           |    :material-check:    |     Overkill     |
+| Apply changes from another table       | Via subquery (limited) | :material-check: |
+| Insert missing rows alongside update   |    :material-close:    | :material-check: |
+| Delete some rows while updating others |    :material-close:    | :material-check: |
+| Complex conditional per-row logic      |      CASE in SET       | :material-check: |
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Reason |
-|-----|--------|
+| Tip                                      | Reason                                           |
+| ---------------------------------------- | ------------------------------------------------ |
 | Filter with partition columns in `WHERE` | Enables partition pruning — rewrites fewer files |
-| Avoid full-table updates without a WHERE | Every data file gets rewritten |
-| Z-ORDER the table by update key | Clusters related rows into fewer files |
-| Run `OPTIMIZE` after large updates | Compacts the newly written small files |
-| Use `MERGE` for cross-table updates | More expressive and often better optimised |
+| Avoid full-table updates without a WHERE | Every data file gets rewritten                   |
+| Z-ORDER the table by update key          | Clusters related rows into fewer files           |
+| Run `OPTIMIZE` after large updates       | Compacts the newly written small files           |
+| Use `MERGE` for cross-table updates      | More expressive and often better optimised       |

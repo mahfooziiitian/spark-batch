@@ -5,10 +5,11 @@
 the specified distance are included in the frame.
 
 !!! abstract "Key Difference from ROWS"
+
     `ROWS` counts physical positions (row 1, row 2, …). `RANGE` measures
     **value distance** — so tied ORDER BY values are always grouped together.
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -28,19 +29,19 @@ INTERVAL 'N' { DAY | HOUR | ... } FOLLOWING   -- time distance after
 UNBOUNDED FOLLOWING                    -- end of partition
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
-| Rule | Detail |
-|------|--------|
-| **Tied values** | All rows sharing the same `ORDER BY` value are always in the same frame — never split |
-| **Supported types** | `ORDER BY` column must be numeric, `DATE`, or `TIMESTAMP` for offset boundaries |
-| **INTERVAL for dates** | Use `INTERVAL 'N' DAY` (or `HOUR`, `MONTH`, etc.) for date/timestamp columns |
-| **Single ORDER BY only** | Offset-based `RANGE` requires exactly one `ORDER BY` column |
-| **UNBOUNDED works on any type** | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` works with strings too |
+| Rule                            | Detail                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------- |
+| **Tied values**                 | All rows sharing the same `ORDER BY` value are always in the same frame — never split |
+| **Supported types**             | `ORDER BY` column must be numeric, `DATE`, or `TIMESTAMP` for offset boundaries       |
+| **INTERVAL for dates**          | Use `INTERVAL 'N' DAY` (or `HOUR`, `MONTH`, etc.) for date/timestamp columns          |
+| **Single ORDER BY only**        | Offset-based `RANGE` requires exactly one `ORDER BY` column                           |
+| **UNBOUNDED works on any type** | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` works with strings too            |
 
----
+______________________________________________________________________
 
 ## :material-sitemap: When to Use RANGE — Decision Flowchart
 
@@ -65,7 +66,7 @@ flowchart TD
     style EITHER fill:#f3e5f5,stroke:#ab47bc,color:#4a148c
 ```
 
----
+______________________________________________________________________
 
 ## :material-cog-sync: How Spark Evaluates a RANGE Frame
 
@@ -99,7 +100,7 @@ flowchart LR
     style T2 fill:#f3e5f5,stroke:#ab47bc
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -141,14 +142,14 @@ ORDER BY sale_date;
 
 ??? success "Expected Output"
 
-    | sale_date  | region | rep   | amount | rolling_7d | Window covers |
-    |------------|--------|-------|-------:|-----------:|---------------|
-    | 2024-01-01 | North  | Alice |    100 |        100 | Jan 01 only |
-    | 2024-01-02 | North  | Bob   |    175 |        275 | Jan 01–02 |
-    | 2024-01-03 | South  | Carol |    200 |        475 | Jan 01–03 |
-    | 2024-01-04 | South  | Dave  |    120 |        595 | Jan 01–04 |
-    | 2024-01-05 | North  | Alice |    150 |       1045 | Jan 01–05 (all 6 rows) |
-    | 2024-01-05 | South  | Carol |    300 |       1045 | Jan 01–05 (tied — same frame) |
+    | sale_date  | region | rep   | amount | rolling_7d | Window covers                              |
+    | ---------- | ------ | ----- | -----: | ---------: | ------------------------------------------ |
+    | 2024-01-01 | North  | Alice |    100 |        100 | Jan 01 only                                |
+    | 2024-01-02 | North  | Bob   |    175 |        275 | Jan 01–02                                  |
+    | 2024-01-03 | South  | Carol |    200 |        475 | Jan 01–03                                  |
+    | 2024-01-04 | South  | Dave  |    120 |        595 | Jan 01–04                                  |
+    | 2024-01-05 | North  | Alice |    150 |       1045 | Jan 01–05 (all 6 rows)                     |
+    | 2024-01-05 | South  | Carol |    300 |       1045 | Jan 01–05 (tied — same frame)              |
     | 2024-01-07 | North  | Bob   |    400 |       1445 | Jan 01–07 (Jan 01 = 6 days back, included) |
     | 2024-01-10 | South  | Dave  |    250 |       1220 | Jan 04–10 (Jan 03 = 7 days back, excluded) |
     | 2024-01-12 | North  | Alice |    180 |        830 | Jan 07–12 (Jan 05 = 7 days back, excluded) |
@@ -165,6 +166,7 @@ ORDER BY sale_date;
     Note: Jan 01, 02, 03 are more than 6 days before Jan 10, so they're excluded.
 
 !!! tip "Why INTERVAL '6' DAY for a 7-day window?"
+
     The current row is day 0. Going back 6 days covers 7 calendar days total
     (today + 6 preceding). This is equivalent to `WHERE sale_date >= current_date - 6`.
 
@@ -194,25 +196,26 @@ ORDER BY region, sale_date;
 
     **North region:**
 
-    | sale_date  | region | rep   | amount | avg_3d | rows_in_frame | Frame dates |
-    |------------|--------|-------|-------:|:------:|:-------------:|-------------|
-    | 2024-01-01 | North  | Alice |    100 | 100 | 1 | Jan 01 only |
-    | 2024-01-02 | North  | Bob   |    175 | 138 | 2 | Jan 01–02 |
-    | 2024-01-05 | North  | Alice |    150 | 150 | 1 | Jan 05 only (Jan 02 is 3 days away) |
-    | 2024-01-07 | North  | Bob   |    400 | 275 | 2 | Jan 05–07 |
-    | 2024-01-12 | North  | Alice |    180 | 180 | 1 | Jan 12 only (Jan 07 is 5 days away) |
+    | sale_date  | region | rep   | amount | avg_3d | rows_in_frame | Frame dates                         |
+    | ---------- | ------ | ----- | -----: | :----: | :-----------: | ----------------------------------- |
+    | 2024-01-01 | North  | Alice |    100 |  100   |       1       | Jan 01 only                         |
+    | 2024-01-02 | North  | Bob   |    175 |  138   |       2       | Jan 01–02                           |
+    | 2024-01-05 | North  | Alice |    150 |  150   |       1       | Jan 05 only (Jan 02 is 3 days away) |
+    | 2024-01-07 | North  | Bob   |    400 |  275   |       2       | Jan 05–07                           |
+    | 2024-01-12 | North  | Alice |    180 |  180   |       1       | Jan 12 only (Jan 07 is 5 days away) |
 
     **South region:**
 
     | sale_date  | region | rep   | amount | avg_3d | rows_in_frame | Frame dates |
-    |------------|--------|-------|-------:|:------:|:-------------:|-------------|
-    | 2024-01-03 | South  | Carol |    200 | 200 | 1 | Jan 03 only |
-    | 2024-01-04 | South  | Dave  |    120 | 160 | 2 | Jan 03–04 |
-    | 2024-01-05 | South  | Carol |    300 | 207 | 3 | Jan 03–05 |
-    | 2024-01-10 | South  | Dave  |    250 | 250 | 1 | Jan 10 only |
-    | 2024-01-14 | South  | Carol |    350 | 350 | 1 | Jan 14 only |
+    | ---------- | ------ | ----- | -----: | :----: | :-----------: | ----------- |
+    | 2024-01-03 | South  | Carol |    200 |  200   |       1       | Jan 03 only |
+    | 2024-01-04 | South  | Dave  |    120 |  160   |       2       | Jan 03–04   |
+    | 2024-01-05 | South  | Carol |    300 |  207   |       3       | Jan 03–05   |
+    | 2024-01-10 | South  | Dave  |    250 |  250   |       1       | Jan 10 only |
+    | 2024-01-14 | South  | Carol |    350 |  350   |       1       | Jan 14 only |
 
 !!! note "Sparse dates"
+
     Unlike `ROWS BETWEEN 2 PRECEDING`, `RANGE` doesn't guarantee 3 rows in the
     frame — only rows within the date distance. With sparse data, the frame may
     contain just 1 row. The `rows_in_frame` column makes this visible.
@@ -244,18 +247,19 @@ ORDER BY score;
 
 ??? success "Expected Output — Peer Tolerance Band"
 
-    | name  | score | peer_count | peer_avg | peer_min | peer_max | peer_names |
-    |-------|------:|:----------:|:--------:|:--------:|:--------:|------------|
-    | Alice |   100 | 3 | 150 | 100 | 200 | [Alice, Bob, Carol] |
-    | Bob   |   150 | 4 | 183 | 100 | 280 | [Alice, Bob, Carol, Dave] |
-    | Carol |   200 | 4 | 208 | 100 | 280 | [Alice, Bob, Carol, Dave] |
-    | Dave  |   280 | 3 | 267 | 200 | 320 | [Carol, Dave, Eve] |
-    | Eve   |   320 | 2 | 300 | 280 | 320 | [Dave, Eve] |
-    | Frank |   500 | 1 | 500 | 500 | 500 | [Frank] |
+    | name  | score | peer_count | peer_avg | peer_min | peer_max | peer_names                |
+    | ----- | ----: | :--------: | :------: | :------: | :------: | ------------------------- |
+    | Alice |   100 |     3      |   150    |   100    |   200    | [Alice, Bob, Carol]       |
+    | Bob   |   150 |     4      |   183    |   100    |   280    | [Alice, Bob, Carol, Dave] |
+    | Carol |   200 |     4      |   208    |   100    |   280    | [Alice, Bob, Carol, Dave] |
+    | Dave  |   280 |     3      |   267    |   200    |   320    | [Carol, Dave, Eve]        |
+    | Eve   |   320 |     2      |   300    |   280    |   320    | [Dave, Eve]               |
+    | Frank |   500 |     1      |   500    |   500    |   500    | [Frank]                   |
 
     Notice how Frank (500) has no peers — nobody else is within ±100 of 500.
 
 !!! tip "Symmetric ranges"
+
     Use both PRECEDING and FOLLOWING for "neighbourhood" queries. The named
     `WINDOW` clause avoids repeating the same frame across multiple functions.
 
@@ -283,21 +287,22 @@ ORDER BY sale_date, amount;
 
 ??? success "Expected Output — ROWS vs RANGE on Tied Dates"
 
-    | sale_date  | rep   | amount | rows_sum | range_sum | Difference? |
-    |------------|-------|-------:|:--------:|:---------:|:-----------:|
-    | 2024-01-01 | Alice |    100 | 100 | 100 | — |
-    | 2024-01-02 | Bob   |    175 | 275 | 275 | — |
-    | 2024-01-03 | Carol |    200 | 475 | 475 | — |
-    | 2024-01-04 | Dave  |    120 | 595 | 595 | — |
-    | 2024-01-05 | Alice |    150 | 745 | **1045** | ← RANGE includes both Jan 05 |
-    | 2024-01-05 | Carol |    300 | 1045 | **1045** | ← RANGE: same total as above |
-    | 2024-01-07 | Bob   |    400 | 1445 | 1445 | — |
+    | sale_date  | rep   | amount | rows_sum | range_sum |         Difference?          |
+    | ---------- | ----- | -----: | :------: | :-------: | :--------------------------: |
+    | 2024-01-01 | Alice |    100 |   100    |    100    |              —               |
+    | 2024-01-02 | Bob   |    175 |   275    |    275    |              —               |
+    | 2024-01-03 | Carol |    200 |   475    |    475    |              —               |
+    | 2024-01-04 | Dave  |    120 |   595    |    595    |              —               |
+    | 2024-01-05 | Alice |    150 |   745    | **1045**  | ← RANGE includes both Jan 05 |
+    | 2024-01-05 | Carol |    300 |   1045   | **1045**  | ← RANGE: same total as above |
+    | 2024-01-07 | Bob   |    400 |   1445   |   1445    |              —               |
 
     **Key insight**: ROWS processes row 5 (amount=150) seeing only rows 1–5, then
     row 6 (amount=300) seeing rows 1–6. RANGE sees both Jan 05 rows as a group —
     both get the cumulative total including all values ≤ Jan 05.
 
 !!! warning "Determinism"
+
     `ROWS` gives different cumulative sums for the two Jan 05 rows (745 vs 1045).
     `RANGE` gives the same sum for both. If your report requires tied dates to show
     identical running totals, use `RANGE`.
@@ -329,18 +334,18 @@ ORDER BY sale_date;
 
 ??? success "Expected Output"
 
-    | sale_date  | rep   | amount | next_3d_total | sales_next_3d | max_next_3d | Window covers |
-    |------------|-------|-------:|--------------:|--------------:|------------:|---------------|
-    | 2024-01-01 | Alice |    100 |           595 |             4 |         200 | Jan 01–04 |
-    | 2024-01-02 | Bob   |    175 |           945 |             5 |         300 | Jan 02–05 (incl. both Jan 05) |
+    | sale_date  | rep   | amount | next_3d_total | sales_next_3d | max_next_3d | Window covers                    |
+    | ---------- | ----- | -----: | ------------: | ------------: | ----------: | -------------------------------- |
+    | 2024-01-01 | Alice |    100 |           595 |             4 |         200 | Jan 01–04                        |
+    | 2024-01-02 | Bob   |    175 |           945 |             5 |         300 | Jan 02–05 (incl. both Jan 05)    |
     | 2024-01-03 | Carol |    200 |           770 |             4 |         300 | Jan 03–06 (both Jan 05 included) |
-    | 2024-01-04 | Dave  |    120 |           970 |             4 |         400 | Jan 04–07 |
-    | 2024-01-05 | Alice |    150 |           850 |             3 |         400 | Jan 05–08 (ties grouped) |
-    | 2024-01-05 | Carol |    300 |           850 |             3 |         400 | Jan 05–08 (same frame) |
-    | 2024-01-07 | Bob   |    400 |           650 |             2 |         400 | Jan 07–10 |
-    | 2024-01-10 | Dave  |    250 |           430 |             2 |         250 | Jan 10–13 |
-    | 2024-01-12 | Alice |    180 |           530 |             2 |         350 | Jan 12–15 |
-    | 2024-01-14 | Carol |    350 |           350 |             1 |         350 | Jan 14–17 |
+    | 2024-01-04 | Dave  |    120 |           970 |             4 |         400 | Jan 04–07                        |
+    | 2024-01-05 | Alice |    150 |           850 |             3 |         400 | Jan 05–08 (ties grouped)         |
+    | 2024-01-05 | Carol |    300 |           850 |             3 |         400 | Jan 05–08 (same frame)           |
+    | 2024-01-07 | Bob   |    400 |           650 |             2 |         400 | Jan 07–10                        |
+    | 2024-01-10 | Dave  |    250 |           430 |             2 |         250 | Jan 10–13                        |
+    | 2024-01-12 | Alice |    180 |           530 |             2 |         350 | Jan 12–15                        |
+    | 2024-01-14 | Carol |    350 |           350 |             1 |         350 | Jan 14–17                        |
 
     **Step-by-step for Jan 04:**
 
@@ -383,7 +388,7 @@ ORDER BY sale_date;
 ??? success "Expected Output"
 
     | sale_date  | rep   | amount | rolling_30d | rolling_7d | week_pct_of_month |
-    |------------|-------|-------:|------------:|-----------:|------------------:|
+    | ---------- | ----- | -----: | ----------: | ---------: | ----------------: |
     | 2024-01-01 | Alice |    100 |         100 |        100 |             100.0 |
     | 2024-01-02 | Bob   |    175 |         275 |        275 |             100.0 |
     | 2024-01-03 | Carol |    200 |         475 |        475 |             100.0 |
@@ -435,21 +440,21 @@ FROM scores;
     SUM(score) OVER (ORDER BY score RANGE BETWEEN 1 PRECEDING AND CURRENT ROW)
     ```
 
----
+______________________________________________________________________
 
 ## :material-compare: RANGE Frame Patterns
 
-| Pattern | Frame | Use Case |
-|---------|-------|----------|
-| 7-day rolling | `RANGE BETWEEN INTERVAL '6' DAY PRECEDING AND CURRENT ROW` | Weekly metrics |
-| 30-day rolling | `RANGE BETWEEN INTERVAL '29' DAY PRECEDING AND CURRENT ROW` | Monthly metrics |
-| Calendar month | `RANGE BETWEEN INTERVAL '1' MONTH PRECEDING AND CURRENT ROW` | Month-to-date |
-| ±100 tolerance band | `RANGE BETWEEN 100 PRECEDING AND 100 FOLLOWING` | Peer comparison |
-| Running total (tie-safe) | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` | Deterministic cumulative |
-| Full partition | `RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | Group total on every row |
-| Future-only window | `RANGE BETWEEN CURRENT ROW AND INTERVAL '3' DAY FOLLOWING` | Forecast / look-ahead |
+| Pattern                  | Frame                                                        | Use Case                 |
+| ------------------------ | ------------------------------------------------------------ | ------------------------ |
+| 7-day rolling            | `RANGE BETWEEN INTERVAL '6' DAY PRECEDING AND CURRENT ROW`   | Weekly metrics           |
+| 30-day rolling           | `RANGE BETWEEN INTERVAL '29' DAY PRECEDING AND CURRENT ROW`  | Monthly metrics          |
+| Calendar month           | `RANGE BETWEEN INTERVAL '1' MONTH PRECEDING AND CURRENT ROW` | Month-to-date            |
+| ±100 tolerance band      | `RANGE BETWEEN 100 PRECEDING AND 100 FOLLOWING`              | Peer comparison          |
+| Running total (tie-safe) | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`          | Deterministic cumulative |
+| Full partition           | `RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`  | Group total on every row |
+| Future-only window       | `RANGE BETWEEN CURRENT ROW AND INTERVAL '3' DAY FOLLOWING`   | Forecast / look-ahead    |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Real-World Scenarios
 
@@ -485,15 +490,15 @@ ORDER BY incident_ts;
 
 ??? success "Expected Output"
 
-    | incident_ts         | severity | description     | incidents_24h | sla_breach |
-    |---------------------|----------|-----------------|:-------------:|:----------:|
-    | 2024-01-01 08:00:00 | P1       | Database timeout |            1 | false      |
-    | 2024-01-01 14:30:00 | P2       | Slow API         |            2 | false      |
-    | 2024-01-01 22:00:00 | P1       | Connection pool  |            3 | false      |
-    | 2024-01-02 06:00:00 | P3       | Disk warning     |            3 | false      |
-    | 2024-01-02 10:00:00 | P1       | Memory leak      |            4 | true       |
-    | 2024-01-02 23:00:00 | P2       | Timeout spike    |            4 | true       |
-    | 2024-01-03 12:00:00 | P1       | Deadlock         |            2 | false      |
+    | incident_ts         | severity | description      | incidents_24h | sla_breach |
+    | ------------------- | -------- | ---------------- | :-----------: | :--------: |
+    | 2024-01-01 08:00:00 | P1       | Database timeout |       1       |   false    |
+    | 2024-01-01 14:30:00 | P2       | Slow API         |       2       |   false    |
+    | 2024-01-01 22:00:00 | P1       | Connection pool  |       3       |   false    |
+    | 2024-01-02 06:00:00 | P3       | Disk warning     |       3       |   false    |
+    | 2024-01-02 10:00:00 | P1       | Memory leak      |       4       |    true    |
+    | 2024-01-02 23:00:00 | P2       | Timeout spike    |       4       |    true    |
+    | 2024-01-03 12:00:00 | P1       | Deadlock         |       2       |   false    |
 
     The 24-hour RANGE window naturally handles timestamps — no need to truncate
     to dates. At `2024-01-02 10:00:00`, it looks back to `2024-01-01 10:00:00`
@@ -527,7 +532,7 @@ ORDER BY price;
 ??? success "Expected Output"
 
     | trade_date | price | similar_count | nearby_avg |
-    |------------|------:|--------------:|-----------:|
+    | ---------- | ----: | ------------: | ---------: |
     | 2024-01-03 |    98 |             3 |      101.7 |
     | 2024-01-01 |   100 |             4 |      101.3 |
     | 2024-01-05 |   102 |             4 |      103.8 |
@@ -541,20 +546,20 @@ ORDER BY price;
     Each row sees its "neighbourhood" — all prices within ±10. Useful for identifying
     clustering and outliers in numeric distributions.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Rolling N-day revenue window | `RANGE BETWEEN INTERVAL 'N' DAY PRECEDING AND CURRENT ROW` |
-| All rows within a numeric tolerance band | `RANGE BETWEEN N PRECEDING AND N FOLLOWING` |
-| Running total where tied dates show the same cumulative | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
-| Sparse time-series (gaps in dates) | `RANGE` — automatically excludes missing dates |
-| Dense, uniform data needing exactly N rows | Use `ROWS` instead — guarantees row count |
-| Multi-column ORDER BY | Use `ROWS` instead — RANGE doesn't support it |
+| Scenario                                                | Recommended Pattern                                        |
+| ------------------------------------------------------- | ---------------------------------------------------------- |
+| Rolling N-day revenue window                            | `RANGE BETWEEN INTERVAL 'N' DAY PRECEDING AND CURRENT ROW` |
+| All rows within a numeric tolerance band                | `RANGE BETWEEN N PRECEDING AND N FOLLOWING`                |
+| Running total where tied dates show the same cumulative | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`        |
+| Sparse time-series (gaps in dates)                      | `RANGE` — automatically excludes missing dates             |
+| Dense, uniform data needing exactly N rows              | Use `ROWS` instead — guarantees row count                  |
+| Multi-column ORDER BY                                   | Use `ROWS` instead — RANGE doesn't support it              |
 
----
+______________________________________________________________________
 
 ## :material-chart-scatter-plot: Interactive Visualization
 
@@ -564,22 +569,23 @@ The shaded region shows which values fall inside the `RANGE` frame.
 <div id="viz-range-timeline" class="ts-viz" style="min-height:280px"></div>
 
 !!! tip "What to notice"
+
     - **Tied dates** (Jan 05) are always grouped together — you can't split them with RANGE.
     - **Date gaps** (e.g., Jan 03 → Jan 05) mean fewer rows in the frame despite the gap being small.
     - Increase the INTERVAL to see how the frame expands to capture more distant values.
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Notes
 
-| Tip | Reason |
-|-----|--------|
-| `RANGE` is slightly slower than `ROWS` | Requires value comparison instead of position lookup |
-| Avoid large INTERVAL on big partitions | Wide frames = more rows aggregated per output row |
-| Use `PARTITION BY` to reduce partition size | Smaller partitions = faster frame evaluation |
-| Prefer `ROWS` for fixed-count windows | If data is dense (no gaps), ROWS and RANGE produce the same result, but ROWS is faster |
+| Tip                                         | Reason                                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `RANGE` is slightly slower than `ROWS`      | Requires value comparison instead of position lookup                                   |
+| Avoid large INTERVAL on big partitions      | Wide frames = more rows aggregated per output row                                      |
+| Use `PARTITION BY` to reduce partition size | Smaller partitions = faster frame evaluation                                           |
+| Prefer `ROWS` for fixed-count windows       | If data is dense (no gaps), ROWS and RANGE produce the same result, but ROWS is faster |
 
----
+______________________________________________________________________
 
 ## :material-link: See Also
 

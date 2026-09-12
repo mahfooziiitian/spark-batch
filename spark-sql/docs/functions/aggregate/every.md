@@ -2,7 +2,7 @@
 
 `every` (also known as `bool_and`) returns `true` if **all** values in the group evaluate to true.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -10,6 +10,14 @@ graph LR
     B --> C[EVERY / BOOL_AND]
     C --> D[One Row per Group]
 ```
+
+### :material-animation-play: Interactive Visualization — EVERY / SOME Truth Table
+
+<div id="viz-every-some" class="ts-viz"></div>
+
+Toggle individual row values to see `EVERY`/`BOOL_AND` and `SOME`/`BOOL_OR`
+recompute live — including how NULLs are skipped rather than treated as
+false.
 
 ## :material-pin: Syntax
 
@@ -67,10 +75,10 @@ FROM tasks
 GROUP BY project;
 ```
 
-| project | all_completed |
-|---------|--------------|
-| Project A | true |
-| Project B | false |
+| project   | all_completed |
+| --------- | ------------- |
+| Project A | true          |
+| Project B | false         |
 
 ### Related: some / bool_or
 
@@ -82,7 +90,7 @@ SELECT some(col) FROM VALUES (false), (true), (false) AS tab(col);
 
 ## :material-brain: every vs some
 
-| Function | Returns true when | Alias |
-|----------|------------------|-------|
-| `every` | All values are true | `bool_and` |
-| `some` | At least one value is true | `bool_or` |
+| Function | Returns true when          | Alias      |
+| -------- | -------------------------- | ---------- |
+| `every`  | All values are true        | `bool_and` |
+| `some`   | At least one value is true | `bool_or`  |

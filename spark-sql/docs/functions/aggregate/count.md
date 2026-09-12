@@ -2,7 +2,14 @@
 
 Count functions determine the number of rows or distinct values in a group.
 
-### :material-sitemap: Overview
+!!! info "Related: COUNT as a general-purpose scalar/window function"
+
+    This page focuses on `COUNT` in an aggregate `GROUP BY` context. For
+    `COUNT(*) OVER (...)` window usage and the `NAMED_STRUCT` trick for
+    counting distinct combinations that include `NULL`, see
+    [Count Functions](../scalar/utility/count.md) in Scalar → Utility.
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,16 +18,24 @@ graph LR
     C --> D[One Row per Group]
 ```
 
+### :material-animation-play: Interactive Visualization — What COUNT(DISTINCT ...) Actually Counts
+
+<div id="viz-count-distinct" class="ts-viz"></div>
+
+Toggle between one column and two columns to see that `COUNT(DISTINCT a, b)`
+counts distinct **tuples** `(a, b)`, not the union of distinct values across
+each column separately.
+
 ## :material-pin: Functions
 
-| Function | Description | Returns |
-|----------|-------------|---------|
-| `COUNT(*)` | Count all rows (including NULLs) | `BIGINT` |
-| `COUNT(expr)` | Count non-NULL values | `BIGINT` |
-| `COUNT(DISTINCT expr)` | Count distinct non-NULL values | `BIGINT` |
-| `COUNT_IF(condition)` | Count rows where condition is true | `BIGINT` |
-| `APPROX_COUNT_DISTINCT(expr)` | Approximate distinct count (faster, ~2% error) | `BIGINT` |
-| `APPROX_PERCENTILE(col, pct, accuracy)` | Approximate percentile value | Same as `col` |
+| Function                                | Description                                    | Returns       |
+| --------------------------------------- | ---------------------------------------------- | ------------- |
+| `COUNT(*)`                              | Count all rows (including NULLs)               | `BIGINT`      |
+| `COUNT(expr)`                           | Count non-NULL values                          | `BIGINT`      |
+| `COUNT(DISTINCT expr)`                  | Count distinct non-NULL values                 | `BIGINT`      |
+| `COUNT_IF(condition)`                   | Count rows where condition is true             | `BIGINT`      |
+| `APPROX_COUNT_DISTINCT(expr)`           | Approximate distinct count (faster, ~2% error) | `BIGINT`      |
+| `APPROX_PERCENTILE(col, pct, accuracy)` | Approximate percentile value                   | Same as `col` |
 
 ## :material-flask-outline: Practical Examples
 
@@ -33,6 +48,29 @@ SELECT
   COUNT(DISTINCT col) AS distinct_count
 FROM VALUES (1), (1), (2), (NULL), (3) AS tab(col);
 -- total_rows=5, non_null_count=4, distinct_count=3
+```
+
+### COUNT(DISTINCT a, b) — Counts Distinct Tuples, Not Per-Column
+
+Passing multiple columns to `COUNT(DISTINCT ...)` counts distinct
+**combinations** of those columns — not the union of distinct values in
+each column individually. Verified on Spark 4.2:
+
+```sql
+SELECT COUNT(DISTINCT a, b)
+FROM VALUES (1, 1), (1, 1), (1, 2), (2, 1) AS tab(a, b);
+-- Result: 3   ((1,1), (1,2), (2,1) — the duplicate (1,1) row is not recounted)
+```
+
+> A row is excluded from the count if **any** of the listed columns is
+> `NULL` — same NULL-exclusion rule as single-column `COUNT(DISTINCT col)`.
+
+### COUNT(DISTINCT ...) Combines Cleanly with FILTER
+
+```sql
+SELECT COUNT(DISTINCT a) FILTER (WHERE b > 0)
+FROM VALUES (1, 1), (1, -1), (2, 1) AS tab(a, b);
+-- Result: 2   (distinct a values among rows where b > 0: {1, 2})
 ```
 
 ### COUNT_IF — Conditional Counting
@@ -81,13 +119,13 @@ GROUP BY region;
 ```
 
 | region | total | completed | cancelled |
-|--------|-------|-----------|-----------|
-| East | 3 | 2 | 1 |
-| West | 3 | 2 | 1 |
+| ------ | ----- | --------- | --------- |
+| East   | 3     | 2         | 1         |
+| West   | 3     | 2         | 1         |
 
 ## :material-brain: COUNT vs APPROX_COUNT_DISTINCT
 
-| Function | Exact | Speed | Use Case |
-|----------|-------|-------|----------|
-| `COUNT(DISTINCT col)` | Yes | Slower (shuffle) | Small-medium data |
-| `APPROX_COUNT_DISTINCT(col)` | ~2% error | Much faster | Large-scale cardinality |
+| Function                     | Exact     | Speed            | Use Case                |
+| ---------------------------- | --------- | ---------------- | ----------------------- |
+| `COUNT(DISTINCT col)`        | Yes       | Slower (shuffle) | Small-medium data       |
+| `APPROX_COUNT_DISTINCT(col)` | ~2% error | Much faster      | Large-scale cardinality |

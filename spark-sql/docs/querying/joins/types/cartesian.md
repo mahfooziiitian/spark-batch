@@ -4,8 +4,7 @@ A **Cartesian join** (also called a **cross join**) is the simplest join type in
 
 > :material-alert:️ **Warning:** Cartesian joins can be extremely expensive and may cause performance or memory issues if used carelessly.
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -14,9 +13,9 @@ graph LR
     C --> O["Result: N x M rows"]
 ```
 
----
+______________________________________________________________________
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Example
 
@@ -45,7 +44,7 @@ ORDER BY p.product_name, r.region_name;
 
 <div id="viz-join-cross" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-calculator: What Happens in a Cartesian Join?
 
@@ -54,17 +53,17 @@ ORDER BY p.product_name, r.region_name;
 - **No join condition** is needed.
 - **Use cases:** Generating all possible pairs, combinations, or when one side is very small.
 
----
+______________________________________________________________________
 
 ## :material-rocket-launch: How Spark Executes a Cartesian Join
 
 1. **Full Shuffle:** Both DataFrames are shuffled across all executors.
 2. **Partition Pairing:** Every partition from the left is paired with every partition from the right.
 3. **Cross Product:** Each pair forms a cross product (Cartesian product).
-4. **Output Size:** Grows **quadratically**:  
+4. **Output Size:** Grows **quadratically**:\
     `numPartitionsA × numPartitionsB`
 
----
+______________________________________________________________________
 
 ## :material-map:️ Visual Flow
 
@@ -96,7 +95,7 @@ flowchart TB
      AB2A2 --> Output4[Result Partition 4]
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: Key Takeaways
 
@@ -104,10 +103,10 @@ flowchart TB
 - **Not a broadcast join:** Both sides can be large, increasing risk of memory issues.
 - **Potential for OutOfMemoryError:** Avoid unless necessary.
 - **Best practices:**
-  - Use only if one side is very small (consider `broadcast` + `explode`).
-  - Use intentionally for generating all combinations.
+    - Use only if one side is very small (consider `broadcast` + `explode`).
+    - Use intentionally for generating all combinations.
 
----
+______________________________________________________________________
 
-**In summary:**  
+**In summary:**\
 Use Cartesian joins with caution—they are powerful but can be dangerous for large datasets!

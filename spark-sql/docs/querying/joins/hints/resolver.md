@@ -1,99 +1,109 @@
 # :material-lightbulb-on: Hint Resolution
 
-How Spark SQL parses, validates, and applies join hints at plan time.
+Spark parses hints early, resolves them against the visible relation names and aliases, and then lets physical planning choose the highest-priority applicable strategy. The details matter because a correctly spelled but out-of-scope relation name is still ignored.
 
----
+### :material-animation-play: Interactive Visualization — Hint Resolution Outcomes
+
+<div id="viz-join-resolver-core" class="ts-viz"></div>
+
+Explore precedence, alias matching, and ignored-hint cases verified with PySpark 4.2.
+
+<script src="../../../assets/js/querying-joins-core-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-sitemap: Resolution Pipeline
 
 ```mermaid
 flowchart LR
-    SQL[SQL Query] -->|parse| HP[Hint Nodes in Unresolved Plan]
-    HP --> LA[Logical Plan Analysis]
-    LA --> OR[Optimizer Rules]
-    OR --> PP[Physical Planning]
-    PP --> O[Optimized Execution]
+    SQL[SQL text] --> P[Parser]
+    P --> UH[Unresolved hint node]
+    UH --> A[Analyzer resolves relation names and aliases]
+    A --> O[Optimizer propagates join hints]
+    O --> J[Physical planner chooses highest-priority applicable strategy]
 ```
 
----
+______________________________________________________________________
 
-## :material-cog-outline: How Resolution Works
+## :material-cog-outline: Verified Resolution Rules
 
-1. **Parse** — The SQL parser identifies `/*+ ... */` comment blocks and attaches `UnresolvedHint` nodes to the logical plan.
-2. **Analyse** — `ResolveHints` resolves table names and aliases inside hint arguments against the current plan scope.
-3. **Optimise** — Rules in the Catalyst optimizer (`EliminateResolvedHint`, `PreferSortMergeJoin`, etc.) propagate hints to the relevant join node.
-4. **Physical plan** — `JoinSelection` reads hint flags on each join node and picks the forced strategy when the hint is applicable.
+1. Hint names are case-insensitive. A tested `broadcast(right_t)` produced the same `BroadcastHashJoin` plan as uppercase `BROADCAST(right_t)`.
+2. Spark resolves the hint argument against the relation name or alias visible in that query block.
+3. A subquery alias works. In the verification run, `/*+ BROADCAST(dim) */` correctly broadcast a subquery aliased as `dim`.
+4. The wrong name is ignored. In the verification run, `/*+ BROADCAST(right_t) */` did **not** apply when the table had been aliased as `r`; the plan fell back to `SortMergeJoin`.
 
----
+______________________________________________________________________
 
-## :material-sort-numeric-ascending: Precedence Rules
+## :material-sort-numeric-ascending: Verified Precedence
 
-| Priority | Hint | Strategy |
-|----------|------|----------|
-| 1 (highest) | `BROADCAST` | Broadcast Hash Join |
-| 2 | `MERGE` | Sort-Merge Join |
-| 3 | `SHUFFLE_HASH` | Shuffle Hash Join |
-| 4 (lowest) | `SHUFFLE_REPLICATE_NL` | Shuffle-and-Replicate Nested Loop |
+| Higher-priority hint | Lower-priority hint    | Verified winner     |
+| -------------------- | ---------------------- | ------------------- |
+| `BROADCAST`          | `MERGE`                | `BroadcastHashJoin` |
+| `MERGE`              | `SHUFFLE_HASH`         | `SortMergeJoin`     |
+| `SHUFFLE_HASH`       | `SHUFFLE_REPLICATE_NL` | `ShuffledHashJoin`  |
 
-When conflicting hints appear on both sides of a join, the higher-priority hint wins. If both sides carry the same hint (e.g., both `BROADCAST`), Spark selects the build side by join type and relative size.
+When both sides carried `BROADCAST`, the symmetric inner-join test built on the right side. Treat that as an observed result, not a universal rule: build-side choice still depends on join type and planning details.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
 ```sql
--- BROADCAST hint — resolved to dim_region alias
-SELECT /*+ BROADCAST(dim) */ f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id;
+SELECT /*+ BROADCAST(dim) */
+    f.order_id,
+    dim.region
+FROM fact_orders AS f
+JOIN dim_region AS dim
+    ON f.region_id = dim.id;
+```
 
--- MERGE hint — forces sort-merge join
-SELECT /*+ MERGE(a) */ a.id, b.value
-FROM large_a a
-JOIN large_b b ON a.id = b.id;
-
--- Hint on a subquery alias
-SELECT /*+ BROADCAST(sub) */ t.id, sub.name
-FROM transactions t
-JOIN (SELECT id, name FROM customers WHERE active = true) sub
+```sql
+SELECT /*+ BROADCAST(sub) */
+    t.id,
+    sub.name
+FROM transactions AS t
+JOIN (
+    SELECT id, name
+    FROM customers
+    WHERE active = true
+) AS sub
     ON t.customer_id = sub.id;
 ```
 
----
+```sql
+SELECT /*+ BROADCAST(dim_region) */
+    f.order_id,
+    dim.region
+FROM fact_orders AS f
+JOIN dim_region AS dim
+    ON f.region_id = dim.id;
+```
 
-## :material-alert-circle: Hint Inapplicability
+The last pattern looks plausible, but once `dim_region` is aliased to `dim`, the hint should target `dim`, not the base name.
 
-A hint is silently ignored (with a `WARN` log) when:
+______________________________________________________________________
 
-| Condition | Hint ignored |
-|-----------|-------------|
-| `BROADCAST` on a table too large to fit in memory | Falls back to SMJ or SHJ |
-| `MERGE` on non-sortable join keys | Falls back to SHJ or BNLJ |
-| Hint table name does not match any relation | Entire hint block ignored |
-| Full outer join with `BROADCAST` | Not supported; falls back to SMJ |
+## :material-alert-circle: Ignored or Rewritten Cases
 
----
+| Situation                                          | Verified outcome                              |
+| -------------------------------------------------- | --------------------------------------------- |
+| Wrong or out-of-scope relation name                | Hint ignored; Spark chose the normal strategy |
+| `FULL OUTER JOIN` with `BROADCAST`                 | Tested plan fell back to `SortMergeJoin`      |
+| `[Databricks] RANGE_JOIN` in open-source Spark 4.2 | Parsed, but did not change the physical plan  |
+| `[Databricks] SKEW(...)` in open-source Spark 4.2  | No join-strategy change in the test run       |
 
-## :material-code-tags: Verify Resolution with EXPLAIN
+______________________________________________________________________
+
+## :material-code-tags: What to Inspect
+
+Use `EXPLAIN FORMATTED` to confirm the final physical operator:
 
 ```sql
 EXPLAIN FORMATTED
-SELECT /*+ BROADCAST(dim) */ f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id;
+SELECT /*+ MERGE(a), SHUFFLE_HASH(b) */ *
+FROM large_a AS a
+JOIN large_b AS b
+    ON a.id = b.id;
 ```
 
-In the output, look for:
-
-- `BroadcastHashJoin` — hint was applied.
-- `SortMergeJoin` — hint was ignored; check logs for the reason.
-- `Hints` section in the formatted plan lists all hint nodes that were parsed.
-
----
-
-## :material-magnify: Behavior Notes
-
-1. Hint resolution is **case-insensitive** for table/alias names.
-2. Using the wrong alias (e.g., `/*+ BROADCAST(fact_orders) */` when the alias is `f`) will cause the hint to be silently discarded.
-3. Multiple hints in one comment block are applied independently: `/*+ BROADCAST(dim), SKEW('orders') */`.
-4. In Databricks Runtime, unresolved hints produce a warning rather than an error.
+If the chosen operator is not what you expected, check the alias names first, then check whether a higher-priority or unsupported join shape overruled the hint.

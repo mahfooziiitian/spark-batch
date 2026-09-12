@@ -1,3 +1,5 @@
+"""Read-only system table / information_schema querying for the ``dbx_mcp`` server."""
+
 import logging
 import re
 
@@ -52,14 +54,23 @@ def query_system_table(
     sql: str,
     row_limit: int = _DEFAULT_ROW_LIMIT,
 ) -> list[dict]:
-    """
-    Run a read-only SQL query against Databricks system tables or
-    information_schema (e.g. system.access.audit, system.billing.usage,
-    system.access.table_lineage, information_schema.volumes).
+    """Run a read-only SQL query against Databricks system tables or information_schema.
+
+    Covers tables such as ``system.access.audit``, ``system.billing.usage``,
+    ``system.access.table_lineage``, and ``information_schema.volumes``.
 
     Only SELECT/SHOW/DESCRIBE/WITH/EXPLAIN statements are permitted.
-    """
 
+    Args:
+        sql: The read-only SQL statement to execute.
+        row_limit: Maximum number of result rows to return.
+
+    Returns:
+        Result rows as a list of ``{column: value}`` dicts, truncated to *row_limit*.
+
+    Raises:
+        ValueError: If *sql* is not a read-only statement, or no warehouse is configured.
+    """
     if not _READONLY_PREFIX.match(sql):
         logger.warning("Rejected non-read-only system table query")
         raise ValueError(

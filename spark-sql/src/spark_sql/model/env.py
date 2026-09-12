@@ -1,3 +1,11 @@
+"""Environment configuration models for the ``dbx_mcp`` server and dashboard tooling.
+
+Defines the required-environment-variable validation used by CLI entry points
+(:func:`validate_env_vars`) and the :class:`EnvConfig` model consumed by
+``DashboardManager``/``spark_sql.util.factory`` to parameterize per-environment
+Databricks resources (warehouse, schema, catalog names).
+"""
+
 import os
 from string import Template
 
@@ -9,6 +17,13 @@ class EnvironmentConfigError(Exception):
 
 
 class DashboardEnvTemplate(Template):
+    """``string.Template`` variant using ``$$`` delimiters for dashboard JSON templating.
+
+    Dashboard definition files already use single ``$`` for Lakeview's own
+    parameter syntax, so this template class uses a doubled ``$$`` delimiter to
+    avoid colliding with it when substituting environment-specific values.
+    """
+
     delimiter = "$$"
     idpattern = r"[_a-z][_a-z0-9]*"
 
@@ -48,6 +63,15 @@ def validate_env_vars() -> None:
 
 
 class EnvConfig(BaseModel):
+    """Per-environment settings used to parameterize dashboard/warehouse deployments.
+
+    Attributes:
+        DBX_WAREHOUSE: Display name of the SQL warehouse to target.
+        ENV_SHORT: Short environment code (e.g. ``"dev"``, ``"stg"``, ``"prod"``).
+        ENV_LONG: Full environment name (e.g. ``"development"``, ``"production"``).
+        AUDIT_SCHEMA: Schema name used for audit-related objects.
+    """
+
     DBX_WAREHOUSE: str
     ENV_SHORT: str
     ENV_LONG: str

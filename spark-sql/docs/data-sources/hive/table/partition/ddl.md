@@ -4,7 +4,7 @@
 partition columns (for example `state=CA/`, `state=NY/`). Spark can then **prune** whole
 directories at query time, reading only the partitions a filter touches.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -14,7 +14,7 @@ graph LR
     E["WHERE state='CA'"] -->|partition pruning| B
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Create a Partitioned Table
 
@@ -49,11 +49,12 @@ graph LR
     ```
 
 !!! note "Partition column position"
+
     With `USING`, the partition column is part of the schema list; with the HiveQL
     `CREATE EXTERNAL TABLE` form it is declared **only** in `PARTITIONED BY`, not the
     column list.
 
----
+______________________________________________________________________
 
 ## :material-cog: Managing Partitions
 
@@ -76,29 +77,30 @@ SHOW PARTITIONS partition_db.zipcodes;
 MSCK REPAIR TABLE partition_db.zipcodes;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. Each partition maps to a physical subdirectory named `col=value`.
 2. Filters on partition columns enable **partition pruning** — unmatched directories are
-   never read.
+    never read.
 3. `MSCK REPAIR TABLE` (or `ALTER TABLE ... RECOVER PARTITIONS`) syncs the metastore with
-   directories added out of band.
+    directories added out of band.
 4. Choose **low-cardinality** partition columns; high-cardinality keys create too many tiny
-   directories.
+    directories.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Frequent filters on a low-cardinality column | Partition on it |
-| Time-series data | Partition by date (e.g. `dt`) |
-| High-cardinality key (e.g. `id`) | Use [bucketing](../bucket.md) instead |
-| Loading many values at once | [Dynamic partition insert](dynamic.md) |
+| Scenario                                     | Recommendation                         |
+| -------------------------------------------- | -------------------------------------- |
+| Frequent filters on a low-cardinality column | Partition on it                        |
+| Time-series data                             | Partition by date (e.g. `dt`)          |
+| High-cardinality key (e.g. `id`)             | Use [bucketing](../bucket.md) instead  |
+| Loading many values at once                  | [Dynamic partition insert](dynamic.md) |
 
 !!! tip "Prune, don't scan"
+
     Partitioning pays off only when queries filter on the partition column. Verify pruning
     in `EXPLAIN` (`PartitionFilters`) and keep partition counts reasonable.

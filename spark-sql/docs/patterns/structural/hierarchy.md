@@ -2,7 +2,7 @@
 
 Query parent-child structures — org charts, product categories, bill-of-materials, file systems — using self-joins and recursive CTEs.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Org Chart Structure
 
@@ -26,7 +26,7 @@ graph TD
     style Hank  fill:#ef5350,color:#fff,stroke:none
 ```
 
----
+______________________________________________________________________
 
 ## :material-database: Sample Data
 
@@ -91,7 +91,7 @@ SELECT * FROM VALUES
 AS t(part_id, parent_part_id, part_name, quantity, unit_cost);
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Core Patterns (Org Chart)
 
@@ -113,18 +113,18 @@ ORDER BY m.name NULLS FIRST, e.name;
 
 ??? success "Expected output"
 
-    | emp_id | employee | title           | salary | manager | manager_title  |
-    |--------|----------|-----------------|--------|---------|----------------|
-    | 1      | Eve      | CEO             | 200000 | NULL    | NULL           |
-    | 2      | Alice    | VP Engineering  | 150000 | Eve     | CEO            |
-    | 3      | Bob      | VP Sales        | 140000 | Eve     | CEO            |
-    | 4      | Carol    | Senior Engineer | 95000  | Alice   | VP Engineering |
-    | 5      | Dave     | Engineer        | 92000  | Alice   | VP Engineering |
-    | 6      | Frank    | Account Exec    | 70000  | Bob     | VP Sales       |
-    | 7      | Grace    | Sales Rep       | 68000  | Bob     | VP Sales       |
-    | 8      | Hank     | Junior Engineer | 60000  | Carol   | Senior Engineer|
+    | emp_id | employee | title           | salary | manager | manager_title   |
+    | ------ | -------- | --------------- | ------ | ------- | --------------- |
+    | 1      | Eve      | CEO             | 200000 | NULL    | NULL            |
+    | 2      | Alice    | VP Engineering  | 150000 | Eve     | CEO             |
+    | 3      | Bob      | VP Sales        | 140000 | Eve     | CEO             |
+    | 4      | Carol    | Senior Engineer | 95000  | Alice   | VP Engineering  |
+    | 5      | Dave     | Engineer        | 92000  | Alice   | VP Engineering  |
+    | 6      | Frank    | Account Exec    | 70000  | Bob     | VP Sales        |
+    | 7      | Grace    | Sales Rep       | 68000  | Bob     | VP Sales        |
+    | 8      | Hank     | Junior Engineer | 60000  | Carol   | Senior Engineer |
 
----
+______________________________________________________________________
 
 ### Pattern 2 — Team size (direct report count)
 
@@ -144,7 +144,7 @@ ORDER BY direct_reports DESC;
 ??? success "Expected output"
 
     | emp_id | manager | title           | direct_reports |
-    |--------|---------|-----------------|----------------|
+    | ------ | ------- | --------------- | -------------- |
     | 1      | Eve     | CEO             | 2              |
     | 2      | Alice   | VP Engineering  | 2              |
     | 3      | Bob     | VP Sales        | 2              |
@@ -154,7 +154,7 @@ ORDER BY direct_reports DESC;
     | 7      | Grace   | Sales Rep       | 0              |
     | 8      | Hank    | Junior Engineer | 0              |
 
----
+______________________________________________________________________
 
 ### Pattern 3 — Two-level hierarchy (grandparent via two self-joins)
 
@@ -175,17 +175,17 @@ ORDER BY grandparent.name NULLS FIRST, parent.name, grandchild.name;
 ??? success "Expected output"
 
     | employee | title           | manager | skip_level_manager |
-    |----------|-----------------|---------|-------------------|
-    | Eve      | CEO             | NULL    | NULL              |
-    | Alice    | VP Engineering  | Eve     | NULL              |
-    | Bob      | VP Sales        | Eve     | NULL              |
-    | Carol    | Senior Engineer | Alice   | Eve               |
-    | Dave     | Engineer        | Alice   | Eve               |
-    | Frank    | Account Exec   | Bob     | Eve               |
-    | Grace    | Sales Rep       | Bob     | Eve               |
-    | Hank     | Junior Engineer | Carol   | Alice             |
+    | -------- | --------------- | ------- | ------------------ |
+    | Eve      | CEO             | NULL    | NULL               |
+    | Alice    | VP Engineering  | Eve     | NULL               |
+    | Bob      | VP Sales        | Eve     | NULL               |
+    | Carol    | Senior Engineer | Alice   | Eve                |
+    | Dave     | Engineer        | Alice   | Eve                |
+    | Frank    | Account Exec    | Bob     | Eve                |
+    | Grace    | Sales Rep       | Bob     | Eve                |
+    | Hank     | Junior Engineer | Carol   | Alice              |
 
----
+______________________________________________________________________
 
 ### Pattern 4 — Recursive CTE (full ancestry path, any depth)
 
@@ -224,18 +224,88 @@ ORDER BY path;
 
 ??? success "Expected output"
 
-    | emp_id | org_chart          | title           | salary | depth | path                         |
-    |--------|--------------------|-----------------|--------|-------|------------------------------|
-    | 1      | Eve                | CEO             | 200000 | 0     | Eve                          |
-    | 2      |   Alice            | VP Engineering  | 150000 | 1     | Eve > Alice                  |
-    | 4      |     Carol          | Senior Engineer | 95000  | 2     | Eve > Alice > Carol          |
-    | 8      |       Hank         | Junior Engineer | 60000  | 3     | Eve > Alice > Carol > Hank   |
-    | 5      |     Dave           | Engineer        | 92000  | 2     | Eve > Alice > Dave           |
-    | 3      |   Bob              | VP Sales        | 140000 | 1     | Eve > Bob                    |
-    | 6      |     Frank          | Account Exec    | 70000  | 2     | Eve > Bob > Frank            |
-    | 7      |     Grace          | Sales Rep       | 68000  | 2     | Eve > Bob > Grace            |
+    | emp_id | org_chart | title           | salary | depth | path                       |
+    | ------ | --------- | --------------- | ------ | ----- | -------------------------- |
+    | 1      | Eve       | CEO             | 200000 | 0     | Eve                        |
+    | 2      | Alice     | VP Engineering  | 150000 | 1     | Eve > Alice                |
+    | 4      | Carol     | Senior Engineer | 95000  | 2     | Eve > Alice > Carol        |
+    | 8      | Hank      | Junior Engineer | 60000  | 3     | Eve > Alice > Carol > Hank |
+    | 5      | Dave      | Engineer        | 92000  | 2     | Eve > Alice > Dave         |
+    | 3      | Bob       | VP Sales        | 140000 | 1     | Eve > Bob                  |
+    | 6      | Frank     | Account Exec    | 70000  | 2     | Eve > Bob > Frank          |
+    | 7      | Grace     | Sales Rep       | 68000  | 2     | Eve > Bob > Grace          |
 
----
+______________________________________________________________________
+
+### Pattern 4b — Iterative SQL Strategy (no `WITH RECURSIVE` support)
+
+If the engine or runtime predates `WITH RECURSIVE` support (Databricks Runtime < 14.1,
+open-source Apache Spark < 4.0 — see the version note below), the equivalent traversal
+can still be built **iteratively** — either by
+chaining a fixed number of self-joins when the maximum depth is known, or by running a
+loop of `UNION`-and-check queries from client code until a pass adds no new rows.
+
+**Fixed-depth iteration (bounded self-joins), generalized from Pattern 3:**
+
+```sql
+WITH level0 AS (
+    SELECT emp_id, name, manager_id, 0 AS depth, CAST(name AS STRING) AS path
+    FROM employees WHERE manager_id IS NULL
+),
+level1 AS (
+    SELECT e.emp_id, e.name, e.manager_id, 1 AS depth, l0.path || ' > ' || e.name AS path
+    FROM employees e JOIN level0 l0 ON e.manager_id = l0.emp_id
+),
+level2 AS (
+    SELECT e.emp_id, e.name, e.manager_id, 2 AS depth, l1.path || ' > ' || e.name AS path
+    FROM employees e JOIN level1 l1 ON e.manager_id = l1.emp_id
+),
+level3 AS (
+    SELECT e.emp_id, e.name, e.manager_id, 3 AS depth, l2.path || ' > ' || e.name AS path
+    FROM employees e JOIN level2 l2 ON e.manager_id = l2.emp_id
+)
+SELECT * FROM level0
+UNION ALL SELECT * FROM level1
+UNION ALL SELECT * FROM level2
+UNION ALL SELECT * FROM level3
+ORDER BY path;
+```
+
+Each `levelN` CTE is a plain equi-self-join against the previous level's output — no
+recursion is required, so this pattern works on any Spark version. Add one more `levelN`
+CTE per extra level of known depth; the loop terminates naturally once a `levelN` CTE
+produces no rows (that level can simply be dropped from the final `UNION ALL`).
+
+**Driver-loop iteration (unknown depth, client-side control):**
+
+```python
+# Pseudocode: repeat until a pass adds no new rows, then stop
+frontier = spark.sql("SELECT emp_id, name, manager_id, 0 AS depth FROM employees WHERE manager_id IS NULL")
+depth = 0
+results = [frontier]
+while frontier.count() > 0:
+    depth += 1
+    frontier = (
+        spark.table("employees").alias("e")
+        .join(frontier.alias("f"), col("e.manager_id") == col("f.emp_id"))
+        .select("e.emp_id", "e.name", "e.manager_id", lit(depth).alias("depth"))
+    )
+    results.append(frontier)
+final = reduce(DataFrame.unionAll, results)
+```
+
+This mirrors what `WITH RECURSIVE` does internally (a `UnionLoopExec` that re-runs the
+recursive step until a pass is empty) but keeps the loop control on the driver — useful
+when the traversal needs to call out to non-SQL logic (e.g. an external service) between
+levels, or when running against an engine that has no recursive-CTE support at all.
+
+!!! warning "Prefer `WITH RECURSIVE` when it's available"
+
+    Both iterative strategies above do the same work as Pattern 4 with more code and, for
+    the driver-loop version, a driver round-trip per level. Use them only as a fallback —
+    reach for `WITH RECURSIVE` first on Databricks Runtime 14.1+ or open-source Spark 4.0+.
+
+______________________________________________________________________
 
 ### Pattern 5 — Subtree salary rollup (total under each manager)
 
@@ -265,7 +335,7 @@ ORDER BY team_total_salary DESC;
 ??? success "Expected output"
 
     | emp_id | manager | title           | team_total_salary | headcount_under |
-    |--------|---------|-----------------|-------------------|-----------------|
+    | ------ | ------- | --------------- | ----------------- | --------------- |
     | 1      | Eve     | CEO             | 875000            | 7               |
     | 2      | Alice   | VP Engineering  | 397000            | 3               |
     | 3      | Bob     | VP Sales        | 278000            | 2               |
@@ -275,7 +345,7 @@ ORDER BY team_total_salary DESC;
     | 7      | Grace   | Sales Rep       | 68000             | 0               |
     | 8      | Hank    | Junior Engineer | 60000             | 0               |
 
----
+______________________________________________________________________
 
 ### Pattern 6 — Leaf nodes (employees with no reports)
 
@@ -290,13 +360,13 @@ ORDER BY e.name;
 ??? success "Expected output"
 
     | emp_id | name  | title           | salary |
-    |--------|-------|-----------------|--------|
+    | ------ | ----- | --------------- | ------ |
     | 5      | Dave  | Engineer        | 92000  |
     | 6      | Frank | Account Exec    | 70000  |
     | 7      | Grace | Sales Rep       | 68000  |
     | 8      | Hank  | Junior Engineer | 60000  |
 
----
+______________________________________________________________________
 
 ### Pattern 7 — Find all ancestors of a specific node
 
@@ -321,13 +391,13 @@ ORDER BY distance;
 ??? success "Expected output"
 
     | emp_id | name  | title           | distance |
-    |--------|-------|-----------------|----------|
+    | ------ | ----- | --------------- | -------- |
     | 8      | Hank  | Junior Engineer | 0        |
     | 4      | Carol | Senior Engineer | 1        |
     | 2      | Alice | VP Engineering  | 2        |
     | 1      | Eve   | CEO             | 3        |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Scenario: Product Category Tree
 
@@ -356,25 +426,25 @@ ORDER BY breadcrumb;
 
 ??? success "Expected output"
 
-    | cat_id | tree_view         | breadcrumb                                   | depth |
-    |--------|-------------------|----------------------------------------------|-------|
-    | 1      | All Products      | All Products                                 | 0     |
-    | 3      |   Clothing        | All Products > Clothing                      | 1     |
-    | 7      |     Men           | All Products > Clothing > Men                | 2     |
-    | 14     |       Jeans       | All Products > Clothing > Men > Jeans        | 3     |
-    | 13     |       T-Shirts    | All Products > Clothing > Men > T-Shirts     | 3     |
-    | 8      |     Women         | All Products > Clothing > Women              | 2     |
-    | 15     |       Dresses     | All Products > Clothing > Women > Dresses    | 3     |
-    | 2      |   Electronics     | All Products > Electronics                   | 1     |
-    | 5      |     Computers     | All Products > Electronics > Computers       | 2     |
-    | 10     |       Desktops    | All Products > Electronics > Computers > Desktops | 3 |
-    | 9      |       Laptops     | All Products > Electronics > Computers > Laptops  | 3 |
-    | 6      |     Phones        | All Products > Electronics > Phones          | 2     |
-    | 12     |       Accessories | All Products > Electronics > Phones > Accessories | 3 |
-    | 11     |       Smartphones | All Products > Electronics > Phones > Smartphones | 3 |
-    | 4      |   Home & Garden   | All Products > Home & Garden                 | 1     |
+    | cat_id | tree_view     | breadcrumb                                        | depth |
+    | ------ | ------------- | ------------------------------------------------- | ----- |
+    | 1      | All Products  | All Products                                      | 0     |
+    | 3      | Clothing      | All Products > Clothing                           | 1     |
+    | 7      | Men           | All Products > Clothing > Men                     | 2     |
+    | 14     | Jeans         | All Products > Clothing > Men > Jeans             | 3     |
+    | 13     | T-Shirts      | All Products > Clothing > Men > T-Shirts          | 3     |
+    | 8      | Women         | All Products > Clothing > Women                   | 2     |
+    | 15     | Dresses       | All Products > Clothing > Women > Dresses         | 3     |
+    | 2      | Electronics   | All Products > Electronics                        | 1     |
+    | 5      | Computers     | All Products > Electronics > Computers            | 2     |
+    | 10     | Desktops      | All Products > Electronics > Computers > Desktops | 3     |
+    | 9      | Laptops       | All Products > Electronics > Computers > Laptops  | 3     |
+    | 6      | Phones        | All Products > Electronics > Phones               | 2     |
+    | 12     | Accessories   | All Products > Electronics > Phones > Accessories | 3     |
+    | 11     | Smartphones   | All Products > Electronics > Phones > Smartphones | 3     |
+    | 4      | Home & Garden | All Products > Home & Garden                      | 1     |
 
----
+______________________________________________________________________
 
 ### Count leaf categories per top-level category
 
@@ -404,14 +474,15 @@ ORDER BY leaf_count DESC;
 
 ??? success "Expected output"
 
-    | top_category  | leaf_count |
-    |---------------|------------|
-    | All Products  | 8          |
+    | top_category | leaf_count |
+    | ------------ | ---------- |
+    | All Products | 8          |
 
 !!! note
+
     Since all leaf nodes (Laptops, Desktops, Smartphones, etc.) ultimately roll up to "All Products", the count is 8. To get counts per **second-level** category, start the anchor from `WHERE depth = 1` or `WHERE parent_id = 1`.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Scenario: Bill of Materials (BOM)
 
@@ -451,24 +522,24 @@ ORDER BY assembly_path;
 
 ??? success "Expected output"
 
-    | part_tree              | part_id  | quantity | unit_cost | extended_cost | depth |
-    |------------------------|----------|----------|-----------|---------------|-------|
-    | Mountain Bike          | BIKE-100 | 1        | 899.99    | 899.99        | 0     |
-    |   Aluminium Frame      | FRAME-01 | 1        | 250.00    | 250.00        | 1     |
-    |   Front Wheel          | WHEEL-01 | 1        | 85.00     | 85.00         | 1     |
-    |     Front Rim          | RIM-01   | 1        | 35.00     | 35.00         | 2     |
-    |     Front Tire         | TIRE-01  | 1        | 22.00     | 22.00         | 2     |
-    |     Spoke Set (36pc)   | SPOKE-01 | 1        | 18.00     | 18.00         | 2     |
-    |   Gear Assembly        | GEAR-01  | 1        | 120.00    | 120.00        | 1     |
-    |     Cassette           | CASS-01  | 1        | 45.00     | 45.00         | 2     |
-    |     Chain              | CHAIN-01 | 1        | 15.00     | 15.00         | 2     |
-    |     Derailleur         | DERR-01  | 1        | 55.00     | 55.00         | 2     |
-    |   Rear Wheel           | WHEEL-02 | 1        | 95.00     | 95.00         | 1     |
-    |     Rear Rim           | RIM-02   | 1        | 38.00     | 38.00         | 2     |
-    |     Rear Tire          | TIRE-02  | 1        | 25.00     | 25.00         | 2     |
-    |     Spoke Set (36pc)   | SPOKE-02 | 1        | 18.00     | 18.00         | 2     |
+    | part_tree        | part_id  | quantity | unit_cost | extended_cost | depth |
+    | ---------------- | -------- | -------- | --------- | ------------- | ----- |
+    | Mountain Bike    | BIKE-100 | 1        | 899.99    | 899.99        | 0     |
+    | Aluminium Frame  | FRAME-01 | 1        | 250.00    | 250.00        | 1     |
+    | Front Wheel      | WHEEL-01 | 1        | 85.00     | 85.00         | 1     |
+    | Front Rim        | RIM-01   | 1        | 35.00     | 35.00         | 2     |
+    | Front Tire       | TIRE-01  | 1        | 22.00     | 22.00         | 2     |
+    | Spoke Set (36pc) | SPOKE-01 | 1        | 18.00     | 18.00         | 2     |
+    | Gear Assembly    | GEAR-01  | 1        | 120.00    | 120.00        | 1     |
+    | Cassette         | CASS-01  | 1        | 45.00     | 45.00         | 2     |
+    | Chain            | CHAIN-01 | 1        | 15.00     | 15.00         | 2     |
+    | Derailleur       | DERR-01  | 1        | 55.00     | 55.00         | 2     |
+    | Rear Wheel       | WHEEL-02 | 1        | 95.00     | 95.00         | 1     |
+    | Rear Rim         | RIM-02   | 1        | 38.00     | 38.00         | 2     |
+    | Rear Tire        | TIRE-02  | 1        | 25.00     | 25.00         | 2     |
+    | Spoke Set (36pc) | SPOKE-02 | 1        | 18.00     | 18.00         | 2     |
 
----
+______________________________________________________________________
 
 ### Rolled-up cost per assembly
 
@@ -497,14 +568,14 @@ ORDER BY total_cost DESC;
 
 ??? success "Expected output"
 
-    | part_id  | part_name      | total_cost | sub_parts |
-    |----------|----------------|------------|-----------|
-    | BIKE-100 | Mountain Bike  | 1621.99    | 13        |
-    | GEAR-01  | Gear Assembly  | 235.00     | 3         |
-    | WHEEL-02 | Rear Wheel     | 176.00     | 3         |
-    | WHEEL-01 | Front Wheel    | 160.00     | 3         |
+    | part_id  | part_name     | total_cost | sub_parts |
+    | -------- | ------------- | ---------- | --------- |
+    | BIKE-100 | Mountain Bike | 1621.99    | 13        |
+    | GEAR-01  | Gear Assembly | 235.00     | 3         |
+    | WHEEL-02 | Rear Wheel    | 176.00     | 3         |
+    | WHEEL-01 | Front Wheel   | 160.00     | 3         |
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
@@ -512,38 +583,108 @@ ORDER BY total_cost DESC;
 
 <div id="viz-hierarchy" class="ts-viz"></div>
 
----
+______________________________________________________________________
+
+## :material-alert-circle-outline: Cycles: When Recursive CTE Isn't Enough
+
+Every pattern above assumes a true tree — each node has exactly one parent, and there
+are no cycles. Real-world "hierarchies" (org charts with dotted-line reporting, category
+graphs, dependency graphs) can violate that assumption. Feeding a cyclic edge list
+straight into `WITH RECURSIVE` **does not loop forever** — Spark hits a hard error once
+the built-in recursion limit is reached:
+
+```text
+org.apache.spark.SparkException: [RECURSION_LEVEL_LIMIT_EXCEEDED] Recursion level
+limit 100 reached but query has not exhausted, try increasing it like
+'WITH RECURSIVE t(col) MAX RECURSION LEVEL 200'. SQLSTATE: 42836
+```
+
+Raising the limit (or adding a `WHERE depth < N` guard, as in Pattern 4b) only delays the
+failure — it does not detect the cycle, so the same nodes keep re-appearing at every
+depth (`A > B > C > A > B > C > ...`) until the guard cuts it off.
+
+For data that may be **cyclic or graph-shaped rather than a strict tree**, use `UNION`
+(not `UNION ALL`) in the recursive step so that a node already reached is not re-visited
+— the same technique used for connected components in
+[Graph Analytics](graph-analytics.md#connected-components-recursive-cte):
+
+```sql
+WITH RECURSIVE reachable AS (
+    SELECT parent AS start, child, 1 AS depth FROM edges WHERE parent = 'A'
+    UNION
+    SELECT r.start, e.child, r.depth + 1
+    FROM reachable r JOIN edges e ON r.child = e.parent
+    WHERE e.child != r.start          -- stop re-entering the start node
+)
+SELECT DISTINCT start, child FROM reachable;
+```
+
+`UNION` deduplicates `(start, child)` pairs across iterations, so once every reachable
+node has been emitted once, the next iteration produces no *new* rows and the recursion
+terminates on its own — no depth guard needed. See
+[Graph Analytics](graph-analytics.md) for the full connected-components and
+shortest-path patterns built on this technique.
+
+______________________________________________________________________
 
 ## :material-swap-horizontal: Approach Comparison
 
-| Approach | Depth supported | Complexity | Use when |
-|----------|----------------|------------|----------|
-| Single self-join | 1 level | Low | Direct manager only |
-| Multi-level self-joins | Fixed N levels | Medium | N-level org chart with known depth |
-| Recursive CTE | Unlimited | Medium | Dynamic depth, path generation |
-| Recursive CTE + rollup | Unlimited | Medium-High | Subtree aggregations (salary, cost) |
+| Approach                           | Depth supported | Complexity  | Use when                                          |
+| ---------------------------------- | --------------- | ----------- | ------------------------------------------------- |
+| Single self-join                   | 1 level         | Low         | Direct manager only                               |
+| Multi-level self-joins             | Fixed N levels  | Medium      | N-level org chart with known depth                |
+| Recursive CTE                      | Unlimited       | Medium      | Dynamic depth, path generation                    |
+| Recursive CTE + rollup             | Unlimited       | Medium-High | Subtree aggregations (salary, cost)               |
+| Iterative self-joins (Pattern 4b)  | Fixed N levels  | Medium      | No `WITH RECURSIVE` support, depth known          |
+| Driver-loop iteration (Pattern 4b) | Unlimited       | High        | No `WITH RECURSIVE` support, depth unknown        |
+| `UNION`-based recursive CTE        | Unlimited       | Medium      | Cyclic or graph-shaped data (not a strict tree)   |
+| Graph processing (GraphFrames)     | Unlimited       | High        | Large-scale cyclic graphs, need PageRank/BFS/etc. |
 
-!!! note "Recursive CTE support"
-    `WITH RECURSIVE` requires Databricks Runtime 14.1+ or Spark 3.5+.
-    For earlier versions, use iterative self-joins or flatten the hierarchy into a
-    separate lookup table.
+!!! warning "Spark and Databricks track `WITH RECURSIVE` support separately"
 
----
+    `WITH RECURSIVE` is **not** a single feature with one version cutoff — it shipped
+    independently on the Databricks SQL side and the open-source Apache Spark side, and
+    a doc or blog post written for one does not automatically apply to the other:
+
+    - **Databricks Runtime 14.1+** — `WITH RECURSIVE` is a Databricks SQL extension,
+        available well before it existed in open-source Spark.
+    - **Open-source Apache Spark** — verified directly on this machine:
+        - **Spark 3.5.7 rejects it outright** — `WITH RECURSIVE hierarchy AS (...)`
+            throws `[PARSE_SYNTAX_ERROR] Syntax error at or near 'hierarchy'` — the
+            grammar does not recognize the `RECURSIVE` keyword at all in 3.5.
+        - **Spark 4.2.0 runs it natively**, no config flag required, producing the
+            exact ancestry/depth output shown in Pattern 4 above.
+    - If you found a claim online that plain "Spark 3.5" supports `WITH RECURSIVE`,
+        that claim is describing **Databricks Runtime** (which is *based on* Spark 3.5
+        at that point but adds SQL extensions on top), not open-source Apache Spark
+        3.5 itself. Always distinguish "Databricks Runtime version" from "Spark version"
+        when checking recursive-CTE availability.
+
+    For engines/runtimes without `WITH RECURSIVE`, use iterative self-joins
+    (Pattern 4b) or flatten the hierarchy into a separate lookup table. For data that
+    may contain cycles, always use `UNION` (not `UNION ALL`) in the recursive step —
+    see [Cycles: When Recursive CTE Isn't Enough](#cycles-when-recursive-cte-isnt-enough).
+
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Show employee + direct manager | Single self-join (`LEFT JOIN employees AS m`) |
-| Count direct reports per manager | `LEFT JOIN` + `COUNT(*)` |
-| Display indented org chart | Recursive CTE with `depth` + `REPEAT(' ', depth)` |
-| Find all ancestors of a node | Recursive CTE, anchor on target node, expand upward |
-| Roll up metrics to any ancestor | Recursive subtree + `GROUP BY root_id` |
-| Find leaf nodes (no children) | `LEFT JOIN … WHERE child.id IS NULL` |
-| Category breadcrumb path | Recursive CTE with string concatenation |
-| BOM cost explosion | Recursive CTE with `quantity * parent_quantity` |
+| Scenario                                                 | Pattern                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| Show employee + direct manager                           | Single self-join (`LEFT JOIN employees AS m`)                |
+| Count direct reports per manager                         | `LEFT JOIN` + `COUNT(*)`                                     |
+| Display indented org chart                               | Recursive CTE with `depth` + `REPEAT(' ', depth)`            |
+| Find all ancestors of a node                             | Recursive CTE, anchor on target node, expand upward          |
+| Roll up metrics to any ancestor                          | Recursive subtree + `GROUP BY root_id`                       |
+| Find leaf nodes (no children)                            | `LEFT JOIN … WHERE child.id IS NULL`                         |
+| Category breadcrumb path                                 | Recursive CTE with string concatenation                      |
+| BOM cost explosion                                       | Recursive CTE with `quantity * parent_quantity`              |
+| No `WITH RECURSIVE` support, known depth                 | Iterative multi-level self-joins (Pattern 4b)                |
+| No `WITH RECURSIVE` support, unknown depth               | Driver-loop iteration (Pattern 4b)                           |
+| Hierarchy data may contain cycles                        | `UNION` (not `UNION ALL`) recursive step                     |
+| Large-scale graph traversal (BFS, PageRank, communities) | Graph processing — see [Graph Analytics](graph-analytics.md) |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -552,3 +693,10 @@ ORDER BY total_cost DESC;
 3. String path concatenation (`path || ' > ' || name`) creates human-readable breadcrumbs but can become long at deep levels.
 4. For BOM queries, multiply `quantity` at each level to get the true count of leaf parts needed.
 5. Spark limits recursive CTE depth to 100 iterations by default — set `spark.sql.cte.recursion.level.limit` to increase.
+6. A cyclic edge list does **not** make `WITH RECURSIVE` hang — it fails fast with
+    `RECURSION_LEVEL_LIMIT_EXCEEDED` once the iteration cap is hit, since a depth-guarded
+    `UNION ALL` recursive step keeps re-emitting the same cycle at every level. Use
+    `UNION` in the recursive step for data that may not be a strict tree.
+7. For iterative self-joins (Pattern 4b) with a known max depth, one `levelN` CTE per
+    level is enough — a level that returns zero rows means the hierarchy has bottomed
+    out and later `levelN` CTEs can be omitted.

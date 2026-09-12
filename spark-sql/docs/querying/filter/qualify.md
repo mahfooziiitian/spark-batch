@@ -3,7 +3,7 @@
 `QUALIFY` filters rows based on a window function result — without wrapping the query in a subquery.
 It runs after `SELECT`, `WHERE`, `GROUP BY`, `HAVING`, and the window function computation.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -13,13 +13,13 @@ FROM table
 QUALIFY window_fn() OVER (...) condition;
 ```
 
-| Parameter | Description |
-|-----------|-------------|
+| Parameter     | Description                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
 | `window_fn()` | Any window function (`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `SUM`, `LAG`, etc.) |
-| `OVER (...)` | Window spec — `PARTITION BY` / `ORDER BY` / frame |
-| `condition` | Boolean expression on the window function result |
+| `OVER (...)`  | Window spec — `PARTITION BY` / `ORDER BY` / frame                            |
+| `condition`   | Boolean expression on the window function result                             |
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Execution Order
 
@@ -36,16 +36,23 @@ flowchart LR
 
 `QUALIFY` is the **last row-level filter** — it sees the fully computed window function values.
 
----
+### :material-animation-play: Interactive Visualization — Ranking Then Filtering
+
+<div id="viz-filter-qualify" class="ts-viz"></div>
+
+This demo ranks rows inside partitions, then applies the `QUALIFY` cutoff. It reflects Spark 4.2 behavior: window values are computed first, `QUALIFY` filters next, and `ORDER BY`/`LIMIT` run afterward.
+
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
-1. **Window function must be recomputed** (or aliased) — you cannot reference a `SELECT` alias in `QUALIFY` in standard Spark SQL; repeat the window expression or use a subquery alias.
+1. **`SELECT` aliases are usable in Spark 4.2 `QUALIFY`** — a window expression aliased in the `SELECT` list can be referenced directly in `QUALIFY` (for example `QUALIFY rn = 1`).
 2. **Replaces a subquery wrapper** — `QUALIFY ROW_NUMBER() OVER (...) = 1` is equivalent to wrapping the query and filtering on the rank column.
-3. **Combines with WHERE and HAVING** — all three can appear in the same query; `WHERE` runs first, `HAVING` after aggregation, `QUALIFY` after window evaluation.
+3. **Combines with WHERE and HAVING** — all three can appear in the same query; `WHERE` runs first, `HAVING` after aggregation, `QUALIFY` after window evaluation, and `ORDER BY` / `LIMIT` run later.
 4. **Works with any window function** — not limited to ranking; aggregate window functions (`SUM`, `AVG`, `COUNT`) are equally valid.
+5. **On Databricks, prefer the window alias in grouped queries** — when the window `ORDER BY` references grouped aggregates such as `SUM(amount)`, `QUALIFY monthly_rank <= 10` worked, while repeating the full `RANK() OVER (...)` expression in `QUALIFY` failed with `Cannot resolve QUALIFY ... QUALIFY does not support aggregate functions`.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -73,10 +80,10 @@ FROM products
 QUALIFY RANK() OVER (PARTITION BY category ORDER BY revenue DESC) <= 3;
 ```
 
-### :material-numeric-3-circle: Remove duplicates — keep first by insertion order
+### :material-numeric-3-circle: Remove duplicates — keep first by id
 
 ```sql
--- Keep the row with the lowest rowid when duplicates exist on (email)
+-- Keep the row with the lowest id when duplicates exist on (email)
 SELECT id, email, name, created_at
 FROM raw_users
 QUALIFY ROW_NUMBER() OVER (PARTITION BY email ORDER BY id ASC) = 1;
@@ -117,17 +124,25 @@ FROM orders
 WHERE order_date >= '2024-01-01'              -- row filter: drop old data
 GROUP BY customer_id, DATE_TRUNC('month', order_date)
 HAVING SUM(amount) > 100                     -- group filter: drop low-value customers
-QUALIFY RANK() OVER (PARTITION BY DATE_TRUNC('month', order_date)
-                     ORDER BY SUM(amount) DESC) <= 10  -- window filter: top 10 per month
+QUALIFY monthly_rank <= 10                  -- window filter: top 10 per month
 ORDER BY month, monthly_rank;
 ```
 
----
+!!! note "[Databricks] Alias form verified"
+
+    On the Databricks SQL warehouse used for verification, the query above executed
+    successfully with `QUALIFY monthly_rank <= 10`. Repeating the full
+    `RANK() OVER (PARTITION BY DATE_TRUNC('month', order_date) ORDER BY SUM(amount) DESC)`
+    expression in `QUALIFY` failed with:
+
+    `Cannot resolve QUALIFY: 'orders.order_date' is not present in GROUP BY and QUALIFY does not support aggregate functions.`
+
+______________________________________________________________________
 
 ## :material-swap-horizontal: QUALIFY vs Subquery
 
 ```sql
--- BAD: Subquery approach — verbose, extra shuffle
+-- Verbose subquery form
 SELECT *
 FROM (
     SELECT customer_id, order_id, order_date,
@@ -135,36 +150,41 @@ FROM (
     FROM orders
 ) WHERE rn = 1;
 
--- GOOD: QUALIFY — cleaner, same execution plan
+-- Cleaner QUALIFY form
 SELECT customer_id, order_id, order_date
 FROM orders
 QUALIFY ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) = 1;
 ```
 
----
+In Spark 4.2, `QUALIFY` removes the wrapper but expresses the same logical filter. It is usually clearer than carrying a rank alias through a subquery.
+
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Deduplicate — keep latest per key | `QUALIFY ROW_NUMBER() OVER (PARTITION BY key ORDER BY ts DESC) = 1` |
-| Top-N per group | `QUALIFY RANK() OVER (PARTITION BY grp ORDER BY metric DESC) <= N` |
-| Remove ties (strict top-N) | Use `ROW_NUMBER` instead of `RANK` |
-| Running aggregate threshold | `QUALIFY SUM(x) OVER (...) <= limit` |
-| Statistical outlier removal | `QUALIFY ABS(val - AVG(val) OVER (...)) <= 2 * STDDEV(val) OVER (...)` |
-| Any ranking + dedup need | Prefer `QUALIFY` over subquery wrappers |
+| Scenario                          | Pattern                                                                |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| Deduplicate — keep latest per key | `QUALIFY ROW_NUMBER() OVER (PARTITION BY key ORDER BY ts DESC) = 1`    |
+| Top-N per group                   | `QUALIFY RANK() OVER (PARTITION BY grp ORDER BY metric DESC) <= N`     |
+| Remove ties (strict top-N)        | Use `ROW_NUMBER` instead of `RANK`                                     |
+| Running aggregate threshold       | `QUALIFY SUM(x) OVER (...) <= limit`                                   |
+| Statistical outlier removal       | `QUALIFY ABS(val - AVG(val) OVER (...)) <= 2 * STDDEV(val) OVER (...)` |
+| Any ranking + dedup need          | Prefer `QUALIFY` over subquery wrappers                                |
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
-| Mistake | Fix |
-|---------|-----|
-| Referencing a `SELECT` alias in `QUALIFY` | Repeat the window expression in `QUALIFY`, or use a CTE |
-| Using `QUALIFY` without `ORDER BY` in the window spec | Ranking functions (`ROW_NUMBER`, `RANK`) require `ORDER BY` inside `OVER ()` |
-| Expecting `QUALIFY` to run before `WHERE` | `WHERE` always runs first — use `WHERE` for row predicates, `QUALIFY` for window results |
-| Forgetting `PARTITION BY` on large tables | Without partition, the window spans the entire dataset — one partition, no parallelism |
+| Mistake                                               | Fix                                                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Referencing a non-window alias in `QUALIFY`           | `QUALIFY` is for window-based filters; reference a window alias such as `rn`, or use a CTE |
+| Using `QUALIFY` without `ORDER BY` in the window spec | Ranking functions (`ROW_NUMBER`, `RANK`) require `ORDER BY` inside `OVER ()`               |
+| Expecting `QUALIFY` to run before `WHERE`             | `WHERE` always runs first — use `WHERE` for row predicates, `QUALIFY` for window results   |
+| Forgetting `PARTITION BY` on large tables             | Without partition, the window spans the entire dataset — one partition, no parallelism     |
 
 !!! note "Portability"
+
     `QUALIFY` is a Databricks / Spark SQL extension (also supported by BigQuery and Snowflake).
     It is not part of ANSI SQL — use the subquery pattern for cross-platform compatibility.
+
+<script src="../../../assets/js/querying-filter-viz.js"></script>

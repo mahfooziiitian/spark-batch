@@ -1,137 +1,121 @@
 # :material-code-braces: Code Generation
 
-Catalyst uses **Whole-Stage Code Generation (WSCG)** to compile entire query stages
-into a single Java method, eliminating virtual function dispatch and enabling the JVM
-JIT compiler to produce highly optimised native code.
+Whole-stage code generation fuses compatible physical operators into a small number of generated Java subtrees. Spark 4.2 makes that fusion directly observable with both `EXPLAIN FORMATTED` and `EXPLAIN CODEGEN`.
 
----
+This page focuses on what the engine actually prints, rather than on generic Tungsten lore.
 
-## :material-sitemap: Code Generation Pipeline
+______________________________________________________________________
 
-```mermaid
-flowchart LR
-    PHYS["Physical Plan\n(SparkPlan tree)"]
-    PHYS --> WSCG["WholeStageCodegen\n(fuse compatible operators)"]
-    WSCG --> GEN["Java source\ngenerated per query"]
-    GEN --> JC["Janino compiler\n(in-process)"]
-    JC --> BC["JVM bytecode"]
-    BC --> JIT["JIT-compiled\nnative code"]
-    JIT --> EXEC["Vectorised\nexecution"]
-```
+### :material-animation-play: Interactive Visualization — Whole-Stage Fusion
 
----
+<div id="viz-codegen-fusion" class="ts-viz"></div>
 
-## :material-compare: Interpreted vs Code-Generated Execution
+A whole-stage-codegen subtree is not "the entire query". It is a compatible slice of the physical plan that Spark can fuse into one generated iterator class.
 
-| Aspect | Interpreted | WholeStageCodegen |
-|--------|:-----------:|:-----------------:|
-| Virtual calls per row | Many | None (fused) |
-| Boxing/unboxing | Yes | Eliminated |
-| Pipeline passes | One per operator | One pass for all fused operators |
-| JIT friendliness | Low | High |
-| Typical speed-up | Baseline | 2–10× |
+______________________________________________________________________
 
----
+## :material-eye: Verified Example — `EXPLAIN FORMATTED`
 
-## :material-check-circle-outline: Operators That Support WSCG
-
-| Operator | Codegen support |
-|----------|:--------------:|
-| `Filter` | Yes |
-| `Project` | Yes |
-| `HashAggregate` | Yes |
-| `BroadcastHashJoin` | Yes |
-| `SortMergeJoin` | Yes (probe side) |
-| `Sort` | Yes |
-| `FileScan` (Parquet/ORC) | Yes — vectorised batch reader |
-| `SortAggregate` | No |
-| `BroadcastNestedLoopJoin` | No |
-| Python UDF | No — exits codegen path |
-
----
-
-## :material-eye: Identifying WSCG in EXPLAIN
+Spark 4.2 query:
 
 ```sql
 EXPLAIN FORMATTED
-SELECT region, SUM(amount)
-FROM orders
-WHERE order_date >= '2024-01-01'
-GROUP BY region;
+SELECT k, v1 + 1 AS v
+FROM big_t
+WHERE k < 3;
 ```
 
-Look for `WholeStageCodegen (N)` wrapping operators:
+Observed output:
 
-```
+```text
 == Physical Plan ==
-AdaptiveSparkPlan (1)
-+- HashAggregate (2)
-   +- Exchange (3) hashpartitioning(region, 200)
-      +- *1 HashAggregate (4)              ← * = inside WSCG stage 1
-         +- *1 Filter (5)                  ← fused with (4)
-            +- *1 FileScan parquet (6)     ← fused with (4) and (5)
+* Project (3)
++- * Filter (2)
+   +- * Range (1)
+
+(1) Range [codegen id : 1]
+Output [1]: [id#0L]
+
+(2) Filter [codegen id : 1]
+Condition : (id#0L < 3)
+
+(3) Project [codegen id : 1]
+Output [2]: [id#0L AS k#1L, (id#0L + 1) AS v#10L]
 ```
 
-The `*1` prefix means all three operators (HashAggregate, Filter, FileScan) are
-compiled into a single Java method — zero overhead between them.
+Two important verified signals appear here:
 
----
+- the `*` marker shows the operator belongs to a codegen subtree,
+- the shared `codegen id : 1` proves `Range`, `Filter`, and `Project` were fused together.
 
-## :material-wrench: Configuration
+______________________________________________________________________
 
-```sql
--- Disable WSCG globally (useful for debugging or profiling)
-SET spark.sql.codegen.wholeStage = false;
+## :material-file-code-outline: Verified Example — `EXPLAIN CODEGEN`
 
--- Disable codegen for a single query with a hint comment (not directly supported)
--- Instead, set per session:
-SET spark.sql.codegen.wholeStage = false;
-<your-query>;
-SET spark.sql.codegen.wholeStage = true;
+Running the same query with `EXPLAIN CODEGEN` produced this header in Spark 4.2:
 
--- Vectorised Parquet reader (default on)
-SET spark.sql.parquet.enableVectorizedReader = true;
-
--- Max fields in codegen method (raise if you hit 64-field JVM limit)
-SET spark.sql.codegen.maxFields = 100;
-
--- Fallback on codegen compile error instead of failing
-SET spark.sql.codegen.fallback = true;
+```text
+Found 1 WholeStageCodegen subtrees.
+== Subtree 1 / 1 ==
+*(1) Project [id#0L AS k#1L, (id#0L + 1) AS v#11L]
++- *(1) Filter (id#0L < 3)
+   +- *(1) Range (0, 1000, step=1, splits=1)
 ```
 
----
-
-## :material-code-json: Viewing Generated Code
-
-```sql
--- Show Java source generated for a query
-EXPLAIN CODEGEN
-SELECT region, SUM(amount) FROM orders WHERE amount > 100 GROUP BY region;
-```
-
-Sample generated snippet (simplified):
+Then Spark printed generated Java source, including a stage-specific iterator class:
 
 ```java
-// Generated by WholeStageCodegen
-void processNext() {
-    while (scan.hasNext()) {
-        InternalRow row = scan.next();
-        long amount = row.getLong(2);
-        if (amount > 100) {                    // fused Filter
-            UTF8String region = row.getUTF8String(1); // fused Project
-            hashAgg.update(region, amount);    // fused HashAggregate
-        }
-    }
+public Object generate(Object[] references) {
+  return new GeneratedIteratorForCodegenStage1(references);
+}
+
+final class GeneratedIteratorForCodegenStage1
+    extends org.apache.spark.sql.execution.BufferedRowIterator {
+  ...
+  protected void processNext() throws java.io.IOException {
+    ...
+    boolean filter_value_0 = range_value_0 < 3L;
+    if (!filter_value_0) continue;
+    project_doConsume_0(range_value_0);
+  }
 }
 ```
 
----
+This corrects a common overstatement: `EXPLAIN CODEGEN` shows the generated **Java source** for fused subtrees, not raw JVM bytecode.
 
-## :material-alert: When Codegen Does Not Help
+______________________________________________________________________
 
-| Situation | Reason | Fix |
-|-----------|--------|-----|
-| Python / Scala UDF in query | UDF exits the generated code path | Replace with SQL built-in |
-| `SortAggregate` used | Does not support WSCG | Ensure keys fit in memory for `HashAggregate` |
-| Very wide schema (> 100 fields) | JVM method size limit | Set `spark.sql.codegen.maxFields = 200` |
-| Repeated codegen compile errors | JVM JIT cache saturation | Set `spark.sql.codegen.fallback = true` |
+## :material-transit-connection-variant: What Was Fused
+
+In the verified query above, Spark 4.2 fused three operators into one subtree:
+
+| Physical operator | Role in generated code                                       |
+| ----------------- | ------------------------------------------------------------ |
+| `Range`           | Produces input rows inside the generated loop                |
+| `Filter`          | Becomes an `if` guard inside `processNext()`                 |
+| `Project`         | Becomes row-writing logic such as `project_doConsume_0(...)` |
+
+That is the practical meaning of whole-stage code generation: Spark removes row-by-row virtual handoff between these operators and emits one iterator that performs all three steps in one tight loop.
+
+______________________________________________________________________
+
+## :material-alert-outline: Interpreting Codegen Output Carefully
+
+| Observation                          | Meaning                                                    |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `Found N WholeStageCodegen subtrees` | Fusion happened, but only for compatible parts of the plan |
+| Different `codegen id` values        | Operators belong to different fused subtrees               |
+| No `*` marker on an operator         | That node sits outside the current codegen subtree         |
+| `AdaptiveSparkPlan` around the tree  | AQE may still change the surrounding physical plan         |
+
+!!! tip "Use both explain modes together"
+
+    `EXPLAIN FORMATTED` is best for locating codegen boundaries in the physical tree. `EXPLAIN CODEGEN` is best for confirming what Java Spark actually emitted for each subtree.
+
+______________________________________________________________________
+
+## :material-link-variant: See Also
+
+- [Physical Planning](physical.md)
+- [AST](ast/spark-sql-ast.md)
+- [Query Parsing & Execution](../../internals/planner/query-parsing.md)

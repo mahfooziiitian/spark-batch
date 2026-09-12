@@ -3,7 +3,7 @@
 Generator (table-valued) functions produce **multiple output rows** from a single input row.
 They are the primary tool for flattening arrays, maps, and structs in Spark SQL.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -15,15 +15,15 @@ graph LR
 
 ## :material-pin: Available Functions
 
-| Function | Input | Output Columns | NULL/Empty Handling |
-|----------|-------|---------------|---------------------|
-| `EXPLODE(expr)` | `array<T>` / `map<K,V>` | `col` or `key, value` | Drops row |
-| `EXPLODE_OUTER(expr)` | `array<T>` / `map<K,V>` | `col` or `key, value` | Keeps row (NULLs) |
-| `INLINE(expr)` | `array<struct>` | One column per struct field | Drops row |
-| `INLINE_OUTER(expr)` | `array<struct>` | One column per struct field | Keeps row (NULLs) |
-| `POSEXPLODE(expr)` | `array<T>` / `map<K,V>` | `pos, col` or `pos, key, value` | Drops row |
-| `POSEXPLODE_OUTER(expr)` | `array<T>` / `map<K,V>` | `pos, col` or `pos, key, value` | Keeps row (NULLs) |
-| `STACK(n, expr1, …, exprk)` | Scalar values | `col0, col1, …` | N/A |
+| Function                    | Input                   | Output Columns                  | NULL/Empty Handling |
+| --------------------------- | ----------------------- | ------------------------------- | ------------------- |
+| `EXPLODE(expr)`             | `array<T>` / `map<K,V>` | `col` or `key, value`           | Drops row           |
+| `EXPLODE_OUTER(expr)`       | `array<T>` / `map<K,V>` | `col` or `key, value`           | Keeps row (NULLs)   |
+| `INLINE(expr)`              | `array<struct>`         | One column per struct field     | Drops row           |
+| `INLINE_OUTER(expr)`        | `array<struct>`         | One column per struct field     | Keeps row (NULLs)   |
+| `POSEXPLODE(expr)`          | `array<T>` / `map<K,V>` | `pos, col` or `pos, key, value` | Drops row           |
+| `POSEXPLODE_OUTER(expr)`    | `array<T>` / `map<K,V>` | `pos, col` or `pos, key, value` | Keeps row (NULLs)   |
+| `STACK(n, expr1, …, exprk)` | Scalar values           | `col0, col1, …`                 | N/A                 |
 
 ## :material-magnify: Usage Patterns
 
@@ -75,15 +75,15 @@ SELECT STACK(2, 'math', 95, 'science', 88);
 
 ## :material-brain: Choosing the Right Generator
 
-| Need | Function | Why |
-|------|----------|-----|
-| Flatten array/map → rows | `EXPLODE` | Simplest row expansion |
-| Flatten but keep NULL/empty rows | `EXPLODE_OUTER` | Preserves all original rows |
-| Flatten array of structs → columns | `INLINE` | Multi-column expansion |
-| Track element position/index | `POSEXPLODE` | Adds zero-based `pos` column |
-| Unpivot wide columns → tall rows | `STACK` | Converts columns to name-value rows |
+| Need                               | Function        | Why                                 |
+| ---------------------------------- | --------------- | ----------------------------------- |
+| Flatten array/map → rows           | `EXPLODE`       | Simplest row expansion              |
+| Flatten but keep NULL/empty rows   | `EXPLODE_OUTER` | Preserves all original rows         |
+| Flatten array of structs → columns | `INLINE`        | Multi-column expansion              |
+| Track element position/index       | `POSEXPLODE`    | Adds zero-based `pos` column        |
+| Unpivot wide columns → tall rows   | `STACK`         | Converts columns to name-value rows |
 
----
+______________________________________________________________________
 
 ## :material-compare: LATERAL VIEW vs SELECT generator
 
@@ -103,7 +103,7 @@ LATERAL VIEW EXPLODE(t.items) AS val;
 `LATERAL VIEW` is necessary when you want to expand a column from an existing table.
 Direct `SELECT` is useful for generating test data.
 
----
+______________________________________________________________________
 
 ## :material-table-multiple: Multiple LATERAL VIEW Clauses
 
@@ -117,20 +117,20 @@ LATERAL VIEW EXPLODE(letters) AS letter
 LATERAL VIEW EXPLODE(numbers) AS number;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare-horizontal: Generator vs HOF
 
-| Need | Prefer | Why |
-|------|--------|-----|
-| Aggregate by element value | `LATERAL VIEW EXPLODE` + `GROUP BY` | HOFs cannot GROUP BY elements |
-| Check membership without flattening | `array_contains` / `EXISTS` HOF | No row explosion |
-| Expand map to key-value pairs | `LATERAL VIEW EXPLODE(map)` | HOFs can't produce rows |
-| Expand array-of-structs to columns | `LATERAL VIEW INLINE` | Cleaner than `TRANSFORM` |
-| Generate synthetic rows from scalars | `LATERAL VIEW STACK` | No table source needed |
-| Filter/transform while staying nested | HOF (`FILTER`, `TRANSFORM`) | Avoids row multiplication |
+| Need                                  | Prefer                              | Why                           |
+| ------------------------------------- | ----------------------------------- | ----------------------------- |
+| Aggregate by element value            | `LATERAL VIEW EXPLODE` + `GROUP BY` | HOFs cannot GROUP BY elements |
+| Check membership without flattening   | `array_contains` / `EXISTS` HOF     | No row explosion              |
+| Expand map to key-value pairs         | `LATERAL VIEW EXPLODE(map)`         | HOFs can't produce rows       |
+| Expand array-of-structs to columns    | `LATERAL VIEW INLINE`               | Cleaner than `TRANSFORM`      |
+| Generate synthetic rows from scalars  | `LATERAL VIEW STACK`                | No table source needed        |
+| Filter/transform while staying nested | HOF (`FILTER`, `TRANSFORM`)         | Avoids row multiplication     |
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 

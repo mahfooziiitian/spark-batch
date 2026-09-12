@@ -2,7 +2,7 @@
 
 Precision rounding, type handling, divide-by-zero guards, modulo, number sequences, and string-to-number conversion.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -14,21 +14,21 @@ graph LR
     B & C & D --> E[Clean output]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
+| Technique                       | Use Case                  | Key Function                         |
+| ------------------------------- | ------------------------- | ------------------------------------ |
 | ROUND / FLOOR / CEIL / TRUNCATE | Decimal precision control | `ROUND(col, n)`, `FLOOR()`, `CEIL()` |
-| INT / BIGINT / DECIMAL / DOUBLE | Numeric type reference | `CAST(col AS DECIMAL(p,s))` |
-| NULLIF / CASE | Divide-by-zero guard | `NULLIF(denominator, 0)` |
-| MOD / REMAINDER | Modulo operations | `MOD(col, n)` |
-| SEQUENCE | Generate a number series | `SEQUENCE(start, stop, step)` |
-| RAND / TABLESAMPLE | Random row sampling | `RAND()`, `TABLESAMPLE(n PERCENT)` |
-| CAST / TRY_CAST | Convert string to number | `TRY_CAST(col AS INT)` |
+| INT / BIGINT / DECIMAL / DOUBLE | Numeric type reference    | `CAST(col AS DECIMAL(p,s))`          |
+| NULLIF / CASE                   | Divide-by-zero guard      | `NULLIF(denominator, 0)`             |
+| MOD / REMAINDER                 | Modulo operations         | `MOD(col, n)`                        |
+| SEQUENCE                        | Generate a number series  | `SEQUENCE(start, stop, step)`        |
+| RAND / TABLESAMPLE              | Random row sampling       | `RAND()`, `TABLESAMPLE(n PERCENT)`   |
+| CAST / TRY_CAST                 | Convert string to number  | `TRY_CAST(col AS INT)`               |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -40,7 +40,7 @@ ROUND, FLOOR, CEIL, and TRUNCATE for financial precision.
 --8<-- "sql/application/numeric/decimal_operations.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Numeric Datatypes
 
@@ -50,7 +50,7 @@ Reference for INT, BIGINT, DECIMAL, FLOAT, and DOUBLE behaviour.
 --8<-- "sql/application/numeric/numeric_datatypes.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Divide-by-Zero Errors
 
@@ -60,7 +60,7 @@ Guard against division by zero using NULLIF and CASE.
 --8<-- "sql/application/numeric/divide_zero_errors.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Modulo Financial
 
@@ -70,7 +70,7 @@ Apply modulo arithmetic for financial bucketing.
 --8<-- "sql/application/numeric/modulo_financial.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Tally Table Sequence
 
@@ -80,7 +80,7 @@ Generate a number series with SEQUENCE for gap-filling and tally tables.
 --8<-- "sql/application/numeric/tally_table_sequence.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Random Sampling
 
@@ -90,7 +90,7 @@ Sample rows randomly using RAND and TABLESAMPLE.
 --8<-- "sql/application/numeric/random_sampling.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Numbers as Text
 
@@ -100,17 +100,18 @@ Cast and validate string columns that contain numeric values.
 --8<-- "sql/application/numeric/numbers_as_text.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Financial rounding | `ROUND` / `TRUNCATE` |
-| Avoid divide-by-zero | `NULLIF(denominator, 0)` |
-| Random exploration sample | `RAND()` / `TABLESAMPLE` |
-| Generate a number range | `SEQUENCE` |
-| Source column stored as text | `TRY_CAST` |
+| Scenario                     | Recommended Approach     |
+| ---------------------------- | ------------------------ |
+| Financial rounding           | `ROUND` / `TRUNCATE`     |
+| Avoid divide-by-zero         | `NULLIF(denominator, 0)` |
+| Random exploration sample    | `RAND()` / `TABLESAMPLE` |
+| Generate a number range      | `SEQUENCE`               |
+| Source column stored as text | `TRY_CAST`               |
 
 !!! warning
+
     FLOAT and DOUBLE are approximate types — use DECIMAL(p, s) for financial calculations that require exact precision.

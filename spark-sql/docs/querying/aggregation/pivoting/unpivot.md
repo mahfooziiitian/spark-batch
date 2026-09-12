@@ -1,194 +1,129 @@
-# :material-table-pivot: UNPIVOT
+# :material-table-pivot: `UNPIVOT`
 
-`UNPIVOT` transforms columns into rows — the inverse of `PIVOT`. It is used to normalise wide (pivoted) data into a long format suitable for aggregation, filtering, and analytics.
+`UNPIVOT` converts wide columns back into labelled rows. It is the cleanest Spark SQL way to normalize pivoted or spreadsheet-shaped data before downstream filtering and aggregation.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A["Wide table<br/>year | q1 | q2 | q3 | q4"] --> B["UNPIVOT on q1..q4"]
-    B --> C["Long table<br/>year | quarter | revenue"]
+    A[Wide table] --> B[UNPIVOT selected columns]
+    B --> C[Long table with label and value columns]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Wide-to-Long Expansion
+
+<div id="viz-unpivot-rows" class="ts-viz"></div>
+
+Switch between default mode and `INCLUDE NULLS` to see when Spark drops rows and when it keeps missing values.
+
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
 ```sql
-SELECT unpivot_col, value_col [, ...]
+SELECT unpivot_name_col, unpivot_value_col [, ...]
 FROM source_table
 UNPIVOT [INCLUDE NULLS] (
     value_col
-    FOR unpivot_col IN (col1 [AS alias1], col2 [AS alias2], ...)
+    FOR name_col IN (source_col [AS alias], ...)
 );
 ```
 
-| Element | Description |
-|---------|-------------|
-| `value_col` | Output column that receives the cell values from the listed input columns |
-| `FOR unpivot_col IN (...)` | Name of the output label column; `IN` lists which input columns to unpivot and optional aliases for their label values |
-| `INCLUDE NULLS` | By default rows where the value is `NULL` are excluded; add this to keep them |
+Aliases after `AS` are identifiers such as `Q1`, not quoted string literals such as `'Q1'`.
 
----
+______________________________________________________________________
 
-## :material-magnify: Behavior
+## :material-magnify: Verified behavior
 
-1. **Row expansion** — each row in the source produces one output row per column listed in `IN (...)`; a source with 3 rows and 4 unpivoted columns produces up to 12 rows.
-2. **NULL filtering** — `UNPIVOT` silently drops output rows where the value column is `NULL`; use `UNPIVOT INCLUDE NULLS` to retain them.
-3. **Type alignment** — all columns listed in `IN (...)` must have compatible types; Spark casts to the widest compatible type automatically.
-4. **Multi-value unpivot** — you can unpivot two parallel columns simultaneously: `(qty, rev) FOR quarter IN ((q1_qty, q1_rev) AS 'Q1', ...)`.
-5. **Equivalent `STACK` approach** — `LATERAL VIEW STACK(n, 'label1', col1, 'label2', col2, ...) AS label, value` produces the same output but is harder to read; prefer `UNPIVOT`.
+1. Default `UNPIVOT` drops rows whose generated value column is `NULL`.
+2. `UNPIVOT INCLUDE NULLS` keeps those rows.
+3. If you omit aliases, Spark uses the source column names such as `q1`, `q2`, `q3`.
+4. Multi-value unpivot works in Spark 4.2: `((qty, rev) FOR quarter IN ((q1_qty, q1_rev) AS Q1, ...))`.
+5. The generated label column is a string output, even when aliases are written as bare identifiers.
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Practical Examples
+## :material-flask-outline: Practical examples
 
-### Setup — quarterly revenue pivot table
+### Setup
 
 ```sql
-CREATE TABLE quarterly_revenue (
-    region  STRING,
-    yr      INT,
-    q1      DOUBLE,
-    q2      DOUBLE,
-    q3      DOUBLE,
-    q4      DOUBLE
-);
-
-INSERT INTO quarterly_revenue VALUES
+CREATE OR REPLACE TEMP VIEW quarterly_revenue AS
+SELECT * FROM VALUES
     ('East',  2024, 100.0, 200.0, 150.0, 300.0),
     ('West',  2024, 250.0, 180.0, 320.0, 270.0),
-    ('North', 2024,  90.0,  NULL, 110.0, 140.0);  -- q2 is NULL for North
+    ('North', 2024,  90.0,  NULL, 110.0, 140.0)
+AS quarterly_revenue(region, yr, q1, q2, q3, q4);
 ```
 
-### 1 — Basic UNPIVOT (NULL rows excluded by default)
+### Default mode excludes `NULL` outputs
 
 ```sql
 SELECT region, yr, quarter, revenue
 FROM quarterly_revenue
 UNPIVOT (
     revenue
-    FOR quarter IN (q1 AS 'Q1', q2 AS 'Q2', q3 AS 'Q3', q4 AS 'Q4')
+    FOR quarter IN (q1 AS Q1, q2 AS Q2, q3 AS Q3, q4 AS Q4)
 )
-ORDER BY region, yr, quarter;
--- Result (North Q2 row is dropped because revenue = NULL):
--- region | yr   | quarter | revenue
--- --------|------|---------|--------
--- East    | 2024 | Q1      | 100.0
--- East    | 2024 | Q2      | 200.0
--- East    | 2024 | Q3      | 150.0
--- East    | 2024 | Q4      | 300.0
--- North   | 2024 | Q1      |  90.0
--- North   | 2024 | Q3      | 110.0
--- North   | 2024 | Q4      | 140.0
--- West    | 2024 | Q1      | 250.0
--- West    | 2024 | Q2      | 180.0
--- West    | 2024 | Q3      | 320.0
--- West    | 2024 | Q4      | 270.0
+ORDER BY region, quarter;
 ```
 
-### 2 — INCLUDE NULLS to retain missing values
+Verified result: `North / Q2` is absent because `q2` was `NULL`.
+
+### `INCLUDE NULLS` keeps them
 
 ```sql
 SELECT region, yr, quarter, revenue
 FROM quarterly_revenue
 UNPIVOT INCLUDE NULLS (
     revenue
-    FOR quarter IN (q1 AS 'Q1', q2 AS 'Q2', q3 AS 'Q3', q4 AS 'Q4')
+    FOR quarter IN (q1 AS Q1, q2 AS Q2, q3 AS Q3, q4 AS Q4)
 )
-ORDER BY region, yr, quarter;
--- Result (North Q2 row is now present with revenue = NULL):
--- region | yr   | quarter | revenue
--- --------|------|---------|--------
--- ...
--- North   | 2024 | Q1      |  90.0
--- North   | 2024 | Q2      |  NULL   ← included
--- North   | 2024 | Q3      | 110.0
--- North   | 2024 | Q4      | 140.0
--- ...
+ORDER BY region, quarter;
 ```
 
-### 3 — Aggregate after UNPIVOT
+Verified result: `North / Q2 / NULL` appears as a normal output row.
+
+### Omitting aliases uses source column names
 
 ```sql
-SELECT quarter, ROUND(AVG(revenue), 2) AS avg_revenue
+SELECT region, yr, quarter, revenue
 FROM quarterly_revenue
 UNPIVOT (
     revenue
-    FOR quarter IN (q1 AS 'Q1', q2 AS 'Q2', q3 AS 'Q3', q4 AS 'Q4')
+    FOR quarter IN (q1, q2, q3, q4)
 )
-GROUP BY quarter
-ORDER BY quarter;
--- Result:
--- quarter | avg_revenue
--- --------|------------
--- Q1      | 146.67
--- Q2      | 190.00   -- North Q2 excluded (NULL)
--- Q3      | 193.33
--- Q4      | 236.67
+ORDER BY region, quarter;
 ```
 
-### 4 — UNPIVOT then re-PIVOT to verify round-trip
+PySpark 4.2 returned `quarter` values `q1`, `q2`, `q3`, `q4` in this form.
+
+### Multi-value unpivot
 
 ```sql
-WITH long_form AS (
-    SELECT region, yr, quarter, revenue
-    FROM quarterly_revenue
-    UNPIVOT (
-        revenue FOR quarter IN (q1 AS 'Q1', q2 AS 'Q2', q3 AS 'Q3', q4 AS 'Q4')
-    )
-)
 SELECT *
-FROM long_form
-PIVOT (
-    SUM(revenue) AS revenue
-    FOR quarter IN ('Q1', 'Q2', 'Q3', 'Q4')
+FROM (
+    SELECT * FROM VALUES
+        (2024, 10, 100, 20, NULL),
+        (2025, 30, 300, NULL, 400)
+    AS t(yr, q1_qty, q1_rev, q2_qty, q2_rev)
+) src
+UNPIVOT INCLUDE NULLS (
+    (qty, rev)
+    FOR quarter IN ((q1_qty, q1_rev) AS Q1, (q2_qty, q2_rev) AS Q2)
 )
-ORDER BY region;
--- Reconstructs the original wide table (NULLs where data was missing).
+ORDER BY yr, quarter;
 ```
 
-### 5 — Sensor data: multiple measurement columns → long format
+______________________________________________________________________
 
-```sql
-CREATE OR REPLACE TEMP VIEW sensor_readings AS
-SELECT * FROM VALUES
-    ('S1', '2024-01-01', 23.5, 55.0,  1013.0),
-    ('S2', '2024-01-01', 25.1, 60.2,  1010.5),
-    ('S3', '2024-01-02', 22.8, 58.0,  1011.0)
-AS t(sensor_id, reading_date, temperature, humidity, pressure);
+## :material-brain: When to use
 
-SELECT sensor_id, reading_date, metric, value
-FROM sensor_readings
-UNPIVOT (
-    value
-    FOR metric IN (
-        temperature AS 'temperature',
-        humidity    AS 'humidity',
-        pressure    AS 'pressure'
-    )
-)
-ORDER BY sensor_id, metric;
--- Result:
--- sensor_id | reading_date | metric      | value
--- ----------|--------------|-------------|-------
--- S1        | 2024-01-01   | humidity    | 55.0
--- S1        | 2024-01-01   | pressure    | 1013.0
--- S1        | 2024-01-01   | temperature | 23.5
--- S2        | 2024-01-01   | humidity    | 60.2
--- ...
-```
-
----
-
-## :material-brain: When to Use
-
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Normalise wide pivot output into long format | `UNPIVOT` |
-| Multiple metrics stored as columns → single column | `UNPIVOT` |
-| Aggregate across formerly-separate metric columns | `UNPIVOT` then `GROUP BY` |
-| Retain rows where a metric is NULL | `UNPIVOT INCLUDE NULLS` |
-| Wide-format check — verify count per metric | `UNPIVOT` then `COUNT(*) GROUP BY metric` |
+| Scenario                                                 | Recommended pattern     |
+| -------------------------------------------------------- | ----------------------- |
+| Normalize wide columns into rows                         | `UNPIVOT`               |
+| Preserve missing cells explicitly                        | `UNPIVOT INCLUDE NULLS` |
+| Turn parallel metric columns into one label/value layout | Multi-value `UNPIVOT`   |
+| Need a fallback on older engines                         | `STACK` or `UNION ALL`  |

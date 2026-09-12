@@ -2,7 +2,7 @@
 
 Handle type conversions, numeric precision, date parsing, and complex key/struct operations.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Common Conversions
 
@@ -13,18 +13,18 @@ flowchart LR
     STR --> STRUCT["Struct / Map\nMAP_ENTRIES\nTRANSFORM\nEXISTS"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Problem | Technique |
-|------|---------|-----------|
-| [Numeric](numeric/index.md) | Rounding, divide-by-zero, sequences | `ROUND`, `COALESCE`, `SEQUENCE` |
-| [Date Strings](date_string/index.md) | Parse and format dates | `TO_DATE`, `DATE_FORMAT`, `TO_TIMESTAMP` |
-| [Keys & Structs](key_n_struct/index.md) | Dynamic key existence in MAPs | `MAP_ENTRIES`, `EXISTS` |
-| [Replace Map Key](replace_key/map/replace_map_key.md) | Remap MAP keys atomically | `TRANSFORM`, `AGGREGATE` |
+| Page                                                  | Problem                             | Technique                                |
+| ----------------------------------------------------- | ----------------------------------- | ---------------------------------------- |
+| [Numeric](numeric/index.md)                           | Rounding, divide-by-zero, sequences | `ROUND`, `COALESCE`, `SEQUENCE`          |
+| [Date Strings](date_string/index.md)                  | Parse and format dates              | `TO_DATE`, `DATE_FORMAT`, `TO_TIMESTAMP` |
+| [Keys & Structs](key_n_struct/index.md)               | Dynamic key existence in MAPs       | `MAP_ENTRIES`, `EXISTS`                  |
+| [Replace Map Key](replace_key/map/replace-map-key.md) | Remap MAP keys atomically           | `TRANSFORM`, `AGGREGATE`                 |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 

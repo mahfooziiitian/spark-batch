@@ -60,11 +60,11 @@ SELECT TIMESTAMP '2024-07-15 14:30:00' - INTERVAL '45' MINUTE AS earlier;
 
 ## :material-brain: Time-Related Functions
 
-| Function | Description |
-|----------|-------------|
-| `HOUR(ts)` | Extract hour (0-23) |
-| `MINUTE(ts)` | Extract minute (0-59) |
-| `SECOND(ts)` | Extract second (0-59) |
-| `DATE_FORMAT(ts, fmt)` | Format as string |
-| `DATE_TRUNC('HOUR', ts)` | Truncate to hour |
+| Function                        | Description                     |
+| ------------------------------- | ------------------------------- |
+| `HOUR(ts)`                      | Extract hour (0-23)             |
+| `MINUTE(ts)`                    | Extract minute (0-59)           |
+| `SECOND(ts)`                    | Extract second (0-59)           |
+| `DATE_FORMAT(ts, fmt)`          | Format as string                |
+| `DATE_TRUNC('HOUR', ts)`        | Truncate to hour                |
 | `MAKE_TIMESTAMP(y,m,d,h,min,s)` | Build timestamp from components |

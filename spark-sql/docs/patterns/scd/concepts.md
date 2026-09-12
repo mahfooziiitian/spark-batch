@@ -4,20 +4,20 @@
 in dimension tables over time. Depending on business requirements, you can discard history (Type 1),
 preserve every version (Type 2), or store limited history in extra columns (Type 3).
 
----
+______________________________________________________________________
 
 ## :material-compare: SCD Types at a Glance
 
-| Type | Strategy | History | Use when… |
-|------|----------|---------|-----------|
-| **Type 1** | Overwrite in place | None | Only current state matters |
-| **Type 2** | Insert new row per change | Full | Point-in-time queries required |
-| **Type 3** | Add `previous_` columns | One level | One prior value is enough |
-| **Type 4** | Separate history table | Full | Lean current dim + history for analysts |
-| **Type 5** | Type 4 + embedded current | Full | BI tools need current value without join |
-| **Type 6** | Type 1+2+3 combined | Full | Current value on every history row |
+| Type       | Strategy                  | History   | Use when…                                |
+| ---------- | ------------------------- | --------- | ---------------------------------------- |
+| **Type 1** | Overwrite in place        | None      | Only current state matters               |
+| **Type 2** | Insert new row per change | Full      | Point-in-time queries required           |
+| **Type 3** | Add `previous_` columns   | One level | One prior value is enough                |
+| **Type 4** | Separate history table    | Full      | Lean current dim + history for analysts  |
+| **Type 5** | Type 4 + embedded current | Full      | BI tools need current value without join |
+| **Type 6** | Type 1+2+3 combined       | Full      | Current value on every history row       |
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Source Table
 
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS source_data (
 USING DELTA;
 ```
 
----
+______________________________________________________________________
 
 ## :material-database: Dimension Table (Type 2 template)
 
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS dimension_table (
 USING DELTA;
 ```
 
----
+______________________________________________________________________
 
 ## :material-database-import: Seed Initial Data
 
@@ -63,7 +63,7 @@ INSERT INTO dimension_table VALUES
     (2, 'Bob',   '456 Elm St',  DATE '2023-01-01', DATE '9999-12-31', TRUE);
 ```
 
----
+______________________________________________________________________
 
 ## :material-tray-arrow-down: Incoming Change Batch
 
@@ -74,11 +74,12 @@ INSERT INTO source_data VALUES
     (3, 'Charlie', '111 Pine St',  DATE '2023-02-01');  -- new record
 ```
 
----
+______________________________________________________________________
 
 ## :material-repeat: MERGE Foundation (Type 2 pattern)
 
 !!! warning "Two-step MERGE required"
+
     A single MERGE cannot expire an existing row **and** insert a new version for the same key
     in one pass. Always use two separate statements.
 
@@ -115,27 +116,27 @@ WHEN NOT MATCHED THEN
     VALUES (src.id, src.name, src.address, src.load_date, DATE '9999-12-31', TRUE);
 ```
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Expected Result
 
 After both steps:
 
-| id | name    | address       | effective_start | effective_end | is_current |
-|----|---------|---------------|-----------------|---------------|------------|
-| 1  | Alice   | 123 Main St   | 2023-01-01      | 2023-02-01    | false      |
-| 1  | Alice   | 789 Oak St    | 2023-02-01      | 9999-12-31    | true       |
-| 2  | Bob     | 456 Elm St    | 2023-01-01      | 9999-12-31    | true       |
-| 3  | Charlie | 111 Pine St   | 2023-02-01      | 9999-12-31    | true       |
+| id  | name    | address     | effective_start | effective_end | is_current |
+| --- | ------- | ----------- | --------------- | ------------- | ---------- |
+| 1   | Alice   | 123 Main St | 2023-01-01      | 2023-02-01    | false      |
+| 1   | Alice   | 789 Oak St  | 2023-02-01      | 9999-12-31    | true       |
+| 2   | Bob     | 456 Elm St  | 2023-01-01      | 9999-12-31    | true       |
+| 3   | Charlie | 111 Pine St | 2023-02-01      | 9999-12-31    | true       |
 
 !!! tip "Row hash pattern"
+
     For production use, add `md5(concat_ws('||', name, address))` as a `row_hash` column.
     This reduces the MERGE condition to a single string comparison instead of one `!=` per tracked column.
 
----
+______________________________________________________________________
 
 ## :material-arrow-right: Next Steps
 
 Explore each type in detail — each section covers table design, seed data, MERGE patterns,
 analytical queries, and common pitfalls.
-

@@ -2,7 +2,7 @@
 
 Rank rows, segment into equal buckets, and compute percentiles with window functions.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -13,25 +13,26 @@ graph LR
     C --> D[Rank label per row]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| RANK() | Ranking with gaps on ties | `RANK() OVER (ORDER BY col DESC)` |
-| DENSE_RANK() | Ranking without gaps on ties | `DENSE_RANK() OVER (ORDER BY col DESC)` |
-| NTILE(n) | Divide rows into equal-size buckets | `NTILE(4) OVER (ORDER BY col)` |
+| Technique       | Use Case                             | Key Function                                       |
+| --------------- | ------------------------------------ | -------------------------------------------------- |
+| RANK()          | Ranking with gaps on ties            | `RANK() OVER (ORDER BY col DESC)`                  |
+| DENSE_RANK()    | Ranking without gaps on ties         | `DENSE_RANK() OVER (ORDER BY col DESC)`            |
+| NTILE(n)        | Divide rows into equal-size buckets  | `NTILE(4) OVER (ORDER BY col)`                     |
 | PERCENTILE_CONT | Continuous (interpolated) percentile | `PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY col)` |
-| PERCENTILE_DISC | Discrete (actual value) percentile | `PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY col)` |
+| PERCENTILE_DISC | Discrete (actual value) percentile   | `PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY col)` |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
 !!! note "RANK & DENSE_RANK live in the canonical page"
+
     Basic ranking with ties (`RANK`, `DENSE_RANK`, `ROW_NUMBER`) and top-N filtering are
-    covered in depth in [Top-N Per Group](../../../ranking/top_n.md). This page focuses on
+    covered in depth in [Top-N Per Group](../../../ranking/top-n.md). This page focuses on
     the **bucketing and percentile** functions not covered there.
 
 ### NTILE Segments
@@ -42,7 +43,7 @@ Divide the result set into equal-sized quantile buckets.
 --8<-- "sql/application/ranking/ntile_segments.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Percentile and Median
 
@@ -52,21 +53,23 @@ Compute continuous and discrete percentiles including the median.
 --8<-- "sql/application/ranking/percentile_median.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Top-N per group | `RANK` / `DENSE_RANK` + filter on rank ≤ N |
-| Divide into even segments | `NTILE(n)` |
-| Median value | `PERCENTILE_CONT(0.5)` |
-| Quartiles / deciles | `NTILE(4)` / `NTILE(10)` |
+| Scenario                  | Recommended Approach                       |
+| ------------------------- | ------------------------------------------ |
+| Top-N per group           | `RANK` / `DENSE_RANK` + filter on rank ≤ N |
+| Divide into even segments | `NTILE(n)`                                 |
+| Median value              | `PERCENTILE_CONT(0.5)`                     |
+| Quartiles / deciles       | `NTILE(4)` / `NTILE(10)`                   |
 
 !!! tip
+
     Use DENSE_RANK when you need consecutive integers with no gap after ties. Use RANK when you need to see the true positional gap.
 
 !!! note "Related"
+
     This page covers ranking *window functions* as an enrichment step. For the
-    canonical, self-contained recipes see [Top-N](../../../ranking/top_n.md) and
+    canonical, self-contained recipes see [Top-N](../../../ranking/top-n.md) and
     [Pagination](../../../ranking/pagination.md).

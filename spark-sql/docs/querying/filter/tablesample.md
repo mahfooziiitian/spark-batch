@@ -1,8 +1,8 @@
 # :material-table-arrow-right: TABLESAMPLE
 
-`TABLESAMPLE` returns a random subset of rows from a table — useful for exploration, testing, and profiling without scanning the full dataset.
+`TABLESAMPLE` returns a subset of rows from a table — useful for exploration, testing, and profiling without scanning every result row.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -10,34 +10,55 @@
 -- Percentage-based sample
 SELECT * FROM table TABLESAMPLE (N PERCENT);
 
--- Fixed row count sample
-SELECT * FROM table TABLESAMPLE (N ROWS);
-
--- Reproducible sample with a seed
+-- Percentage sample with a seed
 SELECT * FROM table TABLESAMPLE (N PERCENT) REPEATABLE (seed);
 
--- Bucket sampling (deterministic by hash bucket)
-SELECT * FROM table TABLESAMPLE (BUCKET m OUT OF n ON col);
+-- Fixed row-count sample
+SELECT * FROM table TABLESAMPLE (N ROWS);
+
+-- Fixed row-count sample with a seed
+SELECT * FROM table TABLESAMPLE (N ROWS) REPEATABLE (seed);
+
+-- Fractional bucket syntax supported by Spark 4.2
+SELECT * FROM table TABLESAMPLE (BUCKET m OUT OF n);
+
+-- Seeded bucket syntax
+SELECT * FROM table TABLESAMPLE (BUCKET m OUT OF n) REPEATABLE (seed);
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `N PERCENT` | Approximate percentage of rows to return (0–100) |
-| `N ROWS` | Exact number of rows to return |
-| `REPEATABLE (seed)` | Integer seed for reproducible results |
-| `BUCKET m OUT OF n ON col` | Return bucket `m` of `n` hash-buckets on column `col` |
+| Parameter           | Description                                                              |
+| ------------------- | ------------------------------------------------------------------------ |
+| `N PERCENT`         | Approximate percentage of rows to return (0–100)                         |
+| `N ROWS`            | Exact number of rows to return                                           |
+| `REPEATABLE (seed)` | Integer seed for reproducible Bernoulli samples; accepted for `ROWS` too |
+| `BUCKET m OUT OF n` | Fractional Bernoulli sample using `m / n`                                |
 
----
+### :material-animation-play: Interactive Visualization — Sampling Modes
+
+<div id="viz-filter-tablesample" class="ts-viz"></div>
+
+Switch among percentage, row-count, and bucket forms to compare stability and row-count guarantees. The labels reflect Spark 4.2 execution plans and repeated-query checks.
+
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
 1. **PERCENT is approximate** — Spark uses Bernoulli sampling per partition; the actual row count may vary slightly from the target percentage.
-2. **ROWS is exact** — `TABLESAMPLE (N ROWS)` scans partitions and stops after `N` rows; the result set size is guaranteed.
-3. **REPEATABLE seed** — identical seed + identical data produces the same sample; adding or removing partitions may change results.
-4. **Bucket sampling is deterministic** — rows are assigned buckets by hashing `col`; `BUCKET 1 OUT OF 10 ON id` always selects the same 10% of rows for a given dataset.
-5. **No pushdown** — `TABLESAMPLE` does not reduce the amount of data read from storage; it discards rows after scanning. Use partition pruning (`WHERE`) first to reduce I/O.
+2. **ROWS is exact but not random** — in Spark 4.2 and on Databricks SQL, `TABLESAMPLE (N ROWS)` returns exactly `N` rows when available, but the rows come from storage/input order rather than true random selection. `REPEATABLE` is accepted after `ROWS`, yet verification on a live Databricks SQL warehouse returned the same 10-row slice for different seeds.
+3. **`REPEATABLE` makes Bernoulli sampling reproducible** — identical seed + identical input returns the same `PERCENT` sample, and also stabilises the supported `BUCKET m OUT OF n` form.
+4. **Spark 4.2 does not support `ON col` bucket syntax** — `TABLESAMPLE (BUCKET m OUT OF n ON col)` is also rejected on Databricks SQL, which returns: `TABLESAMPLE(BUCKET x OUT OF y ON colname) is not supported.`
+5. **`BUCKET m OUT OF n` is not hash-bucket sampling here** — Spark 4.2 plans it as a Bernoulli sample with fraction `m / n`, so unseeded runs vary.
+6. **Clause order matters** — `TABLESAMPLE` is part of the `FROM` relation, so write `FROM table TABLESAMPLE (...) WHERE ...`, not the other way around.
 
----
+______________________________________________________________________
+
+## :material-information-outline: Verified Behavior on Databricks SQL
+
+1. **`PERCENT` and `BUCKET ... REPEATABLE` were reproducible** — repeated queries against a real managed Delta table on a Databricks SQL warehouse (`stg`) returned identical row sets for the same seed and different row sets for different seeds.
+2. **`ROWS` stayed exact and input-stable** — `TABLESAMPLE (10 ROWS)` always returned 10 rows, but changing `REPEATABLE` from 1 to 99 did not change which 10 rows were returned. Treat `ROWS` as a fixed-size slice, not a random sample.
+3. **Databricks still pushed filters into Delta scans** — `EXPLAIN FORMATTED` for `SELECT * FROM partitioned_table TABLESAMPLE (...) WHERE event_date = ...` showed `PartitionFilters` on the Photon scan. Use a CTE to make the sampled population explicit or to reuse the filtered relation, not because Databricks always blocks pushdown after `TABLESAMPLE`.
+
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -53,7 +74,8 @@ TABLESAMPLE (5 PERCENT);
 ### :material-numeric-2-circle: Fixed-count sample for testing
 
 ```sql
--- Exactly 1000 rows — useful for unit tests and pipeline validation
+-- Exactly 1000 rows when the table has at least 1000 rows
+-- Useful for smoke tests; not a random sample
 SELECT *
 FROM large_events
 TABLESAMPLE (1000 ROWS);
@@ -82,13 +104,14 @@ FROM ml_dataset AS d
 LEFT ANTI JOIN train AS t ON d.id = t.id;
 ```
 
-### :material-numeric-5-circle: Bucket sampling — deterministic 10%
+### :material-numeric-5-circle: Bucket syntax with a reproducible seed
 
 ```sql
--- Always returns the same rows for a given dataset version
+-- In Spark 4.2 this is a Bernoulli-style 10% sample, not hash-bucket routing
+-- Add REPEATABLE if you need the same sample each run
 SELECT *
 FROM transactions
-TABLESAMPLE (BUCKET 1 OUT OF 10 ON transaction_id);
+TABLESAMPLE (BUCKET 1 OUT OF 10) REPEATABLE (7);
 ```
 
 ### :material-numeric-6-circle: Sample before aggregation (approx statistics)
@@ -106,64 +129,77 @@ GROUP BY region
 ORDER BY approx_avg_amount DESC;
 ```
 
-### :material-numeric-7-circle: Combine with WHERE for partition-pruned sampling
+### :material-numeric-7-circle: Filter first, then sample via a CTE
 
 ```sql
--- Prune to recent data first, then sample — reduces I/O significantly
+-- Materialise the filtered relation first, then sample that smaller input
+WITH recent_orders AS (
+    SELECT *
+    FROM orders
+    WHERE order_date >= '2024-01-01'
+)
 SELECT *
-FROM orders
-WHERE order_date >= '2024-01-01'     -- partition prune first
+FROM recent_orders
 TABLESAMPLE (2 PERCENT) REPEATABLE (7);
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: Sampling Methods Compared
 
-| Method | Deterministic | Row Count | When to Use |
-|--------|--------------|-----------|-------------|
-| `TABLESAMPLE (N PERCENT)` | No | Approximate | Quick exploration |
-| `TABLESAMPLE (N PERCENT) REPEATABLE (seed)` | Yes (same data) | Approximate | Reproducible experiments |
-| `TABLESAMPLE (N ROWS)` | No | Exact | Fixed-size test datasets |
-| `TABLESAMPLE (BUCKET m OUT OF n ON col)` | Yes | Exact fraction | Consistent cross-run splits |
-| `ORDER BY RAND() LIMIT N` | No | Exact | Exact N with global sort — expensive |
+| Method                                      | Deterministic   | Row Count   | When to Use                             |
+| ------------------------------------------- | --------------- | ----------- | --------------------------------------- |
+| `TABLESAMPLE (N PERCENT)`                   | No              | Approximate | Quick exploration                       |
+| `TABLESAMPLE (N PERCENT) REPEATABLE (seed)` | Yes (same data) | Approximate | Reproducible experiments                |
+| `TABLESAMPLE (N ROWS)`                      | Input-stable    | Exact       | Fixed-size smoke tests                  |
+| `TABLESAMPLE (BUCKET m OUT OF n)`           | No              | Approximate | Fractional sample with alternate syntax |
+| `ORDER BY RAND() LIMIT N`                   | No              | Exact       | Exact N with global sort — expensive    |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Recommended |
-|----------|-------------|
-| Data exploration on large tables | `TABLESAMPLE (5 PERCENT)` |
-| Repeatable ML train/test splits | `TABLESAMPLE (N PERCENT) REPEATABLE (seed)` |
-| Pipeline smoke testing | `TABLESAMPLE (1000 ROWS)` |
-| Approximate statistics (profiling) | `TABLESAMPLE (1 PERCENT)` + aggregation |
-| Consistent sampling across multiple queries | `TABLESAMPLE (BUCKET 1 OUT OF 10 ON id)` |
-| Exact random N rows | `ORDER BY RAND() LIMIT N` (use only on small tables) |
+| Scenario                             | Recommended                                          |
+| ------------------------------------ | ---------------------------------------------------- |
+| Data exploration on large tables     | `TABLESAMPLE (5 PERCENT)`                            |
+| Repeatable ML train/test splits      | `TABLESAMPLE (N PERCENT) REPEATABLE (seed)`          |
+| Pipeline smoke testing               | `TABLESAMPLE (1000 ROWS)`                            |
+| Approximate statistics (profiling)   | `TABLESAMPLE (1 PERCENT)` + aggregation              |
+| Reproducible alternate sample syntax | `TABLESAMPLE (BUCKET 1 OUT OF 10) REPEATABLE (seed)` |
+| Exact random N rows                  | `ORDER BY RAND() LIMIT N` (use only on small tables) |
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Performance Tips
 
-!!! warning "TABLESAMPLE does not prune partitions"
-    `TABLESAMPLE` still scans all partitions and filters afterwards. Always push
-    `WHERE` predicates on partition columns **before** the sample clause to reduce
-    data read from storage.
+!!! note "Databricks can still prune pushdown-friendly filters"
+
+    On a live Databricks SQL warehouse, `EXPLAIN FORMATTED` showed `PartitionFilters`
+    on the Delta scan even when the predicate was written after `TABLESAMPLE`.
+    Clause order still matters syntactically, but Photon can often push deterministic
+    filters into the scan before sampling. Use a CTE when you want to make the sampled
+    population explicit or reuse the filtered relation.
 
 ```sql
--- Efficient: partition prune first, then sample
-SELECT * FROM events
-WHERE event_date = '2024-06-01'
-TABLESAMPLE (10 PERCENT) REPEATABLE (1);
+-- Explicit: define the population first, then sample it
+WITH day_events AS (
+    SELECT * FROM events WHERE event_date = '2024-06-01'
+)
+SELECT * FROM day_events TABLESAMPLE (10 PERCENT) REPEATABLE (1);
 
--- Expensive: full table scan, then 10% kept
-SELECT * FROM events
-TABLESAMPLE (10 PERCENT) REPEATABLE (1);
+-- Also valid on Databricks; Delta may still push the filter into the scan
+SELECT * FROM events TABLESAMPLE (10 PERCENT) REPEATABLE (1)
+WHERE event_date = '2024-06-01';
 ```
 
 !!! tip "Use `TABLESAMPLE` in ETL validation"
+
     Before running a full production pipeline, validate transformations on a sample:
+
     ```sql
     SELECT * FROM source_table TABLESAMPLE (1000 ROWS)
     ```
+
     This catches schema mismatches and logic errors without the cost of a full run.
+
+<script src="../../../assets/js/querying-filter-viz.js"></script>

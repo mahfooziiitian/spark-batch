@@ -4,9 +4,10 @@ Assign each rep a percentile rank and quartile bucket across their region
 using `PERCENT_RANK` and `NTILE(4)`.
 
 !!! note "Source"
+
     Full runnable example: `sql/window/ranking/ranking.sql`
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -37,7 +38,7 @@ ORDER BY region, amount;
 ??? success "Expected Output"
 
     | region | rep   | amount | pct_rank | quartile |
-    |--------|-------|-------:|---------:|---------:|
+    | ------ | ----- | -----: | -------: | -------: |
     | North  | Alice |    100 |     0.00 |        1 |
     | North  | Bob   |    150 |     0.25 |        1 |
     | North  | Alice |    200 |     0.50 |        2 |
@@ -48,7 +49,7 @@ ORDER BY region, amount;
     | South  | Carol |    500 |     0.67 |        3 |
     | South  | Dave  |    600 |     1.00 |        4 |
 
----
+______________________________________________________________________
 
 ## :material-information-outline: How It Works
 
@@ -60,23 +61,24 @@ Computes the **relative standing** of each row within its partition:
 PERCENT_RANK = (rank - 1) / (partition_size - 1)
 ```
 
-| Step | Description |
-|------|-------------|
-| 1 | Assign a `RANK()` to each row based on `ORDER BY amount` |
-| 2 | Count total rows in the partition (`N`) |
-| 3 | Calculate `(rank - 1) / (N - 1)` |
+| Step | Description                                              |
+| ---- | -------------------------------------------------------- |
+| 1    | Assign a `RANK()` to each row based on `ORDER BY amount` |
+| 2    | Count total rows in the partition (`N`)                  |
+| 3    | Calculate `(rank - 1) / (N - 1)`                         |
 
 For the **North** partition (5 rows):
 
 | rep   | amount | rank | (rank - 1) / (5 - 1) | pct_rank |
-|-------|-------:|-----:|----------------------:|---------:|
-| Alice |    100 |    1 |              0 / 4    |     0.00 |
-| Bob   |    150 |    2 |              1 / 4    |     0.25 |
-| Alice |    200 |    3 |              2 / 4    |     0.50 |
-| Alice |    300 |    4 |              3 / 4    |     0.75 |
-| Bob   |    300 |    4 |              3 / 4    |     0.75 |
+| ----- | -----: | ---: | -------------------: | -------: |
+| Alice |    100 |    1 |                0 / 4 |     0.00 |
+| Bob   |    150 |    2 |                1 / 4 |     0.25 |
+| Alice |    200 |    3 |                2 / 4 |     0.50 |
+| Alice |    300 |    4 |                3 / 4 |     0.75 |
+| Bob   |    300 |    4 |                3 / 4 |     0.75 |
 
 !!! note "Ties share the same PERCENT_RANK"
+
     Rows with amount = 300 both get rank 4 → `pct_rank = 0.75`.
     The next rank (5) is skipped, same as `RANK()` behaviour.
 
@@ -90,16 +92,16 @@ bucket_size = partition_size / n  (remainder rows go to earlier buckets)
 
 For the **North** partition (5 rows, 4 buckets):
 
-| Bucket | Rows assigned | Why |
-|-------:|:-------------:|-----|
-| 1 | 2 rows | 5 / 4 = 1 remainder 1 → first bucket gets an extra row |
-| 2 | 1 row | |
-| 3 | 1 row | |
-| 4 | 1 row | |
+| Bucket | Rows assigned | Why                                                    |
+| -----: | :-----------: | ------------------------------------------------------ |
+|      1 |    2 rows     | 5 / 4 = 1 remainder 1 → first bucket gets an extra row |
+|      2 |     1 row     |                                                        |
+|      3 |     1 row     |                                                        |
+|      4 |     1 row     |                                                        |
 
 For the **South** partition (4 rows, 4 buckets): each bucket gets exactly 1 row.
 
----
+______________________________________________________________________
 
 ## :material-compare: PERCENT_RANK vs CUME_DIST
 
@@ -118,7 +120,7 @@ ORDER BY region, amount;
 ??? success "Expected Output"
 
     | region | rep   | amount | pct_rank | cume_dist |
-    |--------|-------|-------:|---------:|----------:|
+    | ------ | ----- | -----: | -------: | --------: |
     | North  | Alice |    100 |     0.00 |      0.20 |
     | North  | Bob   |    150 |     0.25 |      0.40 |
     | North  | Alice |    200 |     0.50 |      0.60 |
@@ -129,18 +131,19 @@ ORDER BY region, amount;
     | South  | Carol |    500 |     0.67 |      0.75 |
     | South  | Dave  |    600 |     1.00 |      1.00 |
 
-| Function | Formula | Range | Characteristic |
-|----------|---------|-------|----------------|
-| `PERCENT_RANK` | (rank - 1) / (N - 1) | 0 → 1 | First row is always 0 |
-| `CUME_DIST` | rank / N | > 0 → 1 | Last row is always 1 |
+| Function       | Formula              | Range   | Characteristic        |
+| -------------- | -------------------- | ------- | --------------------- |
+| `PERCENT_RANK` | (rank - 1) / (N - 1) | 0 → 1   | First row is always 0 |
+| `CUME_DIST`    | rank / N             | > 0 → 1 | Last row is always 1  |
 
 !!! tip "Which to choose?"
-    - Use `PERCENT_RANK` when you need a 0-based percentile score (e.g., "top 10%"
-      filtering: `PERCENT_RANK() >= 0.9`).
-    - Use `CUME_DIST` when you want the proportion of values less than or equal to
-      the current value (empirical CDF).
 
----
+    - Use `PERCENT_RANK` when you need a 0-based percentile score (e.g., "top 10%"
+        filtering: `PERCENT_RANK() >= 0.9`).
+    - Use `CUME_DIST` when you want the proportion of values less than or equal to
+        the current value (empirical CDF).
+
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
@@ -148,7 +151,7 @@ ORDER BY region, amount;
 - Benchmark individual performance against the group distribution.
 - Identify outliers — rows in the top or bottom percentile.
 
----
+______________________________________________________________________
 
 ## :material-arrow-right: Related
 

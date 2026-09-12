@@ -3,7 +3,7 @@
 A view stores a SQL query definition in the catalog. Every time you query the view,
 Spark re-executes that definition against the current underlying data.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: View Lifecycle
 
@@ -20,7 +20,7 @@ flowchart LR
     DROP --> GONE["Definition removed\nBase data untouched"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-braces: Core DDL Commands
 
@@ -82,21 +82,21 @@ DROP VIEW IF EXISTS global_temp.shared_products;  -- global temp
 DROP VIEW IF EXISTS recent_orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information: Behavior Notes
 
-| Behavior | Detail |
-|----------|--------|
-| No data storage | Querying a view always re-reads base tables |
-| Predicate pushdown | Filters on the view are pushed through to the base table scan |
-| Column pruning | Only columns referenced in the outer query are read |
-| Schema binding | Spark SQL uses **late binding** — schema is resolved at query time, not creation time |
-| Stale after schema change | If a base column is dropped/renamed, the view query fails at runtime |
-| Permissions | In Unity Catalog: grant privileges on the **view** — base table privileges flow through |
-| Circular views | Not allowed — Catalyst detects and rejects cycles |
+| Behavior                  | Detail                                                                                  |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| No data storage           | Querying a view always re-reads base tables                                             |
+| Predicate pushdown        | Filters on the view are pushed through to the base table scan                           |
+| Column pruning            | Only columns referenced in the outer query are read                                     |
+| Schema binding            | Spark SQL uses **late binding** — schema is resolved at query time, not creation time   |
+| Stale after schema change | If a base column is dropped/renamed, the view query fails at runtime                    |
+| Permissions               | In Unity Catalog: grant privileges on the **view** — base table privileges flow through |
+| Circular views            | Not allowed — Catalyst detects and rejects cycles                                       |
 
----
+______________________________________________________________________
 
 ## :material-shield-check: Security Views (Column / Row Masking)
 
@@ -118,15 +118,15 @@ SELECT
 FROM customers;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: View vs Materialized View
 
-| Aspect | View | Materialized View |
-|--------|------|-------------------|
-| Data stored | No | Yes (Delta) |
-| Query speed | Base table performance | Fast (pre-computed) |
-| Freshness | Always current | Depends on refresh |
-| Storage cost | None | Yes |
-| Supports DML | No | No (refresh only) |
-| Best for | Logic abstraction | Heavy aggregations, dashboards |
+| Aspect       | View                   | Materialized View              |
+| ------------ | ---------------------- | ------------------------------ |
+| Data stored  | No                     | Yes (Delta)                    |
+| Query speed  | Base table performance | Fast (pre-computed)            |
+| Freshness    | Always current         | Depends on refresh             |
+| Storage cost | None                   | Yes                            |
+| Supports DML | No                     | No (refresh only)              |
+| Best for     | Logic abstraction      | Heavy aggregations, dashboards |

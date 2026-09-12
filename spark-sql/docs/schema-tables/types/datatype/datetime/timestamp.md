@@ -83,13 +83,13 @@ SELECT MAKE_TIMESTAMP(2024, 7, 15, 14, 30, 0) AS ts;
 
 ## :material-brain: Key Functions
 
-| Function | Description |
-|----------|-------------|
-| `CURRENT_TIMESTAMP()` | Current timestamp |
-| `TO_TIMESTAMP(str, fmt)` | Parse string to timestamp |
-| `FROM_UNIXTIME(epoch)` | Epoch seconds to timestamp |
-| `UNIX_TIMESTAMP(ts)` | Timestamp to epoch seconds |
-| `DATE_TRUNC(unit, ts)` | Truncate to unit |
-| `MAKE_TIMESTAMP(...)` | Build from components |
-| `TIMESTAMPADD(unit, n, ts)` | Add interval |
-| `TIMESTAMPDIFF(unit, ts1, ts2)` | Difference in units |
+| Function                        | Description                |
+| ------------------------------- | -------------------------- |
+| `CURRENT_TIMESTAMP()`           | Current timestamp          |
+| `TO_TIMESTAMP(str, fmt)`        | Parse string to timestamp  |
+| `FROM_UNIXTIME(epoch)`          | Epoch seconds to timestamp |
+| `UNIX_TIMESTAMP(ts)`            | Timestamp to epoch seconds |
+| `DATE_TRUNC(unit, ts)`          | Truncate to unit           |
+| `MAKE_TIMESTAMP(...)`           | Build from components      |
+| `TIMESTAMPADD(unit, n, ts)`     | Add interval               |
+| `TIMESTAMPDIFF(unit, ts1, ts2)` | Difference in units        |

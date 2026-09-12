@@ -1,12 +1,13 @@
 # :material-pipe: Pipe Syntax
 
 !!! info "Spark 4.0"
+
     The pipe operator `|>` is new in Apache Spark 4.0.
 
 The **pipe operator** (`|>`) chains query operations into a readable, top-to-bottom
 pipeline — eliminating deeply nested subqueries.
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -19,26 +20,26 @@ source_relation
 
 The source can be `FROM table`, `TABLE name`, or any standard `SELECT` query.
 
----
+______________________________________________________________________
 
 ## :material-format-list-bulleted: Supported Operators
 
-| Operator | Description | Example |
-|----------|-------------|---------|
-| `SELECT` | Project columns (no aggregates) | `\|> SELECT id, name` |
-| `EXTEND` | Add columns without replacing existing | `\|> EXTEND x + 1 AS y` |
-| `SET` | Update an existing column in-place | `\|> SET price = price * 1.1` |
-| `DROP` | Remove columns | `\|> DROP temp_col` |
-| `AS` | Rename the relation | `\|> AS orders` |
-| `WHERE` | Filter rows | `\|> WHERE active = true` |
-| `JOIN` | Join with another table | `\|> JOIN dim ON ...` |
-| `ORDER BY` | Sort results | `\|> ORDER BY created DESC` |
-| `LIMIT` | Limit result count | `\|> LIMIT 100` |
-| `TABLESAMPLE` | Sample rows | `\|> TABLESAMPLE (10 PERCENT)` |
-| `PIVOT` | Pivot data | `\|> PIVOT (...)` |
-| `UNPIVOT` | Unpivot data | `\|> UNPIVOT (...)` |
+| Operator      | Description                            | Example                        |
+| ------------- | -------------------------------------- | ------------------------------ |
+| `SELECT`      | Project columns (no aggregates)        | `\|> SELECT id, name`          |
+| `EXTEND`      | Add columns without replacing existing | `\|> EXTEND x + 1 AS y`        |
+| `SET`         | Update an existing column in-place     | `\|> SET price = price * 1.1`  |
+| `DROP`        | Remove columns                         | `\|> DROP temp_col`            |
+| `AS`          | Rename the relation                    | `\|> AS orders`                |
+| `WHERE`       | Filter rows                            | `\|> WHERE active = true`      |
+| `JOIN`        | Join with another table                | `\|> JOIN dim ON ...`          |
+| `ORDER BY`    | Sort results                           | `\|> ORDER BY created DESC`    |
+| `LIMIT`       | Limit result count                     | `\|> LIMIT 100`                |
+| `TABLESAMPLE` | Sample rows                            | `\|> TABLESAMPLE (10 PERCENT)` |
+| `PIVOT`       | Pivot data                             | `\|> PIVOT (...)`              |
+| `UNPIVOT`     | Unpivot data                           | `\|> UNPIVOT (...)`            |
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Examples
 
@@ -116,23 +117,24 @@ TABLE transactions
      subtotal + tax AS total;
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert-outline: Restrictions
 
 - **No aggregate functions** in `|> SELECT` — use a subquery or CTE before piping.
 - The single-character `|` (bitwise OR) may conflict — disable with:
-  ```sql
-  SET spark.sql.parser.singleCharacterPipeOperator.enabled = false;
-  ```
 
----
+```sql
+  SET spark.sql.parser.singleCharacterPipeOperator.enabled = false;
+```
+
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use Pipe Syntax
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Multi-step transformations | :white_check_mark: Pipe makes the flow linear and readable |
-| Simple single-table queries | Traditional `SELECT` is fine |
-| Complex aggregations | Use CTE + pipe for the post-aggregation steps |
+| Scenario                      | Recommendation                                             |
+| ----------------------------- | ---------------------------------------------------------- |
+| Multi-step transformations    | :white_check_mark: Pipe makes the flow linear and readable |
+| Simple single-table queries   | Traditional `SELECT` is fine                               |
+| Complex aggregations          | Use CTE + pipe for the post-aggregation steps              |
 | Data exploration in notebooks | :white_check_mark: Pipe is great for iterative exploration |

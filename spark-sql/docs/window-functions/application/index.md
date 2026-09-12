@@ -4,13 +4,14 @@ Ten production-ready patterns that solve common data engineering problems using 
 Each pattern includes full SQL, expected output, and performance considerations.
 
 !!! abstract "Pattern Complexity Guide"
-    | :material-circle: | Level | Patterns |
-    |:-:|-------|----------|
-    | :material-circle:{ style="color: green" } | Beginner | De-duplication, Top-N, Running Balance |
-    | :material-circle:{ style="color: orange" } | Intermediate | Period-over-Period, Percentile Scoring, Forward-Fill |
-    | :material-circle:{ style="color: red" } | Advanced | Sessionisation, Gap Detection, YoY Comparison, Median |
 
----
+    |             :material-circle:              | Level        | Patterns                                              |
+    | :----------------------------------------: | ------------ | ----------------------------------------------------- |
+    | :material-circle:{ style="color: green" }  | Beginner     | De-duplication, Top-N, Running Balance                |
+    | :material-circle:{ style="color: orange" } | Intermediate | Period-over-Period, Percentile Scoring, Forward-Fill  |
+    |  :material-circle:{ style="color: red" }   | Advanced     | Sessionisation, Gap Detection, YoY Comparison, Median |
+
+______________________________________________________________________
 
 ## :material-sitemap: Decision Flowchart
 
@@ -32,7 +33,7 @@ flowchart TD
     Q5 -->|"Group by gaps"| SESS["Advanced: Sessionisation<br/>LAG gap + SUM"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Shared Dataset
 
@@ -51,54 +52,54 @@ SELECT * FROM VALUES
 AS sales(region, rep, sale_date, amount);
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: Patterns
 
-| # | Pattern | Key Function | Frame | Complexity | Page |
-|:-:|---------|-------------|-------|:----------:|------|
-| 1 | De-duplication — keep latest | `ROW_NUMBER` DESC | None (ranking) | :material-circle:{ style="color: green" } | [deduplication.md](deduplication.md) |
-| 2 | Top-N per group | `ROW_NUMBER` | None (ranking) | :material-circle:{ style="color: green" } | [top_n.md](top_n.md) |
-| 3 | Running balance | `SUM` | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | :material-circle:{ style="color: green" } | [running_balance.md](running_balance.md) |
-| 4 | Period-over-period delta | `LAG(col, 1)` | None (navigation) | :material-circle:{ style="color: orange" } | [period_comparison.md](period_comparison.md) |
-| 5 | Sessionisation | `LAG` gap flag + cumulative `SUM` | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | :material-circle:{ style="color: red" } | [sessionisation.md](sessionisation.md) |
-| 6 | Percentile scoring | `PERCENT_RANK`, `NTILE` | None (ranking) | :material-circle:{ style="color: orange" } | [percentile.md](percentile.md) |
-| 7 | Forward-fill NULLs | `LAST_VALUE IGNORE NULLS` | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | :material-circle:{ style="color: orange" } | [forward_fill.md](forward_fill.md) |
-| 8 | Gap detection / streaks | `LEAD` gap + cumulative `SUM` | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | :material-circle:{ style="color: red" } | [gap_detection.md](gap_detection.md) |
-| 9 | Median / percentile | `PERCENTILE_APPROX` | GROUP BY (aggregate) | :material-circle:{ style="color: red" } | [median.md](median.md) |
-| 10 | Year-over-year comparison | `LAG(col, 12)` | None (navigation) | :material-circle:{ style="color: red" } | [yoy_comparison.md](yoy_comparison.md) |
+|  #  | Pattern                      | Key Function                      | Frame                                     |                 Complexity                 | Page                                         |
+| :-: | ---------------------------- | --------------------------------- | ----------------------------------------- | :----------------------------------------: | -------------------------------------------- |
+|  1  | De-duplication — keep latest | `ROW_NUMBER` DESC                 | None (ranking)                            | :material-circle:{ style="color: green" }  | [deduplication.md](deduplication.md)         |
+|  2  | Top-N per group              | `ROW_NUMBER`                      | None (ranking)                            | :material-circle:{ style="color: green" }  | [top-n.md](top-n.md)                         |
+|  3  | Running balance              | `SUM`                             | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | :material-circle:{ style="color: green" }  | [running-balance.md](running-balance.md)     |
+|  4  | Period-over-period delta     | `LAG(col, 1)`                     | None (navigation)                         | :material-circle:{ style="color: orange" } | [period-comparison.md](period-comparison.md) |
+|  5  | Sessionisation               | `LAG` gap flag + cumulative `SUM` | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` |  :material-circle:{ style="color: red" }   | [sessionisation.md](sessionisation.md)       |
+|  6  | Percentile scoring           | `PERCENT_RANK`, `NTILE`           | None (ranking)                            | :material-circle:{ style="color: orange" } | [percentile.md](percentile.md)               |
+|  7  | Forward-fill NULLs           | `LAST_VALUE IGNORE NULLS`         | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` | :material-circle:{ style="color: orange" } | [forward-fill.md](forward-fill.md)           |
+|  8  | Gap detection / streaks      | `LEAD` gap + cumulative `SUM`     | `ROWS UNBOUNDED PRECEDING TO CURRENT ROW` |  :material-circle:{ style="color: red" }   | [gap-detection.md](gap-detection.md)         |
+|  9  | Median / percentile          | `PERCENTILE_APPROX`               | GROUP BY (aggregate)                      |  :material-circle:{ style="color: red" }   | [median.md](median.md)                       |
+| 10  | Year-over-year comparison    | `LAG(col, 12)`                    | None (navigation)                         |  :material-circle:{ style="color: red" }   | [yoy-comparison.md](yoy-comparison.md)       |
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Best Practices
 
-| Tip | Reason |
-|-----|--------|
-| Pre-filter before windowing | Reduces partition size → less shuffle data |
-| Combine windows with same `OVER` spec | One shuffle stage instead of multiple |
-| Use `ROWS` not `RANGE` when possible | `ROWS` is position-based (faster), `RANGE` requires value comparison |
-| Add `PARTITION BY` on high-cardinality keys | Smaller partitions = better parallelism |
-| Avoid `UNBOUNDED FOLLOWING` on large partitions | Forces buffering entire partition in memory |
-| Use `QUALIFY` to avoid wrapper subquery | Cleaner plan — one fewer project node |
-| Cache input when reusing same windowed result | Avoid recomputing the shuffle stage |
+| Tip                                             | Reason                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| Pre-filter before windowing                     | Reduces partition size → less shuffle data                           |
+| Combine windows with same `OVER` spec           | One shuffle stage instead of multiple                                |
+| Use `ROWS` not `RANGE` when possible            | `ROWS` is position-based (faster), `RANGE` requires value comparison |
+| Add `PARTITION BY` on high-cardinality keys     | Smaller partitions = better parallelism                              |
+| Avoid `UNBOUNDED FOLLOWING` on large partitions | Forces buffering entire partition in memory                          |
+| Use `QUALIFY` to avoid wrapper subquery         | Cleaner plan — one fewer project node                                |
+| Cache input when reusing same windowed result   | Avoid recomputing the shuffle stage                                  |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Remove duplicates, keep latest row | `ROW_NUMBER` + filter `rn = 1` |
-| Leaderboard / top-N per category | `ROW_NUMBER` + filter `rn <= N` |
-| Cumulative metrics over time | `SUM ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
-| Compare each period to previous | `LAG(metric) OVER (PARTITION BY ... ORDER BY date)` |
-| Group activity into sessions | LAG gap flag + cumulative `SUM` for session id |
-| Percentile distribution within groups | `PERCENT_RANK` + `NTILE(n)` |
+| Scenario                              | Pattern                                                    |
+| ------------------------------------- | ---------------------------------------------------------- |
+| Remove duplicates, keep latest row    | `ROW_NUMBER` + filter `rn = 1`                             |
+| Leaderboard / top-N per category      | `ROW_NUMBER` + filter `rn <= N`                            |
+| Cumulative metrics over time          | `SUM ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
+| Compare each period to previous       | `LAG(metric) OVER (PARTITION BY ... ORDER BY date)`        |
+| Group activity into sessions          | LAG gap flag + cumulative `SUM` for session id             |
+| Percentile distribution within groups | `PERCENT_RANK` + `NTILE(n)`                                |
 
----
+______________________________________________________________________
 
 ## :material-arrow-right: Related
 
 - [Window Types](../functions/index.md) — full function reference (ranking, aggregate, navigation)
 - [Frame Specification](../frame/index.md) — ROWS vs RANGE deep dive
-- [NULL Handling in Windows](../nulls/null_options_wf.md) — `IGNORE NULLS`, `RESPECT NULLS`
+- [NULL Handling in Windows](../nulls/null-options-wf.md) — `IGNORE NULLS`, `RESPECT NULLS`

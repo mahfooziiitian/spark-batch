@@ -3,13 +3,21 @@
 A **struct** (also called a named struct) groups multiple named fields into a single composite
 value. Structs are the Spark SQL equivalent of a row or record within a column.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
     A[Named Fields] --> B[Struct Functions]
     B --> C[Struct Type]
 ```
+
+### :material-animation-play: Interactive Visualization — Struct Equality Is Field-by-Field
+
+<div id="viz-struct-equality" class="ts-viz"></div>
+
+Compare two structs field-by-field to see why matching `NULL` fields count
+as equal under `=` — different from plain scalar `NULL = NULL`, which is
+`NULL`.
 
 ## :material-pin: Creating Structs
 
@@ -134,6 +142,21 @@ SELECT NAMED_STRUCT('a', 1, 'b', 2) = NAMED_STRUCT('a', 1, 'b', 3) AS eq;
 -- Result: false
 ```
 
+> **NULL-safe field comparison (verified):** unlike scalar `NULL = NULL`
+> (which evaluates to `NULL`), struct equality treats matching `NULL`
+> fields as equal:
+>
+> ```sql
+> SELECT NAMED_STRUCT('a', 1, 'b', CAST(NULL AS INT))
+>      = NAMED_STRUCT('a', 1, 'b', CAST(NULL AS INT)) AS eq;
+> -- Result: true   ← not NULL, even though field 'b' is NULL on both sides
+> ```
+>
+> This makes `STRUCT` equality safe to use directly in `WHERE`/`JOIN`
+> conditions and `GROUP BY` even when some fields may be NULL — you don't
+> need `<=>` or manual `COALESCE` juggling the way you would for a bare
+> nullable scalar column.
+
 ### :material-toy-brick: 6. Use with INLINE to Flatten
 
 ```sql
@@ -146,13 +169,13 @@ SELECT INLINE(ARRAY(
 
 ## :material-brain: When to Use
 
-| Scenario | Why Structs? |
-|----------|-------------|
-| Group related fields into a single column | Cleaner schema than multiple columns |
-| Return composite values from expressions | `NAMED_STRUCT` in SELECT or CASE |
-| Build nested / hierarchical data | Structs within structs, or arrays of structs |
-| Aggregate summary statistics | Pack `COUNT`, `AVG`, `MAX` into one column |
-| Interop with JSON / Parquet | Struct maps naturally to nested JSON objects |
+| Scenario                                  | Why Structs?                                 |
+| ----------------------------------------- | -------------------------------------------- |
+| Group related fields into a single column | Cleaner schema than multiple columns         |
+| Return composite values from expressions  | `NAMED_STRUCT` in SELECT or CASE             |
+| Build nested / hierarchical data          | Structs within structs, or arrays of structs |
+| Aggregate summary statistics              | Pack `COUNT`, `AVG`, `MAX` into one column   |
+| Interop with JSON / Parquet               | Struct maps naturally to nested JSON objects |
 
 > **Tip:** Prefer `NAMED_STRUCT` over `STRUCT` in production code — explicit field names
 > make queries self-documenting and less error-prone.

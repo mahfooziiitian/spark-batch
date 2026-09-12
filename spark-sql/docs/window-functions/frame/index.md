@@ -5,11 +5,12 @@ the current partition. Two modes are available: **`ROWS`** (physical offset) and
 **`RANGE`** (value-based offset).
 
 !!! abstract "Key Insight"
+
     The frame determines **which rows** contribute to the window function result for
     the **current row**. Without a frame clause, you get default behaviour that often
     surprises — always be explicit.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Frame Overview
 
@@ -23,7 +24,7 @@ graph TD
     RANGE --> G2["Interval offset\nRANGE BETWEEN INTERVAL '7' DAY PRECEDING ..."]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -42,10 +43,11 @@ UNBOUNDED FOLLOWING   -- last row of partition
 ```
 
 !!! note "Shorthand"
+
     `ROWS UNBOUNDED PRECEDING` is shorthand for
     `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.
 
----
+______________________________________________________________________
 
 ## :material-table: Frame Boundaries Visualised
 
@@ -65,13 +67,13 @@ Position:  1       2       3      [4]      5       6       7
                     ├ 1 PREC ─┤── 1 FOL ─┤
 ```
 
-| Frame Example | Included Rows (when current = row 4) |
-|---------------|--------------------------------------|
-| `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` | 1, 2, 3, **4** |
-| `ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING` | **4**, 5, 6, 7 |
-| `ROWS BETWEEN 2 PRECEDING AND 1 FOLLOWING` | 2, 3, **4**, 5 |
+| Frame Example                                              | Included Rows (when current = row 4)     |
+| ---------------------------------------------------------- | ---------------------------------------- |
+| `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`         | 1, 2, 3, **4**                           |
+| `ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING`         | **4**, 5, 6, 7                           |
+| `ROWS BETWEEN 2 PRECEDING AND 1 FOLLOWING`                 | 2, 3, **4**, 5                           |
 | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | 1, 2, 3, **4**, 5, 6, 7 (full partition) |
-| `ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING` | 3 (just the previous row) |
+| `ROWS BETWEEN 1 PRECEDING AND 1 PRECEDING`                 | 3 (just the previous row)                |
 
 ### :material-animation-play: Interactive Frame Boundaries
 
@@ -87,37 +89,38 @@ controls to see how the frame and SUM change.
 
 <div id="viz-frame-rows" class="ts-viz"></div>
 
-| Boundary | Meaning |
-|----------|---------|
-| `UNBOUNDED PRECEDING` | Start of the partition |
-| `N PRECEDING` | N rows / N value-units before the current row |
-| `CURRENT ROW` | The current row itself |
-| `N FOLLOWING` | N rows / N value-units after the current row |
-| `UNBOUNDED FOLLOWING` | End of the partition |
+| Boundary              | Meaning                                       |
+| --------------------- | --------------------------------------------- |
+| `UNBOUNDED PRECEDING` | Start of the partition                        |
+| `N PRECEDING`         | N rows / N value-units before the current row |
+| `CURRENT ROW`         | The current row itself                        |
+| `N FOLLOWING`         | N rows / N value-units after the current row  |
+| `UNBOUNDED FOLLOWING` | End of the partition                          |
 
----
+______________________________________________________________________
 
 ## :material-compare: ROWS vs RANGE
 
-| Property | ROWS | RANGE |
-|----------|------|-------|
-| Offset type | Physical row count — integer only | Value distance — numeric or interval |
-| Tie handling | Each row is treated independently | All rows with the same ORDER BY value share the same frame |
-| Multi-column ORDER BY | Supported | Not supported with numeric/interval offsets |
-| Performance | Faster — row position is pre-computed | Slightly slower — value comparison per row |
-| Interval support | No | Yes — use `INTERVAL '7' DAY` for date/timestamp columns |
-| Use case | Fixed row windows (last 3 rows) | Time-based windows (last 7 days) |
+| Property              | ROWS                                  | RANGE                                                      |
+| --------------------- | ------------------------------------- | ---------------------------------------------------------- |
+| Offset type           | Physical row count — integer only     | Value distance — numeric or interval                       |
+| Tie handling          | Each row is treated independently     | All rows with the same ORDER BY value share the same frame |
+| Multi-column ORDER BY | Supported                             | Not supported with numeric/interval offsets                |
+| Performance           | Faster — row position is pre-computed | Slightly slower — value comparison per row                 |
+| Interval support      | No                                    | Yes — use `INTERVAL '7' DAY` for date/timestamp columns    |
+| Use case              | Fixed row windows (last 3 rows)       | Time-based windows (last 7 days)                           |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Default Frame Behavior
 
-| Condition | Default Frame | Implication |
-|-----------|--------------|-------------|
-| `ORDER BY` present, no frame clause | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` | Running aggregate (ties included) |
-| No `ORDER BY`, no frame clause | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | Full partition aggregate (same value every row) |
+| Condition                           | Default Frame                                              | Implication                                     |
+| ----------------------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
+| `ORDER BY` present, no frame clause | `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`        | Running aggregate (ties included)               |
+| No `ORDER BY`, no frame clause      | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | Full partition aggregate (same value every row) |
 
 !!! warning "The LAST_VALUE trap"
+
     `LAST_VALUE` with the default frame returns the **current row** — not the last row
     of the partition. Always specify `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`
     to get the actual last value.
@@ -133,20 +136,20 @@ controls to see how the frame and SUM change.
     )
     ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Common Frame Patterns
 
-| Pattern | Frame Clause | Example Use |
-|---------|-------------|-------------|
-| Running total | `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` | Cumulative revenue |
-| Full partition | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | Total for comparison |
-| 3-row moving average | `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING` | Smoothing noisy data |
-| 7-day rolling sum | `RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW` | Weekly metric |
-| Trailing 5 rows | `ROWS BETWEEN 4 PRECEDING AND CURRENT ROW` | Last 5 data points |
-| Look-ahead | `ROWS BETWEEN CURRENT ROW AND 3 FOLLOWING` | Next 3 rows preview |
+| Pattern              | Frame Clause                                               | Example Use          |
+| -------------------- | ---------------------------------------------------------- | -------------------- |
+| Running total        | `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`         | Cumulative revenue   |
+| Full partition       | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` | Total for comparison |
+| 3-row moving average | `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING`                 | Smoothing noisy data |
+| 7-day rolling sum    | `RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW` | Weekly metric        |
+| Trailing 5 rows      | `ROWS BETWEEN 4 PRECEDING AND CURRENT ROW`                 | Last 5 data points   |
+| Look-ahead           | `ROWS BETWEEN CURRENT ROW AND 3 FOLLOWING`                 | Next 3 rows preview  |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: ROWS vs RANGE Side-by-Side
 
@@ -187,19 +190,20 @@ FROM events
 ORDER BY event_date, amount;
 ```
 
-| event_date | amount | rows_running | range_running | Notes |
-|------------|-------:|:------------:|:-------------:|-------|
-| 2024-01-01 |    100 | 100 | 100 | |
-| 2024-01-03 |    200 | 300 | 300 | |
-| 2024-01-05 |    150 | 450 | **750** | RANGE includes both 01-05 rows |
-| 2024-01-05 |    300 | 750 | **750** | RANGE: same result as above |
-| 2024-01-07 |    400 | 1150 | 1150 | |
+| event_date | amount | rows_running | range_running | Notes                          |
+| ---------- | -----: | :----------: | :-----------: | ------------------------------ |
+| 2024-01-01 |    100 |     100      |      100      |                                |
+| 2024-01-03 |    200 |     300      |      300      |                                |
+| 2024-01-05 |    150 |     450      |    **750**    | RANGE includes both 01-05 rows |
+| 2024-01-05 |    300 |     750      |    **750**    | RANGE: same result as above    |
+| 2024-01-07 |    400 |     1150     |     1150      |                                |
 
 !!! info "Why the difference?"
+
     - **ROWS** treats each row independently — row 3 sees rows 1–3, row 4 sees rows 1–4.
     - **RANGE** groups by ORDER BY value — both `2024-01-05` rows see rows 1–4 (all values ≤ `2024-01-05`).
 
----
+______________________________________________________________________
 
 ## :material-clock: RANGE with INTERVAL (Time-Based Windows)
 
@@ -215,44 +219,45 @@ FROM events
 ORDER BY event_date;
 ```
 
-| event_date | amount | sum_last_2_days | Rows in frame |
-|------------|-------:|:---------------:|---------------|
-| 2024-01-01 |    100 | 100 | Only 01-01 |
-| 2024-01-03 |    200 | 300 | 01-01 through 01-03 |
-| 2024-01-05 |    150 | 350 | 01-03, 01-05 (01-01 is >2 days away) |
-| 2024-01-05 |    300 | 650 | 01-03, both 01-05 rows |
-| 2024-01-07 |    400 | 850 | both 01-05, 01-07 |
+| event_date | amount | sum_last_2_days | Rows in frame                        |
+| ---------- | -----: | :-------------: | ------------------------------------ |
+| 2024-01-01 |    100 |       100       | Only 01-01                           |
+| 2024-01-03 |    200 |       300       | 01-01 through 01-03                  |
+| 2024-01-05 |    150 |       350       | 01-03, 01-05 (01-01 is >2 days away) |
+| 2024-01-05 |    300 |       650       | 01-03, both 01-05 rows               |
+| 2024-01-07 |    400 |       850       | both 01-05, 01-07                    |
 
 !!! tip "Date vs Timestamp"
+
     For `INTERVAL` frames, the ORDER BY column must be `DATE`, `TIMESTAMP`, or a numeric type.
     Cast string dates: `ORDER BY CAST(event_date AS DATE)`.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Use |
-|----------|-----|
-| Rolling N-row average where each row must be distinct | `ROWS` |
-| Rolling date window (e.g., last 7 days) | `RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW` |
-| Running total where ties must show the same cumulative sum | `RANGE` |
-| Multi-column ORDER BY with offsets | `ROWS` — RANGE does not support it |
-| Centred moving window (N before, N after) | `ROWS BETWEEN N PRECEDING AND N FOLLOWING` |
-| Full partition for FIRST_VALUE / LAST_VALUE | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` |
-| Strictly forward-looking aggregates | `ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING` |
+| Scenario                                                   | Use                                                        |
+| ---------------------------------------------------------- | ---------------------------------------------------------- |
+| Rolling N-row average where each row must be distinct      | `ROWS`                                                     |
+| Rolling date window (e.g., last 7 days)                    | `RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW` |
+| Running total where ties must show the same cumulative sum | `RANGE`                                                    |
+| Multi-column ORDER BY with offsets                         | `ROWS` — RANGE does not support it                         |
+| Centred moving window (N before, N after)                  | `ROWS BETWEEN N PRECEDING AND N FOLLOWING`                 |
+| Full partition for FIRST_VALUE / LAST_VALUE                | `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` |
+| Strictly forward-looking aggregates                        | `ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING`         |
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Reason |
-|-----|--------|
-| Prefer `ROWS` over `RANGE` | Avoids value comparison overhead |
-| Avoid `UNBOUNDED FOLLOWING` on large partitions | Requires buffering all future rows in memory |
-| Use bounded frames when possible | `ROWS BETWEEN 6 PRECEDING AND CURRENT ROW` is cheaper than unbounded |
-| Align frames across functions | Same frame spec = same computation stage |
+| Tip                                             | Reason                                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| Prefer `ROWS` over `RANGE`                      | Avoids value comparison overhead                                     |
+| Avoid `UNBOUNDED FOLLOWING` on large partitions | Requires buffering all future rows in memory                         |
+| Use bounded frames when possible                | `ROWS BETWEEN 6 PRECEDING AND CURRENT ROW` is cheaper than unbounded |
+| Align frames across functions                   | Same frame spec = same computation stage                             |
 
----
+______________________________________________________________________
 
 ## :material-link: See Also
 

@@ -1,197 +1,188 @@
 # :material-arrow-decision: Correlated Subqueries
 
-A correlated subquery references one or more columns from the **outer query**. It is
-logically re-evaluated for each row of the outer query, enabling per-row comparisons
-against group-level aggregates or existence checks in related tables.
+A correlated subquery references columns from the outer query. Logically that means the inner query depends on each outer row or group, but in Spark 4.2 Catalyst can often decorrelate the pattern into a join.
 
----
+<script src="../../assets/js/querying-subquery-viz.js"></script>
 
-## :material-code-tags: Syntax
+### :material-animation-play: Interactive Visualization — Decorrelated vs Nested Loop Plan
 
-```sql
--- Correlated scalar: compare each row against its own group average
-SELECT col1, col2
-FROM outer_table AS o
-WHERE col2 > (
-    SELECT AVG(col2)
-    FROM outer_table
-    WHERE group_col = o.group_col   -- references outer alias o
-);
+<div id="viz-subquery-correlated-plan" class="ts-viz"></div>
 
--- Correlated EXISTS: filter outer rows by related-table criteria
-SELECT * FROM outer_table AS o
-WHERE EXISTS (
-    SELECT 1
-    FROM related_table AS r
-    WHERE r.fk = o.pk
-      AND r.status = 'ACTIVE'
-);
+Switch between verified plan shapes to see when Spark 4.2 uses a hash join and when it has to fall back to a nested-loop style join.
 
--- Correlated scalar in SELECT list
-SELECT
-    o.col1,
-    (SELECT MAX(r.col2) FROM related_table r WHERE r.fk = o.pk) AS max_related
-FROM outer_table AS o;
-```
+______________________________________________________________________
 
----
-
-## :material-information-outline: Behavior
-
-1. Spark's Catalyst optimizer **decorrelates** most correlated subqueries into efficient joins automatically — inspect `EXPLAIN EXTENDED` to verify.
-2. If decorrelation fails (e.g., complex expressions), the subquery is executed once per outer row — this is expensive on large tables.
-3. Correlated subqueries in `WHERE`, `HAVING`, and `SELECT` are all supported.
-4. A correlated scalar subquery must still return at most one row per outer row.
-5. Use `EXPLAIN` to confirm Catalyst turned the subquery into a `LeftSemi`, `LeftAnti`, or `LeftOuter` join — if you still see `Subquery` in the plan, consider rewriting as an explicit join.
-
----
-
-## :material-flask-outline: Practical Examples
-
-### Orders above that customer's own average
+## :material-code-tags: Typical Patterns
 
 ```sql
-SELECT order_id, customer_id, amount
-FROM orders AS o
+SELECT order_id, customer, amount
+FROM orders o
 WHERE amount > (
     SELECT AVG(amount)
-    FROM orders
-    WHERE customer_id = o.customer_id
-);
--- Each customer's orders are filtered against their personal average, not the global average
-```
-
-### Top order per customer (correlated filter)
-
-```sql
-SELECT order_id, customer_id, amount, order_date
-FROM orders AS o
-WHERE amount = (
-    SELECT MAX(amount)
-    FROM orders
-    WHERE customer_id = o.customer_id
-);
--- Returns the row(s) with the highest amount for each customer
-```
-
-### Products priced above their category average
-
-```sql
-SELECT product_id, name, category, price
-FROM products AS p
-WHERE price > (
-    SELECT AVG(price)
-    FROM products
-    WHERE category = p.category
+    FROM orders i
+    WHERE i.customer = o.customer
 );
 ```
 
-### Employees earning above their department median
-
 ```sql
-SELECT employee_id, name, department, salary
-FROM employees AS e
-WHERE salary > (
-    SELECT PERCENTILE(salary, 0.5)
-    FROM employees
-    WHERE department = e.department
-);
-```
-
-### Correlated EXISTS: customers active in the last 30 days
-
-```sql
-SELECT c.customer_id, c.name, c.segment
-FROM customers AS c
+SELECT name
+FROM customers c
 WHERE EXISTS (
     SELECT 1
-    FROM orders AS o
+    FROM customer_orders o
     WHERE o.customer_id = c.customer_id
-      AND o.order_date >= DATEADD(DAY, -30, CURRENT_DATE())
 );
 ```
 
-### Correlated scalar in SELECT: last order date per customer
+______________________________________________________________________
+
+## :material-information-outline: Verified Spark 4.2 Behavior
+
+1. Correlated **equality** predicates decorrelate well. The customer-average example above became a `BroadcastHashJoin` in the physical plan.
+2. Correlated scalar subqueries in a `SELECT` list can also decorrelate. A verified `COUNT(*)` example became a `LeftOuter` join.
+3. Uncorrelated scalar subqueries are different: Spark keeps a `Subquery` node instead of rewriting them as joins.
+4. Correlated **non-equality** predicates can still decorrelate, but often only into `BroadcastNestedLoopJoin`.
+5. A correlated scalar subquery must still return at most one row for each outer row.
+
+______________________________________________________________________
+
+## :material-flask-outline: Verified Plans
+
+### Equality correlation: join rewrite
+
+Verified query:
+
+```sql
+SELECT order_id, customer, amount
+FROM orders o
+WHERE amount > (
+    SELECT AVG(amount)
+    FROM orders i
+    WHERE i.customer = o.customer
+);
+```
+
+Spark 4.2 optimized it to an inner join between `orders` and a per-customer aggregate, then used a `BroadcastHashJoin` physically.
+
+### Correlated scalar in `SELECT`
 
 ```sql
 SELECT
-    c.customer_id,
-    c.name,
-    (
-        SELECT MAX(order_date)
-        FROM orders AS o
-        WHERE o.customer_id = c.customer_id
-    ) AS last_order_date
-FROM customers AS c;
+    customer,
+    (SELECT COUNT(*) FROM orders i WHERE i.customer = o.customer) AS cnt
+FROM (SELECT DISTINCT customer FROM orders) o;
 ```
 
-### Correlated NOT EXISTS: customers with no recent activity
+Spark 4.2 rewrote this to a `LeftOuter` join.
+
+### Non-equality correlation: heavier plan
 
 ```sql
-SELECT c.customer_id, c.name, c.email
-FROM customers AS c
-WHERE NOT EXISTS (
+SELECT order_id, customer, amount
+FROM orders o
+WHERE EXISTS (
     SELECT 1
-    FROM orders AS o
-    WHERE o.customer_id = c.customer_id
-      AND o.order_date >= DATEADD(DAY, -180, CURRENT_DATE())
+    FROM orders i
+    WHERE i.amount > o.amount
 );
 ```
 
-### Correlated subquery in HAVING
+Spark 4.2 still removed the subquery node, but the physical plan used `BroadcastNestedLoopJoin` because the condition was non-equality.
+
+______________________________________________________________________
+
+## :material-swap-horizontal: What to Look for in `EXPLAIN`
+
+| You see                                              | Meaning                                            |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| `LeftSemi`, `LeftAnti`, `Inner`, or `LeftOuter` join | Spark decorrelated the subquery                    |
+| `BroadcastHashJoin`                                  | Equality-based decorrelation succeeded efficiently |
+| `BroadcastNestedLoopJoin`                            | Correlation stayed expensive                       |
+| `Subquery subquery#...` in a filter                  | Usually an uncorrelated scalar subquery            |
+
+______________________________________________________________________
+
+## :material-alert-decagram: When It Doesn't Just "Decorrelate" — Runtime Failure
+
+Not every correlated pattern degrades gracefully into a slower join; a correlated
+scalar subquery that returns more than one row per outer row **fails at runtime**,
+not at plan time — `EXPLAIN` looks fine, but execution errors out. Verified on Spark
+4.2:
 
 ```sql
--- Regions whose total revenue exceeds that region's previous-year revenue
-SELECT
-    region,
-    SUM(amount) AS this_year_revenue
-FROM orders
-WHERE YEAR(order_date) = 2024
-GROUP BY region
-HAVING SUM(amount) > (
-    SELECT SUM(amount)
-    FROM orders
-    WHERE YEAR(order_date) = 2023
-      AND region = orders.region   -- correlates on the outer GROUP BY key
+-- customer 'A' has 3 orders, so the subquery returns 3 rows for order_id=1's outer row
+SELECT o.order_id,
+       (SELECT i.amount FROM orders i WHERE i.customer = o.customer) AS other_amount
+FROM orders o;
+```
+
+```text
+org.apache.spark.SparkRuntimeException: [SCALAR_SUBQUERY_TOO_MANY_ROWS] More than
+one row returned by a subquery used as an expression. SQLSTATE: 21000
+```
+
+The plan happily rewrites this to a join, but Catalyst can't verify at compile time
+that each outer row matches at most one inner row — the check only happens at
+execution, so this query can run correctly against clean data for months and then
+crash the moment a customer gets a second order. **Rewrite it as a window function**
+so the "pick one row" logic is explicit and guaranteed, instead of an implicit
+one-row assumption:
+
+```sql
+SELECT order_id, amount AS other_amount
+FROM (
+    SELECT o.order_id,
+           i.amount,
+           ROW_NUMBER() OVER (PARTITION BY o.order_id ORDER BY i.amount DESC) AS rn
+    FROM orders o
+    JOIN orders i ON i.customer = o.customer
+)
+WHERE rn = 1;
+```
+
+Or, if the intent was actually "the aggregate value for this customer" rather than
+"an arbitrary row", make that explicit with `GROUP BY`/window aggregation instead —
+which is exactly what already-supported patterns like `AVG`/`COUNT` correlated
+subqueries do (see equality correlation above); the failure only shows up when the
+correlated subquery returns a **bare column** with no aggregation to guarantee
+cardinality.
+
+### Correlated `OR` across two different columns: still a nested-loop join
+
+```sql
+SELECT o.order_id FROM orders o
+WHERE EXISTS (
+    SELECT 1 FROM orders i
+    WHERE i.customer = o.customer OR i.amount = o.amount
 );
 ```
 
-### Rewrite correlated scalar as a JOIN (for performance)
-
-```sql
--- BAD: Correlated scalar — may not decorrelate on complex expressions
-SELECT
-    o.order_id,
-    o.amount,
-    (SELECT AVG(amount) FROM orders WHERE customer_id = o.customer_id) AS customer_avg
-FROM orders AS o;
-
--- GOOD: Explicit join — always efficient
-SELECT
-    o.order_id,
-    o.amount,
-    ca.customer_avg
-FROM orders AS o
-JOIN (
-    SELECT customer_id, AVG(amount) AS customer_avg
-    FROM orders
-    GROUP BY customer_id
-) AS ca ON o.customer_id = ca.customer_id;
+```text
++- BroadcastNestedLoopJoin BuildRight, LeftSemi,
+     ((customer#i = customer#o) OR (amount#i = amount#o))
 ```
 
----
+Spark still decorrelates this into a `LeftSemi` join (it doesn't error), but because
+the correlation condition is an `OR` across two different columns, no hash key can
+represent it, so it falls back to `BroadcastNestedLoopJoin` — a full O(N×M) comparison.
+**Rewrite as a `UNION` of two separately-equi-correlated `EXISTS`/joins** (or as an
+explicit `UNION ALL` + `DISTINCT` join) so each branch can use a `BroadcastHashJoin`:
 
-## :material-lightbulb-outline: When to Use Correlated Subqueries
+```sql
+SELECT order_id FROM orders o WHERE EXISTS (SELECT 1 FROM orders i WHERE i.customer = o.customer)
+UNION
+SELECT order_id FROM orders o WHERE EXISTS (SELECT 1 FROM orders i WHERE i.amount = o.amount);
+```
 
-| Scenario | Recommendation |
-|----------|---------------|
-| Filter rows against their own group aggregate | Correlated scalar in `WHERE` |
-| Find the max/min row per group | Correlated scalar in `WHERE` (or `ROW_NUMBER` window function) |
-| Check related-table conditions per row | Correlated `EXISTS` / `NOT EXISTS` |
-| Add a per-row lookup column | Correlated scalar in `SELECT` list |
-| Complex condition that Catalyst fails to decorrelate | Rewrite as explicit `JOIN` |
+______________________________________________________________________
 
-!!! tip "Verify decorrelation with EXPLAIN"
-    Run `EXPLAIN EXTENDED` and look for `LeftSemi`, `LeftAnti`, or `LeftOuter` join nodes.
-    If you still see a `Subquery` node, the optimizer could not decorrelate — rewrite as
-    an explicit join or a window function for large tables.
+## :material-lightbulb-outline: When to Rewrite Manually
+
+| Situation                                                | Advice                                                                                                                                                            |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Equality correlation on a grouped key                    | Let Spark try first                                                                                                                                               |
+| Non-equality correlation                                 | Prefer an explicit rewrite when possible                                                                                                                          |
+| Large-table correlated scalar in `SELECT`                | Consider a pre-aggregated join                                                                                                                                    |
+| Multi-row scalar risk                                    | Aggregate or rewrite before production                                                                                                                            |
+| Scalar subquery with no aggregation guaranteeing one row | Rewrite as `ROW_NUMBER()`/window function to make the "pick one row" logic explicit — don't rely on unverified single-row assumptions (see runtime failure above) |
+| Correlated `OR` spanning two different columns           | Split into a `UNION` of two equi-correlated `EXISTS`/joins so each side can use a hash join instead of `BroadcastNestedLoopJoin`                                  |

@@ -4,7 +4,7 @@
 **Higher-Order Functions (HOFs)** in Spark SQL. They define the per-element
 logic applied to arrays and maps — no Python, Scala, or UDF registration needed.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -19,21 +19,30 @@ flowchart LR
     HOF --> AG["Aggregate HOF\nAGGREGATE"]
 ```
 
----
+______________________________________________________________________
+
+## :material-animation-play: Interactive Visualization — Lambda Anatomy
+
+<div id="viz-lambda-anatomy" class="ts-viz"></div>
+
+Every lambda has the same two parts regardless of which HOF calls it — click
+each part to see its role.
+
+______________________________________________________________________
 
 ## :material-compare: Lambda at a Glance
 
-| Form | Used with | Purpose |
-|------|-----------|---------|
-| `x -> expr` | `TRANSFORM`, `FILTER`, `EXISTS`, `FORALL` | Per-element expression |
-| `(x, i) -> expr` | `TRANSFORM`, `FILTER` | Element + zero-based index |
-| `(k, v) -> expr` | `MAP_FILTER`, `TRANSFORM_KEYS`, `TRANSFORM_VALUES` | Map key + value |
-| `(acc, x) -> acc'` | `AGGREGATE` (merge) | Fold/reduce accumulator |
-| `acc -> result` | `AGGREGATE` (finish) | Post-process accumulator |
-| `(x, y) -> expr` | `ZIP_WITH` | Merge two arrays element-wise |
-| `(k, v1, v2) -> expr` | `MAP_ZIP_WITH` | Merge two maps by key |
+| Form                  | Used with                                          | Purpose                       |
+| --------------------- | -------------------------------------------------- | ----------------------------- |
+| `x -> expr`           | `TRANSFORM`, `FILTER`, `EXISTS`, `FORALL`          | Per-element expression        |
+| `(x, i) -> expr`      | `TRANSFORM`, `FILTER`                              | Element + zero-based index    |
+| `(k, v) -> expr`      | `MAP_FILTER`, `TRANSFORM_KEYS`, `TRANSFORM_VALUES` | Map key + value               |
+| `(acc, x) -> acc'`    | `AGGREGATE` (merge)                                | Fold/reduce accumulator       |
+| `acc -> result`       | `AGGREGATE` (finish)                               | Post-process accumulator      |
+| `(x, y) -> expr`      | `ZIP_WITH`                                         | Merge two arrays element-wise |
+| `(k, v1, v2) -> expr` | `MAP_ZIP_WITH`                                     | Merge two maps by key         |
 
----
+______________________________________________________________________
 
 ## :material-lightning-bolt: Quick Examples
 
@@ -54,14 +63,14 @@ SELECT AGGREGATE(ARRAY(1, 2, 3, 4), 0, (acc, x) -> acc + x);  -- 10
 SELECT ZIP_WITH(ARRAY(1, 2, 3), ARRAY(10, 20, 30), (a, b) -> a + b);  -- [11, 22, 33]
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Contents |
-|------|----------|
-| [Syntax](syntax.md) | All lambda forms, parameter rules, type inference, nesting |
-| [Array HOFs](array_hof.md) | `TRANSFORM`, `FILTER`, `EXISTS`, `FORALL`, `ZIP_WITH` |
-| [Map HOFs](map_hof.md) | `MAP_FILTER`, `TRANSFORM_KEYS`, `TRANSFORM_VALUES`, `MAP_ZIP_WITH` |
-| [Aggregate HOF](aggregate_hof.md) | `AGGREGATE` — fold, average, running total, struct accumulator |
-| [Patterns](patterns.md) | Pipelines, conditional logic, nested lambdas, performance tips |
+| Page                              | Contents                                                           |
+| --------------------------------- | ------------------------------------------------------------------ |
+| [Syntax](syntax.md)               | All lambda forms, parameter rules, type inference, nesting         |
+| [Array HOFs](array-hof.md)        | `TRANSFORM`, `FILTER`, `EXISTS`, `FORALL`, `ZIP_WITH`              |
+| [Map HOFs](map-hof.md)            | `MAP_FILTER`, `TRANSFORM_KEYS`, `TRANSFORM_VALUES`, `MAP_ZIP_WITH` |
+| [Aggregate HOF](aggregate-hof.md) | `AGGREGATE` — fold, average, running total, struct accumulator     |
+| [Patterns](patterns.md)           | Pipelines, conditional logic, nested lambdas, performance tips     |

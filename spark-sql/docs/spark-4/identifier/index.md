@@ -1,13 +1,14 @@
 # :material-identifier: IDENTIFIER Clause
 
 !!! info "Spark 4.0"
+
     The IDENTIFIER clause is new in Apache Spark 4.0.
 
 The **IDENTIFIER clause** converts a string expression into a SQL identifier
 (table name, column name, function name) **without SQL injection risk**. It
 replaces unsafe string concatenation with safe parameterized identifier resolution.
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -18,7 +19,7 @@ IDENTIFIER(string_expression)
 The string expression can be a literal, variable, or parameter marker. It resolves
 to a table, column, or function reference at parse time.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Table Name as Parameter
 
@@ -34,7 +35,7 @@ EXECUTE IMMEDIATE 'SELECT * FROM IDENTIFIER(:tab)'
     USING 'employees' AS tab;
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Column Name as Parameter
 
@@ -48,7 +49,7 @@ EXECUTE IMMEDIATE 'SELECT IDENTIFIER(:col) FROM employees'
     USING 'employees.salary' AS col;
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Function Name as Parameter
 
@@ -59,7 +60,7 @@ EXECUTE IMMEDIATE 'SELECT IDENTIFIER(:fn)(-1)'
 -- Result: 1
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Qualified Names with Concatenation
 
@@ -76,7 +77,7 @@ EXECUTE IMMEDIATE
     USING 'default' AS s, 'users' AS t;
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: With PySpark / Scala API
 
@@ -101,15 +102,15 @@ spark.sql(
 )
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-check: Security Benefits
 
-| Approach | SQL Injection Risk | Recommended |
-|----------|:-----------------:|:-----------:|
-| `IDENTIFIER(:param)` | :white_check_mark: Safe | Yes |
-| String concatenation | :x: Vulnerable | No |
-| Hard-coded names | :white_check_mark: Safe | When static |
+| Approach             |   SQL Injection Risk    | Recommended |
+| -------------------- | :---------------------: | :---------: |
+| `IDENTIFIER(:param)` | :white_check_mark: Safe |     Yes     |
+| String concatenation |     :x: Vulnerable      |     No      |
+| Hard-coded names     | :white_check_mark: Safe | When static |
 
 ```sql
 -- ✅ Safe: IDENTIFIER validates the string is a legal identifier

@@ -3,7 +3,7 @@
 `POSEXPLODE()` works like `EXPLODE()` but adds a **zero-based position column** alongside each
 element — essential when array order matters.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -126,14 +126,38 @@ LATERAL VIEW POSEXPLODE(languages) AS pos, language;
 -- (user1, 1, Python), (user1, 2, SQL), (user1, 3, Java)
 ```
 
+### :material-toy-brick: 7. Take First N Elements (Top-N per Row)
+
+```sql
+-- Keep only each user's top 2 preferences (position 0 and 1)
+SELECT user_id, pos, language
+FROM preferences
+LATERAL VIEW POSEXPLODE(languages) AS pos, language
+WHERE pos < 2
+ORDER BY user_id, pos;
+-- (user1, 0, Python), (user1, 1, SQL)
+```
+
+### :material-toy-brick: 8. Reverse Array Order Using `pos`
+
+```sql
+-- Sort by pos DESC to read the array back-to-front without re-ordering the source
+SELECT user_id, pos, language
+FROM preferences
+LATERAL VIEW POSEXPLODE(languages) AS pos, language
+ORDER BY user_id, pos DESC;
+-- (user1, 2, Java), (user1, 1, SQL), (user1, 0, Python)
+```
+
 ## :material-brain: When to Use
 
-| Scenario | Why `POSEXPLODE`? |
-|----------|------------------|
-| Track element order/position | Zero-based `pos` column for array index |
-| Generate dynamic labels (Q1, Q2…) | Use `pos` to build sequential identifiers |
-| Date/number sequence generation | Combine with `SEQUENCE()` for calendar logic |
-| Rank or prioritize array elements | Position reflects original insertion order |
-| Debugging array contents | See exact index of each element |
+| Scenario                               | Why `POSEXPLODE`?                                              |
+| -------------------------------------- | -------------------------------------------------------------- |
+| Track element order/position           | Zero-based `pos` column for array index                        |
+| Generate dynamic labels (Q1, Q2…)      | Use `pos` to build sequential identifiers                      |
+| Date/number sequence generation        | Combine with `SEQUENCE()` for calendar logic                   |
+| Rank or prioritize array elements      | Position reflects original insertion order                     |
+| Debugging array contents               | See exact index of each element                                |
+| Top-N elements per row / reverse order | Filter or sort on `pos` (`WHERE pos < n`, `ORDER BY pos DESC`) |
 
 > **Tip:** If your arrays might be `NULL` or empty, use `POSEXPLODE_OUTER` to keep all rows.

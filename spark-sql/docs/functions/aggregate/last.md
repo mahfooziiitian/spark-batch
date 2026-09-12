@@ -3,7 +3,7 @@
 `last` returns the last value in a group. When used with `ORDER BY` in window functions,
 it returns the last value in the ordered frame.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,6 +11,15 @@ graph LR
     B --> C[LAST / LAST_VALUE]
     C --> D[One Row per Group]
 ```
+
+### :material-animation-play: Interactive Visualization — Window Frame Boundaries
+
+<div id="viz-first-last-frame" class="ts-viz"></div>
+
+Compare the `UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` frame (sees the
+whole partition) against `UNBOUNDED PRECEDING AND CURRENT ROW` (a running
+frame) — `LAST_VALUE` needs the running frame to mean "most recent so far"
+rather than "last row in the whole partition".
 
 ## :material-pin: Syntax
 
@@ -86,9 +95,9 @@ FROM events;
 
 ## :material-brain: first vs last
 
-| Function | Returns | ignoreNulls |
-|----------|---------|------------|
-| `first(col)` | First value in group | Optional |
-| `last(col)` | Last value in group | Optional |
-| `first(col, true)` | First non-NULL value | Yes |
-| `last(col, true)` | Last non-NULL value | Yes |
+| Function           | Returns              | ignoreNulls |
+| ------------------ | -------------------- | ----------- |
+| `first(col)`       | First value in group | Optional    |
+| `last(col)`        | Last value in group  | Optional    |
+| `first(col, true)` | First non-NULL value | Yes         |
+| `last(col, true)`  | Last non-NULL value  | Yes         |

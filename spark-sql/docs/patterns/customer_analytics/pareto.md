@@ -2,7 +2,7 @@
 
 Identify the vital few items that contribute the majority of a metric — the classic 80/20 rule for revenue concentration, defect analysis, and resource prioritisation.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Execution Flow
 
@@ -13,7 +13,7 @@ flowchart LR
     CUMPCT --> CLASSIFY["classify as vital_few <= 80%\nor useful_many > 80%"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -62,15 +62,15 @@ FROM classified
 ORDER BY metric_rank;
 ```
 
-| Element | Purpose |
-|---------|---------|
-| `ORDER BY metric_value DESC, item_id` | Sorts highest contributors first and adds deterministic tie-breaking |
-| `SUM(metric_value) OVER ()` | Computes the denominator for percentage calculations |
-| `SUM(...) OVER (ORDER BY ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` | Builds the cumulative running total |
-| `LAG(cumulative_metric, 1, 0)` | Detects the first row that crosses the 80% line |
-| `CASE WHEN previous_pct < 80` | Includes the crossing row in the `vital_few` set |
+| Element                                                                         | Purpose                                                              |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `ORDER BY metric_value DESC, item_id`                                           | Sorts highest contributors first and adds deterministic tie-breaking |
+| `SUM(metric_value) OVER ()`                                                     | Computes the denominator for percentage calculations                 |
+| `SUM(...) OVER (ORDER BY ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` | Builds the cumulative running total                                  |
+| `LAG(cumulative_metric, 1, 0)`                                                  | Detects the first row that crosses the 80% line                      |
+| `CASE WHEN previous_pct < 80`                                                   | Includes the crossing row in the `vital_few` set                     |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -80,7 +80,7 @@ ORDER BY metric_rank;
 4. **Aggregate before ranking** — for ticket categories, products, or customers with multiple raw rows, summarise to the analysis grain first, then apply the Pareto window logic.
 5. **NULL and zero totals need guards** — filter `NULL` metrics and protect divisions with `NULLIF(total_metric, 0)` when the source can be empty or all-zero.
 
----
+______________________________________________________________________
 
 ## :material-database: Sample Data
 
@@ -137,7 +137,7 @@ SELECT * FROM VALUES
 AS t(customer_id, customer_name, segment, annual_revenue);
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -189,18 +189,18 @@ ORDER BY revenue_rank;
 
 ??? success "Expected output"
 
-    | product_id | product_name | category | revenue | revenue_rank | cumulative_revenue_pct | pareto_band |
-    |------------|--------------|----------|---------|--------------|------------------------|-------------|
-    | P101 | Laptop Pro | Electronics | 120000.00 | 1 | 23.3 | vital_few |
-    | P102 | Wireless Earbuds | Electronics | 85000.00 | 2 | 39.8 | vital_few |
-    | P103 | Standing Desk | Furniture | 76000.00 | 3 | 54.6 | vital_few |
-    | P104 | Espresso Machine | Home | 64000.00 | 4 | 67.0 | vital_few |
-    | P105 | Office Chair | Furniture | 52000.00 | 5 | 77.1 | vital_few |
-    | P106 | Air Purifier | Home | 41000.00 | 6 | 85.0 | vital_few |
-    | P107 | Mechanical Keyboard | Accessories | 33000.00 | 7 | 91.5 | useful_many |
-    | P108 | Monitor Arm | Accessories | 21000.00 | 8 | 95.5 | useful_many |
-    | P109 | Desk Lamp | Home | 14000.00 | 9 | 98.3 | useful_many |
-    | P110 | USB-C Cable | Accessories | 9000.00 | 10 | 100.0 | useful_many |
+    | product_id | product_name        | category    | revenue   | revenue_rank | cumulative_revenue_pct | pareto_band |
+    | ---------- | ------------------- | ----------- | --------- | ------------ | ---------------------- | ----------- |
+    | P101       | Laptop Pro          | Electronics | 120000.00 | 1            | 23.3                   | vital_few   |
+    | P102       | Wireless Earbuds    | Electronics | 85000.00  | 2            | 39.8                   | vital_few   |
+    | P103       | Standing Desk       | Furniture   | 76000.00  | 3            | 54.6                   | vital_few   |
+    | P104       | Espresso Machine    | Home        | 64000.00  | 4            | 67.0                   | vital_few   |
+    | P105       | Office Chair        | Furniture   | 52000.00  | 5            | 77.1                   | vital_few   |
+    | P106       | Air Purifier        | Home        | 41000.00  | 6            | 85.0                   | vital_few   |
+    | P107       | Mechanical Keyboard | Accessories | 33000.00  | 7            | 91.5                   | useful_many |
+    | P108       | Monitor Arm         | Accessories | 21000.00  | 8            | 95.5                   | useful_many |
+    | P109       | Desk Lamp           | Home        | 14000.00  | 9            | 98.3                   | useful_many |
+    | P110       | USB-C Cable         | Accessories | 9000.00   | 10           | 100.0                  | useful_many |
 
 ### 2 — Exact 80/20 cutoff line
 
@@ -252,18 +252,18 @@ ORDER BY revenue_rank;
 
 ??? success "Expected output"
 
-    | product_name | revenue_rank | revenue | previous_pct | cumulative_pct | strict_le_80 | include_crossing_80 |
-    |--------------|--------------|---------|--------------|----------------|--------------|---------------------|
-    | Laptop Pro | 1 | 120000.00 | 0.0 | 23.3 | vital_few | vital_few |
-    | Wireless Earbuds | 2 | 85000.00 | 23.3 | 39.8 | vital_few | vital_few |
-    | Standing Desk | 3 | 76000.00 | 39.8 | 54.6 | vital_few | vital_few |
-    | Espresso Machine | 4 | 64000.00 | 54.6 | 67.0 | vital_few | vital_few |
-    | Office Chair | 5 | 52000.00 | 67.0 | 77.1 | vital_few | vital_few |
-    | Air Purifier | 6 | 41000.00 | 77.1 | 85.0 | useful_many | vital_few |
-    | Mechanical Keyboard | 7 | 33000.00 | 85.0 | 91.5 | useful_many | useful_many |
-    | Monitor Arm | 8 | 21000.00 | 91.5 | 95.5 | useful_many | useful_many |
-    | Desk Lamp | 9 | 14000.00 | 95.5 | 98.3 | useful_many | useful_many |
-    | USB-C Cable | 10 | 9000.00 | 98.3 | 100.0 | useful_many | useful_many |
+    | product_name        | revenue_rank | revenue   | previous_pct | cumulative_pct | strict_le_80 | include_crossing_80 |
+    | ------------------- | ------------ | --------- | ------------ | -------------- | ------------ | ------------------- |
+    | Laptop Pro          | 1            | 120000.00 | 0.0          | 23.3           | vital_few    | vital_few           |
+    | Wireless Earbuds    | 2            | 85000.00  | 23.3         | 39.8           | vital_few    | vital_few           |
+    | Standing Desk       | 3            | 76000.00  | 39.8         | 54.6           | vital_few    | vital_few           |
+    | Espresso Machine    | 4            | 64000.00  | 54.6         | 67.0           | vital_few    | vital_few           |
+    | Office Chair        | 5            | 52000.00  | 67.0         | 77.1           | vital_few    | vital_few           |
+    | Air Purifier        | 6            | 41000.00  | 77.1         | 85.0           | useful_many  | vital_few           |
+    | Mechanical Keyboard | 7            | 33000.00  | 85.0         | 91.5           | useful_many  | useful_many         |
+    | Monitor Arm         | 8            | 21000.00  | 91.5         | 95.5           | useful_many  | useful_many         |
+    | Desk Lamp           | 9            | 14000.00  | 95.5         | 98.3           | useful_many  | useful_many         |
+    | USB-C Cable         | 10           | 9000.00   | 98.3         | 100.0          | useful_many  | useful_many         |
 
 ### 3 — Pareto by category
 
@@ -315,18 +315,18 @@ ORDER BY category, revenue_rank;
 
 ??? success "Expected output"
 
-    | category | product_name | revenue | cumulative_pct | pareto_band |
-    |----------|--------------|---------|----------------|-------------|
-    | Accessories | Mechanical Keyboard | 33000.00 | 52.4 | vital_few |
-    | Accessories | Monitor Arm | 21000.00 | 85.7 | vital_few |
-    | Accessories | USB-C Cable | 9000.00 | 100.0 | useful_many |
-    | Electronics | Laptop Pro | 120000.00 | 58.5 | vital_few |
-    | Electronics | Wireless Earbuds | 85000.00 | 100.0 | vital_few |
-    | Furniture | Standing Desk | 76000.00 | 59.4 | vital_few |
-    | Furniture | Office Chair | 52000.00 | 100.0 | vital_few |
-    | Home | Espresso Machine | 64000.00 | 53.8 | vital_few |
-    | Home | Air Purifier | 41000.00 | 88.2 | vital_few |
-    | Home | Desk Lamp | 14000.00 | 100.0 | useful_many |
+    | category    | product_name        | revenue   | cumulative_pct | pareto_band |
+    | ----------- | ------------------- | --------- | -------------- | ----------- |
+    | Accessories | Mechanical Keyboard | 33000.00  | 52.4           | vital_few   |
+    | Accessories | Monitor Arm         | 21000.00  | 85.7           | vital_few   |
+    | Accessories | USB-C Cable         | 9000.00   | 100.0          | useful_many |
+    | Electronics | Laptop Pro          | 120000.00 | 58.5           | vital_few   |
+    | Electronics | Wireless Earbuds    | 85000.00  | 100.0          | vital_few   |
+    | Furniture   | Standing Desk       | 76000.00  | 59.4           | vital_few   |
+    | Furniture   | Office Chair        | 52000.00  | 100.0          | vital_few   |
+    | Home        | Espresso Machine    | 64000.00  | 53.8           | vital_few   |
+    | Home        | Air Purifier        | 41000.00  | 88.2           | vital_few   |
+    | Home        | Desk Lamp           | 14000.00  | 100.0          | useful_many |
 
 ### 4 — Support ticket Pareto by category
 
@@ -382,12 +382,12 @@ ORDER BY category_rank;
 ??? success "Expected output"
 
     | ticket_category | ticket_count | total_resolution_hours | ticket_share_pct | cumulative_pct | pareto_band |
-    |-----------------|--------------|------------------------|------------------|----------------|-------------|
-    | Login | 500 | 375.0 | 33.6 | 33.6 | vital_few |
-    | Billing | 400 | 620.0 | 26.8 | 60.4 | vital_few |
-    | Performance | 310 | 780.0 | 20.8 | 81.2 | vital_few |
-    | Data Quality | 185 | 640.0 | 12.4 | 93.6 | useful_many |
-    | Integrations | 95 | 300.0 | 6.4 | 100.0 | useful_many |
+    | --------------- | ------------ | ---------------------- | ---------------- | -------------- | ----------- |
+    | Login           | 500          | 375.0                  | 33.6             | 33.6           | vital_few   |
+    | Billing         | 400          | 620.0                  | 26.8             | 60.4           | vital_few   |
+    | Performance     | 310          | 780.0                  | 20.8             | 81.2           | vital_few   |
+    | Data Quality    | 185          | 640.0                  | 12.4             | 93.6           | useful_many |
+    | Integrations    | 95           | 300.0                  | 6.4              | 100.0          | useful_many |
 
 ### 5 — Customer revenue concentration
 
@@ -434,8 +434,8 @@ WHERE previous_cumulative_revenue < total_revenue * 0.8
 ??? success "Expected output"
 
     | total_customers | customers_to_reach_80_pct | pct_of_customers | revenue_at_cutoff | cutoff_revenue_pct |
-    |-----------------|---------------------------|------------------|-------------------|--------------------|
-    | 10 | 6 | 60.0 | 945000.00 | 82.9 |
+    | --------------- | ------------------------- | ---------------- | ----------------- | ------------------ |
+    | 10              | 6                         | 60.0             | 945000.00         | 82.9               |
 
 ### 6 — Dual Pareto for revenue and units
 
@@ -484,18 +484,18 @@ ORDER BY r.revenue_rank;
 
 ??? success "Expected output"
 
-    | product_name | revenue_rank | cumulative_revenue_pct | units_rank | cumulative_units_pct |
-    |--------------|--------------|------------------------|------------|----------------------|
-    | Laptop Pro | 1 | 23.3 | 9 | 97.7 |
-    | Wireless Earbuds | 2 | 39.8 | 2 | 47.6 |
-    | Standing Desk | 3 | 54.6 | 10 | 100.0 |
-    | Espresso Machine | 4 | 67.0 | 8 | 94.7 |
-    | Office Chair | 5 | 77.1 | 7 | 90.8 |
-    | Air Purifier | 6 | 85.0 | 6 | 85.8 |
-    | Mechanical Keyboard | 7 | 91.5 | 4 | 70.0 |
-    | Monitor Arm | 8 | 95.5 | 5 | 79.0 |
-    | Desk Lamp | 9 | 98.3 | 3 | 59.2 |
-    | USB-C Cable | 10 | 100.0 | 1 | 26.9 |
+    | product_name        | revenue_rank | cumulative_revenue_pct | units_rank | cumulative_units_pct |
+    | ------------------- | ------------ | ---------------------- | ---------- | -------------------- |
+    | Laptop Pro          | 1            | 23.3                   | 9          | 97.7                 |
+    | Wireless Earbuds    | 2            | 39.8                   | 2          | 47.6                 |
+    | Standing Desk       | 3            | 54.6                   | 10         | 100.0                |
+    | Espresso Machine    | 4            | 67.0                   | 8          | 94.7                 |
+    | Office Chair        | 5            | 77.1                   | 7          | 90.8                 |
+    | Air Purifier        | 6            | 85.0                   | 6          | 85.8                 |
+    | Mechanical Keyboard | 7            | 91.5                   | 4          | 70.0                 |
+    | Monitor Arm         | 8            | 95.5                   | 5          | 79.0                 |
+    | Desk Lamp           | 9            | 98.3                   | 3          | 59.2                 |
+    | USB-C Cable         | 10           | 100.0                  | 1          | 26.9                 |
 
 ### 7 — Pareto with long-tail rollup into Other
 
@@ -543,15 +543,15 @@ ORDER BY CASE WHEN bucket = 'Other' THEN 1 ELSE 0 END, revenue DESC;
 
 ??? success "Expected output"
 
-    | bucket | revenue | units_sold | pareto_band |
-    |--------|---------|------------|-------------|
-    | Laptop Pro | 120000.00 | 240 | vital_few |
-    | Wireless Earbuds | 85000.00 | 1700 | vital_few |
-    | Standing Desk | 76000.00 | 190 | vital_few |
-    | Espresso Machine | 64000.00 | 320 | vital_few |
-    | Office Chair | 52000.00 | 410 | vital_few |
-    | Air Purifier | 41000.00 | 560 | vital_few |
-    | Other | 77000.00 | 4770 | useful_many |
+    | bucket           | revenue   | units_sold | pareto_band |
+    | ---------------- | --------- | ---------- | ----------- |
+    | Laptop Pro       | 120000.00 | 240        | vital_few   |
+    | Wireless Earbuds | 85000.00  | 1700       | vital_few   |
+    | Standing Desk    | 76000.00  | 190        | vital_few   |
+    | Espresso Machine | 64000.00  | 320        | vital_few   |
+    | Office Chair     | 52000.00  | 410        | vital_few   |
+    | Air Purifier     | 41000.00  | 560        | vital_few   |
+    | Other            | 77000.00  | 4770       | useful_many |
 
 ### 8 — Pareto index and Gini-like concentration ratio
 
@@ -631,8 +631,8 @@ CROSS JOIN gini_like g;
 ??? success "Expected output"
 
     | customer_count | top_20_customer_share_pct | top_50_customer_share_pct | pareto_index | gini_like_ratio |
-    |----------------|---------------------------|---------------------------|--------------|-----------------|
-    | 10 | 40.4 | 75.0 | 2.02 | 0.343 |
+    | -------------- | ------------------------- | ------------------------- | ------------ | --------------- |
+    | 10             | 40.4                      | 75.0                      | 2.02         | 0.343           |
 
 ### 9 — Pareto over time by period
 
@@ -698,9 +698,9 @@ ORDER BY sales_period;
 ??? success "Expected output"
 
     | sales_period | product_count | products_to_reach_80_pct | pct_of_products | revenue_at_cutoff | cutoff_revenue_pct |
-    |--------------|---------------|---------------------------|-----------------|-------------------|--------------------|
-    | 2024-Q1 | 5 | 3 | 60.0 | 220000.00 | 80.0 |
-    | 2024-Q2 | 5 | 2 | 40.0 | 240000.00 | 85.7 |
+    | ------------ | ------------- | ------------------------ | --------------- | ----------------- | ------------------ |
+    | 2024-Q1      | 5             | 3                        | 60.0            | 220000.00         | 80.0               |
+    | 2024-Q2      | 5             | 2                        | 40.0            | 240000.00         | 85.7               |
 
 ### 10 — Inverse Pareto for the least valuable 20%
 
@@ -746,42 +746,46 @@ ORDER BY low_rank;
 
 ??? success "Expected output"
 
-    | product_name | revenue | low_rank | cumulative_bottom_pct | pareto_band |
-    |--------------|---------|----------|-----------------------|-------------|
-    | USB-C Cable | 9000.00 | 1 | 1.7 | least_valuable_20 |
-    | Desk Lamp | 14000.00 | 2 | 4.5 | least_valuable_20 |
-    | Monitor Arm | 21000.00 | 3 | 8.5 | least_valuable_20 |
-    | Mechanical Keyboard | 33000.00 | 4 | 15.0 | least_valuable_20 |
-    | Air Purifier | 41000.00 | 5 | 22.9 | least_valuable_20 |
+    | product_name        | revenue  | low_rank | cumulative_bottom_pct | pareto_band       |
+    | ------------------- | -------- | -------- | --------------------- | ----------------- |
+    | USB-C Cable         | 9000.00  | 1        | 1.7                   | least_valuable_20 |
+    | Desk Lamp           | 14000.00 | 2        | 4.5                   | least_valuable_20 |
+    | Monitor Arm         | 21000.00 | 3        | 8.5                   | least_valuable_20 |
+    | Mechanical Keyboard | 33000.00 | 4        | 15.0                  | least_valuable_20 |
+    | Air Purifier        | 41000.00 | 5        | 22.9                  | least_valuable_20 |
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Behavior Notes
 
 !!! warning "Ties can move the boundary"
+
     When two items have the same metric near the cutoff, the choice of secondary sort key decides which row crosses 80% first. Add a deterministic tie-breaker so repeated runs do not reshuffle the `vital_few` set.
 
 !!! tip "Choose the cutoff policy before publishing results"
+
     Teams often mean different things by "the 80% contributors." Decide whether you want the strict `cumulative_pct <= 80` rule or the inclusive "first row crossing 80%" rule, then use that rule consistently in dashboards and downstream alerts.
 
 !!! note "Analyse at the right grain"
+
     Pareto analysis is usually more useful after aggregation. Roll transactions up to product, ticket category, customer, supplier, or defect type first, then rank the resulting totals.
 
 !!! warning "Guard against NULL, zero, and negative metrics"
+
     Filter `NULL` metrics, handle zero totals safely, and decide whether refunds or negative adjustments belong in the metric before ranking. Mixed-sign values can produce misleading cumulative percentages.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Approach |
-|----------|----------|
-| Product portfolio prioritisation | Rank products by revenue or margin and isolate the small set that drives most commercial impact. |
-| Customer concentration analysis | Measure how many customers account for most revenue before setting retention or account-management strategy. |
-| Support backlog reduction | Aggregate ticket volume by category or root cause and focus remediation on the highest-frequency drivers. |
-| Defect root-cause analysis | Count bugs by subsystem, component, or failure mode to target the few sources behind most incidents. |
-| Supplier spend review | Rank vendors by annual spend to find the relationships that dominate procurement cost. |
-| Marketing channel optimisation | Compare leads, pipeline, or conversion value by channel to find the highest-yield acquisition sources. |
-| Long-tail SKU cleanup | Use inverse Pareto on low-revenue items to identify candidates for discontinuation or bundling. |
-| Capacity planning | Rank services, jobs, or queues by resource consumption to focus tuning on the biggest consumers first. |
-| Executive reporting | Summarise concentration with cutoff counts, top-share percentages, and a Gini-like ratio in one compact view. |
+| Scenario                         | Approach                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Product portfolio prioritisation | Rank products by revenue or margin and isolate the small set that drives most commercial impact.              |
+| Customer concentration analysis  | Measure how many customers account for most revenue before setting retention or account-management strategy.  |
+| Support backlog reduction        | Aggregate ticket volume by category or root cause and focus remediation on the highest-frequency drivers.     |
+| Defect root-cause analysis       | Count bugs by subsystem, component, or failure mode to target the few sources behind most incidents.          |
+| Supplier spend review            | Rank vendors by annual spend to find the relationships that dominate procurement cost.                        |
+| Marketing channel optimisation   | Compare leads, pipeline, or conversion value by channel to find the highest-yield acquisition sources.        |
+| Long-tail SKU cleanup            | Use inverse Pareto on low-revenue items to identify candidates for discontinuation or bundling.               |
+| Capacity planning                | Rank services, jobs, or queues by resource consumption to focus tuning on the biggest consumers first.        |
+| Executive reporting              | Summarise concentration with cutoff counts, top-share percentages, and a Gini-like ratio in one compact view. |

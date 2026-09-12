@@ -79,15 +79,15 @@ SELECT EXPLODE(SEQUENCE(DATE '2024-01-01', DATE '2024-01-05')) AS day;
 
 ## :material-brain: Common Functions
 
-| Function | Description |
-|----------|-------------|
-| `CURRENT_DATE()` | Today's date |
-| `DATE_ADD(date, days)` | Add days |
-| `DATE_SUB(date, days)` | Subtract days |
-| `DATEDIFF(end, start)` | Days between two dates |
-| `MONTHS_BETWEEN(d1, d2)` | Months between two dates |
-| `YEAR/MONTH/DAY(date)` | Extract component |
-| `DAYOFWEEK(date)` | Day of week (1=Sun, 7=Sat) |
-| `DATE_TRUNC(unit, date)` | Truncate to unit |
-| `LAST_DAY(date)` | Last day of month |
-| `NEXT_DAY(date, dayOfWeek)` | Next occurrence of day |
+| Function                    | Description                |
+| --------------------------- | -------------------------- |
+| `CURRENT_DATE()`            | Today's date               |
+| `DATE_ADD(date, days)`      | Add days                   |
+| `DATE_SUB(date, days)`      | Subtract days              |
+| `DATEDIFF(end, start)`      | Days between two dates     |
+| `MONTHS_BETWEEN(d1, d2)`    | Months between two dates   |
+| `YEAR/MONTH/DAY(date)`      | Extract component          |
+| `DAYOFWEEK(date)`           | Day of week (1=Sun, 7=Sat) |
+| `DATE_TRUNC(unit, date)`    | Truncate to unit           |
+| `LAST_DAY(date)`            | Last day of month          |
+| `NEXT_DAY(date, dayOfWeek)` | Next occurrence of day     |

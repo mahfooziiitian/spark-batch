@@ -2,7 +2,7 @@
 
 Page through large result sets efficiently — using `LIMIT`/`OFFSET` for simple cases and keyset (cursor) pagination for production-scale queries.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: How It Works
 
@@ -20,7 +20,7 @@ flowchart LR
     style FAST fill:#26a69a18,stroke:#26a69a
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
@@ -28,7 +28,7 @@ flowchart LR
 
 <div id="viz-pagination" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Sample Data
 
@@ -50,14 +50,14 @@ SELECT * FROM VALUES
 AS t(product_id, product_name, category, price);
 ```
 
-| product_id | product_name | category | price |
-|-----------|-------------|---------|-------|
-| 1 | Laptop Pro 15 | electronics | 1299.99 |
-| 2 | Wireless Mouse | electronics | 29.99 |
-| … | … | … | … |
-| 12 | Kindle Reader | electronics | 129.99 |
+| product_id | product_name   | category    | price   |
+| ---------- | -------------- | ----------- | ------- |
+| 1          | Laptop Pro 15  | electronics | 1299.99 |
+| 2          | Wireless Mouse | electronics | 29.99   |
+| …          | …              | …           | …       |
+| 12         | Kindle Reader  | electronics | 129.99  |
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Pattern 1 — LIMIT / OFFSET (offset pagination)
 
@@ -90,10 +90,11 @@ LIMIT 4 OFFSET 4;
 ```
 
 !!! warning "OFFSET performance"
+
     `OFFSET N` causes Spark to scan and discard the first N rows before returning results.
     Performance degrades linearly as page number grows — avoid for pages beyond ~100.
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Pattern 2 — Keyset (cursor) pagination
 
@@ -130,7 +131,7 @@ LIMIT 4;
 -- 8          | SQL in 10 Steps | books     |  29.99
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: Pattern 3 — ROW_NUMBER window pagination
 
@@ -159,7 +160,7 @@ WHERE page_num = 2;
 -- 7          | Python Cookbook  | books       |  44.99 |  8 |  2
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Pattern 4 — Total row count alongside each page
 
@@ -184,23 +185,23 @@ LIMIT 4 OFFSET 0;
 -- 9          | Noise Headphones|  179.99 |  12        |  3
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: Pagination Methods Compared
 
-| Method | Consistent order | Scales to page N | Supports random access | Use when |
-|--------|-----------------|-----------------|----------------------|----------|
-| `LIMIT` / `OFFSET` | Yes | No — O(N) cost | Yes | Small tables, low page numbers |
-| Keyset cursor | Yes | Yes — O(1) cost | No — sequential only | Production APIs, large tables |
-| `ROW_NUMBER` window | Yes | Yes | Yes | Reporting, page-label labeling |
+| Method              | Consistent order | Scales to page N | Supports random access | Use when                       |
+| ------------------- | ---------------- | ---------------- | ---------------------- | ------------------------------ |
+| `LIMIT` / `OFFSET`  | Yes              | No — O(N) cost   | Yes                    | Small tables, low page numbers |
+| Keyset cursor       | Yes              | Yes — O(1) cost  | No — sequential only   | Production APIs, large tables  |
+| `ROW_NUMBER` window | Yes              | Yes              | Yes                    | Reporting, page-label labeling |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Quick prototyping / small data | `LIMIT N OFFSET M` |
-| API "next page" with large tables | Keyset cursor on an indexed column |
-| Report with total page count | `ROW_NUMBER` + `COUNT(*) OVER ()` |
-| Jump to arbitrary page | `ROW_NUMBER` window + `WHERE page_num = N` |
+| Scenario                          | Pattern                                    |
+| --------------------------------- | ------------------------------------------ |
+| Quick prototyping / small data    | `LIMIT N OFFSET M`                         |
+| API "next page" with large tables | Keyset cursor on an indexed column         |
+| Report with total page count      | `ROW_NUMBER` + `COUNT(*) OVER ()`          |
+| Jump to arbitrary page            | `ROW_NUMBER` window + `WHERE page_num = N` |

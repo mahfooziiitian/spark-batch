@@ -2,7 +2,7 @@
 
 Aggregate window functions apply the familiar aggregation operations (`SUM`, `AVG`, `MIN`, `MAX`, `COUNT`) row-by-row over a sliding or bounded frame instead of collapsing all rows into one result.
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -15,7 +15,7 @@ OVER (
 )
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -25,7 +25,7 @@ OVER (
 4. **Tie handling in `CUME_DIST`**: all rows that tie on the `ORDER BY` value receive the same `CUME_DIST` value equal to the highest rank among them.
 5. **Combining patterns**: the same query can mix a running aggregate (with `ORDER BY`) and a partition aggregate (without `ORDER BY`) in separate `OVER` clauses — Spark evaluates each independently.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -67,7 +67,7 @@ ORDER BY region, sale_date;
 ??? success "Expected Output"
 
     | region | rep   | sale_date  | amount | running_total |
-    |--------|-------|------------|-------:|--------------:|
+    | ------ | ----- | ---------- | -----: | ------------: |
     | North  | Alice | 2024-01-01 |    100 |           100 |
     | North  | Bob   | 2024-01-02 |    150 |           250 |
     | North  | Alice | 2024-01-05 |    200 |           450 |
@@ -95,7 +95,7 @@ ORDER BY region, sale_date;
 ??? success "Expected Output"
 
     | region | rep   | amount | region_total | pct_of_region |
-    |--------|-------|-------:|-------------:|--------------:|
+    | ------ | ----- | -----: | -----------: | ------------: |
     | North  | Alice |    100 |         1300 |           7.7 |
     | North  | Bob   |    150 |         1300 |          11.5 |
     | North  | Alice |    200 |         1300 |          15.4 |
@@ -126,7 +126,7 @@ ORDER BY region, sale_date;
 ??? success "Expected Output"
 
     | region | sale_date  | amount | moving_avg_3 |
-    |--------|------------|-------:|-------------:|
+    | ------ | ---------- | -----: | -----------: |
     | North  | 2024-01-01 |    100 |          125 |
     | North  | 2024-01-02 |    150 |          150 |
     | North  | 2024-01-05 |    200 |          217 |
@@ -162,7 +162,7 @@ ORDER BY region, sale_date;
 ??? success "Expected Output"
 
     | region | rep   | sale_date  | amount | running_pct |
-    |--------|-------|------------|-------:|------------:|
+    | ------ | ----- | ---------- | -----: | ----------: |
     | North  | Alice | 2024-01-01 |    100 |         7.7 |
     | North  | Bob   | 2024-01-02 |    150 |        19.2 |
     | North  | Alice | 2024-01-05 |    200 |        34.6 |
@@ -192,17 +192,17 @@ ORDER BY region, sale_date;
 ??? success "Expected Output"
 
     | region | rep   | sale_date  | total_rows | running_count | rep_sales_count |
-    |--------|-------|------------|:----------:|:-------------:|:---------------:|
-    | North  | Alice | 2024-01-01 | 6 | 1 | 3 |
-    | North  | Bob   | 2024-01-02 | 6 | 2 | 3 |
-    | North  | Alice | 2024-01-05 | 6 | 3 | 3 |
-    | North  | Bob   | 2024-01-06 | 6 | 4 | 3 |
-    | North  | Alice | 2024-01-10 | 6 | 5 | 3 |
-    | North  | Bob   | 2024-01-12 | 6 | 6 | 3 |
-    | South  | Carol | 2024-01-03 | 4 | 1 | 2 |
-    | South  | Dave  | 2024-01-04 | 4 | 2 | 2 |
-    | South  | Carol | 2024-01-07 | 4 | 3 | 2 |
-    | South  | Dave  | 2024-01-09 | 4 | 4 | 2 |
+    | ------ | ----- | ---------- | :--------: | :-----------: | :-------------: |
+    | North  | Alice | 2024-01-01 |     6      |       1       |        3        |
+    | North  | Bob   | 2024-01-02 |     6      |       2       |        3        |
+    | North  | Alice | 2024-01-05 |     6      |       3       |        3        |
+    | North  | Bob   | 2024-01-06 |     6      |       4       |        3        |
+    | North  | Alice | 2024-01-10 |     6      |       5       |        3        |
+    | North  | Bob   | 2024-01-12 |     6      |       6       |        3        |
+    | South  | Carol | 2024-01-03 |     4      |       1       |        2        |
+    | South  | Dave  | 2024-01-04 |     4      |       2       |        2        |
+    | South  | Carol | 2024-01-07 |     4      |       3       |        2        |
+    | South  | Dave  | 2024-01-09 |     4      |       4       |        2        |
 
     - `total_rows` — static count of all rows in the region partition.
     - `running_count` — increments as rows are processed by date.
@@ -223,7 +223,7 @@ ORDER BY region, amount;
 ??? success "Expected Output"
 
     | region | rep   | amount | cume_dist |
-    |--------|-------|-------:|----------:|
+    | ------ | ----- | -----: | --------: |
     | North  | Alice |    100 |      0.17 |
     | North  | Bob   |    150 |      0.33 |
     | North  | Alice |    200 |      0.50 |
@@ -258,7 +258,7 @@ ORDER BY region, sale_date;
 ??? success "Expected Output"
 
     | region | sale_date  | amount | region_min | region_max | running_min | running_max |
-    |--------|------------|-------:|-----------:|-----------:|------------:|------------:|
+    | ------ | ---------- | -----: | ---------: | ---------: | ----------: | ----------: |
     | North  | 2024-01-01 |    100 |        100 |        300 |         100 |         100 |
     | North  | 2024-01-02 |    150 |        100 |        300 |         100 |         150 |
     | North  | 2024-01-05 |    200 |        100 |        300 |         100 |         200 |
@@ -294,7 +294,7 @@ ORDER BY region, rep, category;
 ??? success "Expected Output"
 
     | region | rep   | category    | amount | rep_total | category_total | region_total | grand_total |
-    |--------|-------|-------------|-------:|----------:|---------------:|-------------:|------------:|
+    | ------ | ----- | ----------- | -----: | --------: | -------------: | -----------: | ----------: |
     | North  | Alice | Clothing    |    300 |       600 |            600 |         1300 |        2825 |
     | North  | Alice | Electronics |    100 |       600 |            700 |         1300 |        2825 |
     | North  | Alice | Electronics |    200 |       600 |            700 |         1300 |        2825 |
@@ -309,11 +309,12 @@ ORDER BY region, rep, category;
     Four aggregation levels in a single query — no self-joins needed.
 
 !!! tip "Performance"
+
     Multiple `OVER` specs with the same `PARTITION BY` share a single shuffle stage.
     In this example, `PARTITION BY region, rep` and `PARTITION BY region, category`
     use different partitioning — that's 3 shuffles total (rep, category, region + grand).
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Scenario Examples
 
@@ -341,7 +342,7 @@ ORDER BY region, amount;
 ??? success "Expected Output"
 
     | region | rep   | sale_date  | amount | region_avg | deviation | flag        |
-    |--------|-------|------------|-------:|-----------:|----------:|-------------|
+    | ------ | ----- | ---------- | -----: | ---------: | --------: | ----------- |
     | North  | Alice | 2024-01-01 |    100 |      216.7 |    -116.7 | LOW OUTLIER |
     | North  | Bob   | 2024-01-02 |    150 |      216.7 |     -66.7 | NORMAL      |
     | North  | Alice | 2024-01-05 |    200 |      216.7 |     -16.7 | NORMAL      |
@@ -385,7 +386,7 @@ ORDER BY day;
 ??? success "Expected Output"
 
     | day        | revenue | rolling_7d_sum | rolling_7d_avg | days_in_window |
-    |------------|--------:|---------------:|---------------:|---------------:|
+    | ---------- | ------: | -------------: | -------------: | -------------: |
     | 2024-01-01 |     120 |            120 |          120.0 |              1 |
     | 2024-01-02 |     150 |            270 |          135.0 |              2 |
     | 2024-01-03 |     180 |            450 |          150.0 |              3 |
@@ -437,7 +438,7 @@ ORDER BY account, txn_date;
 ??? success "Expected Output"
 
     | account  | txn_date   | txn_type   | amount | balance | min_balance |
-    |----------|------------|------------|-------:|--------:|------------:|
+    | -------- | ---------- | ---------- | -----: | ------: | ----------: |
     | Checking | 2024-01-01 | DEPOSIT    |   1000 |    1000 |         650 |
     | Checking | 2024-01-03 | WITHDRAWAL |   -200 |     800 |         650 |
     | Checking | 2024-01-05 | WITHDRAWAL |   -150 |     650 |         650 |
@@ -471,7 +472,7 @@ ORDER BY region, amount;
 ??? success "Expected Output"
 
     | region | rep   | amount | above_min | below_max | normalized_pct |
-    |--------|-------|-------:|----------:|----------:|---------------:|
+    | ------ | ----- | -----: | --------: | --------: | -------------: |
     | North  | Alice |    100 |         0 |       200 |            0.0 |
     | North  | Bob   |    150 |        50 |       150 |           25.0 |
     | North  | Alice |    200 |       100 |       100 |           50.0 |
@@ -516,7 +517,7 @@ ORDER BY region, amount DESC;
 ??? success "Expected Output"
 
     | region | rep   | amount | cum_sum_desc | cum_pct | pareto_class |
-    |--------|-------|-------:|-------------:|--------:|--------------|
+    | ------ | ----- | -----: | -----------: | ------: | ------------ |
     | North  | Alice |    300 |          300 |    23.1 | A (Top 80%)  |
     | North  | Bob   |    300 |          600 |    46.2 | A (Top 80%)  |
     | North  | Bob   |    250 |          850 |    65.4 | A (Top 80%)  |
@@ -531,30 +532,30 @@ ORDER BY region, amount DESC;
     The top 3 North sales (300, 300, 250) account for 65.4% of the region total.
     This is the classic Pareto (80/20) classification technique.
 
----
+______________________________________________________________________
 
 ## :material-table: Running Total vs Partition Total vs Moving Average
 
-| Pattern | Row Varies? | Needs ORDER BY | Frame |
-|---------|:-----------:|:--------------:|-------|
-| Running total | Yes — grows with each row | Yes | `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
-| Partition total | No — same on every row | No | Full partition (implicit) |
-| Moving average | Yes — centred on each row | Yes | `ROWS BETWEEN N PRECEDING AND N FOLLOWING` |
+| Pattern         |        Row Varies?        | Needs ORDER BY | Frame                                              |
+| --------------- | :-----------------------: | :------------: | -------------------------------------------------- |
+| Running total   | Yes — grows with each row |      Yes       | `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
+| Partition total |  No — same on every row   |       No       | Full partition (implicit)                          |
+| Moving average  | Yes — centred on each row |      Yes       | `ROWS BETWEEN N PRECEDING AND N FOLLOWING`         |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Cumulative revenue by date | `SUM ... ORDER BY date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
-| Show each row alongside its group total | `SUM ... OVER (PARTITION BY ...)` with no `ORDER BY` |
-| Smooth noisy time-series data | `AVG ... ROWS BETWEEN N PRECEDING AND N FOLLOWING` |
-| Percentage of group total per row | Running SUM / partition SUM × 100 |
-| Rank rows by distribution within a group | `CUME_DIST() OVER (PARTITION BY ... ORDER BY ...)` |
-| Flag rows below/above the group min/max | `MIN`/`MAX` over full partition, then filter |
-| Outlier detection | Compare `amount` to `AVG(amount) OVER (PARTITION BY ...)` × threshold |
-| Rolling window metrics (7-day, 30-day) | `SUM`/`AVG ... ROWS BETWEEN N PRECEDING AND CURRENT ROW` |
-| Account balance / ledger | `SUM(amount) OVER (PARTITION BY account ORDER BY date ...)` |
-| Min-max normalization | `(val - MIN) / (MAX - MIN)` using partition-level `MIN`/`MAX` |
-| Pareto (80/20) classification | Cumulative SUM ordered DESC / partition SUM |
+| Scenario                                 | Recommended Pattern                                                      |
+| ---------------------------------------- | ------------------------------------------------------------------------ |
+| Cumulative revenue by date               | `SUM ... ORDER BY date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` |
+| Show each row alongside its group total  | `SUM ... OVER (PARTITION BY ...)` with no `ORDER BY`                     |
+| Smooth noisy time-series data            | `AVG ... ROWS BETWEEN N PRECEDING AND N FOLLOWING`                       |
+| Percentage of group total per row        | Running SUM / partition SUM × 100                                        |
+| Rank rows by distribution within a group | `CUME_DIST() OVER (PARTITION BY ... ORDER BY ...)`                       |
+| Flag rows below/above the group min/max  | `MIN`/`MAX` over full partition, then filter                             |
+| Outlier detection                        | Compare `amount` to `AVG(amount) OVER (PARTITION BY ...)` × threshold    |
+| Rolling window metrics (7-day, 30-day)   | `SUM`/`AVG ... ROWS BETWEEN N PRECEDING AND CURRENT ROW`                 |
+| Account balance / ledger                 | `SUM(amount) OVER (PARTITION BY account ORDER BY date ...)`              |
+| Min-max normalization                    | `(val - MIN) / (MAX - MIN)` using partition-level `MIN`/`MAX`            |
+| Pareto (80/20) classification            | Cumulative SUM ordered DESC / partition SUM                              |

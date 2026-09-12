@@ -6,8 +6,7 @@ A **Full Outer Join** returns **all rows** from both tables:
 - All rows from the **right** table
 - Matches where possible, and `NULL`s where there is no match
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -18,7 +17,7 @@ graph LR
     J -->|right only| NL[NULLs for left + Right row]
 ```
 
----
+______________________________________________________________________
 
 ## :material-clipboard-list-outline: Example
 
@@ -37,7 +36,7 @@ ON
   employees.dept_no = departments.id;
 ```
 
----
+______________________________________________________________________
 
 ## :material-pencil-outline: Result Explained
 
@@ -45,17 +44,17 @@ ON
 - **All departments** are included, even if they have no employees.
 - Non-matching columns are filled with `NULL`.
 
----
+______________________________________________________________________
 
 ## :material-image-frame:️ Visual Representation
 
 | employees.dept_no | employees.name | departments.id | departments.name |
-|:-----------------:|:--------------|:--------------:|:----------------|
-| 1                 | Alice         | 1              | HR              |
-| 2                 | Bob           | NULL           | NULL            |
-| NULL              | NULL          | 3              | IT              |
+| :---------------: | :------------- | :------------: | :--------------- |
+|         1         | Alice          |       1        | HR               |
+|         2         | Bob            |      NULL      | NULL             |
+|       NULL        | NULL           |       3        | IT               |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: Real-World Use Cases
 
@@ -63,7 +62,7 @@ ON
 - **Employees vs Departments:** List all employees and departments, even if some are unassigned or empty.
 - **System Logs:** Merge logs from two sources and see all entries, including those without a match.
 
----
+______________________________________________________________________
 
 ## :material-lightning-bolt: Performance Notes
 
@@ -71,7 +70,7 @@ ON
 - Can be **expensive** for very large datasets.
 - If one dataset is small, you can **broadcast** it, but Spark **does not support broadcast** with full outer join (only inner, left, right joins).
 
----
+______________________________________________________________________
 
 ## :material-target: Diagram
 
@@ -91,7 +90,7 @@ classDef result fill:#caffbf,stroke:#000,stroke-width:2px;
 
 **Full Outer Join Result = All of A + All of B (matches + non-matches).**
 
----
+______________________________________________________________________
 
 ## :material-scale-balance: Reconciliation Diagnostic
 
@@ -110,15 +109,16 @@ FULL OUTER JOIN b ON a.id = b.id;
 -- 1       1       2          -- e.g. a={1,2,3}, b={2,3,4}
 ```
 
-| Bucket    | Meaning                                   | Typical follow-up                     |
-|-----------|-------------------------------------------|---------------------------------------|
-| `only_a`  | Rows present in **A** but missing from B  | Orphaned/unmigrated source records    |
-| `only_b`  | Rows present in **B** but missing from A  | Extra/stale target records to purge   |
-| `matched` | Keys present on **both** sides            | Candidates for value-level comparison |
+| Bucket    | Meaning                                  | Typical follow-up                     |
+| --------- | ---------------------------------------- | ------------------------------------- |
+| `only_a`  | Rows present in **A** but missing from B | Orphaned/unmigrated source records    |
+| `only_b`  | Rows present in **B** but missing from A | Extra/stale target records to purge   |
+| `matched` | Keys present on **both** sides           | Candidates for value-level comparison |
 
 !!! tip "Prefer a targeted anti-join when you only need one side"
+
     If you just need the *unmatched* rows (not the full reconciliation counts), a
-    [Left Anti Join](../left_anti.md) is cheaper than a full outer join — it skips
+    [Left Anti Join](../left-anti.md) is cheaper than a full outer join — it skips
     materializing the matched rows entirely.
 
----
+______________________________________________________________________

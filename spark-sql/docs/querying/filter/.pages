@@ -1,7 +1,7 @@
 nav:
   - index.md
-  - null_filter.md
-  - case_when.md
+  - null-filter.md
+  - case-when.md
   - sub-query.md
   - pp.md
   - qualify.md

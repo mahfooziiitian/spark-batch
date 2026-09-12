@@ -1,50 +1,53 @@
-# :material-link-chain: Chained CTEs
+# :material-link-variant: Chained CTEs
 
-Chained CTEs build a multi-step pipeline inside a single SQL statement. Each CTE
-represents one transformation layer; later CTEs can reference all earlier ones. The
-result is a readable, top-down data flow with no nested subqueries.
+Chained CTEs build a top-down pipeline inside one SQL statement. Spark 4.2 resolves them in order, so each step can depend on earlier steps without burying the logic inside nested subqueries.
 
----
+### :material-animation-play: Interactive Visualization — Resolution Order
+
+<div id="viz-cte-chained-flow" class="ts-viz"></div>
+
+The pipeline highlights how Spark resolves `step1`, then `step2`, then `step3`. It also shows the verified rule that later CTEs can see earlier ones, but not the other way around.
+
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
 ```sql
 WITH
 step1 AS (
-    -- first transformation
     SELECT ...
-    FROM   source_table
-    WHERE  ...
+    FROM source_table
+    WHERE ...
 ),
 step2 AS (
-    -- build on step1
     SELECT ...
-    FROM   step1
+    FROM step1
 ),
 step3 AS (
-    -- build on step1 and/or step2
     SELECT ...
-    FROM   step2
-    JOIN   step1 ON ...
+    FROM step2
+    JOIN step1 ON ...
 )
 SELECT * FROM step3;
 ```
 
 Rules:
-- CTEs are defined in order; a CTE can only reference CTEs **above** it in the list.
-- All CTEs share the same `WITH` keyword — do not repeat `WITH` for each step.
-- CTE names use `snake_case` and describe the logical role (`filtered_orders`, `ranked_customers`).
 
----
+- CTEs are defined once after a single `WITH` keyword.
+- A CTE can reference only CTEs defined earlier in the same list.
+- CTE names should describe the data they hold, such as `filtered_orders` or `ranked_customers`.
+
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
-1. Spark's Catalyst optimizer **inlines** each CTE at its reference sites by default — there is no automatic materialization boundary between steps.
-2. Because CTEs are inlined, a CTE referenced **N times** may be evaluated **N times**. Wrap a reused CTE in a temp view and optionally cache it when this matters for performance.
-3. Column aliases defined inside a CTE are visible only within that CTE and to CTEs or the final `SELECT` that reference it.
-4. The final `SELECT` (or DML statement) **must** appear after the last CTE in the `WITH` block.
+1. **Ordered resolution** — Spark 4.2 resolves the `WITH` list from top to bottom.
+2. **No forward references** — `WITH a AS (SELECT * FROM b), b AS (...)` fails during analysis.
+3. **Inner `WITH` blocks are allowed** — a CTE body can contain its own nested `WITH`; Spark 4.2 executed `WITH outer_cte AS (WITH inner_cte AS (...) SELECT ...) SELECT * FROM outer_cte` successfully.
+4. **Repeated references are still logical reuse, not guaranteed physical reuse** — if `step1` is referenced in multiple later branches, Spark may expand it multiple times in the plan.
+5. **The final statement can be `SELECT` or DML** — a chained `WITH` block can feed `INSERT`, `MERGE`, `UPDATE`, or `DELETE` when the target statement supports it.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -52,7 +55,6 @@ Rules:
 
 ```sql
 WITH
--- Step 1: restrict to the current year
 current_year_sales AS (
     SELECT
         order_id,
@@ -61,21 +63,19 @@ current_year_sales AS (
         amount,
         order_date
     FROM sales
-    WHERE order_date >= '2024-01-01'
-      AND order_date <  '2025-01-01'
+    WHERE order_date >= DATE '2024-01-01'
+      AND order_date < DATE '2025-01-01'
 ),
--- Step 2: aggregate per customer
 customer_totals AS (
     SELECT
         customer_id,
         region,
-        SUM(amount)   AS total_spent,
-        COUNT(*)      AS order_count,
+        SUM(amount) AS total_spent,
+        COUNT(*) AS order_count,
         MAX(order_date) AS last_order_date
     FROM current_year_sales
     GROUP BY customer_id, region
 ),
--- Step 3: rank within each region
 ranked AS (
     SELECT
         customer_id,
@@ -89,45 +89,42 @@ ranked AS (
 SELECT *
 FROM ranked
 WHERE region_rank <= 5
-ORDER BY region, region_rank;
+ORDER BY region, region_rank, customer_id;
 ```
 
-### ETL: clean → enrich → load
+### ETL pipeline: clean, enrich, classify
 
 ```sql
 WITH
--- Step 1: remove nulls and trim strings
 cleaned AS (
     SELECT
-        CAST(order_id AS BIGINT)        AS order_id,
-        TRIM(UPPER(customer_name))      AS customer_name,
-        CAST(order_date AS DATE)        AS order_date,
-        CAST(amount AS DECIMAL(18, 2))  AS amount
+        CAST(order_id AS BIGINT) AS order_id,
+        TRIM(UPPER(customer_name)) AS customer_name,
+        CAST(order_date AS DATE) AS order_date,
+        CAST(amount AS DECIMAL(18, 2)) AS amount
     FROM raw_orders
     WHERE order_id IS NOT NULL
-      AND amount   IS NOT NULL
+      AND amount IS NOT NULL
 ),
--- Step 2: join with the customer dimension for enrichment
 enriched AS (
     SELECT
-        c_orders.order_id,
-        c_orders.order_date,
-        c_orders.amount,
-        dim.customer_id,
-        dim.segment,
-        dim.region
-    FROM cleaned AS c_orders
-    JOIN dim_customer AS dim
-        ON c_orders.customer_name = dim.customer_name
+        c.order_id,
+        c.order_date,
+        c.amount,
+        d.customer_id,
+        d.segment,
+        d.region
+    FROM cleaned AS c
+    JOIN dim_customer AS d
+        ON c.customer_name = d.customer_name
 ),
--- Step 3: classify order size
 classified AS (
     SELECT
         *,
         CASE
             WHEN amount >= 1000 THEN 'Large'
-            WHEN amount >= 200  THEN 'Medium'
-            ELSE                     'Small'
+            WHEN amount >= 200 THEN 'Medium'
+            ELSE 'Small'
         END AS order_size
     FROM enriched
 )
@@ -143,7 +140,7 @@ SELECT
 FROM classified;
 ```
 
-### Funnel analysis across multiple steps
+### Funnel analysis across multiple stages
 
 ```sql
 WITH
@@ -174,58 +171,131 @@ funnel AS (
         CASE WHEN s.user_id IS NOT NULL THEN 1 ELSE 0 END AS signed_up,
         CASE WHEN p.user_id IS NOT NULL THEN 1 ELSE 0 END AS purchased
     FROM visits AS v
-    LEFT JOIN signups   AS s ON v.user_id = s.user_id
+    LEFT JOIN signups AS s ON v.user_id = s.user_id
     LEFT JOIN purchases AS p ON v.user_id = p.user_id
 )
 SELECT
-    COUNT(*)                          AS total_visitors,
-    SUM(signed_up)                    AS total_signups,
-    SUM(purchased)                    AS total_purchasers,
-    ROUND(SUM(signed_up)    * 100.0 / COUNT(*), 2) AS signup_rate_pct,
-    ROUND(SUM(purchased)    * 100.0 / COUNT(*), 2) AS purchase_rate_pct
+    COUNT(*) AS total_visitors,
+    SUM(signed_up) AS total_signups,
+    SUM(purchased) AS total_purchasers,
+    ROUND(SUM(signed_up) * 100.0 / COUNT(*), 2) AS signup_rate_pct,
+    ROUND(SUM(purchased) * 100.0 / COUNT(*), 2) AS purchase_rate_pct
 FROM funnel;
 ```
 
-### Reference an earlier CTE twice
+### Nested `WITH` inside a CTE body
+
+```sql
+WITH outer_cte AS (
+    WITH inner_cte AS (
+        SELECT 1 AS x
+    )
+    SELECT x + 1 AS y
+    FROM inner_cte
+)
+SELECT *
+FROM outer_cte;
+```
+
+### Diagnosing a Slow CTE Chain: Recomputation, Not a Bad Plan
+
+Point 4 above ("logical reuse, not guaranteed physical reuse") is the most common
+reason a long CTE chain is *correct* but *slow*: if an early CTE is referenced by more
+than one later branch, Spark inlines and **re-executes its entire upstream subtree once
+per reference** — there's no automatic memoization. Verified on Spark 4.2 with a `base`
+CTE consumed by two downstream aggregates:
 
 ```sql
 WITH
-order_totals AS (
-    SELECT customer_id, SUM(amount) AS total_spent
-    FROM orders
-    GROUP BY customer_id
+base AS (
+    SELECT customer_id, region, amount FROM sales WHERE amount > 0
 ),
-stats AS (
-    SELECT AVG(total_spent) AS avg_spend, STDDEV(total_spent) AS stddev_spend
-    FROM order_totals
+by_customer AS (
+    SELECT customer_id, SUM(amount) AS total FROM base GROUP BY customer_id
+),
+by_region AS (
+    SELECT region, SUM(amount) AS total FROM base GROUP BY region
 )
--- order_totals referenced again here alongside stats
-SELECT
-    ot.customer_id,
-    ot.total_spent,
-    ROUND((ot.total_spent - st.avg_spend) / st.stddev_spend, 2) AS z_score
-FROM order_totals AS ot
-CROSS JOIN stats AS st
-ORDER BY z_score DESC;
+SELECT * FROM by_customer c JOIN by_region r ON c.customer_id % 3 = r.region;
 ```
 
----
+```sql
+EXPLAIN <above query>;
+```
+
+```text
++- BroadcastHashJoin ...
+   :- HashAggregate(keys=[customer_id], ...)
+   :     +- ... Filter (amount > 0.0) ...
+   :        +- Range (1, 5001, ...)              <- base's scan+filter, copy #1
+   +- HashAggregate(keys=[region], ...)
+         +- ... Filter (amount > 0.0) ...
+            +- Range (1, 5001, ...)              <- base's scan+filter, copy #2
+```
+
+`base`'s `Filter`/`Project` (and the source scan underneath it) shows up **twice** — once
+inlined into each branch that reads it. On a real table this means every expensive
+upstream transformation (joins, filters, casts) in `base` runs twice, three times, or
+once per downstream reference, not once total.
+
+**Fix: materialize the strategic stage that's referenced more than once**, so it
+executes exactly one time and every branch reads the materialized result instead of
+recomputing it:
+
+```sql
+CACHE TABLE base_cached AS
+    SELECT customer_id, region, amount FROM sales WHERE amount > 0;
+
+WITH
+by_customer AS (
+    SELECT customer_id, SUM(amount) AS total FROM base_cached GROUP BY customer_id
+),
+by_region AS (
+    SELECT region, SUM(amount) AS total FROM base_cached GROUP BY region
+)
+SELECT * FROM by_customer c JOIN by_region r ON c.customer_id % 3 = r.region;
+```
+
+```text
++- BroadcastHashJoin ...
+   :- HashAggregate(keys=[customer_id], ...)
+   :     +- Scan In-memory table base_cached [...]
+   :           +- InMemoryRelation [...]           <- computed once
+   +- HashAggregate(keys=[region], ...)
+         +- Scan In-memory table base_cached [...]
+               +- InMemoryRelation [...]           <- reused, not recomputed
+```
+
+Both branches now hit `Scan In-memory table base_cached` — the underlying
+`Range`/`Filter`/`Project` subtree runs once and its result is reused, instead of once
+per downstream reference. The same materialization works with `df.cache()` in
+PySpark, or by writing the stage to a real (Delta/Parquet) temp table when the
+intermediate result is too large to keep in memory or needs to survive across jobs.
+
+!!! tip "How to spot which stage to materialize"
+
+    Read the `EXPLAIN` output for the whole chain, not just the final CTE. If the same
+    subtree (same source table, same filter/project) appears more than once, that CTE
+    is being recomputed per reference — it's a strong materialization candidate. Only
+    cache/materialize CTEs that are (a) referenced more than once **and** (b)
+    expensive enough that recomputation actually costs something; caching every step
+    of a chain adds memory pressure and shuffle for no benefit if a CTE is cheap or
+    only used once.
+
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use Chained CTEs
 
-| Scenario | Pattern |
-|----------|---------|
-| Complex query with 3+ logical steps | One CTE per step, named by role |
-| ETL pipeline: clean → enrich → classify | Sequential chained CTEs + final `INSERT` |
-| Funnel / cohort analysis | One CTE per funnel stage, final `LEFT JOIN` chain |
-| Ranking after aggregation | Aggregate in CTE 1, rank in CTE 2, filter in final `SELECT` |
-| Intermediate result reused in two places | Extract to a CTE; cache if expensive |
+| Scenario                                                                        | Pattern                                                                                           |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Complex query with several named steps                                          | One CTE per logical transformation                                                                |
+| ETL pipeline                                                                    | Clean -> enrich -> classify -> final write                                                        |
+| Funnel or cohort analysis                                                       | One CTE per business milestone                                                                    |
+| Ranking after aggregation                                                       | Aggregate first, rank second, filter last                                                         |
+| Local nested helper logic                                                       | Nested `WITH` inside a CTE body                                                                   |
+| Chain runs correctly but is slow, and an early CTE feeds several later branches | Inspect `EXPLAIN` for the duplicated subtree, then `CACHE TABLE` (or `df.cache()`) that one stage |
 
-!!! tip "Name CTEs by what they represent, not how they work"
-    `filtered_orders` is better than `step1`. Future readers understand the role
-    immediately without tracing back through the logic.
+!!! tip "Keep each CTE narrow"
 
-!!! note "Materialization"
-    If a CTE is expensive (e.g., a large aggregation) and referenced more than once,
-    wrap it in `CREATE OR REPLACE TEMP VIEW ... AS (...)` and optionally `CACHE TABLE`
-    to avoid re-computation.
+    Each step should do one main transformation. Small, well-named CTEs are easier to test,
+    explain, and move into temp views later if reuse becomes more important than locality.

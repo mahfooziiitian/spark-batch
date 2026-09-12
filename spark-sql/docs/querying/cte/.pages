@@ -2,7 +2,7 @@ nav:
   - index.md
   - chained.md
   - recursive.md
-  - cte_in_dml.md
-  - cte_vs_temp_view.md
+  - cte-in-dml.md
+  - cte-vs-temp-view.md
   - deduplication.md
   - pivot.md

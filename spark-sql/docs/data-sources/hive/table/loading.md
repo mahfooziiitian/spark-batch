@@ -4,7 +4,7 @@ Data enters a Hive table either by registering existing files (`LOAD DATA`) or b
 query results (`INSERT INTO` / `INSERT OVERWRITE`). The right method depends on whether you
 are moving raw files or transforming rows.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -13,17 +13,17 @@ graph LR
     C["Replacement data"] -->|INSERT OVERWRITE| T
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Loading Methods
 
-| Method | Effect |
-|--------|--------|
-| `LOAD DATA [LOCAL] INPATH` | Moves/copies files into the table location (no transform) |
-| `INSERT INTO` | Appends rows produced by a query |
-| `INSERT OVERWRITE` | Replaces existing data (whole table or matched partitions) |
+| Method                     | Effect                                                     |
+| -------------------------- | ---------------------------------------------------------- |
+| `LOAD DATA [LOCAL] INPATH` | Moves/copies files into the table location (no transform)  |
+| `INSERT INTO`              | Appends rows produced by a query                           |
+| `INSERT OVERWRITE`         | Replaces existing data (whole table or matched partitions) |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -56,27 +56,28 @@ graph LR
     SELECT id, amount FROM staging_sales WHERE state = 'CA';
     ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. `LOAD DATA` performs no schema validation or transformation — it relocates files.
 2. `INSERT OVERWRITE` on a partitioned table replaces only the targeted partitions when
-   `spark.sql.sources.partitionOverwriteMode = DYNAMIC`.
+    `spark.sql.sources.partitionOverwriteMode = DYNAMIC`.
 3. `INSERT INTO ... SELECT` runs the full Catalyst pipeline, so casts and expressions apply.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Method |
-|----------|--------|
-| Register raw files as-is | `LOAD DATA` |
-| Transform then persist | `INSERT INTO ... SELECT` |
-| Full table refresh | `INSERT OVERWRITE TABLE` |
+| Scenario                    | Method                                            |
+| --------------------------- | ------------------------------------------------- |
+| Register raw files as-is    | `LOAD DATA`                                       |
+| Transform then persist      | `INSERT INTO ... SELECT`                          |
+| Full table refresh          | `INSERT OVERWRITE TABLE`                          |
 | Replace specific partitions | `INSERT OVERWRITE ... PARTITION` (+ DYNAMIC mode) |
 
 !!! tip "Dynamic partition overwrite"
+
     To replace only the partitions present in your data, set
     `spark.sql.sources.partitionOverwriteMode=DYNAMIC` — see
     [Dynamic Partition Insert](partition/dynamic.md).

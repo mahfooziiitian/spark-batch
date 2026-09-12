@@ -4,7 +4,7 @@ A Hive table's **storage format** (the data source) determines how rows are enco
 disk, which in turn drives scan speed, compression, and predicate pushdown. Spark supports
 the modern `USING <format>` syntax as well as the classic Hive `STORED AS <format>` clause.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -14,19 +14,19 @@ graph LR
     B --> E["CSV / JSON / Text / Avro"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Format Comparison
 
-| Format | Columnar | Pushdown | Compression | Best for |
-|--------|----------|----------|-------------|----------|
-| **Parquet** | :material-check: | :material-check: | Snappy/Zstd | Default analytics format |
-| **ORC** | :material-check: | :material-check: | Zlib/Zstd | Hive-heavy stacks, ACID |
-| **Avro** | :material-close: (row) | Limited | Deflate | Schema evolution, streaming |
-| **CSV / Text** | :material-close: | :material-close: | Optional | Interop, ingestion staging |
-| **JSON** | :material-close: | :material-close: | Optional | Semi-structured ingestion |
+| Format         | Columnar               | Pushdown         | Compression | Best for                    |
+| -------------- | ---------------------- | ---------------- | ----------- | --------------------------- |
+| **Parquet**    | :material-check:       | :material-check: | Snappy/Zstd | Default analytics format    |
+| **ORC**        | :material-check:       | :material-check: | Zlib/Zstd   | Hive-heavy stacks, ACID     |
+| **Avro**       | :material-close: (row) | Limited          | Deflate     | Schema evolution, streaming |
+| **CSV / Text** | :material-close:       | :material-close: | Optional    | Interop, ingestion staging  |
+| **JSON**       | :material-close:       | :material-close: | Optional    | Semi-structured ingestion   |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -58,18 +58,19 @@ graph LR
     OPTIONS (header 'true', delimiter ',');
     ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Format |
-|----------|--------|
-| General analytics on Spark | Parquet |
-| Hive/ACID interoperability | ORC |
-| Schema evolution / row streams | Avro |
-| Human-readable interchange | CSV / JSON |
-| Compression + fast scans | Parquet or ORC |
+| Scenario                       | Format         |
+| ------------------------------ | -------------- |
+| General analytics on Spark     | Parquet        |
+| Hive/ACID interoperability     | ORC            |
+| Schema evolution / row streams | Avro           |
+| Human-readable interchange     | CSV / JSON     |
+| Compression + fast scans       | Parquet or ORC |
 
 !!! tip "Prefer columnar"
+
     For analytical workloads choose Parquet or ORC — column pruning and predicate pushdown
     dramatically cut I/O versus row formats like CSV/JSON.

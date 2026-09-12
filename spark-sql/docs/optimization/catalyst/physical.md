@@ -1,148 +1,152 @@
 # :material-server: Physical Planning
 
-Physical planning converts the optimized logical plan into one or more candidate
-`SparkPlan` trees and selects the best one using cost estimates.
+Physical planning converts an optimized logical plan into executable `SparkPlan` operators. Spark can consider multiple strategies internally, but `EXPLAIN FORMATTED` shows the **selected** plan that will feed execution and, with AQE enabled, potentially later runtime re-optimization.
 
----
+To avoid repeating the broader planner walkthrough in [Query Planner](../../internals/planner/query-planner.md), this page concentrates on concrete Spark 4.2 plan signatures you can verify today.
 
-## :material-sitemap: Physical Planning Flow
+______________________________________________________________________
 
-```mermaid
-flowchart TD
-    OLP["Optimized Logical Plan"]
-    OLP --> STRATS["Strategy matching\n(SparkStrategies)"]
-    STRATS --> CANDS["Candidate physical plans"]
-    CANDS --> COST["Cost comparison\n(CBO estimates)"]
-    COST --> BEST["Best SparkPlan"]
-    BEST --> PREP["Preparation rules\n(ensure sort order, partitioning)"]
-    PREP --> FINAL["Final Physical Plan"]
-```
+### :material-animation-play: Interactive Visualization — Strategy Selection Signals
 
----
+<div id="viz-physical-strategy-tree" class="ts-viz"></div>
 
-## :material-lan-connect: Join Strategy Selection
+The planner's output is easiest to read by looking for a few signature nodes: `BroadcastExchange` for broadcast joins, paired `Exchange` + `Sort` nodes for a classic sort-merge join, and `partial_*` aggregate functions before the shuffle in two-phase aggregation.
 
-Catalyst evaluates join strategies in priority order:
+______________________________________________________________________
 
-```mermaid
-flowchart TD
-    J["Join Node"]
-    J --> BHJ{"One side ≤\nautoBroadcastJoinThreshold?"}
-    BHJ -->|Yes| BH["BroadcastHashJoin\n(no shuffle)"]
-    BHJ -->|No| SHJ{"SHJ threshold\nconfigured and met?"}
-    SHJ -->|Yes| SH["ShuffledHashJoin\n(hash-build on small side)"]
-    SHJ -->|No| SMJ["SortMergeJoin\n(both sides sorted + merged)"]
-```
+## :material-call-split: Verified Example 1 — Broadcast Hash Join
 
-| Strategy | Shuffle | Sort | Best for |
-|----------|:-------:|:----:|---------|
-| BroadcastHashJoin (BHJ) | None | None | Small dimension table |
-| ShuffledHashJoin (SHJ) | Both | None | Medium tables, high cardinality |
-| SortMergeJoin (SMJ) | Both | Both | Large-large joins |
-| BroadcastNestedLoopJoin | None | None | Non-equi joins (small table only) |
+Spark 4.2 query with a broadcast hint:
 
 ```sql
--- Force BHJ
-SELECT /*+ BROADCAST(d) */ f.*, d.name
-FROM fact f JOIN dim d ON f.dim_id = d.id;
-
--- Force SMJ
-SELECT /*+ MERGE(a, b) */ * FROM a JOIN b ON a.id = b.id;
-
--- Force SHJ
-SELECT /*+ SHUFFLE_HASH(a) */ * FROM a JOIN b ON a.id = b.id;
-
--- See chosen strategy in EXPLAIN
 EXPLAIN FORMATTED
-SELECT f.order_id, d.category
-FROM fact_orders f JOIN dim_product d ON f.product_id = d.id;
+SELECT /*+ BROADCAST(small_t) */ count(*)
+FROM big_t
+JOIN small_t USING (k);
 ```
 
----
+Observed operator chain:
 
-## :material-sigma: Aggregation Strategy Selection
+```text
+(5) BroadcastExchange
+Input [1]: [k#15L]
+Arguments: HashedRelationBroadcastMode(...)
 
-```mermaid
-flowchart TD
-    AGG["Aggregate Node"]
-    AGG --> HASH{"Keys fit in\nmemory?"}
-    HASH -->|Yes| HAGG["HashAggregate\n(map-side combine + merge)"]
-    HASH -->|No| SAGG["SortAggregate\n(sort keys, then merge)"]
+(6) BroadcastHashJoin
+Left keys [1]: [k#12L]
+Right keys [1]: [k#15L]
+Join type: Inner
 ```
+
+That pairing is the key signature: Spark materialized the small side with `BroadcastExchange` and consumed it with `BroadcastHashJoin`.
+
+______________________________________________________________________
+
+## :material-source-branch: Verified Example 2 — Sort-Merge Join
+
+Spark 4.2 query with broadcasting disabled and both inputs split into four partitions:
 
 ```sql
--- Check whether Hash or Sort aggregation was chosen
-EXPLAIN FORMATTED
-SELECT region, COUNT(*) FROM orders GROUP BY region;
--- Look for: HashAggregate (fast) vs SortAggregate (slow)
-```
-
----
-
-## :material-file-search: Scan Operator Selection
-
-| Scan type | Operator | Triggered when |
-|-----------|----------|---------------|
-| Parquet / Delta | `FileScan parquet` | Parquet-backed table |
-| Delta log | `FileScan parquet (Delta)` | Delta table |
-| ORC | `FileScan orc` | ORC table |
-| CSV / JSON | `FileScan text` | Row-format table |
-| In-memory cache | `InMemoryTableScan` | `CACHE TABLE` was called |
-| JDBC | `JDBCRelation` | External JDBC source |
-
-```sql
--- Verify scan and pushed filters
-EXPLAIN FORMATTED
-SELECT order_id FROM orders
-WHERE region = 'US' AND order_date >= '2024-01-01';
--- FileScan → PartitionFilters, PushedFilters, ReadSchema
-```
-
----
-
-## :material-wrench: Physical Plan Configuration
-
-```sql
--- Raise broadcast threshold (default 10 MB)
-SET spark.sql.autoBroadcastJoinThreshold = 52428800;   -- 50 MB
-
--- Enable SHJ for tables above broadcast threshold
-SET spark.sql.adaptive.maxShuffledHashJoinLocalMapThreshold = 67108864; -- 64 MB
-
--- Disable broadcast for debugging
 SET spark.sql.autoBroadcastJoinThreshold = -1;
+SET spark.sql.shuffle.partitions = 4;
 
--- Verify plan after config change
-EXPLAIN FORMATTED SELECT ...;
+EXPLAIN FORMATTED
+SELECT count(*)
+FROM big_t
+JOIN big_t2 USING (k);
 ```
 
----
+Observed operator chain:
 
-## :material-clipboard-list: Reading Physical Plan Output
+```text
+(3) Exchange
+Arguments: hashpartitioning(k#1L, 4), ENSURE_REQUIREMENTS, ...
 
+(4) Sort
+Arguments: [k#1L ASC NULLS FIRST], false, 0
+
+(7) Exchange
+Arguments: hashpartitioning(k#4L, 4), ENSURE_REQUIREMENTS, ...
+
+(8) Sort
+Arguments: [k#4L ASC NULLS FIRST], false, 0
+
+(9) SortMergeJoin
+Left keys [1]: [k#1L]
+Right keys [1]: [k#4L]
+Join type: Inner
 ```
-== Physical Plan ==
-AdaptiveSparkPlan (1)
-+- SortMergeJoin (2) Inner, [customer_id]         ← join strategy
-   :- Sort (3) [customer_id ASC]                  ← sort needed for SMJ
-   :  +- Exchange (4) hashpartitioning(customer_id, 200)  ← shuffle
-   :     +- Filter (5) (region = US)              ← pushed-down filter
-   :        +- FileScan parquet (6)                ← actual file read
-   :           PartitionFilters: []
-   :           PushedFilters: [IsNotNull(region), EqualTo(region,US)]
-   :           ReadSchema: struct<customer_id:int,region:string,amount:decimal>
-   +- Sort (7) ...
-      +- Exchange (8) ...
-         +- FileScan parquet (9) ...
+
+This is the classic sort-merge shape: repartition both sides by key, sort both sides, then merge.
+
+!!! note "Do not overfit to one skeleton"
+
+    In a trivial single-partition local demo, Spark 4.2 still chose `SortMergeJoin` for the same query shape but did **not** need separate `Exchange` or `Sort` nodes because the input partitioning and ordering requirements were already satisfied. The join operator name is the authoritative clue.
+
+______________________________________________________________________
+
+## :material-sigma: Verified Example 3 — Two-Phase `HashAggregate`
+
+Spark 4.2 query:
+
+```sql
+EXPLAIN FORMATTED
+SELECT k % 3 AS g, count(*) AS c
+FROM big_t
+GROUP BY k % 3;
 ```
 
-**Key nodes to look for:**
+Observed operator chain:
 
-| Node | Meaning |
-|------|---------|
-| `BroadcastHashJoin` | Good — small table broadcast, no shuffle |
-| `SortMergeJoin` | Both sides shuffled and sorted |
-| `Exchange hashpartitioning` | Shuffle for join/agg |
-| `Exchange rangepartitioning` | Shuffle for global sort |
-| `WholeStageCodegen` | Codegen enabled for this operator group |
-| `InMemoryTableScan` | Reading from cache |
+```text
+(3) HashAggregate
+Keys [1]: [_groupingexpression#5L]
+Functions [1]: [partial_count(1)]
+
+(4) Exchange
+Arguments: hashpartitioning(_groupingexpression#5L, 4), ENSURE_REQUIREMENTS, ...
+
+(5) HashAggregate
+Keys [1]: [_groupingexpression#5L]
+Functions [1]: [count(1)]
+```
+
+This verifies the standard Spark aggregation pattern:
+
+1. a **partial** aggregate runs before the shuffle,
+2. grouped partial results are shuffled by key,
+3. a final aggregate combines those partial counts.
+
+______________________________________________________________________
+
+## :material-file-tree-outline: What `EXPLAIN FORMATTED` Tells You Fastest
+
+| Node or field                    | How to read it                                         |
+| -------------------------------- | ------------------------------------------------------ |
+| `BroadcastExchange`              | A side was materialized for broadcast                  |
+| `BroadcastHashJoin`              | Join executed by probing a broadcast hash table        |
+| `SortMergeJoin`                  | Join executed after meeting sort-order requirements    |
+| `Exchange hashpartitioning(...)` | Shuffle boundary introduced                            |
+| `HashAggregate` with `partial_*` | Pre-shuffle local aggregation                          |
+| `AdaptiveSparkPlan`              | AQE wrapper is enabled and may revise the initial plan |
+
+AQE was enabled in the verified examples above, so the root operator printed as `AdaptiveSparkPlan ... isFinalPlan=false`. That means the current explain output is the **initial** chosen plan, not necessarily the final runtime-adjusted one.
+
+______________________________________________________________________
+
+## :material-tune: Practical Tuning Cues
+
+| If you see this                                   | First question to ask                                                |
+| ------------------------------------------------- | -------------------------------------------------------------------- |
+| `BroadcastHashJoin` absent for a very small table | Is broadcasting disabled, or are statistics/hints missing?           |
+| `SortMergeJoin` plus two large exchanges          | Can one side be broadcast, or can upstream partitioning be improved? |
+| Extra `Exchange` above a final aggregate          | Is the query collapsing to a single output partition?                |
+| `AdaptiveSparkPlan` everywhere                    | Did AQE rewrite the plan after execution started?                    |
+
+______________________________________________________________________
+
+## :material-link-variant: See Also
+
+- [Catalyst Optimizer](index.md)
+- [Code Generation](code-generation.md)
+- [Query Planner](../../internals/planner/query-planner.md)

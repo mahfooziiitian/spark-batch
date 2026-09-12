@@ -4,28 +4,28 @@ Spark SQL reads and writes JSON files via the built-in `json` format.
 Each line in a JSON file is treated as a separate record (JSON Lines / NDJSON)
 by default — use `multiLine = 'true'` for pretty-printed or array-wrapped JSON.
 
----
+______________________________________________________________________
 
 ## :material-pin: Options Reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `path` | — | File or directory path |
-| `multiLine` | `false` | Parse records spanning multiple lines |
-| `inferSchema` | `true` | Infer column types automatically |
-| `primitivesAsString` | `false` | Read all primitives as STRING |
-| `allowComments` | `false` | Allow Java/C++ style comments in JSON |
-| `allowUnquotedFieldNames` | `false` | Accept unquoted keys |
-| `allowSingleQuotes` | `true` | Allow single-quoted strings |
-| `allowNumericLeadingZeros` | `false` | Accept `0123` as a number |
-| `dateFormat` | `yyyy-MM-dd` | Date parsing pattern |
-| `timestampFormat` | `yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]` | Timestamp parsing pattern |
-| `mode` | `PERMISSIVE` | Error mode: `PERMISSIVE`, `DROPMALFORMED`, `FAILFAST` |
-| `columnNameOfCorruptRecord` | `_corrupt_record` | Column for unparseable rows |
-| `compression` | `none` | Write compression: `gzip`, `bzip2`, `lz4`, `snappy` |
-| `lineSep` | `\n` | Line separator for writing |
+| Option                      | Default                            | Description                                           |
+| --------------------------- | ---------------------------------- | ----------------------------------------------------- |
+| `path`                      | —                                  | File or directory path                                |
+| `multiLine`                 | `false`                            | Parse records spanning multiple lines                 |
+| `inferSchema`               | `true`                             | Infer column types automatically                      |
+| `primitivesAsString`        | `false`                            | Read all primitives as STRING                         |
+| `allowComments`             | `false`                            | Allow Java/C++ style comments in JSON                 |
+| `allowUnquotedFieldNames`   | `false`                            | Accept unquoted keys                                  |
+| `allowSingleQuotes`         | `true`                             | Allow single-quoted strings                           |
+| `allowNumericLeadingZeros`  | `false`                            | Accept `0123` as a number                             |
+| `dateFormat`                | `yyyy-MM-dd`                       | Date parsing pattern                                  |
+| `timestampFormat`           | `yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]` | Timestamp parsing pattern                             |
+| `mode`                      | `PERMISSIVE`                       | Error mode: `PERMISSIVE`, `DROPMALFORMED`, `FAILFAST` |
+| `columnNameOfCorruptRecord` | `_corrupt_record`                  | Column for unparseable rows                           |
+| `compression`               | `none`                             | Write compression: `gzip`, `bzip2`, `lz4`, `snappy`   |
+| `lineSep`                   | `\n`                               | Line separator for writing                            |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -173,26 +173,26 @@ SELECT
 FROM raw_events;
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert-circle: Common Mistakes
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| Forgetting `multiLine = 'true'` on pretty JSON | Parse error — each `{` treated as a record | Set `multiLine = 'true'` |
-| Schema inference on large datasets | Slow full scan | Provide explicit schema |
-| Deep nesting without schema | All nested fields as STRING | Declare `STRUCT` types explicitly |
-| Reading mixed-schema JSON | Columns become NULL for missing keys | Use `COALESCE` or `GET_JSON_OBJECT` for optional fields |
-| `timestampFormat` mismatch | Timestamps parsed as NULL | Match pattern to the actual ISO format in the data |
+| Mistake                                        | Problem                                    | Fix                                                     |
+| ---------------------------------------------- | ------------------------------------------ | ------------------------------------------------------- |
+| Forgetting `multiLine = 'true'` on pretty JSON | Parse error — each `{` treated as a record | Set `multiLine = 'true'`                                |
+| Schema inference on large datasets             | Slow full scan                             | Provide explicit schema                                 |
+| Deep nesting without schema                    | All nested fields as STRING                | Declare `STRUCT` types explicitly                       |
+| Reading mixed-schema JSON                      | Columns become NULL for missing keys       | Use `COALESCE` or `GET_JSON_OBJECT` for optional fields |
+| `timestampFormat` mismatch                     | Timestamps parsed as NULL                  | Match pattern to the actual ISO format in the data      |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use JSON
 
-| Scenario | Recommendation |
-|----------|----------------|
+| Scenario                            | Recommendation                     |
+| ----------------------------------- | ---------------------------------- |
 | Event streams with nested structure | JSON for landing; convert to Delta |
-| API responses / webhooks | JSON source |
-| Config files (`multiLine`) | JSON with `multiLine = 'true'` |
-| Production analytics | Convert to Parquet/Delta first |
-| Schema-on-read exploration | JSON with `inferSchema = 'true'` |
+| API responses / webhooks            | JSON source                        |
+| Config files (`multiLine`)          | JSON with `multiLine = 'true'`     |
+| Production analytics                | Convert to Parquet/Delta first     |
+| Schema-on-read exploration          | JSON with `inferSchema = 'true'`   |

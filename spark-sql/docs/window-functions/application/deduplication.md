@@ -2,7 +2,7 @@
 
 Remove duplicate rows by keeping the most recent sale per rep using `ROW_NUMBER`.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -45,7 +45,7 @@ Remove duplicate rows by keeping the most recent sale per rep using `ROW_NUMBER`
 -- | South  | Carol | 2024-01-07 |    500 |
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
@@ -54,12 +54,13 @@ Remove duplicate rows by keeping the most recent sale per rep using `ROW_NUMBER`
 - Any scenario where a unique key should map to exactly one row.
 
 !!! tip "Performance"
+
     For very large tables, add a date filter before the window to reduce the partition size.
     `ROW_NUMBER` is cheaper than `RANK` when you only need one row per key.
 
----
+______________________________________________________________________
 
 ## :material-arrow-right: Related
 
-- [Top-N Per Group](top_n.md) — extend this pattern to keep N rows per key
+- [Top-N Per Group](top-n.md) — extend this pattern to keep N rows per key
 - [Window Types — Ranking](../functions/ranking.md) — `ROW_NUMBER`, `RANK`, `DENSE_RANK`

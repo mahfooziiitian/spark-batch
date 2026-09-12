@@ -7,7 +7,7 @@ Everything you *query* first has to be *modelled*. This section is the modelling
 half of Spark SQL: how data is shaped, typed, constrained, and exposed before a
 single `SELECT` runs.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: The Mental Model
 
@@ -46,24 +46,25 @@ SELECT * FROM main.sales.orders;
 ```
 
 !!! note "Defaults fill in the gaps"
+
     Write `orders` and Spark expands it to `<current_catalog>.<current_schema>.orders`
     using `USE CATALOG` / `USE SCHEMA`. Always qualify names in production jobs so a
     changed session context can never silently point a query at the wrong table.
 
----
+______________________________________________________________________
 
 ## :material-compass-outline: Topics
 
-| Topic | What You'll Find |
-|-------|-------------------|
-| :material-table: [Tables](table/index.md) | Managed & external tables, metadata, partitioning |
-| :material-table-column: [Columns](column/index.md) | Selection, aliases, casting, derived, nested, defaults |
-| :material-format-text: [Data Types](types/index.md) | Primitives, datetime, complex types, VARIANT |
-| :material-key: [Keys & Constraints](key/index.md) | Primary, foreign, composite, surrogate, natural keys |
-| :material-eye: [Views](view/index.md) | Temporary, global, permanent views and use cases |
-| :material-table-edit: [DML](dml/index.md) | INSERT, UPDATE, DELETE, MERGE, COPY INTO |
+| Topic                                               | What You'll Find                                       |
+| --------------------------------------------------- | ------------------------------------------------------ |
+| :material-table: [Tables](table/index.md)           | Managed & external tables, metadata, partitioning      |
+| :material-table-column: [Columns](column/index.md)  | Selection, aliases, casting, derived, nested, defaults |
+| :material-format-text: [Data Types](types/index.md) | Primitives, datetime, complex types, VARIANT           |
+| :material-key: [Keys & Constraints](key/index.md)   | Primary, foreign, composite, surrogate, natural keys   |
+| :material-eye: [Views](view/index.md)               | Temporary, global, permanent views and use cases       |
+| :material-table-edit: [DML](dml/index.md)           | INSERT, UPDATE, DELETE, MERGE, COPY INTO               |
 
----
+______________________________________________________________________
 
 ## :material-table-large: Anatomy of a Table
 
@@ -84,15 +85,15 @@ flowchart LR
     end
 ```
 
-| Piece | Example | Why it matters |
-|-------|---------|----------------|
-| Column name | `order_id` | Stable contract for downstream queries |
-| Data type | `DECIMAL(10, 2)` | Correctness (money ≠ `DOUBLE`) and storage size |
-| Constraint | `NOT NULL`, `PRIMARY KEY` | Data-quality guarantees |
-| Default | `DEFAULT 0.0` | Back-fills new columns without rewriting rows |
-| Partition | `PARTITIONED BY (region)` | Prunes files at query time |
+| Piece       | Example                   | Why it matters                                  |
+| ----------- | ------------------------- | ----------------------------------------------- |
+| Column name | `order_id`                | Stable contract for downstream queries          |
+| Data type   | `DECIMAL(10, 2)`          | Correctness (money ≠ `DOUBLE`) and storage size |
+| Constraint  | `NOT NULL`, `PRIMARY KEY` | Data-quality guarantees                         |
+| Default     | `DEFAULT 0.0`             | Back-fills new columns without rewriting rows   |
+| Partition   | `PARTITIONED BY (region)` | Prunes files at query time                      |
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
@@ -191,28 +192,29 @@ flowchart LR
     WHEN NOT MATCHED THEN INSERT *;
     ```
 
----
+______________________________________________________________________
 
 ## :material-format-list-bulleted-type: Data Type Cheat Sheet
 
-| Category | Types | Use for |
-|----------|-------|---------|
-| Integer | `TINYINT`, `SMALLINT`, `INT`, `BIGINT` | Counts, IDs, surrogate keys |
-| Decimal | `DECIMAL(p, s)` | Money, exact fractions (never `FLOAT`) |
-| Floating | `FLOAT`, `DOUBLE` | Scientific / approximate measures |
-| String | `STRING`, `CHAR(n)`, `VARCHAR(n)` | Text, codes, labels |
-| Boolean | `BOOLEAN` | Flags |
-| Datetime | `DATE`, `TIMESTAMP`, `TIMESTAMP_NTZ` | Points in time |
-| Interval | `INTERVAL` | Durations, date arithmetic |
-| Complex | `ARRAY<T>`, `MAP<K,V>`, `STRUCT<...>` | Nested / repeated fields |
-| Semi-structured | `VARIANT` | Schema-flexible JSON-like data |
+| Category        | Types                                  | Use for                                |
+| --------------- | -------------------------------------- | -------------------------------------- |
+| Integer         | `TINYINT`, `SMALLINT`, `INT`, `BIGINT` | Counts, IDs, surrogate keys            |
+| Decimal         | `DECIMAL(p, s)`                        | Money, exact fractions (never `FLOAT`) |
+| Floating        | `FLOAT`, `DOUBLE`                      | Scientific / approximate measures      |
+| String          | `STRING`, `CHAR(n)`, `VARCHAR(n)`      | Text, codes, labels                    |
+| Boolean         | `BOOLEAN`                              | Flags                                  |
+| Datetime        | `DATE`, `TIMESTAMP`, `TIMESTAMP_NTZ`   | Points in time                         |
+| Interval        | `INTERVAL`                             | Durations, date arithmetic             |
+| Complex         | `ARRAY<T>`, `MAP<K,V>`, `STRUCT<...>`  | Nested / repeated fields               |
+| Semi-structured | `VARIANT`                              | Schema-flexible JSON-like data         |
 
 !!! tip "Pick the narrowest correct type"
+
     `BIGINT` for a boolean flag wastes 7 bytes per row; `DOUBLE` for currency
     introduces rounding drift. Right-sizing types improves both storage and scan
     speed. See [Data Types](types/index.md) and [VARIANT](types/variant/index.md).
 
----
+______________________________________________________________________
 
 ## :material-compare: Managed vs External Tables
 
@@ -228,16 +230,16 @@ flowchart LR
     DROPE["DROP TABLE"] -->|keeps data| ED
 ```
 
-| Aspect | Managed | External |
-|--------|---------|----------|
-| Data ownership | Spark / warehouse | You (explicit `LOCATION`) |
-| `DROP TABLE` | Deletes metadata **and** data | Deletes metadata only |
-| Best for | Derived / curated tables | Shared lakes, raw landing zones |
-| Storage path | Auto (warehouse dir) | You specify |
+| Aspect         | Managed                       | External                        |
+| -------------- | ----------------------------- | ------------------------------- |
+| Data ownership | Spark / warehouse             | You (explicit `LOCATION`)       |
+| `DROP TABLE`   | Deletes metadata **and** data | Deletes metadata only           |
+| Best for       | Derived / curated tables      | Shared lakes, raw landing zones |
+| Storage path   | Auto (warehouse dir)          | You specify                     |
 
 Deep dive: [Tables](table/index.md).
 
----
+______________________________________________________________________
 
 ## :material-map-marker-path: Learning Path
 
@@ -245,37 +247,40 @@ Work through the section in this order — each topic builds on the previous one
 
 1. :material-table: **[Tables](table/index.md)** — create, describe, partition.
 2. :material-table-column: **[Columns](column/index.md)** — select, alias, cast,
-   [derive](column/derived.md), and reach into [nested](column/nested.md) fields.
+    [derive](column/derived.md), and reach into [nested](column/nested.md) fields.
 3. :material-format-text: **[Data Types](types/index.md)** — primitives, datetime,
-   complex, and [VARIANT](types/variant/index.md).
-4. :material-key: **[Keys & Constraints](key/index.md)** — [primary](key/primary_key.md),
-   [foreign](key/foreign_key.md), and [Delta constraints](key/delta_constraints.md).
+    complex, and [VARIANT](types/variant/index.md).
+4. :material-key: **[Keys & Constraints](key/index.md)** — [primary](key/primary-key.md),
+    [foreign](key/foreign-key.md), and [Delta constraints](key/delta-constraints.md).
 5. :material-eye: **[Views](view/index.md)** — [types](view/types.md) and reuse patterns.
 6. :material-table-edit: **[DML](dml/index.md)** — [INSERT](dml/table/insert.md),
-   [UPDATE](dml/table/update.md), [DELETE](dml/table/delete.md),
-   [MERGE](dml/table/merge.md), [COPY INTO](dml/table/copy_into.md).
+    [UPDATE](dml/table/update.md), [DELETE](dml/table/delete.md),
+    [MERGE](dml/table/merge.md), [COPY INTO](dml/table/copy-into.md).
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: Best Practices
 
 !!! success "Do"
+
     - Prefer **Delta** format for full DML support (UPDATE, DELETE, MERGE, time travel).
     - Use **partitioning** on low-to-moderate cardinality filter columns (date, region) —
-      not on high-cardinality keys like `order_id`.
+        not on high-cardinality keys like `order_id`.
     - Define **NOT NULL** and **CHECK** constraints on critical columns for data quality.
     - Use the **VARIANT** type for semi-structured data instead of raw JSON strings.
     - Always **fully-qualify** table names (`catalog.schema.table`) in jobs.
     - Leverage **lateral column alias** (Spark 4.0) to simplify complex expressions —
-      see [Lateral Alias](column/lateral_alias.md).
+        see [Lateral Alias](column/lateral-alias.md).
 
 !!! failure "Avoid"
+
     - `FLOAT` / `DOUBLE` for money — use `DECIMAL(p, s)`.
     - Over-partitioning on high-cardinality columns (creates millions of tiny files).
     - Relying on session defaults for the current catalog/schema in production code.
     - Storing dates as `STRING` — you lose type-safe comparisons and date math.
 
 !!! warning "Constraints are enforced differently"
+
     Spark records `PRIMARY KEY` / `FOREIGN KEY` as **informational** metadata (used by
     the optimizer) but does **not** enforce uniqueness. Delta `CHECK` and `NOT NULL`
     constraints **are** enforced on write. See [Keys & Constraints](key/index.md).

@@ -2,7 +2,7 @@
 
 Query, aggregate, and compare data across date hierarchies, time bands, and seasonal patterns.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Temporal Analysis Pipeline
 
@@ -15,15 +15,15 @@ flowchart LR
     BANDS --> OUT["Temporal insights"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Problem | Technique |
-|------|---------|-----------|
-| [Sales Date Patterns](date_patterns.md) | Date hierarchy, weekday patterns, time bands | `DATE_TRUNC`, `DAYOFWEEK`, `HOUR` |
+| Page                                    | Problem                                      | Technique                         |
+| --------------------------------------- | -------------------------------------------- | --------------------------------- |
+| [Sales Date Patterns](date-patterns.md) | Date hierarchy, weekday patterns, time bands | `DATE_TRUNC`, `DAYOFWEEK`, `HOUR` |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 

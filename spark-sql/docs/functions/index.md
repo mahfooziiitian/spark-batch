@@ -4,13 +4,13 @@ Spark SQL ships with hundreds of built-in functions covering everything from
 string manipulation and date arithmetic to array processing and statistical
 aggregation. No Python or Scala needed — all available in pure SQL.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Function Taxonomy
 
 ```mermaid
 flowchart TD
-    F[":material-function: Spark SQL Functions"] --> SC["Scalar\nper-row, returns 1 value"]
+    F["Spark SQL Functions"] --> SC["Scalar\nper-row, returns 1 value"]
     F --> AG["Aggregate\nmany rows → 1 value"]
     F --> WN["Window\nmany rows, row preserved"]
     F --> GE["Generator\n1 row → many rows"]
@@ -20,27 +20,27 @@ flowchart TD
     F --> LA["Lambda\nanonymous functions for HOFs"]
     F --> MC["Macro\nreusable SQL expression aliases"]
     F --> UD["UDF\nuser-defined Python/Scala/Java"]
-    F --> SU["SQL UDF :material-new-box:\nnative SQL functions"]
+    F --> SU["SQL UDF\nnative SQL functions"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: Function Categories
 
-| Category | Scope | Reduces rows? | Examples |
-|----------|-------|:-------------:|---------|
-| **Scalar** | Single value → single value | No | `UPPER`, `ABS`, `DATE_ADD`, `CAST` |
-| **Aggregate** | Group of rows → one value | Yes | `SUM`, `AVG`, `COLLECT_LIST` |
-| **Window** | Partition of rows → per-row value | No | `ROW_NUMBER`, `LAG`, `SUM OVER` |
-| **Generator** | One row → many rows | No (expands) | `EXPLODE`, `POSEXPLODE`, `INLINE`, `STACK` |
-| **Higher-Order** | Array/Map + lambda → result | No | `TRANSFORM`, `FILTER`, `AGGREGATE`, `ZIP_WITH` |
-| **Collection** | Scalar/array/map constructors | No | `ARRAY()`, `MAP()`, `NAMED_STRUCT()` |
-| **Structure** | String ↔ semi-structured types | No | `FROM_JSON`, `TO_JSON`, `FROM_CSV` |
-| **Lambda** | Inline function arg for HOFs | N/A | `x -> x * 2`, `(k, v) -> v > 1` |
-| **Macro** | Reusable SQL snippets | No | `CREATE TEMPORARY MACRO double(x) x * 2` |
-| **UDF** | Custom logic in Python/Scala/Java | No | `spark.udf.register(...)` |
+| Category         | Scope                             | Reduces rows? | Examples                                       |
+| ---------------- | --------------------------------- | :-----------: | ---------------------------------------------- |
+| **Scalar**       | Single value → single value       |      No       | `UPPER`, `ABS`, `DATE_ADD`, `CAST`             |
+| **Aggregate**    | Group of rows → one value         |      Yes      | `SUM`, `AVG`, `COLLECT_LIST`                   |
+| **Window**       | Partition of rows → per-row value |      No       | `ROW_NUMBER`, `LAG`, `SUM OVER`                |
+| **Generator**    | One row → many rows               | No (expands)  | `EXPLODE`, `POSEXPLODE`, `INLINE`, `STACK`     |
+| **Higher-Order** | Array/Map + lambda → result       |      No       | `TRANSFORM`, `FILTER`, `AGGREGATE`, `ZIP_WITH` |
+| **Collection**   | Scalar/array/map constructors     |      No       | `ARRAY()`, `MAP()`, `NAMED_STRUCT()`           |
+| **Structure**    | String ↔ semi-structured types    |      No       | `FROM_JSON`, `TO_JSON`, `FROM_CSV`             |
+| **Lambda**       | Inline function arg for HOFs      |      N/A      | `x -> x * 2`, `(k, v) -> v > 1`                |
+| **Macro**        | Reusable SQL snippets             |      No       | `CREATE TEMPORARY MACRO double(x) x * 2`       |
+| **UDF**          | Custom logic in Python/Scala/Java |      No       | `spark.udf.register(...)`                      |
 
----
+______________________________________________________________________
 
 ## :material-lightning-bolt: Quick Decision Guide
 
@@ -60,7 +60,7 @@ flowchart TD
     F --> UD[UDF or Macro]
 ```
 
----
+______________________________________________________________________
 
 ## :material-flash: Common Functions Cheat Sheet
 
@@ -97,18 +97,17 @@ TRANSFORM(arr, x -> ...)  FILTER(arr, x -> ...)  EXISTS(arr, x -> ...)
 AGGREGATE(arr, init, (acc, x) -> ...)  ZIP_WITH(a1, a2, (x, y) -> ...)
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Section | Contents |
-|---------|----------|
-| [Aggregate](aggregate/index.md) | `SUM`, `AVG`, `COUNT`, `COLLECT_LIST`, stats, string aggregation |
-| [Scalar](scalar/index.md) | String, math, date, null, regex, encryption, conversion |
-| [Collection](collection/index.md) | `ARRAY()`, `MAP()`, `NAMED_STRUCT()`, set operations |
-| [Generator](generator/index.md) | `EXPLODE`, `POSEXPLODE`, `INLINE`, `STACK` |
-| [Higher-Order](hof/index.md) | `TRANSFORM`, `FILTER`, `EXISTS`, `AGGREGATE`, `ZIP_WITH` |
-| [Structure](structure/index.md) | `FROM_JSON`, `TO_JSON`, `FROM_CSV`, `XPATH` |
-| [Lambda](lambda/index.md) | Lambda syntax, array HOFs, map HOFs, aggregate HOF, patterns |
-| [Macro](macro/macro.md) | `CREATE TEMPORARY MACRO`, reusable SQL expressions |
-| [UDF](udf/udf.md) | Python UDFs, Pandas UDFs, Scala UDFs, UDAFs |
+| Section                           | Contents                                                         |
+| --------------------------------- | ---------------------------------------------------------------- |
+| [Aggregate](aggregate/index.md)   | `SUM`, `AVG`, `COUNT`, `COLLECT_LIST`, stats, string aggregation |
+| [Scalar](scalar/index.md)         | String, math, date, null, regex, encryption, conversion          |
+| [Collection](collection/index.md) | `ARRAY()`, `MAP()`, `NAMED_STRUCT()`, set operations             |
+| [Generator](generator/index.md)   | `EXPLODE`, `POSEXPLODE`, `INLINE`, `STACK`                       |
+| [Structure](structure/index.md)   | `FROM_JSON`, `TO_JSON`, `FROM_CSV`, `XPATH`                      |
+| [Lambda](lambda/index.md)         | Lambda syntax, array HOFs, map HOFs, aggregate HOF, patterns     |
+| [Macro](macro/macro.md)           | `CREATE TEMPORARY MACRO`, reusable SQL expressions               |
+| [UDF](udf/udf.md)                 | Python UDFs, Pandas UDFs, Scala UDFs, UDAFs                      |

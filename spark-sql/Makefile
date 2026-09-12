@@ -95,10 +95,10 @@ sql-lint-changed: ## Lint only changed SQL files (vs HEAD)
 
 # ── CI ────────────────────────────────────────────────────────────────────────
 .PHONY: ci
-ci: format-check lint type-check sql-lint test-cov docs-build ## Run the full CI pipeline (no auto-fixing)
+ci: format-check lint type-check sql-lint test-cov docs-verify ## Run the full CI pipeline (no auto-fixing)
 
 .PHONY: pre-commit
-pre-commit: quality docs-build test ## Run the recommended pre-commit gate
+pre-commit: quality docs-verify test ## Run the recommended pre-commit gate
 
 # ── Security ──────────────────────────────────────────────────────────────────
 .PHONY: secure
@@ -135,7 +135,7 @@ report-cov-xml: ## Generate XML coverage report
 
 # ── Documentation ─────────────────────────────────────────────────────────────
 .PHONY: docs
-docs: clean docs-build docs-serve ## Clean, build, then serve docs
+docs: clean docs-format docs-build docs-serve ## Clean, format, build, then serve docs
 
 .PHONY: docs-build
 docs-build: ## Build MkDocs site
@@ -152,6 +152,17 @@ docs-lint: ## Lint and fix markdown files
 .PHONY: docs-lint-check
 docs-lint-check: ## Check markdown files without modifying them
 	$(UV) run pymarkdownlnt scan -r docs README.md
+
+.PHONY: docs-format
+docs-format: ## Format markdown (tables, emphasis, etc.) with mdformat
+	$(UV) run mdformat --number docs README.md
+
+.PHONY: docs-format-check
+docs-format-check: ## Check markdown formatting without modifying files
+	$(UV) run mdformat --number --check docs README.md
+
+.PHONY: docs-verify
+docs-verify: docs-format-check docs-build ## Non-mutating gate: formatting is up to date and the site builds
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 .PHONY: build

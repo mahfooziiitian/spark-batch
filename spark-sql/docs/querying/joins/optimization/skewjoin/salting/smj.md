@@ -1,57 +1,70 @@
-# :material-scale-unbalanced: Skewed Data Handling with Salted Sort Merge Join
+# :material-sort: Salting Before a Sort-Merge Join
 
-The **Sort Merge Join (SMJ)** is a robust approach for handling joins, especially under resource constraints. However, when dealing with **skewed datasets**—where one side of the join has highly imbalanced key distribution—standard join strategies can lead to performance bottlenecks. The **Salted Sort Merge Join** technique addresses this challenge effectively.
+There is no separate Spark 4.2 operator named "Salted Sort-Merge Join." After salting, Spark still plans a normal equi-join, often `SortMergeJoin`, over the transformed key set.
 
+### :material-animation-play: Interactive Visualization — Salted Keys Feeding Sort-Merge Join
 
-### :material-sitemap: Overview
+<div id="viz-joins-skew-salted-smj" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    L[Large skewed DF] -->|salt key| SL[Salted partitions]
-    R[Small DF] -->|replicate with salt| SR[Replicated partitions]
-    SL --> SMJ[Sort-Merge Join]
-    SR --> SMJ
-    SMJ --> O[Balanced result]
+This diagram shows the important distinction: salting changes the data shape, not the operator name.
+
+<script src="../../../../../assets/js/querying-joins-strategy-viz.js"></script>
+
+______________________________________________________________________
+
+## :material-check-decagram: Verified in PySpark 4.2
+
+With broadcast disabled, a salted join on `(customer_id, salt)` produced:
+
+```text
+SortMergeJoin [customer_id#0, salt#2], [customer_id#3, salt#5], Inner
 ```
 
-## Why Use Salted Sort Merge Join?
+So the execution strategy remained an ordinary `SortMergeJoin` over two equality keys.
 
-- **Efficient for Skewed Joins:** Ideal when joining a large, skewed dataset with a smaller, non-skewed dataset, especially when executor memory is limited.
-- **Beyond Broadcast Hash Join:** Enables left joins where the smaller dataset could be broadcasted, but broadcast hash join is not feasible due to skew.
-- **Control Join Strategy:** To ensure Spark uses Sort Merge Join, disable broadcast joins by setting:
+______________________________________________________________________
 
-    ```shell
-    spark.sql.autoBroadcastJoinThreshold=-1
-    ```
+## :material-information-outline: Why Combine Salting with SMJ
 
-## How Salted Sort Merge Join Works
+This pattern is useful when:
 
-1. **Salting the Skewed Dataset:**
-     - Add a new column (e.g., `salt_key`) to the skewed dataset.
-     - For each record, assign a random value from a predefined range to the `salt_key`.
+- The smaller side is not suitable for broadcast.
+- You still need a shuffle-based equi-join.
+- One key is hot enough that unsalted shuffle partitions become imbalanced.
 
-2. **Iterative Join Process:**
-     - For each value in the salt key range:
-         - Filter the skewed dataset for the current salt key.
-         - Join this filtered subset with the unsalted dataset.
-         - Collect the partial join result.
-     - Combine all partial results using the `UNION` operator to produce the final joined output.
+Salting breaks one hot key into several smaller `(key, salt)` groups before the sort and merge stages happen.
 
-3. **Alternative Approach:**
-     - For each salt key value:
-         - Enrich the non-skewed dataset by adding the current salt key value to a new `salt` column.
-     - Combine all enriched datasets using `UNION` to form a salt-enriched version of the non-skewed dataset.
-     - Join the salted skewed dataset with the salt-enriched non-skewed dataset for the final result.
+______________________________________________________________________
 
-## Limitations
+## :material-code-tags: Example Shape
 
-- **No Full Outer Join:** Salted Sort Merge Join does **not** support full outer joins.
-- **Single-Side Skew Handling:** Can only handle skewness on one side:
-    - **Left Joins (Outer, Semi, Anti):** Skew must be in the left dataset.
-    - **Right Joins:** Skew must be in the right dataset.
-- **Not for Dual-Skew:** Cannot handle skewness on both input datasets.
+```sql
+with fact as (
+    select customer_id, txn, pmod(hash(txn), 4) as salt
+    from fact_orders
+),
+dim as (
+    select customer_id, segment, salt
+    from dim_customer
+    lateral view explode(sequence(0, 3)) s as salt
+)
+select *
+from fact f
+join dim d
+  on f.customer_id = d.customer_id
+ and f.salt = d.salt;
+```
 
----
+______________________________________________________________________
 
-**Summary:**  
-Salted Sort Merge Join is a powerful technique for handling skewed joins in Spark, especially when broadcast joins are not suitable. By introducing a salt key and partitioning the join workload, it helps distribute data more evenly and improves performance for large, imbalanced datasets.
+## :material-alert-outline: What This Does Not Mean
+
+- Salting does not create a new Spark join operator.
+- Salting does not remove shuffle; it redistributes it.
+- Salting is unnecessary overhead when broadcast or ordinary AQE already solves the problem.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Use salted sort-merge as a manual fallback when you still want a normal shuffle-based equi-join, but the unsalted key distribution is too uneven for good parallelism.

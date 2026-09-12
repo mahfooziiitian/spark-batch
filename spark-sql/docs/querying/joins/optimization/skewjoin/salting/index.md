@@ -1,171 +1,86 @@
-# :material-scale-unbalanced: Handling Skewed Joins in Spark SQL: Salting Techniques
+# :material-shaker-outline: Salting a Skewed Join Key
 
-Learn how to fix skewed joins in Spark SQL using various salting strategies, complete with practical, end-to-end examples.
+Salting spreads one hot logical key across multiple physical join keys by adding a second component such as `salt`, then matching both the original key and the salt in the join condition.
 
+### :material-animation-play: Interactive Visualization — Salt One Side, Expand the Other
 
-### :material-sitemap: Overview
+<div id="viz-joins-skew-salting" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    SK[Skewed key] -->|add salt suffix| S1[key_0]
-    SK --> S2[key_1]
-    SK --> S3[key_N]
-    S1 --> J[Distributed join]
-    S2 --> J
-    S3 --> J
-    J --> O[Balanced result]
-```
+This view shows the verified Spark pattern: add a salt to the skewed side and generate every salt value on the other side before joining on both columns.
 
----
+<script src="../../../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-## :material-flag: The Problem: Skewed Joins
+______________________________________________________________________
 
-Suppose you want to join a large `transactions` table with a medium-sized `customers` table:
+## :material-check-decagram: Verified in PySpark 4.2
 
-```sql
-SELECT t.txn_id, c.customer_name
-FROM transactions t
-JOIN customers c
-    ON t.customer_id = c.id;
-```
+A small verification query used:
 
-If `customer_id = 12345` appears **50 million times** (while others appear ~1,000 times), Spark will put all 50M rows into a single partition—causing severe skew and performance issues.
+- `pmod(hash(txn), 3)` to assign deterministic salt values on the skewed side.
+- `explode(sequence(0, 2))` to duplicate the other side across all salt values.
 
----
+The salted join returned exactly the same rows as the baseline unsalted join.
 
-## :material-lightbulb-outline: Salting Techniques in Spark SQL
+______________________________________________________________________
 
-### 1. **Random Salting (Basic Hash Salting)**
+## :material-information-outline: Correct Salting Pattern
 
-**Goal:** Break up skewed keys by adding a random suffix.
-
-#### Step 1: Salt the skewed side
+### 1. Add a salt to the skewed side
 
 ```sql
-WITH salted_txn AS (
-    SELECT t.*, CONCAT(customer_id, '_', CAST(FLOOR(RAND() * 10) AS INT)) AS salted_id
-    FROM transactions t
+with salted_fact as (
+    select
+        customer_id,
+        txn,
+        pmod(hash(txn), 8) as salt
+    from fact_orders
 )
 ```
 
-#### Step 2: Expand the smaller table
+### 2. Expand the other side across the same salt range
 
 ```sql
-WITH expanded_cust AS (
-    SELECT c.*, CONCAT(id, '_', salt) AS salted_id
-    FROM customers c
-    LATERAL VIEW posexplode(split(repeat(',', 9), ',')) AS salt_pos, salt
+, expanded_dim as (
+    select
+        customer_id,
+        segment,
+        salt
+    from dim_customer
+    lateral view explode(sequence(0, 7)) s as salt
 )
 ```
 
-#### Step 3: Join on salted keys
+### 3. Join on both key parts
 
 ```sql
-SELECT st.txn_id, ec.customer_name
-FROM salted_txn st
-JOIN expanded_cust ec
-    ON st.salted_id = ec.salted_id;
+select sf.txn, ed.segment
+from salted_fact sf
+join expanded_dim ed
+  on sf.customer_id = ed.customer_id
+ and sf.salt = ed.salt;
 ```
 
-> **Result:** Large skewed keys are distributed across 10 partitions.
+______________________________________________________________________
 
----
+## :material-table: Random vs Deterministic Salt
 
-### 2. **Deterministic Salting (Modulo Hashing)**
+| Approach                       | When it helps               | Trade-off                               |
+| ------------------------------ | --------------------------- | --------------------------------------- |
+| `floor(rand() * n)`            | Quick experiments           | Non-deterministic                       |
+| `pmod(hash(stable_column), n)` | Reproducible jobs and tests | Requires a stable per-row source column |
+| Selective salting              | Only a few known hot keys   | More branching logic                    |
 
-**Goal:** Use a reproducible salt for stability.
+______________________________________________________________________
 
-```sql
-WITH salted_txn AS (
-    SELECT t.*, CONCAT(customer_id, '_', pmod(hash(txn_id), 10)) AS salted_id
-    FROM transactions t
-),
-expanded_cust AS (
-    SELECT c.*, CONCAT(id, '_', n) AS salted_id
-    FROM customers c
-    LATERAL VIEW posexplode(split(repeat(',', 9), ',')) AS n, dummy
-)
-SELECT st.txn_id, ec.customer_name
-FROM salted_txn st
-JOIN expanded_cust ec
-    ON st.salted_id = ec.salted_id;
-```
+## :material-alert-outline: Rules That Keep It Correct
 
-> **Result:** More stable and reproducible than random salting.
+- Only the skewed side gets one salt value per row.
+- The other side must be expanded to **all** salt values.
+- Join on `(original_key, salt)`, not just the original key.
+- Re-aggregate on the original key afterward if your downstream logic expects the unsalted shape.
 
----
+______________________________________________________________________
 
-### 3. **Selective Salting (Skewed Keys Only)**
+## :material-lightbulb-outline: When to Use
 
-**Goal:** Salt only the problematic keys, leaving others untouched.
-
-```sql
-WITH salted_txn AS (
-    SELECT t.*,
-                 CASE WHEN customer_id = 12345
-                            THEN CONCAT(customer_id, '_', CAST(FLOOR(RAND() * 10) AS INT))
-                            ELSE CAST(customer_id AS STRING)
-                    END AS salted_id
-    FROM transactions t
-),
-expanded_cust AS (
-    SELECT c.*,
-                 CASE WHEN id = 12345
-                            THEN CONCAT(id, '_', n)
-                            ELSE CAST(id AS STRING)
-                    END AS salted_id
-    FROM customers c
-    LATERAL VIEW posexplode(split(repeat(',', 9), ',')) AS n, dummy
-)
-SELECT st.txn_id, ec.customer_name
-FROM salted_txn st
-JOIN expanded_cust ec
-    ON st.salted_id = ec.salted_id;
-```
-
-> **Result:** Only skewed keys are split, minimizing overhead.
-
----
-
-### 4. **Hybrid: Salting + Broadcast Join**
-
-**Goal:** If the smaller side fits in memory, combine salting with broadcasting for maximum performance.
-
-```sql
-SELECT /*+ BROADCAST(expanded_cust) */ st.txn_id, ec.customer_name
-FROM salted_txn st
-JOIN expanded_cust ec
-    ON st.salted_id = ec.salted_id;
-```
-
----
-
-## :material-pencil-outline: Summary Table
-
-| Technique           | Use Case              | Pros                   | Cons                        |
-|---------------------|----------------------|------------------------|-----------------------------|
-| Random Salting      | General skew         | Simple, quick          | Non-deterministic           |
-| Modulo Hashing      | Stable partitioning  | Deterministic          | May not balance evenly      |
-| Selective Salting   | Few known skew keys  | Efficient              | Needs prior skew detection  |
-| Hybrid (Broadcast)  | One side small       | Fast, avoids shuffle   | Only if small fits in memory|
-
----
-
-## :material-check-circle-outline: End-to-End Approach
-
-1. **Detect skewed keys:**  
-
-     ```sql
-     SELECT customer_id, COUNT(*) FROM transactions GROUP BY customer_id;
-     ```
-
-2. **Choose a salting method:**  
-     (Random, modulo, selective, or hybrid)
-3. **Apply salting:**  
-     Salt the large table, expand the smaller one.
-4. **Join on salted keys.**
-5. **(Optional) Re-aggregate** on the original key if needed.
-
----
-
-> **Tip:** Always analyze your data distribution before choosing a salting strategy!
+Use salting when one or a few keys are so dominant that AQE and ordinary repartitioning still leave a straggler task.

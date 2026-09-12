@@ -1,8 +1,9 @@
 title: Data Quality
 nav:
   - index.md
-  - change_detection.md
-  - outlier_detection.md
-  - slowly_changing_comparison.md
-  - fraud_detection.md
+  - change-detection.md
+  - outlier-detection.md
+  - slowly-changing-comparison.md
+  - fraud-detection.md
   - Duplicates: duplicates
+  - validation-rules.md

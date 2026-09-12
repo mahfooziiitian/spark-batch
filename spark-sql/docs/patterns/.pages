@@ -9,4 +9,5 @@ nav:
   - Structural: structural
   - SCD: scd
   - Time Series: timeseries
+  - Query Optimization: optimization
   - Applications: application

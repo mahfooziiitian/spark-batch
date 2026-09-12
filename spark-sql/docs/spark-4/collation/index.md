@@ -1,25 +1,26 @@
 # :material-translate: String Collation
 
 !!! info "Spark 4.0"
+
     ICU-backed string collation is new in Apache Spark 4.0.
 
 **Collations** control how strings are compared, sorted, grouped, and matched.
 Prior to Spark 4.0 all strings used binary UTF-8 comparison. Now you can choose
 case-insensitive, accent-insensitive, or locale-specific collation rules.
 
----
+______________________________________________________________________
 
 ## :material-pin: Built-in Collations
 
-| Collation | Case | Accent | Notes |
-|-----------|:----:|:------:|-------|
-| `UTF8_BINARY` | Sensitive | Sensitive | **Default** — byte-level comparison |
-| `UTF8_LCASE` | Insensitive | Sensitive | Fast lowercase folding |
-| `UNICODE` | Sensitive | Sensitive | ICU Unicode default |
-| `UNICODE_CI` | Insensitive | Sensitive | ICU case-insensitive |
-| `UNICODE_AI` | Sensitive | Insensitive | ICU accent-insensitive |
-| `UNICODE_CI_AI` | Insensitive | Insensitive | Both-insensitive |
-| `en`, `de`, `sv`, `tr_CI`, … | Locale-specific | Varies | Full ICU locale collations |
+| Collation                    |      Case       |   Accent    | Notes                               |
+| ---------------------------- | :-------------: | :---------: | ----------------------------------- |
+| `UTF8_BINARY`                |    Sensitive    |  Sensitive  | **Default** — byte-level comparison |
+| `UTF8_LCASE`                 |   Insensitive   |  Sensitive  | Fast lowercase folding              |
+| `UNICODE`                    |    Sensitive    |  Sensitive  | ICU Unicode default                 |
+| `UNICODE_CI`                 |   Insensitive   |  Sensitive  | ICU case-insensitive                |
+| `UNICODE_AI`                 |    Sensitive    | Insensitive | ICU accent-insensitive              |
+| `UNICODE_CI_AI`              |   Insensitive   | Insensitive | Both-insensitive                    |
+| `en`, `de`, `sv`, `tr_CI`, … | Locale-specific |   Varies    | Full ICU locale collations          |
 
 ### Discovering Available Collations
 
@@ -28,7 +29,7 @@ SHOW COLLATIONS;
 SHOW COLLATIONS LIKE 'UNICODE*';
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Column-Level Collation
 
@@ -43,7 +44,7 @@ SELECT * FROM users WHERE name = 'alice';    -- matches 'Alice', 'ALICE'
 SELECT * FROM users WHERE email = 'BOB@X.COM'; -- matches 'bob@x.com'
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Inline Collation
 
@@ -59,7 +60,7 @@ SELECT * FROM articles
 WHERE title COLLATE UNICODE_AI LIKE '%cafe%';  -- matches 'café'
 ```
 
----
+______________________________________________________________________
 
 ## :material-earth: Locale-Specific Collation
 
@@ -76,7 +77,7 @@ SELECT 'I' COLLATE tr_ci = 'ı';  -- true
 SELECT * FROM names ORDER BY name COLLATE de;
 ```
 
----
+______________________________________________________________________
 
 ## :material-group: Collation in GROUP BY and Set Operations
 
@@ -93,7 +94,7 @@ SELECT col1 COLLATE UTF8_LCASE FROM VALUES ('aaa');
 -- Result: empty (AAA == aaa under UTF8_LCASE)
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare-horizontal: Collation Comparison
 
@@ -108,14 +109,14 @@ SELECT 'ABC' COLLATE UTF8_LCASE = 'abc';      -- true
 SELECT 'straße' COLLATE UNICODE_CI = 'STRASSE'; -- true
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: Best Practices
 
-| Scenario | Recommended Collation |
-|----------|----------------------|
-| Exact match (IDs, codes) | `UTF8_BINARY` (default) |
-| Case-insensitive search | `UTF8_LCASE` |
-| International text sorting | `UNICODE` or locale-specific |
-| Email/username matching | `UNICODE_CI` |
-| Accent-insensitive search | `UNICODE_AI` or `UNICODE_CI_AI` |
+| Scenario                   | Recommended Collation           |
+| -------------------------- | ------------------------------- |
+| Exact match (IDs, codes)   | `UTF8_BINARY` (default)         |
+| Case-insensitive search    | `UTF8_LCASE`                    |
+| International text sorting | `UNICODE` or locale-specific    |
+| Email/username matching    | `UNICODE_CI`                    |
+| Accent-insensitive search  | `UNICODE_AI` or `UNICODE_CI_AI` |

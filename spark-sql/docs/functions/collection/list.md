@@ -3,13 +3,21 @@
 List functions create and work with ordered collections (arrays) in Spark SQL.
 The primary list aggregation functions are `COLLECT_LIST` and `ARRAY_AGG`.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
     A[Input] --> B[COLLECT_LIST / ARRAY_AGG]
     B --> C[Ordered Array]
 ```
+
+### :material-animation-play: Interactive Visualization — Non-Deterministic vs Window-Ordered Collection
+
+<div id="viz-collect-list-order" class="ts-viz"></div>
+
+Compare a bare `COLLECT_LIST(...)` aggregate (order depends on task
+scheduling / shuffle, not guaranteed) against `COLLECT_LIST(...) OVER (... ORDER BY seq)`, which **is** deterministic because the window frame is
+explicitly ordered.
 
 ## :material-pin: Syntax
 
@@ -107,12 +115,12 @@ GROUP BY customer;
 
 ## :material-brain: COLLECT_LIST vs COLLECT_SET
 
-| Feature | `COLLECT_LIST` | `COLLECT_SET` |
-|---------|---------------|--------------|
-| Duplicates | Preserved | Removed |
-| NULLs | Excluded | Excluded |
-| Ordering | Non-deterministic | Non-deterministic |
-| Use case | All values needed | Distinct values only |
+| Feature    | `COLLECT_LIST`    | `COLLECT_SET`        |
+| ---------- | ----------------- | -------------------- |
+| Duplicates | Preserved         | Removed              |
+| NULLs      | Excluded          | Excluded             |
+| Ordering   | Non-deterministic | Non-deterministic    |
+| Use case   | All values needed | Distinct values only |
 
 > **Tip:** For deterministic ordering, use `COLLECT_LIST` inside a window function with
 > `ORDER BY`, or `SORT_ARRAY(COLLECT_LIST(...))` after aggregation.

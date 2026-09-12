@@ -1,132 +1,178 @@
 # :material-table-refresh: Cache Commands
 
----
+This page focuses on the SQL surface area of caching: how to register cached data, how eager and lazy modes differ, and what `UNCACHE`, `CLEAR CACHE`, and `REFRESH TABLE` actually did in Spark 4.2.
 
-## :material-sitemap: Cache Lifecycle
+______________________________________________________________________
 
-```mermaid
-flowchart LR
-    TBL["Table / View"] --> CT["CACHE TABLE"]
-    CT --> EM["Eager\nmaterialisation"]
-    CT2["CACHE LAZY TABLE"] --> LM["Lazy\n(first query triggers)"]
-    EM --> IMR["InMemoryRelation"]
-    LM --> IMR
-    IMR -->|Query| SCAN["InMemoryTableScanExec"]
-    SCAN --> RESULT["Query Result"]
-    IMR -->|UNCACHE / CLEAR| GONE["Evicted"]
-```
+## :material-animation-play: Interactive Visualization
 
----
+### :material-animation-play: Interactive Visualization — Cache Lifecycle Commands
 
-## :material-code-braces: Syntax
+<div id="viz-cache-lifecycle" class="ts-viz"></div>
+
+Use the controls to step through the normal cache lifecycle: registration, first materialization, reuse, explicit uncache, and a metadata refresh that does not itself drop the cache entry.
+
+______________________________________________________________________
+
+## :material-code-braces: Verified Syntax
 
 ### Eager cache
 
 ```sql
--- Materialises the table immediately
 CACHE TABLE orders;
 ```
+
+For an existing table or view, `CACHE TABLE` started a job immediately in Spark 4.2.
 
 ### Lazy cache
 
 ```sql
--- Registers the cache plan; data is loaded on first query
 CACHE LAZY TABLE orders;
 ```
 
-### Cache a query result
+`CACHE LAZY TABLE` registered the cache entry immediately, but no fill happened until the first query. In PySpark 4.2, `spark.catalog.isCached('orders')` returned `True` right after registration.
+
+### Cache a query result as a named relation
 
 ```sql
--- Create a named in-memory table from a query
 CACHE TABLE active_customers AS
 SELECT customer_id, name, region
 FROM customers
 WHERE status = 'active';
-
--- Use it in subsequent queries — no re-read from storage
-SELECT region, COUNT(*) FROM active_customers GROUP BY region;
-SELECT * FROM active_customers WHERE region = 'US' LIMIT 10;
 ```
 
-### Cache a temporary view
+### Pick a storage level directly in SQL
 
 ```sql
-CREATE OR REPLACE TEMP VIEW monthly_summary AS
-SELECT
-    DATE_TRUNC('month', order_date) AS month,
-    region,
-    SUM(amount)                     AS total
-FROM orders
-GROUP BY 1, 2;
-
-CACHE TABLE monthly_summary;
-
--- Now used in multiple queries without recomputation
-SELECT * FROM monthly_summary WHERE region = 'US';
-SELECT month, SUM(total) FROM monthly_summary GROUP BY month;
+CACHE TABLE active_customers_mem
+OPTIONS ('storageLevel' = 'MEMORY_ONLY') AS
+SELECT customer_id, name, region
+FROM customers
+WHERE status = 'active';
 ```
 
----
+Spark 4.2 accepted `OPTIONS ('storageLevel' = '...')` and showed the chosen level inside `EXPLAIN` output.
 
-## :material-check-all: Checking Cache Status
-
-```sql
--- List all tables in the catalog (in-memory tables appear here)
-SHOW TABLES;
-
--- Detailed view — look for "Is Temporary" and "Type: VIEW"
-DESCRIBE EXTENDED monthly_summary;
-```
-
-!!! note "No built-in `IS CACHED` SQL function"
-    There is no SQL function like `IS_CACHED(table)`. Use the Spark UI
-    **Storage** tab to confirm what is cached and how much memory it occupies.
-
----
-
-## :material-delete-sweep: Removing Caches
+### Remove cache entries
 
 ```sql
--- Remove a single table / view from cache
 UNCACHE TABLE orders;
 UNCACHE TABLE IF EXISTS orders;
-
--- Remove all caches in the current SparkSession
 CLEAR CACHE;
 ```
 
----
+`UNCACHE TABLE IF EXISTS` is valid Spark 4.2 syntax.
 
-## :material-refresh: Cache Invalidation
-
-Spark **does not** automatically invalidate the cache when underlying data changes.
+### Refresh metadata
 
 ```sql
--- Pattern: refresh table metadata + re-cache after data change
-REFRESH TABLE orders;  -- clears file listing cache
-UNCACHE TABLE cached_orders;
-CACHE TABLE cached_orders AS SELECT ...;
+REFRESH TABLE orders;
 ```
 
----
+`REFRESH TABLE` is valid syntax, but it is **not** a synonym for `UNCACHE TABLE`.
 
-## :material-compare: CACHE TABLE vs CACHE LAZY TABLE
+______________________________________________________________________
 
-| Aspect | `CACHE TABLE` | `CACHE LAZY TABLE` |
-|--------|:-------------:|:------------------:|
-| Materialises on cache call | Yes | No |
-| Materialises on first query | — | Yes |
-| Suitable for startup script | No (adds latency) | Yes |
-| Guaranteed warm for next query | Yes | No |
+## :material-flask-outline: Verified Examples
 
----
+### Eager cache shows an in-memory scan
 
-## :material-information: Behaviour Notes
+```sql
+CACHE TABLE t_cache AS
+SELECT * FROM VALUES (1), (2) AS t(x);
 
-1. `CACHE TABLE` is **eager** by default — it triggers a Spark job immediately.
-2. `CACHE LAZY TABLE` only stores the plan; the first downstream action caches the data.
-3. Cached data is stored in **columnar in-memory format** using `InMemoryRelation`.
-4. The cache is **session-scoped** — other sessions do not share it.
-5. If available memory is exceeded, Spark **evicts** older cache entries (LRU policy).
-6. Caching a large table that does not fit in executor memory causes **disk spill**
-   or silent eviction — cache selectively using a filtered query.
+EXPLAIN SELECT * FROM t_cache;
+```
+
+```text
+== Physical Plan ==
+Scan In-memory table t_cache [x#...]
+   +- InMemoryRelation [x#...], StorageLevel(disk, memory, deserialized, 1 replicas)
+         +- LocalTableScan [...]
+```
+
+### Lazy cache registers first, fills later
+
+```sql
+CACHE LAZY TABLE t_lazy AS
+SELECT * FROM VALUES (10), (20) AS t(x);
+
+SELECT * FROM t_lazy;
+```
+
+Before the first query, the cache entry existed but had not yet been read through the in-memory scan path. The first `SELECT` performed the initial fill.
+
+### Querying after `UNCACHE TABLE`
+
+```sql
+UNCACHE TABLE t_cache;
+SELECT * FROM t_cache;
+```
+
+The second statement still worked in Spark 4.2. `UNCACHE TABLE` removed cached data; it did not drop the relation name created by `CACHE TABLE ... AS SELECT ...`.
+
+______________________________________________________________________
+
+## :material-refresh: Refresh and Invalidation Notes
+
+### What `REFRESH TABLE` did in local Spark 4.2 checks
+
+For an unchanged cached temp view, `REFRESH TABLE view_name` left `spark.catalog.isCached(view_name)` as `True`, and `EXPLAIN SELECT ...` still showed `InMemoryRelation` / `Scan In-memory table`.
+
+That means this page should avoid claiming that `REFRESH TABLE` automatically drops cached data. If your goal is to force the next query to recompute from the original source, use `UNCACHE TABLE`.
+
+### Replacing a temp view is different
+
+In a separate check, this sequence removed the cache registration:
+
+```sql
+CREATE OR REPLACE TEMP VIEW v_refresh AS SELECT * FROM VALUES (1), (2) AS t(x);
+CACHE TABLE v_refresh;
+CREATE OR REPLACE TEMP VIEW v_refresh AS SELECT * FROM VALUES (3), (4) AS t(x);
+```
+
+After `CREATE OR REPLACE TEMP VIEW` with the same name, `spark.catalog.isCached('v_refresh')` became `False`.
+
+______________________________________________________________________
+
+## :material-information-outline: Observability
+
+There is no built-in SQL function such as `IS_CACHED(table_name)`.
+
+What we verified instead:
+
+- `SHOW TABLES` only showed whether the relation was temporary.
+- `DESCRIBE EXTENDED` did not expose cached status for the tested temp view.
+- `EXPLAIN SELECT ...` was the most direct SQL-side signal because cache hits showed `Scan In-memory table` and `InMemoryRelation`.
+- Programmatically, `spark.catalog.isCached(name)` is the simplest check.
+
+______________________________________________________________________
+
+## :material-compare: `CACHE TABLE` vs `CACHE LAZY TABLE`
+
+| Aspect                              |  `CACHE TABLE`  |         `CACHE LAZY TABLE`          |
+| ----------------------------------- | :-------------: | :---------------------------------: |
+| Registers a cache entry immediately |       Yes       |                 Yes                 |
+| Triggers a fill job immediately     |       Yes       |                 No                  |
+| Leaves the next query warm          |       Yes       |   Not until first access finishes   |
+| Best fit                            | Known hot paths | Session startup or exploratory work |
+
+______________________________________________________________________
+
+## :material-play-circle-outline: Run
+
+```bash
+cd /home/malam/development/processing/batch/spark-batch/spark-sql && python3 - <<'PY'
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.master("local[1]").appName("cache-commands-doc").getOrCreate()
+spark.sparkContext.setLogLevel("ERROR")
+
+spark.sql("CACHE LAZY TABLE demo_lazy AS SELECT * FROM VALUES (10), (20) AS t(x)")
+print("cached right away:", spark.catalog.isCached("demo_lazy"))
+spark.sql("SELECT * FROM demo_lazy").show()
+spark.sql("UNCACHE TABLE IF EXISTS demo_lazy")
+
+spark.stop()
+PY
+```

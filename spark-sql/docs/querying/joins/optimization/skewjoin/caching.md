@@ -1,44 +1,50 @@
-# :material-scale-unbalanced: Caching for Skewed Joins
+# :material-database-lock: Caching Around Skewed Joins
 
-Caching can help when the same skewed dataset is reused in multiple joins or
-transformations.
+Caching is useful around skewed joins only when it prevents repeated scans, repeated filters, or repeated salting work. It is not itself a skew-distribution technique.
 
+### :material-animation-play: Interactive Visualization — Cache Where Reuse Exists
 
-### :material-sitemap: Overview
+<div id="viz-joins-skew-caching" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    SK[Skewed DF] -->|cache| C[Cached in memory]
-    C --> J1[Join 1]
-    C --> J2[Join 2]
-    J1 --> O[No re-read or re-shuffle]
-    J2 --> O
-```
+Use this decision view to separate "cache for reuse" from "fix the skew" so you do not expect caching to solve the wrong problem.
 
----
+<script src="../../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-## :material-pin: Strategy
+______________________________________________________________________
 
-1. Cache the skewed dataset after filtering.
-2. Broadcast or repartition as needed.
-3. Reuse cached data across joins.
+## :material-information-outline: Good Use Cases
 
----
+Cache after a costly but reusable step such as:
 
-## :material-flask-outline: Example
+- Filtering a large fact table down to a much smaller working set.
+- Computing a salted version of the skewed side that will feed multiple joins.
+- Materializing the list of hot keys used for split-path processing.
+
+______________________________________________________________________
+
+## :material-code-tags: Example Pattern
 
 ```sql
-CACHE TABLE filtered_orders;
-SELECT /*+ BROADCAST(dim) */ *
-FROM filtered_orders o
-JOIN dim_customer dim ON o.customer_id = dim.id;
+cache table recent_orders;
+
+select /*+ broadcast(dim) */
+    o.order_id,
+    dim.segment
+from recent_orders o
+join dim_customer dim
+  on o.customer_id = dim.customer_id;
 ```
 
----
+______________________________________________________________________
 
-## :material-brain: When to Use
+## :material-alert-outline: What Caching Does Not Do
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Reused skewed dataset | Cache after filters |
-| One-time join | Skip caching |
+- It does not redistribute a hot key.
+- It does not turn a shuffle join into a broadcast join.
+- It can make memory pressure worse if you cache the wrong large intermediate.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Cache only when the same expensive intermediate is reused by multiple downstream joins or analyses. For a one-time skewed join, fix the join shape first.

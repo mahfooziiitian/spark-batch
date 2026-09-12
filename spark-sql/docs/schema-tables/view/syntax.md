@@ -2,7 +2,7 @@
 
 Complete DDL reference for all view types in Spark SQL / Databricks.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Syntax Map
 
@@ -18,7 +18,7 @@ flowchart TD
     CR --> MV["MATERIALIZED VIEW"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-plus: CREATE VIEW
 
@@ -131,7 +131,7 @@ FROM main.sales.orders
 GROUP BY order_date, region;
 ```
 
----
+______________________________________________________________________
 
 ## :material-pencil: ALTER VIEW
 
@@ -159,7 +159,7 @@ FROM main.sales.orders
 GROUP BY order_date, region, channel;
 ```
 
----
+______________________________________________________________________
 
 ## :material-delete: DROP VIEW
 
@@ -174,7 +174,7 @@ DROP VIEW IF EXISTS global_temp.shared_dim_product;
 DROP MATERIALIZED VIEW IF EXISTS main.reporting.mv_weekly_kpi;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: SHOW / DESCRIBE
 
@@ -194,7 +194,7 @@ DESCRIBE main.reporting.daily_revenue;
 DESCRIBE TABLE EXTENDED main.reporting.daily_revenue;
 ```
 
----
+______________________________________________________________________
 
 ## :material-refresh: REFRESH
 
@@ -206,7 +206,7 @@ REFRESH TABLE main.sales.orders;
 REFRESH MATERIALIZED VIEW main.reporting.mv_weekly_kpi;
 ```
 
----
+______________________________________________________________________
 
 ## :material-key: Privileges (Unity Catalog)
 

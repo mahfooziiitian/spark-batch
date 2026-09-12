@@ -3,12 +3,12 @@ nav:
 
 - index.md
 - deduplication.md
-- top_n.md
-- running_balance.md
-- period_comparison.md
+- top-n.md
+- running-balance.md
+- period-comparison.md
 - sessionisation.md
 - percentile.md
-- forward_fill.md
-- gap_detection.md
+- forward-fill.md
+- gap-detection.md
 - median.md
-- yoy_comparison.md
+- yoy-comparison.md

@@ -2,8 +2,7 @@
 
 Outer joins return all rows from one or both sides of a join, filling NULLs for columns from the side that had no matching row.
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph TD
@@ -15,7 +14,7 @@ graph TD
     F --> FN[All rows from both + NULLs where no match]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -86,29 +85,29 @@ LEFT JOIN right_table AS r
 WHERE r.key IS NULL;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
-| Join Type | Left Rows | Right Rows | NULLs Introduced |
-|-----------|-----------|------------|------------------|
-| `LEFT JOIN` | All | Matched only | Right-side columns are NULL for unmatched left rows |
-| `RIGHT JOIN` | Matched only | All | Left-side columns are NULL for unmatched right rows |
-| `FULL OUTER JOIN` | All | All | Both sides get NULLs where there is no match |
-| `LEFT SEMI JOIN` | Matched only (no right columns) | Not returned | None |
-| `LEFT ANTI JOIN` | Unmatched only (no right columns) | Not returned | None |
+| Join Type         | Left Rows                         | Right Rows   | NULLs Introduced                                    |
+| ----------------- | --------------------------------- | ------------ | --------------------------------------------------- |
+| `LEFT JOIN`       | All                               | Matched only | Right-side columns are NULL for unmatched left rows |
+| `RIGHT JOIN`      | Matched only                      | All          | Left-side columns are NULL for unmatched right rows |
+| `FULL OUTER JOIN` | All                               | All          | Both sides get NULLs where there is no match        |
+| `LEFT SEMI JOIN`  | Matched only (no right columns)   | Not returned | None                                                |
+| `LEFT ANTI JOIN`  | Unmatched only (no right columns) | Not returned | None                                                |
 
 1. NULLs in join key columns are never matched by standard equality (`=`). Use `<=>` when key columns may contain NULLs.
 2. `LEFT SEMI JOIN` is more efficient than `INNER JOIN` when only left-side columns are needed — no right-side data is materialised.
 3. `LEFT ANTI JOIN` is the idiomatic way to find rows in one table that do not exist in another.
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Comparison
 
 <div id="viz-join-types-overview" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -262,29 +261,29 @@ LEFT ANTI JOIN orders AS o
 -- 103          Charlie
 ```
 
----
+______________________________________________________________________
 
 ## Join Type Comparison
 
-| Join Type | Left rows preserved | Right rows preserved | Right columns returned | NULLs on left | NULLs on right |
-|-----------|:-------------------:|:--------------------:|:----------------------:|:-------------:|:--------------:|
-| INNER JOIN | Matched only | Matched only | Yes | No | No |
-| LEFT JOIN | All | Matched only | Yes | No | Yes |
-| RIGHT JOIN | Matched only | All | Yes | Yes | No |
-| FULL OUTER JOIN | All | All | Yes | Yes | Yes |
-| LEFT SEMI JOIN | Matched only | Not returned | No | No | N/A |
-| LEFT ANTI JOIN | Unmatched only | Not returned | No | No | N/A |
+| Join Type       | Left rows preserved | Right rows preserved | Right columns returned | NULLs on left | NULLs on right |
+| --------------- | :-----------------: | :------------------: | :--------------------: | :-----------: | :------------: |
+| INNER JOIN      |    Matched only     |     Matched only     |          Yes           |      No       |       No       |
+| LEFT JOIN       |         All         |     Matched only     |          Yes           |      No       |      Yes       |
+| RIGHT JOIN      |    Matched only     |         All          |          Yes           |      Yes      |       No       |
+| FULL OUTER JOIN |         All         |         All          |          Yes           |      Yes      |      Yes       |
+| LEFT SEMI JOIN  |    Matched only     |     Not returned     |           No           |      No       |      N/A       |
+| LEFT ANTI JOIN  |   Unmatched only    |     Not returned     |           No           |      No       |      N/A       |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Join Type |
-|----------|-----------------------|
-| Keep all left rows, optional right match | `LEFT JOIN` |
-| Keep all right rows, optional left match | `RIGHT JOIN` |
-| Keep all rows from both sides | `FULL OUTER JOIN` |
-| Check existence in another table | `LEFT SEMI JOIN` |
-| Find rows absent from another table | `LEFT ANTI JOIN` |
-| Replace NULL with a default after join | `LEFT JOIN` + `COALESCE` |
-| Join on a nullable key column | Any join with `ON a.key <=> b.key` |
+| Scenario                                 | Recommended Join Type              |
+| ---------------------------------------- | ---------------------------------- |
+| Keep all left rows, optional right match | `LEFT JOIN`                        |
+| Keep all right rows, optional left match | `RIGHT JOIN`                       |
+| Keep all rows from both sides            | `FULL OUTER JOIN`                  |
+| Check existence in another table         | `LEFT SEMI JOIN`                   |
+| Find rows absent from another table      | `LEFT ANTI JOIN`                   |
+| Replace NULL with a default after join   | `LEFT JOIN` + `COALESCE`           |
+| Join on a nullable key column            | Any join with `ON a.key <=> b.key` |

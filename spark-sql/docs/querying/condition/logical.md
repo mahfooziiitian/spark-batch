@@ -1,59 +1,85 @@
-# :material-logic-and: Logical Conditions
+# :material-gate-and: Logical Conditions
 
-Logical operators combine or invert predicates to build complex filter expressions.
-Spark SQL uses **three-valued logic** — every operand can be TRUE, FALSE, or NULL (UNKNOWN).
+Logical operators combine or invert predicates to build larger boolean expressions.
+Spark SQL uses three-valued logic, so every nullable boolean can be `TRUE`, `FALSE`, or `NULL`.
 
----
+## :material-animation-play: Interactive Visualization — Three-Valued Logic Explorer
+
+<div id="viz-logical" class="ts-viz"></div>
+
+Pick operand values and watch `AND`, `OR`, and `NOT` update live, including the cases where `NULL` propagates and the cases where one operand already decides the result.
+
+<script src="../../../assets/js/querying-condition-viz.js"></script>
+
+______________________________________________________________________
 
 ## :material-pin: Operator Reference
 
-| Operator | Syntax | Description |
-|----------|--------|-------------|
-| `AND` | `A AND B` | TRUE only when both operands are TRUE |
-| `OR` | `A OR B` | TRUE when at least one operand is TRUE |
-| `NOT` | `NOT A` | Inverts TRUE ↔ FALSE; NOT NULL = NULL |
-| `EXISTS` | `EXISTS (subquery)` | TRUE if subquery returns any row |
-| `NOT EXISTS` | `NOT EXISTS (subquery)` | TRUE if subquery returns no rows |
+| Operator     | Syntax                  | Description                                       |
+| ------------ | ----------------------- | ------------------------------------------------- |
+| `AND`        | `A AND B`               | `TRUE` only when both operands are `TRUE`         |
+| `OR`         | `A OR B`                | `TRUE` when at least one operand is `TRUE`        |
+| `NOT`        | `NOT A`                 | Flips `TRUE` and `FALSE`; `NOT NULL` stays `NULL` |
+| `EXISTS`     | `EXISTS (subquery)`     | `TRUE` when the subquery returns at least one row |
+| `NOT EXISTS` | `NOT EXISTS (subquery)` | `TRUE` when the subquery returns no rows          |
 
----
+______________________________________________________________________
 
-## :material-table: Truth Tables
+## :material-table: Verified Truth Tables
 
-### AND
+### `AND`
 
-| A | B | A AND B |
-|---|---|---------|
-| TRUE | TRUE | **TRUE** |
-| TRUE | FALSE | FALSE |
-| TRUE | NULL | NULL |
-| FALSE | FALSE | FALSE |
-| FALSE | NULL | **FALSE** |
-| NULL | NULL | NULL |
+| A       | B       | `A AND B` |
+| ------- | ------- | --------- |
+| `TRUE`  | `TRUE`  | `TRUE`    |
+| `TRUE`  | `FALSE` | `FALSE`   |
+| `TRUE`  | `NULL`  | `NULL`    |
+| `FALSE` | `FALSE` | `FALSE`   |
+| `FALSE` | `NULL`  | `FALSE`   |
+| `NULL`  | `NULL`  | `NULL`    |
 
-### OR
+### `OR`
 
-| A | B | A OR B |
-|---|---|--------|
-| TRUE | TRUE | **TRUE** |
-| TRUE | FALSE | **TRUE** |
-| TRUE | NULL | **TRUE** |
-| FALSE | FALSE | FALSE |
-| FALSE | NULL | NULL |
-| NULL | NULL | NULL |
+| A       | B       | `A OR B` |
+| ------- | ------- | -------- |
+| `TRUE`  | `TRUE`  | `TRUE`   |
+| `TRUE`  | `FALSE` | `TRUE`   |
+| `TRUE`  | `NULL`  | `TRUE`   |
+| `FALSE` | `FALSE` | `FALSE`  |
+| `FALSE` | `NULL`  | `NULL`   |
+| `NULL`  | `NULL`  | `NULL`   |
 
-### NOT
+### `NOT`
 
-| A | NOT A |
-|---|-------|
-| TRUE | FALSE |
-| FALSE | TRUE |
-| NULL | NULL |
+| A       | `NOT A` |
+| ------- | ------- |
+| `TRUE`  | `FALSE` |
+| `FALSE` | `TRUE`  |
+| `NULL`  | `NULL`  |
 
-!!! note "Key insight"
-    `FALSE AND NULL = FALSE` (short-circuit — FALSE dominates AND).
-    `TRUE OR NULL = TRUE` (short-circuit — TRUE dominates OR).
+!!! note "Verified PySpark 4.2 examples"
 
----
+    `FALSE AND NULL` returned `FALSE`, `TRUE OR NULL` returned `TRUE`, and `NULL AND NULL` returned `NULL`.
+
+______________________________________________________________________
+
+## :material-speedometer: Short-Circuit Cases
+
+PySpark 4.2 was checked with `raise_error('boom')` to see when Spark can avoid evaluating the other side.
+
+| Expression checked in PySpark 4.2 | Result           |
+| --------------------------------- | ---------------- |
+| `FALSE AND raise_error('boom')`   | Returns `FALSE`  |
+| `TRUE OR raise_error('boom')`     | Returns `TRUE`   |
+| `TRUE AND raise_error('boom')`    | Raises the error |
+| `FALSE OR raise_error('boom')`    | Raises the error |
+
+!!! warning "Do not treat predicates as control flow"
+
+    These literal examples show Spark can short-circuit when one side already fixes the result.
+    In real queries, the optimizer may rewrite predicates, so use this as a semantic aid, not as a side-effect programming technique.
+
+______________________________________________________________________
 
 ## :material-sort-ascending: Operator Precedence
 
@@ -64,66 +90,45 @@ Highest to lowest:
 3. `OR`
 
 ```sql
--- Parsed as: A AND (B OR C) — parentheses make intent clear
-WHERE A AND (B OR C)
-
--- Without parentheses: (A AND B) OR C — different semantics!
-WHERE A AND B OR C
+WHERE (country = 'US' OR country = 'CA')
+  AND is_active = TRUE
 ```
 
-!!! warning
-    Always use explicit parentheses when mixing `AND` and `OR`. Relying on precedence
-    leads to subtle bugs that are hard to spot in code review.
+Without parentheses, `A AND B OR C` means `(A AND B) OR C`.
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Examples
+## :material-flask-outline: Practical Examples
 
-### Combine requirements with AND
+### Combine requirements with `AND`
 
 ```sql
-SELECT * FROM orders
+SELECT *
+FROM orders
 WHERE status = 'shipped'
   AND amount > 100
-  AND order_date >= '2024-01-01';
+  AND order_date >= DATE '2024-01-01';
 ```
 
-### Allow alternatives with OR
+### Allow alternatives with `OR`
 
 ```sql
-SELECT * FROM users
-WHERE tier = 'gold' OR tier = 'platinum';
-
--- Prefer IN for readability with many values
-SELECT * FROM users
+SELECT *
+FROM users
 WHERE tier IN ('gold', 'platinum', 'diamond');
 ```
 
-### Parentheses for correct grouping
+### Exclude patterns with `NOT`
 
 ```sql
--- Users in US or CA who are active AND have purchased recently
-SELECT * FROM users
-WHERE (country = 'US' OR country = 'CA')
-  AND is_active = TRUE
-  AND last_purchase_date >= '2024-01-01';
-```
-
-### NOT to exclude conditions
-
-```sql
-SELECT * FROM events
+SELECT *
+FROM events
 WHERE NOT (event_type = 'test' OR event_type = 'debug');
-
--- Equivalent (often clearer)
-SELECT * FROM events
-WHERE event_type NOT IN ('test', 'debug');
 ```
 
-### EXISTS — semi-join pattern
+### Semi-join with `EXISTS`
 
 ```sql
--- Orders from customers who have placed more than 5 orders total
 SELECT o.*
 FROM orders o
 WHERE EXISTS (
@@ -135,112 +140,39 @@ WHERE EXISTS (
 );
 ```
 
-### NOT EXISTS — anti-join pattern
+### Anti-join with `NOT EXISTS`
 
 ```sql
--- Customers with no orders in the last 90 days
 SELECT c.*
 FROM customers c
 WHERE NOT EXISTS (
-    SELECT 1 FROM orders o
+    SELECT 1
+    FROM orders o
     WHERE o.customer_id = c.customer_id
       AND o.order_date >= current_date() - INTERVAL 90 DAYS
 );
 ```
 
-### NULL propagation in logic
-
-```sql
--- NULL in AND chain: if any condition is NULL, result may be NULL
-SELECT *
-FROM events
-WHERE (device_id IS NOT NULL)        -- guard first
-  AND (device_id = '12345');
-```
-
----
+______________________________________________________________________
 
 ## :material-alert-circle: Common Mistakes
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| `NOT IN (subquery)` with NULLs | Returns no rows | Use `NOT EXISTS` |
-| `OR` without parentheses | Wrong operator precedence | Add `(…)` around OR groups |
-| `NOT NULL` | Not valid — should be `IS NOT NULL` | `col IS NOT NULL` |
-| `WHERE flag = NULL` | NULL = NULL is NULL, not TRUE | `WHERE flag IS NULL` |
-| `OR` on indexed column | Prevents index use (full scan) | Rewrite as `UNION ALL` |
+| Mistake                                   | Problem                                         | Fix                                                                                 |
+| ----------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `WHERE NULL`                              | Bare `NULL` has type `VOID`, not `BOOLEAN`      | Use a boolean expression or `CAST(NULL AS BOOLEAN)` if you need an explicit unknown |
+| Mixing `AND` and `OR` without parentheses | Easy to read incorrectly                        | Parenthesize OR groups explicitly                                                   |
+| `NOT IN` with nullable subqueries         | `NULL` can turn the whole predicate into `NULL` | Prefer `NOT EXISTS`                                                                 |
+| `WHERE flag = NULL`                       | Comparison result is `NULL`, not `TRUE`         | `WHERE flag IS NULL`                                                                |
 
----
-
-## :material-brain: When to Use
-
-| Scenario | Pattern |
-|----------|---------|
-| All conditions must hold | `AND` |
-| Any condition is enough | `OR` |
-| Exclude rows matching condition | `NOT (…)` or `NOT IN` (safe) |
-| Anti-join (exclude matched rows) | `NOT EXISTS` |
-| Semi-join (filter by related rows) | `EXISTS` |
-| Mixed AND/OR | Always use explicit `(…)` |
-
-
-Logical operators combine or invert predicates to build more complex filters.
-
----
-
-## :material-pin: Operators
-
-| Operator | Example | Description |
-|----------|---------|-------------|
-| `AND` | `A AND B` | True when both are true |
-| `OR` | `A OR B` | True when either is true |
-| `NOT` | `NOT A` | Inverts a condition |
-
----
-
-## :material-magnify: Precedence
-
-`NOT` is evaluated first, then `AND`, then `OR`.
-Use parentheses to make precedence explicit.
-
----
-
-## :material-flask-outline: Practical Examples
-
-### Combine Conditions
-
-```sql
-SELECT * FROM orders
-WHERE status = 'shipped' AND amount > 100;
-```
-
-### Use Parentheses for Clarity
-
-```sql
-SELECT * FROM users
-WHERE (country = 'US' OR country = 'CA')
-  AND is_active = true;
-```
-
-### Exclude a Condition
-
-```sql
-SELECT * FROM events
-WHERE NOT (event_type = 'test');
-```
-
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Combine requirements | `AND` |
-| Allow alternatives | `OR` |
-| Exclude matches | `NOT` |
-| Avoid ambiguity | Parentheses |
-
----
-
-> **Tip:** Prefer explicit parentheses when mixing `AND` and `OR` to avoid
-> logical mistakes.
+| Scenario                          | Pattern                  |
+| --------------------------------- | ------------------------ |
+| Every condition must hold         | `AND`                    |
+| Any one condition is enough       | `OR`                     |
+| Invert a condition                | `NOT`                    |
+| Keep rows with related matches    | `EXISTS`                 |
+| Exclude rows with related matches | `NOT EXISTS`             |
+| Mixed boolean logic               | Use explicit parentheses |

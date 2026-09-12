@@ -1,74 +1,106 @@
-# :material-shield-lock: hex / unhex
+# :material-shield-lock: HEX / UNHEX
 
-`hex` converts a value to its hexadecimal representation. `unhex` reverses the conversion.
+`HEX` converts bytes into hexadecimal text, and `UNHEX` converts hexadecimal text back into
+raw bytes. This is **encoding**, not hashing: the transformation is reversible.
 
-### :material-sitemap: Overview
+______________________________________________________________________
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A[Plain Text] --> B[Hash Function]
-    B --> C[Hash Output]
+    A[Text or Bytes] --> B[HEX]
+    B --> C[Hex String]
+    C --> D[UNHEX]
+    D --> E[Original Bytes]
 ```
 
-## :material-pin: :material-shield-lock: Syntax
+### :material-animation-play: Interactive Visualization — UTF-8 Bytes Round-Trip
+
+<div id="viz-hex-roundtrip" class="ts-viz"></div>
+
+Switch between an ASCII string and a multi-byte character to see the underlying UTF-8 bytes.
+This makes it clear why some characters expand to more than one hex pair.
+
+______________________________________________________________________
+
+## :material-pin: Syntax
 
 ```sql
 hex(expr)
 unhex(hex_str)
 ```
 
-- `hex(expr)`: Accepts `STRING`, `BINARY`, or `BIGINT`; returns hex-encoded `STRING`
-- `unhex(hex_str)`: Accepts hex `STRING`; returns `BINARY`
+- `hex(expr)`: accepts `STRING`, `BINARY`, or `BIGINT`; returns a hex `STRING`
+- `unhex(hex_str)`: accepts a hex `STRING`; returns `BINARY`
 
-## :material-magnify: :material-shield-lock: Behavior
+______________________________________________________________________
 
-1. **String input**: each character is converted to its 2-digit hex ASCII code.
-2. **Numeric input**: the number is converted to its hexadecimal representation.
-3. `unhex` reverses hex encoding — returns raw bytes (cast to `STRING` for text).
-4. `unhex` returns NULL for invalid hex strings.
+## :material-information-outline: Behavior
 
-## :material-flask-outline: :material-shield-lock: Practical Examples
+1. `HEX` on `STRING` inputs encodes the value's underlying bytes as hexadecimal text.
+2. `HEX` on numeric inputs returns the number's hexadecimal representation.
+3. `UNHEX` reverses hex encoding and returns raw bytes; cast to `STRING` when the bytes represent text.
+4. `UNHEX` returns `NULL` for invalid hex strings.
+5. **String input is byte-oriented, not character-oriented** — Spark encodes the string as UTF-8 first, so non-ASCII characters may occupy multiple bytes and therefore multiple hex pairs.
 
-### Encode String to Hex
+______________________________________________________________________
+
+## :material-flask-outline: Practical Examples
+
+### :material-toy-brick: 1. Encode a String to Hex
 
 ```sql
 SELECT hex('abc') AS hex_value;
--- Result: '616263'
+-- Result: 616263
 ```
 
-### Decode Hex Back to String
+### :material-toy-brick: 2. Decode Hex Back to Text
 
 ```sql
 SELECT CAST(unhex('616263') AS STRING) AS original;
--- Result: 'abc'
+-- Result: abc
 ```
 
-### Numeric to Hex
+### :material-toy-brick: 3. Numeric to Hex
 
 ```sql
 SELECT hex(255) AS hex_num;
--- Result: 'FF'
+-- Result: FF
 ```
 
-### Round-Trip Verification
+### :material-toy-brick: 4. Round-Trip Verification
 
 ```sql
 SELECT CAST(unhex(hex('Spark SQL')) AS STRING) AS roundtrip;
--- Result: 'Spark SQL'
+-- Result: Spark SQL
 ```
 
-### Binary Data Inspection
+### :material-alert-circle-outline: 5. UTF-8 Multi-Byte Characters Use Multiple Hex Pairs
 
 ```sql
-SELECT hex(CAST('Hello' AS BINARY)) AS binary_hex;
--- Result: '48656C6C6F'
+SELECT
+  hex('é') AS utf8_hex,
+  CAST(unhex(hex('é')) AS STRING) AS roundtrip;
+
+-- utf8_hex = C3A9
+-- roundtrip = é
 ```
 
-## :material-brain: :material-shield-lock: When to Use
+### :material-toy-brick: 6. Invalid Hex Returns `NULL`
 
-| Scenario | Function |
-|----------|----------|
-| Inspect binary data as readable text | `hex` |
-| Store/transmit binary safely as text | `hex` |
-| Convert hex-encoded data back to bytes | `unhex` |
-| Debug encoding issues | `hex` + `unhex` round-trip |
+```sql
+SELECT unhex('GG') AS invalid_bytes;
+-- Result: NULL
+```
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+| Scenario                               | Why `HEX` / `UNHEX`?                          |
+| -------------------------------------- | --------------------------------------------- |
+| Inspect binary values during debugging | Hex text is easier to read than raw bytes     |
+| Move bytes through text-only systems   | Hex is portable and reversible                |
+| Verify byte-level round-trips          | `UNHEX(HEX(...))` restores the bytes          |
+| Investigate encoding problems          | The hex output exposes the real byte sequence |

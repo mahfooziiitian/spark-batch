@@ -3,7 +3,7 @@
 A complete walkthrough: create the dimension, seed initial data, process two change batches,
 verify state after each, and explore the built-in limitation when a third change arrives.
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Create the Dimension Table
 
@@ -21,7 +21,7 @@ CREATE TABLE dim_customer (
 USING DELTA;
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Seed Initial State
 
@@ -36,11 +36,11 @@ VALUES
 **State after seed:**
 
 | customer_id | name  | current_city | previous_city | city_changed_at |
-|-------------|-------|-------------|---------------|-----------------|
-| cust1       | Alice | NY          | NULL          | NULL            |
-| cust2       | Bob   | CA          | NULL          | NULL            |
+| ----------- | ----- | ------------ | ------------- | --------------- |
+| cust1       | Alice | NY           | NULL          | NULL            |
+| cust2       | Bob   | CA           | NULL          | NULL            |
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: First Incoming Batch
 
@@ -54,7 +54,7 @@ FROM VALUES
 AS t(customer_id, name, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Pre-Merge Inspection
 
@@ -71,7 +71,7 @@ WHERE s.city <> d.current_city;
 ```
 
 | customer_id | old_city | new_city | will_become_previous |
-|-------------|----------|----------|----------------------|
+| ----------- | -------- | -------- | -------------------- |
 | cust2       | CA       | TX       | CA                   |
 
 ```sql
@@ -83,10 +83,10 @@ WHERE d.customer_id IS NULL;
 ```
 
 | customer_id | name    | city |
-|-------------|---------|------|
+| ----------- | ------- | ---- |
 | cust3       | Charlie | WA   |
 
----
+______________________________________________________________________
 
 ## :material-numeric-5-circle: Execute Batch 1 MERGE
 
@@ -111,15 +111,15 @@ WHEN NOT MATCHED THEN
 **State after Batch 1:**
 
 | customer_id | name    | current_city | previous_city | city_changed_at     |
-|-------------|---------|-------------|---------------|---------------------|
-| cust1       | Alice   | NY          | NULL          | NULL                |
-| cust2       | Bobby   | TX          | **CA**        | 2024-06-15 09:00:00 |
-| cust3       | Charlie | WA          | NULL          | NULL                |
+| ----------- | ------- | ------------ | ------------- | ------------------- |
+| cust1       | Alice   | NY           | NULL          | NULL                |
+| cust2       | Bobby   | TX           | **CA**        | 2024-06-15 09:00:00 |
+| cust3       | Charlie | WA           | NULL          | NULL                |
 
 - `cust2` — `previous_city` now holds CA, `current_city` = TX.
 - `cust1` — untouched; `updated_at` still `2024-01-01`.
 
----
+______________________________________________________________________
 
 ## :material-numeric-6-circle: Verify Batch 1
 
@@ -141,7 +141,7 @@ SELECT previous_city FROM dim_customer WHERE customer_id = 'cust3';
 -- Expected: NULL
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-7-circle: Second Batch — The Limitation Revealed
 
@@ -164,15 +164,16 @@ WHEN MATCHED AND src.city <> tgt.current_city THEN
 
 **State after Batch 2:**
 
-| customer_id | name  | current_city | previous_city | Note |
-|-------------|-------|-------------|---------------|------|
-| cust2       | Bobby | FL          | TX            | CA (original) is permanently overwritten |
+| customer_id | name  | current_city | previous_city | Note                                     |
+| ----------- | ----- | ------------ | ------------- | ---------------------------------------- |
+| cust2       | Bobby | FL           | TX            | CA (original) is permanently overwritten |
 
 !!! failure "Only one level of history survives"
+
     Each MERGE overwrites `previous_city` with the value that was in `current_city`.
     After the second change, CA is gone. If you need CA to be recoverable, switch to Type 2.
 
----
+______________________________________________________________________
 
 ## :material-numeric-8-circle: Idempotency Check
 
@@ -201,11 +202,12 @@ SELECT current_city, previous_city FROM dim_customer WHERE customer_id = 'cust2'
 ```
 
 !!! note
+
     Because `WHEN MATCHED` only fires when `src.city <> tgt.current_city`, a batch
     that delivers the same city as the current value produces zero writes — idempotent
-    for the unchanged case.  Re-running with a *different* city legitimately updates again.
+    for the unchanged case. Re-running with a *different* city legitimately updates again.
 
----
+______________________________________________________________________
 
 ## :material-numeric-9-circle: Analytical Queries on Final State
 
@@ -233,7 +235,7 @@ FROM dim_customer
 WHERE city_changed_at IS NOT NULL;
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-10-circle: Optimise and Clean Up
 

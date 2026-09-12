@@ -4,7 +4,7 @@ A complete walkthrough of the Type 1 + 2 + 3 hybrid: create the table, seed it, 
 two change batches, verify every layer (current values, version history, previous-value column,
 back-fill), and explore point-in-time queries.
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Create the Table
 
@@ -27,7 +27,7 @@ USING DELTA
 PARTITIONED BY (is_current);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Seed Initial State
 
@@ -52,12 +52,12 @@ AS t(customer_id, name, email, city);
 
 **State after seed** (2 active rows, no history):
 
-| customer_sk | customer_id | name  | email               | city | prev_city | is_current | start_date          | end_date |
-|-------------|-------------|-------|---------------------|------|-----------|------------|---------------------|----------|
-| 1           | cust1       | Alice | alice@example.com   | NY   | NULL      | true       | 2024-01-01 00:00:00 | NULL     |
-| 2           | cust2       | Bob   | bob@example.com     | CA   | NULL      | true       | 2024-01-01 00:00:00 | NULL     |
+| customer_sk | customer_id | name  | email             | city | prev_city | is_current | start_date          | end_date |
+| ----------- | ----------- | ----- | ----------------- | ---- | --------- | ---------- | ------------------- | -------- |
+| 1           | cust1       | Alice | alice@example.com | NY   | NULL      | true       | 2024-01-01 00:00:00 | NULL     |
+| 2           | cust2       | Bob   | bob@example.com   | CA   | NULL      | true       | 2024-01-01 00:00:00 | NULL     |
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: First Incoming Batch
 
@@ -71,7 +71,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Pre-Batch Inspection
 
@@ -100,12 +100,12 @@ LEFT JOIN dim_customer AS d
 ```
 
 | customer_id | new_name | old_name | old_city | new_city | prev_city | action    |
-|-------------|----------|----------|----------|----------|-----------|-----------|
+| ----------- | -------- | -------- | -------- | -------- | --------- | --------- |
 | cust1       | Alice    | Alice    | NY       | NY       | NULL      | UNCHANGED |
 | cust2       | Bobby    | Bob      | CA       | TX       | NULL      | CHANGED   |
 | cust3       | Charlie  | NULL     | NULL     | WA       | NULL      | NEW       |
 
----
+______________________________________________________________________
 
 ## :material-numeric-5-circle: Step 1 — Hash the Staging Data
 
@@ -120,7 +120,7 @@ SELECT
 FROM staging_batch1;
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-6-circle: Step 2 — Identify Changes and New Customers
 
@@ -143,7 +143,7 @@ WHERE d.customer_id IS NULL     -- new customer
    OR d.row_hash   <> s.row_hash;  -- changed customer
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-7-circle: Step 3 — Expire Active Rows for Changed Customers
 
@@ -164,10 +164,10 @@ WHEN MATCHED THEN
 **After Step 3** — `cust2`'s original row is now closed:
 
 | customer_sk | customer_id | name | city | prev_city | is_current | end_date            |
-|-------------|-------------|------|------|-----------|------------|---------------------|
+| ----------- | ----------- | ---- | ---- | --------- | ---------- | ------------------- |
 | 2           | cust2       | Bob  | CA   | NULL      | **false**  | 2024-06-15 09:00:00 |
 
----
+______________________________________________________________________
 
 ## :material-numeric-8-circle: Step 4 — Insert New Version Rows
 
@@ -193,14 +193,14 @@ FROM changes AS c;
 
 **After Step 4** — new active rows inserted:
 
-| customer_sk | customer_id | name    | email                  | city | prev_city | is_current |
-|-------------|-------------|---------|------------------------|------|-----------|------------|
-| 3           | cust2       | Bobby   | bob@newdomain.com      | TX   | **CA**    | true       |
-| 4           | cust3       | Charlie | charlie@example.com    | WA   | NULL      | true       |
+| customer_sk | customer_id | name    | email               | city | prev_city | is_current |
+| ----------- | ----------- | ------- | ------------------- | ---- | --------- | ---------- |
+| 3           | cust2       | Bobby   | bob@newdomain.com   | TX   | **CA**    | true       |
+| 4           | cust3       | Charlie | charlie@example.com | WA   | NULL      | true       |
 
 `cust2`'s new row carries `prev_city = CA` — the Type 3 memory.
 
----
+______________________________________________________________________
 
 ## :material-numeric-9-circle: Step 5 — Back-Fill Current City on Historical Rows
 
@@ -224,17 +224,17 @@ WHEN MATCHED THEN
 
 **Full table after Step 5:**
 
-| customer_sk | customer_id | name    | email                  | city | prev_city | is_current | start_date          | end_date            |
-|-------------|-------------|---------|------------------------|------|-----------|------------|---------------------|---------------------|
-| 1           | cust1       | Alice   | alice@example.com      | NY   | NULL      | true       | 2024-01-01 00:00:00 | NULL                |
-| 2           | cust2       | Bobby   | bob@example.com        | **TX** | NULL   | false      | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3           | cust2       | Bobby   | bob@newdomain.com      | TX   | CA        | true       | 2024-06-15 09:00:00 | NULL                |
-| 4           | cust3       | Charlie | charlie@example.com    | WA   | NULL      | true       | 2024-06-15 09:00:00 | NULL                |
+| customer_sk | customer_id | name    | email               | city   | prev_city | is_current | start_date          | end_date            |
+| ----------- | ----------- | ------- | ------------------- | ------ | --------- | ---------- | ------------------- | ------------------- |
+| 1           | cust1       | Alice   | alice@example.com   | NY     | NULL      | true       | 2024-01-01 00:00:00 | NULL                |
+| 2           | cust2       | Bobby   | bob@example.com     | **TX** | NULL      | false      | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3           | cust2       | Bobby   | bob@newdomain.com   | TX     | CA        | true       | 2024-06-15 09:00:00 | NULL                |
+| 4           | cust3       | Charlie | charlie@example.com | WA     | NULL      | true       | 2024-06-15 09:00:00 | NULL                |
 
 Row 2 (expired `cust2`) now shows `city = TX` — back-filled from the current active row.
 The original `CA` value survives only in row 3's `prev_city`.
 
----
+______________________________________________________________________
 
 ## :material-numeric-10-circle: Assertions After Batch 1
 
@@ -266,9 +266,9 @@ GROUP BY customer_id HAVING cnt > 1;
 -- Expected: 0 rows
 ```
 
----
+______________________________________________________________________
 
-## :material-numeric-11-circle: Second Batch — `cust2` Changes City Again
+## :material-numeric-9-plus-circle: Second Batch — `cust2` Changes City Again
 
 `cust2` moves from TX → FL. After this, `prev_city` on the new row will hold TX,
 and all older history rows will be back-filled to FL.
@@ -313,19 +313,19 @@ WHEN MATCHED THEN UPDATE SET city = cur.current_city;
 
 **Full table after Batch 2:**
 
-| customer_sk | customer_id | name  | city     | prev_city | is_current | start_date          | end_date            |
-|-------------|-------------|-------|----------|-----------|------------|---------------------|---------------------|
-| 1           | cust1       | Alice | NY       | NULL      | true       | 2024-01-01 00:00:00 | NULL                |
-| 2           | cust2       | Bobby | **FL**   | NULL      | false      | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3           | cust2       | Bobby | **FL**   | CA        | false      | 2024-06-15 09:00:00 | 2024-08-01 14:00:00 |
+| customer_sk | customer_id | name    | city   | prev_city | is_current | start_date          | end_date            |
+| ----------- | ----------- | ------- | ------ | --------- | ---------- | ------------------- | ------------------- |
+| 1           | cust1       | Alice   | NY     | NULL      | true       | 2024-01-01 00:00:00 | NULL                |
+| 2           | cust2       | Bobby   | **FL** | NULL      | false      | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3           | cust2       | Bobby   | **FL** | CA        | false      | 2024-06-15 09:00:00 | 2024-08-01 14:00:00 |
 | 4           | cust3       | Charlie | WA     | NULL      | true       | 2024-06-15 09:00:00 | NULL                |
-| 5           | cust2       | Bobby | FL       | **TX**    | true       | 2024-08-01 14:00:00 | NULL                |
+| 5           | cust2       | Bobby   | FL     | **TX**    | true       | 2024-08-01 14:00:00 | NULL                |
 
 All three `cust2` rows now carry `city = FL` (back-filled). `prev_city` on row 5 shows TX.
 
----
+______________________________________________________________________
 
-## :material-numeric-12-circle: Point-in-Time Query
+## :material-numeric-9-plus-circle: Point-in-Time Query
 
 What was `cust2`'s state on 2024-03-15 (before any change)?
 
@@ -337,17 +337,18 @@ WHERE customer_id = 'cust2'
   AND (end_date    > TIMESTAMP '2024-03-15 00:00:00' OR end_date IS NULL);
 ```
 
-| customer_sk | name | email           | city | prev_city | start_date          | end_date            |
-|-------------|------|-----------------|------|-----------|---------------------|---------------------|
-| 2           | Bobby | bob@example.com | FL  | NULL      | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| customer_sk | name  | email           | city | prev_city | start_date          | end_date            |
+| ----------- | ----- | --------------- | ---- | --------- | ------------------- | ------------------- |
+| 2           | Bobby | bob@example.com | FL   | NULL      | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
 
 !!! note "city = FL, not CA"
+
     The Type 1 back-fill means the historical row now shows FL (current), not CA (original).
     For the original CA value, look at the next active row's `prev_city = CA` (customer_sk 3).
 
----
+______________________________________________________________________
 
-## :material-numeric-13-circle: Current-State Convenience View
+## :material-numeric-9-plus-circle: Current-State Convenience View
 
 ```sql
 CREATE OR REPLACE VIEW dim_customer_current AS
@@ -359,9 +360,9 @@ FROM dim_customer_current
 ORDER BY customer_id;
 ```
 
----
+______________________________________________________________________
 
-## :material-numeric-14-circle: Optimise and Clean Up
+## :material-numeric-9-plus-circle: Optimise and Clean Up
 
 ```sql
 -- Compact + co-locate by customer

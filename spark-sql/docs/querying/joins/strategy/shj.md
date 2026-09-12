@@ -1,91 +1,85 @@
-# :material-cog-transfer: Shuffle Hash Join in Spark
+# :material-swap-horizontal-bold: Shuffled Hash Join
 
-A **Shuffle Hash Join (SHJ)** is a fundamental join strategy in Apache Spark, used when both datasets are large and cannot be broadcasted. It is specifically designed for equi-joins (joins using the `=` operator).
+`ShuffledHashJoin` is Spark 4.2's partition-local hash join for equi-joins after both sides have been repartitioned by the join key.
 
+### :material-animation-play: Interactive Visualization — Shuffled Hash Join
 
-### :material-sitemap: Overview
+<div id="viz-joins-strategy-shj" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    A[Large DF A] -->|Shuffle on key| P[Same Partition]
-    B[Large DF B] -->|Shuffle on key| P
-    P -->|Build hash from smaller side| HT[Hash Table]
-    HT --> O[Join Result]
-```
+This visualization contrasts shuffle-hash with sort-merge so you can see the trade-off between building a hash table and sorting both sides.
 
----
+<script src="../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-## When is Shuffle Hash Join Used?
+______________________________________________________________________
 
-- **Both sides are large:** Neither dataset is small enough to broadcast.
-- **Broadcast is not possible:** Exceeds the broadcast threshold.
-- **Equi-join keys:** Join keys must support equality comparison (`=`).
+## :material-check-decagram: Verified in PySpark 4.2
 
----
-
-## How Does Shuffle Hash Join Work?
-
-Shuffle Hash Join operates in two main phases:
-
-### 1. **Shuffle Phase**
-
-- Both datasets are **shuffled** across the cluster based on the join key.
-- Rows with the same join key are sent to the same partition (executor node).
-
-### 2. **Hash Join Phase**
-
-- The **smaller side** (post-shuffle) is used to build an in-memory **hash table**.
-- The larger side is streamed and matched against the hash table within each partition.
-
-> **Note:** Sorting is **not required** within partitions for Shuffle Hash Join.
-
----
-
-## Key Characteristics
-
-- **Supported Join Types:** All join types except `FULL OUTER JOIN`.
-- **Join Condition:** Only supports `=` (equi-join).
-- **Join Keys:** Do **not** need to be sortable.
-- **Resource Usage:** Involves both **shuffling** (network I/O) and **hashing** (memory/computation).
-- **Hash Table:** Built from the smaller side after shuffling.
-
----
-
-## Example
+For:
 
 ```sql
-SELECT *
-FROM df1
-JOIN df2
-    ON df1.id = df2.id
+select /*+ shuffle_hash(s) */ *
+from (select id, id % 5 as k from range(0, 1000)) b
+join (select id, id % 5 as k from range(0, 200)) s
+  on b.k = s.k;
 ```
 
----
+`EXPLAIN FORMATTED` showed:
 
-## Performance Tips
+```text
+ShuffledHashJoin [k#12L], [k#13L], Inner, BuildRight
+```
 
-- **Prefer Broadcast Hash Join:** When one side is < 10MB.
-- **Use Join Hints:** e.g., `/*+ BROADCAST(df) */` to force broadcast join when appropriate.
-- **Optimize Shuffle Hash Join:**
-  - Ensure **balanced partitioning** to avoid data skew.
-  - Tune `spark.sql.autoBroadcastJoinThreshold` for optimal performance.
+A tested `FULL OUTER JOIN` with a `SHUFFLE_HASH` hint also planned as `ShuffledHashJoin FullOuter`, which means Spark 4.2 supports more join types here than many older summaries claim.
 
----
+______________________________________________________________________
 
-## Summary Table
+## :material-information-outline: What Triggers It
 
-| Feature                | Shuffle Hash Join         |
-|------------------------|--------------------------|
-| Join Type              | Equi-join (`=`) only     |
-| Supported Joins        | All except full outer    |
-| Sorting Required       | No                       |
-| Broadcast Used         | No                       |
-| Memory Usage           | Medium to High           |
-| Network Usage          | High (due to shuffle)    |
+`ShuffledHashJoin` needs an equi-join. Beyond that:
 
----
+- `SHUFFLE_HASH` is the most direct way to request it.
+- Without hints, Spark may still prefer `SortMergeJoin`.
+- Setting `spark.sql.join.preferSortMergeJoin=false` only lowers the planner's bias toward sort-merge; it does not guarantee shuffle-hash.
 
-## Additional Notes
+In local PySpark 4.2 checks, Spark kept choosing `SortMergeJoin` for several unhinted equi-joins even after setting `spark.sql.join.preferSortMergeJoin=false` and disabling broadcast.
 
-- Shuffle Hash Join is generally **more expensive** than Broadcast Hash Join due to the cost of shuffling and building hash tables.
-- Always monitor memory usage and partition sizes to avoid out-of-memory errors.
+______________________________________________________________________
+
+## :material-table: Properties
+
+| Property         | Shuffled hash join behavior                       |
+| ---------------- | ------------------------------------------------- |
+| Predicate shape  | Equi-join only                                    |
+| Shuffle          | Both sides shuffle by key                         |
+| Sort requirement | None                                              |
+| Memory profile   | Build side must fit as a per-partition hash table |
+| Good fit         | Equi-joins where hashing is preferable to sorting |
+
+______________________________________________________________________
+
+## :material-code-tags: Practical Pattern
+
+```sql
+set spark.sql.autoBroadcastJoinThreshold = -1;
+
+select /*+ shuffle_hash(dim) */
+    f.order_id,
+    d.category
+from fact_orders f
+join dim_product d
+  on f.product_id = d.product_id;
+```
+
+______________________________________________________________________
+
+## :material-alert-outline: Common Overstatements to Avoid
+
+- "`preferSortMergeJoin=false` forces shuffle-hash" is false.
+- "Shuffle-hash cannot do full outer joins" is false in Spark 4.2.
+- "Shuffle-hash is always faster than sort-merge" is false; it trades sort cost for hash-table memory pressure.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Reach for `ShuffledHashJoin` when you have an equi-join, broadcasting is not desirable, and you want to test a hash-based shuffle plan explicitly with `SHUFFLE_HASH`.

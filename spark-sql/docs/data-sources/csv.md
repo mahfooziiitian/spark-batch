@@ -4,7 +4,7 @@ Spark SQL reads and writes CSV files via the built-in `csv` format.
 Always provide an **explicit schema** — schema inference requires a full file scan
 and produces fragile, often incorrect types.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Read Flow
 
@@ -18,29 +18,29 @@ graph LR
     E --> F
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Options Reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `path` | — | File or directory path |
-| `header` | `false` | First row contains column names |
-| `delimiter` | `,` | Field separator character |
-| `quote` | `"` | Quote character for fields containing delimiter |
-| `escape` | `\` | Escape character inside quoted fields |
-| `nullValue` | `` | String to treat as NULL |
-| `emptyValue` | `` | String for empty fields |
-| `inferSchema` | `false` | Infer column types (expensive) |
-| `multiLine` | `false` | Records can span multiple lines |
-| `encoding` | `UTF-8` | File character encoding |
-| `dateFormat` | `yyyy-MM-dd` | Date parsing pattern |
-| `timestampFormat` | `yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]` | Timestamp parsing pattern |
-| `mode` | `PERMISSIVE` | Parse error mode: `PERMISSIVE`, `DROPMALFORMED`, `FAILFAST` |
-| `columnNameOfCorruptRecord` | `_corrupt_record` | Column to store unparseable rows (PERMISSIVE mode) |
-| `compression` | `none` | Write compression: `gzip`, `bzip2`, `lz4`, `snappy`, `deflate` |
+| Option                      | Default                            | Description                                                    |
+| --------------------------- | ---------------------------------- | -------------------------------------------------------------- |
+| `path`                      | —                                  | File or directory path                                         |
+| `header`                    | `false`                            | First row contains column names                                |
+| `delimiter`                 | `,`                                | Field separator character                                      |
+| `quote`                     | `"`                                | Quote character for fields containing delimiter                |
+| `escape`                    | `\`                                | Escape character inside quoted fields                          |
+| `nullValue`                 | \`\`                               | String to treat as NULL                                        |
+| `emptyValue`                | \`\`                               | String for empty fields                                        |
+| `inferSchema`               | `false`                            | Infer column types (expensive)                                 |
+| `multiLine`                 | `false`                            | Records can span multiple lines                                |
+| `encoding`                  | `UTF-8`                            | File character encoding                                        |
+| `dateFormat`                | `yyyy-MM-dd`                       | Date parsing pattern                                           |
+| `timestampFormat`           | `yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]` | Timestamp parsing pattern                                      |
+| `mode`                      | `PERMISSIVE`                       | Parse error mode: `PERMISSIVE`, `DROPMALFORMED`, `FAILFAST`    |
+| `columnNameOfCorruptRecord` | `_corrupt_record`                  | Column to store unparseable rows (PERMISSIVE mode)             |
+| `compression`               | `none`                             | Write compression: `gzip`, `bzip2`, `lz4`, `snappy`, `deflate` |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -186,25 +186,25 @@ PARTITIONED BY (order_date)
 AS SELECT * FROM raw_csv;
 ```
 
----
+______________________________________________________________________
 
 ## :material-alert-circle: Common Mistakes
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| `inferSchema = 'true'` in production | Full file scan; fragile types | Provide explicit schema |
-| No `header = 'true'` | First data row becomes column names | Always set `header` explicitly |
-| Date/timestamp without `dateFormat` | Parse failures or wrong type | Match format string to actual data |
-| Writing CSV to a partitioned path | Each partition creates a separate header | Use Parquet/Delta for partitioned writes |
-| Reading directory with mixed schemas | Columns mis-aligned | Ensure all files share the same schema |
+| Mistake                              | Problem                                  | Fix                                      |
+| ------------------------------------ | ---------------------------------------- | ---------------------------------------- |
+| `inferSchema = 'true'` in production | Full file scan; fragile types            | Provide explicit schema                  |
+| No `header = 'true'`                 | First data row becomes column names      | Always set `header` explicitly           |
+| Date/timestamp without `dateFormat`  | Parse failures or wrong type             | Match format string to actual data       |
+| Writing CSV to a partitioned path    | Each partition creates a separate header | Use Parquet/Delta for partitioned writes |
+| Reading directory with mixed schemas | Columns mis-aligned                      | Ensure all files share the same schema   |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use CSV
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Receiving data from external systems | CSV for landing; convert to Delta |
-| Exporting for Excel / non-technical users | CSV |
-| Production analytics queries | Use Parquet or Delta instead |
-| Large datasets (>1 GB) | Avoid — no columnar optimization |
+| Scenario                                  | Recommendation                    |
+| ----------------------------------------- | --------------------------------- |
+| Receiving data from external systems      | CSV for landing; convert to Delta |
+| Exporting for Excel / non-technical users | CSV                               |
+| Production analytics queries              | Use Parquet or Delta instead      |
+| Large datasets (>1 GB)                    | Avoid — no columnar optimization  |

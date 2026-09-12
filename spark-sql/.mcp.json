@@ -10,7 +10,7 @@
         "dbx-copilot-mcp"
       ],
       "env": {
-        "DAB_TARGET": "${env:DAB_TARGET}",
+        "APP_ENV": "${env:APP_ENV}",
         "DATABRICKS_CONFIG_PROFILE": "${env:DATABRICKS_CONFIG_PROFILE}",
         "DATABRICKS_HOST": "${env:DATABRICKS_HOST}",
         "DATABRICKS_TOKEN": "${env:DATABRICKS_TOKEN}",

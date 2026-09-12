@@ -2,7 +2,7 @@
 
 Apply boolean logic, text patterns, NULL handling, and regex predicates in WHERE clauses.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -14,19 +14,19 @@ graph LR
     C -->|false| E[Excluded]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| AND / OR / NOT / IN | Combine multiple boolean conditions | `AND`, `OR`, `NOT`, `IN (...)` |
-| Text + numeric | Mixed predicate on string and number cols | `=`, `>`, `<`, `LIKE` |
-| LIKE / wildcards | Pattern matching on string columns | `LIKE '%pattern%'` |
-| IS NULL / COALESCE | NULL-safe filtering | `IS NULL`, `COALESCE(col, default)` |
-| RLIKE / REGEXP | Regex pattern matching | `RLIKE 'pattern'` |
+| Technique           | Use Case                                  | Key Function                        |
+| ------------------- | ----------------------------------------- | ----------------------------------- |
+| AND / OR / NOT / IN | Combine multiple boolean conditions       | `AND`, `OR`, `NOT`, `IN (...)`      |
+| Text + numeric      | Mixed predicate on string and number cols | `=`, `>`, `<`, `LIKE`               |
+| LIKE / wildcards    | Pattern matching on string columns        | `LIKE '%pattern%'`                  |
+| IS NULL / COALESCE  | NULL-safe filtering                       | `IS NULL`, `COALESCE(col, default)` |
+| RLIKE / REGEXP      | Regex pattern matching                    | `RLIKE 'pattern'`                   |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -38,7 +38,7 @@ Combine multiple conditions using boolean operators.
 --8<-- "sql/application/filter/and_or_filters.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Text and Number Filters
 
@@ -48,7 +48,7 @@ Mix string and numeric predicates in a single WHERE clause.
 --8<-- "sql/application/filter/text_number_filters.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Wildcard Searches
 
@@ -58,7 +58,7 @@ Use LIKE with `%` and `_` wildcards for partial string matching.
 --8<-- "sql/application/filter/wildcard_searches.sql"
 ```
 
----
+______________________________________________________________________
 
 ### NULL Filters
 
@@ -68,7 +68,7 @@ Handle NULL values safely in filter predicates.
 --8<-- "sql/application/filter/null_filters.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Regex Filters
 
@@ -78,17 +78,18 @@ Apply regular expression patterns with RLIKE for advanced text filtering.
 --8<-- "sql/application/filter/regex_filters.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Multiple conditions | `AND` / `OR` combinations |
-| Partial string match | `LIKE` with wildcards |
-| Regex needed | `RLIKE` |
-| NULL-safe filter | `IS NULL` / `IS NOT NULL` |
-| Exclude a set of values | `NOT IN (...)` |
+| Scenario                | Recommended Approach      |
+| ----------------------- | ------------------------- |
+| Multiple conditions     | `AND` / `OR` combinations |
+| Partial string match    | `LIKE` with wildcards     |
+| Regex needed            | `RLIKE`                   |
+| NULL-safe filter        | `IS NULL` / `IS NOT NULL` |
+| Exclude a set of values | `NOT IN (...)`            |
 
 !!! warning
+
     NOT IN with a subquery that can return NULL will exclude all rows. Use NOT EXISTS instead.

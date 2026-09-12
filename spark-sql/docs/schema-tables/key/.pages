@@ -1,8 +1,8 @@
 nav:
   - index.md
-  - primary_key.md
-  - foreign_key.md
-  - composite_key.md
-  - natural_key.md
-  - surrogate_key.md
-  - delta_constraints.md
+  - primary-key.md
+  - foreign-key.md
+  - composite-key.md
+  - natural-key.md
+  - surrogate-key.md
+  - delta-constraints.md

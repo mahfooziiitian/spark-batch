@@ -4,9 +4,10 @@ Statistical functions compute **descriptive statistics** across grouped or ungro
 averages, medians, modes, percentiles, and extremes with associated values.
 
 !!! note "Source"
+
     Full runnable example: `sql/aggregation/stats/stats.sql`
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -15,28 +16,35 @@ graph LR
     C --> D[One Row per Group]
 ```
 
+### :material-animation-play: Interactive Visualization — Percentile Marker on a Distribution
+
+<div id="viz-percentile-marker" class="ts-viz"></div>
+
+Drag the percentile slider to see where `PERCENTILE(col, p)` lands on a
+sample distribution, and how `MEDIAN` is just `PERCENTILE(col, 0.5)`.
+
 ## :material-pin: Available Functions
 
-| Function | Description | NULL Handling |
-|----------|-------------|--------------|
-| `AVG(expr)` | Arithmetic mean | Skips NULLs |
-| `MEAN(expr)` | Alias for `AVG` | Skips NULLs |
-| `MEDIAN(expr)` | Middle value (50th percentile) | Skips NULLs |
-| `MODE(expr)` | Most frequent value | Skips NULLs |
-| `PERCENTILE(expr, p)` | Value at the p-th percentile | Skips NULLs |
-| `MIN(expr)` | Minimum value | Skips NULLs |
-| `MAX(expr)` | Maximum value | Skips NULLs |
-| `MIN_BY(expr, ordering)` | Value of `expr` at row where `ordering` is minimum | Skips NULLs |
-| `MAX_BY(expr, ordering)` | Value of `expr` at row where `ordering` is maximum | Skips NULLs |
-| `STDDEV(expr)` | Sample standard deviation | Skips NULLs |
-| `STDDEV_POP(expr)` | Population standard deviation | Skips NULLs |
-| `VARIANCE(expr)` | Sample variance | Skips NULLs |
-| `VAR_POP(expr)` | Population variance | Skips NULLs |
-| `SKEWNESS(expr)` | Skewness of the distribution | Skips NULLs |
-| `KURTOSIS(expr)` | Kurtosis of the distribution | Skips NULLs |
-| `CORR(expr1, expr2)` | Pearson correlation coefficient | Skips NULLs |
-| `COVAR_SAMP(expr1, expr2)` | Sample covariance | Skips NULLs |
-| `COVAR_POP(expr1, expr2)` | Population covariance | Skips NULLs |
+| Function                   | Description                                        | NULL Handling |
+| -------------------------- | -------------------------------------------------- | ------------- |
+| `AVG(expr)`                | Arithmetic mean                                    | Skips NULLs   |
+| `MEAN(expr)`               | Alias for `AVG`                                    | Skips NULLs   |
+| `MEDIAN(expr)`             | Middle value (50th percentile)                     | Skips NULLs   |
+| `MODE(expr)`               | Most frequent value                                | Skips NULLs   |
+| `PERCENTILE(expr, p)`      | Value at the p-th percentile                       | Skips NULLs   |
+| `MIN(expr)`                | Minimum value                                      | Skips NULLs   |
+| `MAX(expr)`                | Maximum value                                      | Skips NULLs   |
+| `MIN_BY(expr, ordering)`   | Value of `expr` at row where `ordering` is minimum | Skips NULLs   |
+| `MAX_BY(expr, ordering)`   | Value of `expr` at row where `ordering` is maximum | Skips NULLs   |
+| `STDDEV(expr)`             | Sample standard deviation                          | Skips NULLs   |
+| `STDDEV_POP(expr)`         | Population standard deviation                      | Skips NULLs   |
+| `VARIANCE(expr)`           | Sample variance                                    | Skips NULLs   |
+| `VAR_POP(expr)`            | Population variance                                | Skips NULLs   |
+| `SKEWNESS(expr)`           | Skewness of the distribution                       | Skips NULLs   |
+| `KURTOSIS(expr)`           | Kurtosis of the distribution                       | Skips NULLs   |
+| `CORR(expr1, expr2)`       | Pearson correlation coefficient                    | Skips NULLs   |
+| `COVAR_SAMP(expr1, expr2)` | Sample covariance                                  | Skips NULLs   |
+| `COVAR_POP(expr1, expr2)`  | Population covariance                              | Skips NULLs   |
 
 ## :material-magnify: Behavior
 
@@ -141,6 +149,25 @@ FROM VALUES (2), (4), (4), (4), (5), (5), (7), (9) AS tab(col);
 -- sample_stddev=2.14, pop_stddev=2.0, sample_var=4.57, pop_var=4.0
 ```
 
+#### :material-alert-outline: A Single-Row Group Returns NULL for Sample STDDEV, Not 0
+
+`STDDEV`/`VARIANCE` (sample statistics, Bessel-corrected with `n-1` degrees
+of freedom) are mathematically undefined for a group of exactly one row —
+Spark returns `NULL` rather than `0`. The population variants (`STDDEV_POP`,
+`VAR_POP`, divided by `n`) are well-defined and return `0.0`. Verified on
+Spark 4.2:
+
+```sql
+SELECT STDDEV(col) AS sample, STDDEV_POP(col) AS population
+FROM VALUES (5) AS tab(col);
+-- Result: sample=NULL, population=0.0
+```
+
+> **Gotcha:** a `GROUP BY` key with only one row per group will silently
+> produce `NULL` sample-stddev columns — don't mistake this for a bug or
+> missing data; switch to the `_POP` variant if a single-row group should
+> report `0` instead of `NULL`.
+
 ### :material-toy-brick: 8. Correlation & Covariance
 
 ```sql
@@ -185,15 +212,15 @@ GROUP BY region;
 
 ## :material-brain: When to Use
 
-| Scenario | Function(s) |
-|----------|------------|
-| Central tendency | `AVG`, `MEDIAN`, `MODE` |
-| Spread / dispersion | `STDDEV`, `VARIANCE`, `PERCENTILE` |
-| Extremes | `MIN`, `MAX` |
-| Value at extreme of another column | `MIN_BY`, `MAX_BY` |
-| Distribution shape | `SKEWNESS`, `KURTOSIS` |
-| Relationship between two columns | `CORR`, `COVAR_SAMP`, `COVAR_POP` |
-| Multiple percentiles at once | `PERCENTILE(col, ARRAY(…))` |
+| Scenario                           | Function(s)                        |
+| ---------------------------------- | ---------------------------------- |
+| Central tendency                   | `AVG`, `MEDIAN`, `MODE`            |
+| Spread / dispersion                | `STDDEV`, `VARIANCE`, `PERCENTILE` |
+| Extremes                           | `MIN`, `MAX`                       |
+| Value at extreme of another column | `MIN_BY`, `MAX_BY`                 |
+| Distribution shape                 | `SKEWNESS`, `KURTOSIS`             |
+| Relationship between two columns   | `CORR`, `COVAR_SAMP`, `COVAR_POP`  |
+| Multiple percentiles at once       | `PERCENTILE(col, ARRAY(…))`        |
 
 > **Tip:** Use `PERCENTILE(col, ARRAY(0.25, 0.5, 0.75))` to compute the full IQR
 > (interquartile range) in a single pass — more efficient than three separate calls.

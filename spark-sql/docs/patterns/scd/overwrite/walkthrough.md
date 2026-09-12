@@ -4,7 +4,7 @@ This page walks through a complete Type 1 lifecycle: initial load, a batch of in
 changes, the MERGE execution, and result verification — all runnable in a single Spark SQL
 session or Databricks notebook.
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Initial State
 
@@ -38,12 +38,12 @@ AS t(customer_id, name, email, city);
 
 **State after seed:**
 
-| customer_id | name  | email               | city | updated_at          |
-|-------------|-------|---------------------|------|---------------------|
-| cust1       | Alice | alice@example.com   | NY   | 2024-01-01 00:00:00 |
-| cust2       | Bob   | bob@example.com     | CA   | 2024-01-01 00:00:00 |
+| customer_id | name  | email             | city | updated_at          |
+| ----------- | ----- | ----------------- | ---- | ------------------- |
+| cust1       | Alice | alice@example.com | NY   | 2024-01-01 00:00:00 |
+| cust2       | Bob   | bob@example.com   | CA   | 2024-01-01 00:00:00 |
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Incoming Batch
 
@@ -59,7 +59,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: Pre-Merge: Detect Changes
 
@@ -78,9 +78,9 @@ WHERE md5(concat_ws('||', s.name, s.email, s.city))
    <> tgt.row_hash;
 ```
 
-| customer_id | old_name | new_name | old_email           | new_email           |
-|-------------|----------|----------|---------------------|---------------------|
-| cust2       | Bob      | Bobby    | bob@example.com     | bob@newdomain.com   |
+| customer_id | old_name | new_name | old_email       | new_email         |
+| ----------- | -------- | -------- | --------------- | ----------------- |
+| cust2       | Bob      | Bobby    | bob@example.com | bob@newdomain.com |
 
 ```sql
 -- Rows that will trigger INSERT
@@ -90,11 +90,11 @@ LEFT JOIN dim_customer AS tgt USING (customer_id)
 WHERE tgt.customer_id IS NULL;
 ```
 
-| customer_id | name    | email                  | city |
-|-------------|---------|------------------------|------|
-| cust3       | Charlie | charlie@example.com    | WA   |
+| customer_id | name    | email               | city |
+| ----------- | ------- | ------------------- | ---- |
+| cust3       | Charlie | charlie@example.com | WA   |
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Execute the MERGE
 
@@ -126,10 +126,11 @@ WHEN NOT MATCHED THEN
 ```
 
 !!! note "Row count from MERGE"
-    Delta's MERGE returns operation metrics: `num_updated_rows = 1`, `num_inserted_rows = 1`,
-    `num_deleted_rows = 0`.  Query `DESCRIBE HISTORY dim_customer` to see the commit details.
 
----
+    Delta's MERGE returns operation metrics: `num_updated_rows = 1`, `num_inserted_rows = 1`,
+    `num_deleted_rows = 0`. Query `DESCRIBE HISTORY dim_customer` to see the commit details.
+
+______________________________________________________________________
 
 ## :material-numeric-5-circle: Post-Merge Verification
 
@@ -139,11 +140,11 @@ WHEN NOT MATCHED THEN
 SELECT * FROM dim_customer ORDER BY customer_id;
 ```
 
-| customer_id | name    | email                  | city | updated_at          |
-|-------------|---------|------------------------|------|---------------------|
-| cust1       | Alice   | alice@example.com      | NY   | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | bob@newdomain.com      | CA   | 2024-06-15 09:00:00 |
-| cust3       | Charlie | charlie@example.com    | WA   | 2024-06-15 09:00:00 |
+| customer_id | name    | email               | city | updated_at          |
+| ----------- | ------- | ------------------- | ---- | ------------------- |
+| cust1       | Alice   | alice@example.com   | NY   | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | bob@newdomain.com   | CA   | 2024-06-15 09:00:00 |
+| cust3       | Charlie | charlie@example.com | WA   | 2024-06-15 09:00:00 |
 
 ### Assert `cust1` unchanged
 
@@ -176,7 +177,7 @@ HAVING cnt > 1;
 -- Expected: 0 rows
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-6-circle: Idempotency Check
 
@@ -209,11 +210,12 @@ SELECT COUNT(*) AS total_rows FROM dim_customer;
 ```
 
 !!! tip "Why does this work?"
+
     The `WHEN MATCHED AND src.row_hash <> tgt.row_hash` guard prevents updates when the hash
-    already matches.  `WHEN NOT MATCHED` only fires for keys absent in the target — which `cust3`
+    already matches. `WHEN NOT MATCHED` only fires for keys absent in the target — which `cust3`
     no longer is after the first run.
 
----
+______________________________________________________________________
 
 ## :material-numeric-7-circle: Delta History
 
@@ -223,12 +225,12 @@ Inspect the audit log that Delta Lake maintains automatically.
 DESCRIBE HISTORY dim_customer;
 ```
 
-| version | timestamp           | operation | operationParameters                       |
-|---------|---------------------|-----------|-------------------------------------------|
+| version | timestamp           | operation | operationParameters                                        |
+| ------- | ------------------- | --------- | ---------------------------------------------------------- |
 | 1       | 2024-06-15 09:00:xx | MERGE     | `{"numTargetRowsUpdated":"1","numTargetRowsInserted":"1"}` |
-| 0       | 2024-01-01 00:00:xx | WRITE     | `{"mode":"Append","numFiles":"2"}`        |
+| 0       | 2024-01-01 00:00:xx | WRITE     | `{"mode":"Append","numFiles":"2"}`                         |
 
----
+______________________________________________________________________
 
 ## :material-cog-outline: Optimise After Load
 

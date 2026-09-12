@@ -1,98 +1,143 @@
-# :material-null: NULL in GROUP BY and DISTINCT
+# :material-null: NULL in GROUP BY, DISTINCT, and PARTITION BY
 
-For grouping and deduplication, Spark treats all NULL values as **equal** — even though `NULL = NULL` evaluates to NULL in comparisons.
+Spark 4.2 treats NULLs as one structural value for grouping, deduplication, and partitioning, even though `NULL = NULL` is not `TRUE` in ordinary comparisons.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
-```mermaid
-graph LR
-    A["GROUP BY NULL values"] --> B["Single bucket — all NULLs together"]
-    C["DISTINCT NULL values"] --> D["One distinct NULL in output"]
-    E["ORDER BY"] --> F["NULLS FIRST (ASC default) / NULLS LAST (DESC default)"]
-```
+| Operation             | Verified NULL behavior                                  |
+| --------------------- | ------------------------------------------------------- |
+| `GROUP BY col`        | All NULL rows land in one group                         |
+| `SELECT DISTINCT col` | Output contains at most one NULL per distinct row shape |
+| `PARTITION BY col`    | All NULL rows share one partition key                   |
 
----
+### :material-animation-play: Interactive Visualization — Grouping and Deduplication
 
-## :material-table: Behaviour Summary
+<div id="viz-null-operator" class="ts-viz"></div>
 
-| Operation | NULL behaviour |
-|-----------|----------------|
-| `GROUP BY col` | All NULLs land in one group |
-| `SELECT DISTINCT col` | Produces at most one NULL in output |
-| `ORDER BY col ASC` | NULLs sort first (default) |
-| `ORDER BY col DESC` | NULLs sort last (default) |
-| `ORDER BY col ASC NULLS LAST` | NULLs pushed to end |
+Switch between grouping and deduplication to see how Spark 4.2 buckets NULL values. The visualization uses the same sample rows as the examples below.
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Examples
+## :material-flask-outline: Verified Examples
 
-### Sample data
+### `GROUP BY` creates one NULL bucket
 
 ```sql
-CREATE TABLE person (id INT, name STRING, age INT);
-INSERT INTO person VALUES
-    (100, 'Joe',      30),
-    (200, 'Marry',    NULL),
-    (300, 'Mike',     18),
-    (400, 'Fred',     50),
-    (500, 'Albert',   NULL),
-    (600, 'Michelle', 30),
-    (700, 'Dan',      50);
-```
-
-### GROUP BY — NULLs grouped together
-
-```sql
-SELECT age, COUNT(*) AS cnt
-FROM person
+SELECT age, COUNT(*) AS cnt, COUNT(age) AS non_null_age
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT)),
+    (30),
+    (50)
+AS t(age)
 GROUP BY age
 ORDER BY age;
--- age=18   cnt=1
--- age=30   cnt=2
--- age=50   cnt=2
--- age=NULL cnt=2   ← both NULL ages in one group
 ```
 
-### DISTINCT — one NULL in result
+```text
++----+---+------------+
+|age |cnt|non_null_age|
++----+---+------------+
+|NULL|2  |0           |
+|18  |1  |1           |
+|30  |2  |2           |
+|50  |2  |2           |
++----+---+------------+
+```
+
+### `DISTINCT` keeps one NULL row per distinct row shape
 
 ```sql
-SELECT DISTINCT age FROM person ORDER BY age;
--- 18, 30, 50, NULL  ← single NULL row
+SELECT DISTINCT age
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT)),
+    (30),
+    (50)
+AS t(age)
+ORDER BY age;
 ```
 
-### ORDER BY with explicit NULLS placement
+```text
++----+
+|age |
++----+
+|NULL|
+|18  |
+|30  |
+|50  |
++----+
+```
+
+### Multi-column `DISTINCT` still compares full rows
 
 ```sql
--- NULLs first (default for ASC)
-SELECT age, name FROM person ORDER BY age ASC;
-
--- NULLs last (explicit)
-SELECT age, name FROM person ORDER BY age ASC NULLS LAST;
-
--- NULLs last for DESC
-SELECT age, name FROM person ORDER BY age DESC NULLS LAST;
+SELECT DISTINCT a, b
+FROM
+VALUES
+    (CAST(NULL AS INT), 'x'),
+    (CAST(NULL AS INT), 'x'),
+    (CAST(NULL AS INT), 'y')
+AS t(a, b)
+ORDER BY b;
 ```
 
-### Counting non-NULL vs NULL per group
+```text
++----+---+
+|a   |b  |
++----+---+
+|NULL|x  |
+|NULL|y  |
++----+---+
+```
+
+### Window partitioning groups NULL keys together
 
 ```sql
-SELECT
-    age,
-    COUNT(*)        AS total,
-    COUNT(age)      AS non_null_age   -- always 0 when age IS NULL
-FROM person
-GROUP BY age;
+SELECT age, COUNT(*) OVER (PARTITION BY age) AS cnt
+FROM
+VALUES
+    (30),
+    (CAST(NULL AS INT)),
+    (18),
+    (50),
+    (CAST(NULL AS INT)),
+    (30),
+    (50)
+AS t(age)
+ORDER BY age, cnt;
 ```
 
----
+```text
++----+---+
+|age |cnt|
++----+---+
+|NULL|2  |
+|NULL|2  |
+|18  |1  |
+|30  |2  |
+|30  |2  |
+|50  |2  |
+|50  |2  |
++----+---+
+```
 
-## :material-magnify: Behavior Notes
+______________________________________________________________________
 
-1. NULL grouping is conformant with the SQL standard and consistent with most databases.
-2. `GROUP BY` NULL-grouping is distinct from comparison `NULL = NULL` (which returns NULL) — it is a structural identity check.
-3. `DISTINCT` on multiple columns treats `(NULL, 'x')` and `(NULL, 'y')` as different rows — only the NULL column itself is deduplicated.
-4. Window functions with `PARTITION BY` also treat NULLs as one partition value.
+## :material-lightbulb-outline: Practical Takeaways
 
+- `GROUP BY` and `DISTINCT` use structural equality, not normal comparison results.
+- One NULL column value can still appear in multiple distinct rows when other columns differ.
+- `COUNT(age)` inside a NULL group is `0` because the values are still NULL.
+
+<script src="../../assets/js/querying-nulls-viz.js"></script>

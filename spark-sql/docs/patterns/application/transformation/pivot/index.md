@@ -2,7 +2,7 @@
 
 Turn rows into columns (PIVOT) or columns into rows (UNPIVOT) — essential for crosstab reports, ETL normalisation/denormalisation, and sparse-to-dense transforms.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Execution Flow
 
@@ -21,7 +21,7 @@ flowchart LR
     end
 ```
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -71,13 +71,26 @@ FROM source_table
 GROUP BY group_col;
 ```
 
-| Pattern | Use when | Notes |
-|---------|----------|-------|
-| `PIVOT` | Value list is known and you want concise crosstab SQL | Best readability for fixed columns |
-| `UNPIVOT` | Wide columns must become attribute-value rows | Ideal for normalisation before downstream joins or filters |
-| `SUM(CASE WHEN ...)` | You need manual control or generated SQL | Same logical result as `PIVOT` |
+### STACK fallback for UNPIVOT
 
----
+```sql
+SELECT group_col, measure_name, measure_value
+FROM source_table
+LATERAL VIEW STACK(3,
+    'jan', jan_col,
+    'feb', feb_col,
+    'mar', mar_col
+) AS measure_name, measure_value;
+```
+
+| Pattern                  | Use when                                                                                                | Notes                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `PIVOT`                  | Value list is known and you want concise crosstab SQL                                                   | Best readability for fixed columns                                                                |
+| `UNPIVOT`                | Wide columns must become attribute-value rows                                                           | Ideal for normalisation before downstream joins or filters                                        |
+| `SUM(CASE WHEN ...)`     | You need manual control or generated SQL                                                                | Same logical result as `PIVOT`                                                                    |
+| `STACK` + `LATERAL VIEW` | `UNPIVOT` clause unavailable, or the column-to-row mapping is generated dynamically at query-build time | Same logical result as `UNPIVOT`; see [STACK reference](../../../../functions/generator/stack.md) |
+
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -87,7 +100,7 @@ GROUP BY group_col;
 4. Multiple aggregates in one `PIVOT` generate multiple derived columns per pivot value, typically using the aggregate alias as a suffix.
 5. Manual `CASE WHEN` pivots are functionally equivalent to `PIVOT` and remain useful when you need generated SQL or custom expressions.
 
----
+______________________________________________________________________
 
 ## :material-database: Sample Data
 
@@ -143,7 +156,7 @@ SELECT * FROM VALUES
 AS t(department, metric_name, q1, q2, q3, q4);
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -171,12 +184,12 @@ ORDER BY salesperson;
 
 ??? success "Expected output"
 
-    | salesperson | jan | feb | mar | apr | may | jun |
-    |-------------|-----|-----|-----|-----|-----|-----|
-    | alice | 12000 | 13500 | NULL | 14200 | NULL | NULL |
-    | bob | 9800 | NULL | 10400 | NULL | 11050 | NULL |
-    | carol | 8700 | NULL | 9200 | NULL | NULL | 10100 |
-    | dave | NULL | 8900 | NULL | 9400 | NULL | 9700 |
+    | salesperson | jan   | feb   | mar   | apr   | may   | jun   |
+    | ----------- | ----- | ----- | ----- | ----- | ----- | ----- |
+    | alice       | 12000 | 13500 | NULL  | 14200 | NULL  | NULL  |
+    | bob         | 9800  | NULL  | 10400 | NULL  | 11050 | NULL  |
+    | carol       | 8700  | NULL  | 9200  | NULL  | NULL  | 10100 |
+    | dave        | NULL  | 8900  | NULL  | 9400  | NULL  | 9700  |
 
 ### 2 — PIVOT with multiple aggregations
 
@@ -202,10 +215,10 @@ ORDER BY region;
 ??? success "Expected output"
 
     | region | jan_revenue | jan_deals | feb_revenue | feb_deals | mar_revenue | mar_deals |
-    |--------|-------------|-----------|-------------|-----------|-------------|-----------|
-    | east | 20700 | 2 | 13500 | 1 | 9200 | 1 |
-    | south | NULL | NULL | 8900 | 1 | NULL | NULL |
-    | west | 9800 | 1 | NULL | NULL | 10400 | 1 |
+    | ------ | ----------- | --------- | ----------- | --------- | ----------- | --------- |
+    | east   | 20700       | 2         | 13500       | 1         | 9200        | 1         |
+    | south  | NULL        | NULL      | 8900        | 1         | NULL        | NULL      |
+    | west   | 9800        | 1         | NULL        | NULL      | 10400       | 1         |
 
 ### 3 — PIVOT by region: revenue by region as columns
 
@@ -235,14 +248,14 @@ END;
 
 ??? success "Expected output"
 
-    | month | east | south | west |
-    |-------|------|-------|------|
-    | Jan | 20700 | NULL | 9800 |
-    | Feb | 13500 | 8900 | NULL |
-    | Mar | 9200 | NULL | 10400 |
-    | Apr | 14200 | 9400 | NULL |
-    | May | NULL | NULL | 11050 |
-    | Jun | 10100 | 9700 | NULL |
+    | month | east  | south | west  |
+    | ----- | ----- | ----- | ----- |
+    | Jan   | 20700 | NULL  | 9800  |
+    | Feb   | 13500 | 8900  | NULL  |
+    | Mar   | 9200  | NULL  | 10400 |
+    | Apr   | 14200 | 9400  | NULL  |
+    | May   | NULL  | NULL  | 11050 |
+    | Jun   | 10100 | 9700  | NULL  |
 
 ### 4 — Manual pivot with CASE WHEN
 
@@ -264,11 +277,11 @@ ORDER BY salesperson;
 ??? success "Expected output"
 
     | salesperson | jan_revenue | feb_revenue | mar_revenue | apr_revenue | may_revenue | jun_revenue | h1_revenue |
-    |-------------|-------------|-------------|-------------|-------------|-------------|-------------|------------|
-    | alice | 12000 | 13500 | 0 | 14200 | 0 | 0 | 39700 |
-    | bob | 9800 | 0 | 10400 | 0 | 11050 | 0 | 31250 |
-    | carol | 8700 | 0 | 9200 | 0 | 0 | 10100 | 28000 |
-    | dave | 0 | 8900 | 0 | 9400 | 0 | 9700 | 28000 |
+    | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ---------- |
+    | alice       | 12000       | 13500       | 0           | 14200       | 0           | 0           | 39700      |
+    | bob         | 9800        | 0           | 10400       | 0           | 11050       | 0           | 31250      |
+    | carol       | 8700        | 0           | 9200        | 0           | 0           | 10100       | 28000      |
+    | dave        | 0           | 8900        | 0           | 9400        | 0           | 9700        | 28000      |
 
 ### 5 — Basic UNPIVOT: student grades wide-to-long
 
@@ -295,15 +308,15 @@ ORDER BY student_id, subject;
 ??? success "Expected output"
 
     | student_id | student_name | subject | grade |
-    |------------|--------------|---------|-------|
-    | 1001 | anika | english | 84 |
-    | 1001 | anika | history | 79 |
-    | 1001 | anika | math | 88 |
-    | 1001 | anika | science | 91 |
-    | 1002 | ben | english | 70 |
-    | 1002 | ben | history | 68 |
-    | 1002 | ben | math | 72 |
-    | 1002 | ben | science | 65 |
+    | ---------- | ------------ | ------- | ----- |
+    | 1001       | anika        | english | 84    |
+    | 1001       | anika        | history | 79    |
+    | 1001       | anika        | math    | 88    |
+    | 1001       | anika        | science | 91    |
+    | 1002       | ben          | english | 70    |
+    | 1002       | ben          | history | 68    |
+    | 1002       | ben          | math    | 72    |
+    | 1002       | ben          | science | 65    |
 
 ### 6 — UNPIVOT with filtering: only failing grades
 
@@ -330,9 +343,9 @@ ORDER BY student_id, subject;
 ??? success "Expected output"
 
     | student_id | student_name | subject | grade |
-    |------------|--------------|---------|-------|
-    | 1004 | diego | english | 55 |
-    | 1004 | diego | math | 58 |
+    | ---------- | ------------ | ------- | ----- |
+    | 1004       | diego        | english | 55    |
+    | 1004       | diego        | math    | 58    |
 
 ### 7 — UNPIVOT quarterly metrics into long format
 
@@ -359,16 +372,16 @@ ORDER BY metric_name, quarter;
 
 ??? success "Expected output"
 
-    | department | metric_name | quarter | metric_value |
-    |------------|-------------|---------|--------------|
-    | engineering | budget | q1 | 1800000 |
-    | engineering | budget | q2 | 1850000 |
-    | engineering | budget | q3 | 1900000 |
-    | engineering | budget | q4 | 2000000 |
-    | engineering | spend | q1 | 1750000 |
-    | engineering | spend | q2 | 1820000 |
-    | engineering | spend | q3 | 1880000 |
-    | engineering | spend | q4 | 1985000 |
+    | department  | metric_name | quarter | metric_value |
+    | ----------- | ----------- | ------- | ------------ |
+    | engineering | budget      | q1      | 1800000      |
+    | engineering | budget      | q2      | 1850000      |
+    | engineering | budget      | q3      | 1900000      |
+    | engineering | budget      | q4      | 2000000      |
+    | engineering | spend       | q1      | 1750000      |
+    | engineering | spend       | q2      | 1820000      |
+    | engineering | spend       | q3      | 1880000      |
+    | engineering | spend       | q4      | 1985000      |
 
 ### 8 — Round-trip: PIVOT then UNPIVOT
 
@@ -414,11 +427,11 @@ ORDER BY salesperson, month;
 ??? success "Expected output"
 
     | salesperson | month | revenue |
-    |-------------|-------|---------|
-    | alice | Feb | 13500 |
-    | alice | Jan | 12000 |
-    | bob | Feb | 10250 |
-    | bob | Jan | 9800 |
+    | ----------- | ----- | ------- |
+    | alice       | Feb   | 13500   |
+    | alice       | Jan   | 12000   |
+    | bob         | Feb   | 10250   |
+    | bob         | Jan   | 9800    |
 
 ### 9 — Dynamic-like pivot with COLLECT_LIST + MAP
 
@@ -438,12 +451,12 @@ ORDER BY salesperson;
 
 ??? success "Expected output"
 
-    | salesperson | month_revenue_map | populated_months |
-    |-------------|-------------------|------------------|
-    | alice | {"Jan":12000,"Feb":13500,"Apr":14200} | 3 |
-    | bob | {"Jan":9800,"Mar":10400,"May":11050} | 3 |
-    | carol | {"Jan":8700,"Mar":9200,"Jun":10100} | 3 |
-    | dave | {"Feb":8900,"Apr":9400,"Jun":9700} | 3 |
+    | salesperson | month_revenue_map                     | populated_months |
+    | ----------- | ------------------------------------- | ---------------- |
+    | alice       | {"Jan":12000,"Feb":13500,"Apr":14200} | 3                |
+    | bob         | {"Jan":9800,"Mar":10400,"May":11050}  | 3                |
+    | carol       | {"Jan":8700,"Mar":9200,"Jun":10100}   | 3                |
+    | dave        | {"Feb":8900,"Apr":9400,"Jun":9700}    | 3                |
 
 ### 10 — Multi-level pivot: region + quarter crosstab
 
@@ -481,48 +494,94 @@ ORDER BY salesperson;
 ??? success "Expected output"
 
     | salesperson | east_q1 | east_q2 | south_q1 | south_q2 | west_q1 | west_q2 |
-    |-------------|---------|---------|----------|----------|---------|---------|
-    | alice | 25500 | 14200 | NULL | NULL | NULL | NULL |
-    | bob | NULL | NULL | NULL | NULL | 20200 | 11050 |
-    | carol | 17900 | 10100 | NULL | NULL | NULL | NULL |
-    | dave | NULL | NULL | 8900 | 19100 | NULL | NULL |
+    | ----------- | ------- | ------- | -------- | -------- | ------- | ------- |
+    | alice       | 25500   | 14200   | NULL     | NULL     | NULL    | NULL    |
+    | bob         | NULL    | NULL    | NULL     | NULL     | 20200   | 11050   |
+    | carol       | 17900   | 10100   | NULL     | NULL     | NULL    | NULL    |
+    | dave        | NULL    | NULL    | 8900     | 19100    | NULL    | NULL    |
 
----
+### 11 — STACK: UNPIVOT fallback via LATERAL VIEW
+
+`UNPIVOT` is the readable choice when available, but `STACK` is the older,
+generator-function equivalent — useful as a fallback, and handy when the
+column-to-row mapping itself needs to be built dynamically (e.g. from a list of
+column names known only at code-generation time, not hard-coded in the query).
+
+```sql
+SELECT student_id, student_name, subject, grade
+FROM student_grades
+LATERAL VIEW STACK(4,
+    'math',    math,
+    'science', science,
+    'english', english,
+    'history', history
+) AS subject, grade
+WHERE student_id IN (1001, 1002)
+ORDER BY student_id, subject;
+```
+
+??? success "Expected output"
+
+    | student_id | student_name | subject | grade |
+    | ---------- | ------------ | ------- | ----- |
+    | 1001       | anika        | english | 84    |
+    | 1001       | anika        | history | 79    |
+    | 1001       | anika        | math    | 88    |
+    | 1001       | anika        | science | 91    |
+    | 1002       | ben          | english | 70    |
+    | 1002       | ben          | history | 68    |
+    | 1002       | ben          | math    | 72    |
+    | 1002       | ben          | science | 65    |
+
+    Identical result to Example 5's `UNPIVOT`. `STACK(n, ...)` takes `n` (the number of
+    output rows per input row) followed by `n` groups of expressions — here 4 groups of
+    `(subject_name, grade_value)` pairs — and requires `LATERAL VIEW` to explode the
+    generated rows back into the outer query. See the
+    [STACK function reference](../../../../functions/generator/stack.md) for the full
+    padding/uneven-group rules.
+
+______________________________________________________________________
 
 ## :material-shield-outline: Behavior Notes
 
 !!! warning
+
     `PIVOT` requires an explicit `IN` value list in Spark SQL; pure SQL cannot discover the output columns dynamically without generated SQL.
 
 !!! tip
+
     Missing combinations become `NULL` in pivoted cells. Wrap measures with `COALESCE` after the pivot when reports need zero-filled output.
 
 !!! note
+
     `UNPIVOT` excludes `NULL` source values by default. Use `INCLUDE NULLS` on Spark 3.4+ when the absence of a value must remain visible.
 
 !!! note
+
     Pivoted column names come from the `IN` list. Add aliases such as `'Jan' AS jan` to keep output names predictable and readable.
 
 !!! success
+
     `PIVOT` is mostly syntactic sugar over `GROUP BY` plus conditional aggregation, so readability usually matters more than raw performance.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Approach |
-|----------|----------|
-| Crosstab report with known categories | `PIVOT` with an explicit value list |
-| BI export that expects one column per month or region | `PIVOT` into a dense wide table |
-| ETL normalisation from spreadsheet-style source data | `UNPIVOT` wide attributes into key-value rows |
-| Survey answers stored as one column per question | `UNPIVOT` before filtering and aggregation |
-| Sparse category totals that should read as one row | `PIVOT` plus `COALESCE` for display defaults |
-| Dynamic category sets that cannot be hard-coded | Generated SQL or `COLLECT_LIST` + `MAP` fallback |
-| Time-series features for ML or downstream exports | `PIVOT` periods into feature columns |
-| Quarterly or monthly metrics stored across many columns | `UNPIVOT` before joins, ranking, or window functions |
-| Need exact control over derived expressions per output column | Manual `SUM(CASE WHEN ...)` pivot |
+| Scenario                                                          | Approach                                             |
+| ----------------------------------------------------------------- | ---------------------------------------------------- |
+| Crosstab report with known categories                             | `PIVOT` with an explicit value list                  |
+| BI export that expects one column per month or region             | `PIVOT` into a dense wide table                      |
+| ETL normalisation from spreadsheet-style source data              | `UNPIVOT` wide attributes into key-value rows        |
+| Survey answers stored as one column per question                  | `UNPIVOT` before filtering and aggregation           |
+| Sparse category totals that should read as one row                | `PIVOT` plus `COALESCE` for display defaults         |
+| Dynamic category sets that cannot be hard-coded                   | Generated SQL or `COLLECT_LIST` + `MAP` fallback     |
+| Time-series features for ML or downstream exports                 | `PIVOT` periods into feature columns                 |
+| Quarterly or monthly metrics stored across many columns           | `UNPIVOT` before joins, ranking, or window functions |
+| Need exact control over derived expressions per output column     | Manual `SUM(CASE WHEN ...)` pivot                    |
+| `UNPIVOT` clause unavailable, or column mapping built dynamically | `STACK` + `LATERAL VIEW` fallback (Example 11)       |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Runnable Examples
 

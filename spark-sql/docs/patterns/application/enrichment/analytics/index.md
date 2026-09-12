@@ -2,7 +2,7 @@
 
 Apply CASE expressions, KPI banding, NULL ordering, and text formatting for dashboard-ready output.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -13,18 +13,18 @@ graph LR
     C --> D[Dashboard]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| CASE thresholds | KPI metrics and alert banding | `CASE WHEN ... THEN ...` |
-| Nested CASE | Multi-tier classification | Nested `CASE WHEN` |
-| NULLS FIRST / LAST | Controlled NULL placement in ORDER BY | `ORDER BY col NULLS FIRST` |
-| LEFT / LPAD / CONCAT | Formatted text output | `LEFT()`, `LPAD()`, `CONCAT()` |
+| Technique            | Use Case                              | Key Function                   |
+| -------------------- | ------------------------------------- | ------------------------------ |
+| CASE thresholds      | KPI metrics and alert banding         | `CASE WHEN ... THEN ...`       |
+| Nested CASE          | Multi-tier classification             | Nested `CASE WHEN`             |
+| NULLS FIRST / LAST   | Controlled NULL placement in ORDER BY | `ORDER BY col NULLS FIRST`     |
+| LEFT / LPAD / CONCAT | Formatted text output                 | `LEFT()`, `LPAD()`, `CONCAT()` |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -36,7 +36,7 @@ Band numeric metrics into KPI labels using CASE expressions.
 --8<-- "sql/application/analytics/kpi_and_alerts.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Categorization
 
@@ -46,7 +46,7 @@ Multi-tier classification using nested CASE expressions.
 --8<-- "sql/application/analytics/categorization.sql"
 ```
 
----
+______________________________________________________________________
 
 ### NULL Ordering
 
@@ -56,7 +56,7 @@ Control NULL placement in sorted result sets.
 --8<-- "sql/application/analytics/null_ordering.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Text Formatting
 
@@ -66,16 +66,17 @@ Truncate, pad, and concatenate strings for formatted report output.
 --8<-- "sql/application/analytics/text_formatting.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| KPI banding (Low / Medium / High) | `kpi_and_alerts` pattern |
-| Custom categories from numeric range | `categorization` with nested CASE |
-| NULL placement in sorted output | `null_ordering` with NULLS FIRST / LAST |
-| Text truncation and padding | `text_formatting` with LEFT / LPAD |
+| Scenario                             | Recommended Approach                    |
+| ------------------------------------ | --------------------------------------- |
+| KPI banding (Low / Medium / High)    | `kpi_and_alerts` pattern                |
+| Custom categories from numeric range | `categorization` with nested CASE       |
+| NULL placement in sorted output      | `null_ordering` with NULLS FIRST / LAST |
+| Text truncation and padding          | `text_formatting` with LEFT / LPAD      |
 
 !!! note
+
     NULLS FIRST / NULLS LAST is a Spark SQL extension; combine with ORDER BY for deterministic NULL placement.

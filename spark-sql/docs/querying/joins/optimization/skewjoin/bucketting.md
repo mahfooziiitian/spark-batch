@@ -1,55 +1,69 @@
-# :material-scale-unbalanced: Skew Join Using Bucketing
+# :material-bucket-outline: Bucketing to Reduce Join Shuffle
 
-When dealing with skewed data in join operations, performance can degrade due to uneven data distribution. Bucketing is an effective technique to mitigate this issue.
+Bucketing does not magically remove skew, but it can keep both sides of a repeated equi-join co-located so Spark avoids a new shuffle stage.
 
+### :material-animation-play: Interactive Visualization — Bucketed Join Path
 
-### :material-sitemap: Overview
+<div id="viz-joins-skew-bucketing" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    D[Data] -->|hash on join key| B1[Bucket 1]
-    D --> B2[Bucket 2]
-    D --> B3[Bucket N]
-    B1 --> J[Join within bucket]
-    B2 --> J
-    B3 --> J
+The view below separates what bucketing can eliminate from what Spark may still need to do before the join starts.
+
+<script src="../../../../assets/js/querying-joins-strategy-viz.js"></script>
+
+______________________________________________________________________
+
+## :material-check-decagram: Verified in PySpark 4.2
+
+Two tables written with `bucketBy(4, 'user_id')` and joined on `user_id` produced a physical plan with:
+
+```text
+Scan parquet ... Bucketed: true
+Scan parquet ... Bucketed: true
+SortMergeJoin
 ```
 
-## What is Bucketing?
+The plan contained no `Exchange` nodes, which confirms shuffle avoidance. It **did** contain `Sort` nodes, so bucketing alone did not remove sorting in this check.
 
-Bucketing divides your data into a fixed number of buckets based on the hash of a specified column (often the join key). Each bucket contains a subset of the data, helping to distribute records more evenly across partitions.
+______________________________________________________________________
 
-## How to Use Bucketing
+## :material-information-outline: What Bucketing Actually Buys You
 
-If your system supports bucketing (such as Hive on Hadoop or bucketed tables in Spark), you can:
+| Benefit                          | What it means                                                                     |
+| -------------------------------- | --------------------------------------------------------------------------------- |
+| Matching bucket layout           | Rows with the same key are already grouped into corresponding files or partitions |
+| Fewer shuffles on repeated joins | Spark can often skip repartitioning work                                          |
+| More predictable IO shape        | Helpful for large, recurring joins on the same keys                               |
 
-1. **Define Buckets:** Choose a column (typically the join key) and specify the number of buckets.
-2. **Create Bucketed Tables:** Store your data in bucketed tables.
-3. **Perform Joins:** When joining two bucketed tables on the bucketed column, Spark or Hive can efficiently match corresponding buckets, reducing data shuffling and improving performance.
+What it does **not** guarantee:
 
-## Example (Spark SQL)
+- Perfect balance for a genuinely hot key.
+- Removal of sort work.
+- Better performance for one-off ad hoc joins.
+
+______________________________________________________________________
+
+## :material-code-tags: Example Write Pattern
 
 ```sql
-CREATE TABLE users_bucketed
-USING parquet
-CLUSTERED BY (user_id) INTO 8 BUCKETS
-AS SELECT * FROM users;
+create table users_bucketed
+using parquet
+clustered by (user_id) into 8 buckets
+as select * from users;
 
-CREATE TABLE orders_bucketed
-USING parquet
-CLUSTERED BY (user_id) INTO 8 BUCKETS
-AS SELECT * FROM orders;
-
-SELECT *
-FROM users_bucketed u
-JOIN orders_bucketed o
-ON u.user_id = o.user_id;
+create table orders_bucketed
+using parquet
+clustered by (user_id) into 8 buckets
+as select * from orders;
 ```
 
-## Benefits
+______________________________________________________________________
 
-- **Reduces Data Skew:** Evenly distributes data, minimizing skew in join operations.
-- **Improves Performance:** Less data shuffling and more parallelism during joins.
-- **Scalable:** Works well with large datasets.
+## :material-alert-outline: Skew Caveat
 
-> **Tip:** Choose the number of buckets carefully based on your data size and cluster resources.
+If one key dominates the data, all rows for that key still hash to the same bucket number. Bucketing helps shuffle avoidance more directly than it helps severe single-key skew.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Use bucketing for stable, repeated equi-joins on large tables where avoiding shuffle is valuable and the data layout can be planned ahead of time.

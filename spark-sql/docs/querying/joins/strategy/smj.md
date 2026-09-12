@@ -1,117 +1,89 @@
-# :material-cog-transfer: Sort-Merge Join
+# :material-sort: Sort-Merge Join
 
-Sort-Merge Join (SMJ) is the **default fallback** join strategy in Spark for large datasets where broadcast is not feasible. It requires join keys to be sortable.
+`SortMergeJoin` is the most common shuffle-based equi-join plan in Spark 4.2 when broadcast is not used.
 
----
+### :material-animation-play: Interactive Visualization — Sort-Merge Join
 
-## :material-sitemap: Overview
+<div id="viz-joins-strategy-smj" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    L[Left] -->|shuffle + sort on key| M[Merge Join]
-    R[Right] -->|shuffle + sort on key| M
-    M --> O[Result]
+See how both inputs shuffle and sort on the join key before the merge step walks the aligned partitions.
+
+<script src="../../../assets/js/querying-joins-strategy-viz.js"></script>
+
+______________________________________________________________________
+
+## :material-check-decagram: Verified in PySpark 4.2
+
+After disabling auto broadcast:
+
+```sql
+set spark.sql.autoBroadcastJoinThreshold = -1;
+
+select *
+from (select id, id % 5 as k from range(0, 1000)) b
+join (select id, id % 5 as k from range(0, 10)) s
+  on b.k = s.k;
 ```
 
----
+`EXPLAIN FORMATTED` showed:
 
-## :material-cog-outline: How It Works
+```text
+SortMergeJoin [k#4L], [k#5L], Inner
+Sort [k#4L ASC NULLS FIRST]
+Sort [k#5L ASC NULLS FIRST]
+```
 
-1. **Shuffle Phase** — Both DataFrames are shuffled so rows with the same join key land in the same partition.
-2. **Sort Phase** — Each partition is sorted by the join key independently on each executor.
-3. **Merge Phase** — Spark walks both sorted partitions in tandem, emitting matched rows — an O(N) scan with no hash table needed.
+The `MERGE` hint produced the same operator in a second verification query.
 
----
+______________________________________________________________________
+
+## :material-information-outline: When Spark Chooses It
+
+Spark 4.2 tends to use `SortMergeJoin` when:
+
+- The predicate is an equi-join.
+- Broadcast is unavailable, disabled, or not selected.
+- Keys are orderable.
+- No stronger hint pushes Spark toward another eligible operator.
+
+It is the safe general-purpose distributed join because it can stream sorted partitions without building a large hash table for the whole relation.
+
+______________________________________________________________________
 
 ## :material-table: Properties
 
-| Property | Value |
-|----------|-------|
-| Join condition | Equi-join only (`=`) |
-| Key sortability | Required |
-| Supported join types | All (inner, left, right, full, semi, anti) |
-| Memory pressure | Low — no in-memory hash table |
-| Network cost | High — full shuffle of both sides |
-| Default strategy | Yes (when broadcast not applicable) |
+| Property        | Sort-merge join behavior                                           |
+| --------------- | ------------------------------------------------------------------ |
+| Predicate shape | Equi-join only                                                     |
+| Shuffle         | Both sides                                                         |
+| Sort            | Required on both sides                                             |
+| Memory profile  | Lower than hash joins because the merge phase streams sorted input |
+| Common use      | Large-to-large joins                                               |
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Examples
-
-```sql
--- SMJ chosen automatically for two large tables
-SELECT o.order_id, p.payment_status
-FROM orders o
-JOIN payments p ON o.order_id = p.order_id;
-
--- Force SMJ with hint
-SELECT /*+ MERGE(orders) */ o.order_id, p.payment_status
-FROM orders o
-JOIN payments p ON o.order_id = p.order_id;
-
--- Disable broadcast to guarantee SMJ
-SET spark.sql.autoBroadcastJoinThreshold = -1;
-SELECT o.order_id, c.name
-FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id;
-```
-
----
-
-## :material-cog-outline: Configuration
+## :material-code-tags: Useful Controls
 
 ```sql
--- Disable broadcast joins entirely (force SMJ)
-SET spark.sql.autoBroadcastJoinThreshold = -1;
+set spark.sql.autoBroadcastJoinThreshold = -1;
+set spark.sql.join.preferSortMergeJoin = true;
 
--- Prefer SMJ over Shuffle Hash Join (default: true)
-SET spark.sql.join.preferSortMergeJoin = true;
-
--- Number of shuffle partitions (tune for data volume)
-SET spark.sql.shuffle.partitions = 400;
+select /*+ merge(b, s) */ *
+from big_fact b
+join large_dim s
+  on b.k = s.k;
 ```
 
----
+______________________________________________________________________
 
-## :material-check-circle-outline: Sort-Merge vs Shuffle Hash Join
+## :material-alert-outline: Nuance That Matters
 
-| Factor | Sort-Merge Join | Shuffle Hash Join |
-|--------|-----------------|-------------------|
-| Memory | Low | Medium–High |
-| Sort required | Yes | No |
-| Key sortability | Required | Not required |
-| Full outer join | Supported | Not supported |
-| Best when | Keys are well-distributed, memory is tight | One side is much smaller post-shuffle |
+- `SortMergeJoin` is still an equi-join operator; it is not the plan for arbitrary range predicates.
+- Bucketing can remove shuffle requirements, but Spark may still insert `Sort` nodes unless it can also trust the required ordering.
+- If you care about the final adaptive choice, inspect the executed plan after the query runs.
 
----
+______________________________________________________________________
 
-## :material-sitemap: Execution Diagram
+## :material-lightbulb-outline: When to Use
 
-```mermaid
-flowchart TD
-    subgraph Executor1
-        A1[Left Partition 1] --> S1[Sort by key]
-        B1[Right Partition 1] --> S2[Sort by key]
-        S1 --> M1[Merge → Joined Partition 1]
-        S2 --> M1
-    end
-
-    subgraph Executor2
-        A2[Left Partition 2] --> S3[Sort by key]
-        B2[Right Partition 2] --> S4[Sort by key]
-        S3 --> M2[Merge → Joined Partition 2]
-        S4 --> M2
-    end
-
-    M1 --> F[Final Result]
-    M2 --> F
-```
-
----
-
-## :material-magnify: Behavior Notes
-
-1. SMJ is the safest choice for large-to-large joins because it has bounded memory usage.
-2. AQE can dynamically convert a planned SMJ to BHJ at runtime if one side turns out to be small.
-3. If keys are heavily skewed, enable `spark.sql.adaptive.skewJoin.enabled = true` to split hot partitions.
-4. For pre-sorted or bucketed tables, Spark can skip the sort phase — use `CLUSTER BY` or bucketing to pre-arrange data.
+Expect `SortMergeJoin` to be the baseline comparison point for large equi-joins, especially when neither side is small enough to broadcast safely.

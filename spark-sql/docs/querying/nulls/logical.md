@@ -1,130 +1,111 @@
 # :material-null: NULL in Logical Operators
 
-AND, OR, and NOT follow three-valued logic — a NULL input means "unknown", and the result depends on whether the known operand can short-circuit the evaluation.
+Spark 4.2 uses three-valued logic: boolean expressions can evaluate to `TRUE`, `FALSE`, or `NULL`.
 
-### :material-sitemap: Overview
+______________________________________________________________________
 
-```mermaid
-graph LR
-    A["AND / OR / NOT"] --> B{Operand NULLs?}
-    B -->|"Short-circuit FALSE in AND"| C[FALSE]
-    B -->|"Short-circuit TRUE in OR"| D[TRUE]
-    B -->|Otherwise| E[NULL propagates]
-```
+## :material-sitemap: Overview
 
----
+A known `FALSE` is enough to determine `AND`, and a known `TRUE` is enough to determine `OR`. In every other nullable case, Spark returns `NULL`.
 
-## :material-pin: Truth Tables
+### :material-animation-play: Interactive Visualization — Three-Valued Logic
 
-### AND
+<div id="viz-null-logical" class="ts-viz"></div>
 
-| Left  | Right | Result |
-|-------|-------|--------|
-| TRUE  | TRUE  | TRUE   |
-| TRUE  | FALSE | FALSE  |
-| TRUE  | NULL  | NULL   |
-| FALSE | TRUE  | FALSE  |
-| FALSE | FALSE | FALSE  |
-| FALSE | NULL  | FALSE  |
-| NULL  | TRUE  | NULL   |
-| NULL  | FALSE | FALSE  |
-| NULL  | NULL  | NULL   |
+Pick operands and an operator to see the exact Spark 4.2 result. The result chip changes between `TRUE`, `FALSE`, and `NULL` as the truth table changes.
 
-### OR
+______________________________________________________________________
 
-| Left  | Right | Result |
-|-------|-------|--------|
-| TRUE  | TRUE  | TRUE   |
-| TRUE  | FALSE | TRUE   |
-| TRUE  | NULL  | TRUE   |
-| FALSE | TRUE  | TRUE   |
-| FALSE | FALSE | FALSE  |
-| FALSE | NULL  | NULL   |
-| NULL  | TRUE  | TRUE   |
-| NULL  | FALSE | NULL   |
-| NULL  | NULL  | NULL   |
+## :material-table: Truth Tables
 
-### NOT
+### `AND`
 
-| Operand | Result |
-|---------|--------|
-| TRUE    | FALSE  |
-| FALSE   | TRUE   |
-| NULL    | NULL   |
+| Left    | Right   | Result  |
+| ------- | ------- | ------- |
+| `TRUE`  | `TRUE`  | `TRUE`  |
+| `TRUE`  | `FALSE` | `FALSE` |
+| `TRUE`  | `NULL`  | `NULL`  |
+| `FALSE` | `TRUE`  | `FALSE` |
+| `FALSE` | `FALSE` | `FALSE` |
+| `FALSE` | `NULL`  | `FALSE` |
+| `NULL`  | `TRUE`  | `NULL`  |
+| `NULL`  | `FALSE` | `FALSE` |
+| `NULL`  | `NULL`  | `NULL`  |
 
----
+### `OR`
 
-## :material-magnify: Behavior
+| Left    | Right   | Result  |
+| ------- | ------- | ------- |
+| `TRUE`  | `TRUE`  | `TRUE`  |
+| `TRUE`  | `FALSE` | `TRUE`  |
+| `TRUE`  | `NULL`  | `TRUE`  |
+| `FALSE` | `TRUE`  | `TRUE`  |
+| `FALSE` | `FALSE` | `FALSE` |
+| `FALSE` | `NULL`  | `NULL`  |
+| `NULL`  | `TRUE`  | `TRUE`  |
+| `NULL`  | `FALSE` | `NULL`  |
+| `NULL`  | `NULL`  | `NULL`  |
 
-1. **Short-circuit with AND** — if one operand is FALSE, the result is FALSE regardless of the other operand. `FALSE AND NULL` returns FALSE, not NULL.
-2. **Short-circuit with OR** — if one operand is TRUE, the result is TRUE regardless of the other operand. `TRUE OR NULL` returns TRUE, not NULL.
-3. **NULL propagates otherwise** — when the known operand cannot determine the final result, NULL (unknown) is returned.
-4. **NOT NULL is NULL** — negating an unknown value yields another unknown value.
-5. **WHERE clauses discard NULL results** — a condition that evaluates to NULL behaves like FALSE in a filter; the row is excluded.
+### `NOT`
 
----
+| Operand | Result  |
+| ------- | ------- |
+| `TRUE`  | `FALSE` |
+| `FALSE` | `TRUE`  |
+| `NULL`  | `NULL`  |
 
-## :material-flask-outline: Practical Examples
+______________________________________________________________________
 
-### AND — Short-Circuit on FALSE
+## :material-flask-outline: Verified Examples
 
 ```sql
--- FALSE short-circuits: result is FALSE regardless of NULL
-SELECT (FALSE AND NULL)  AS expression_output; -- Result: FALSE
-SELECT (NULL AND FALSE)  AS expression_output; -- Result: FALSE
-
--- TRUE cannot short-circuit: NULL propagates
-SELECT (TRUE AND NULL)   AS expression_output; -- Result: NULL
-SELECT (NULL AND TRUE)   AS expression_output; -- Result: NULL
-
--- Both NULL: result is NULL
-SELECT (NULL AND NULL)   AS expression_output; -- Result: NULL
+SELECT
+    TRUE OR NULL AS t_or_n,
+    FALSE OR NULL AS f_or_n,
+    TRUE AND NULL AS t_and_n,
+    FALSE AND NULL AS f_and_n,
+    NOT NULL AS not_n,
+    NULL AND NULL AS n_and_n,
+    NULL OR NULL AS n_or_n;
 ```
 
-### OR — Short-Circuit on TRUE
+```text
++------+------+-------+-------+-----+-------+------+
+|t_or_n|f_or_n|t_and_n|f_and_n|not_n|n_and_n|n_or_n|
++------+------+-------+-------+-----+-------+------+
+|true  |NULL  |NULL   |false  |NULL |NULL   |NULL  |
++------+------+-------+-------+-----+-------+------+
+```
+
+### Why three-valued logic matters in filters
 
 ```sql
--- TRUE short-circuits: result is TRUE regardless of NULL
-SELECT (TRUE OR NULL)    AS expression_output; -- Result: TRUE
-SELECT (NULL OR TRUE)    AS expression_output; -- Result: TRUE
-
--- FALSE cannot short-circuit: NULL propagates
-SELECT (FALSE OR NULL)   AS expression_output; -- Result: NULL
-SELECT (NULL OR FALSE)   AS expression_output; -- Result: NULL
-
--- Both NULL: result is NULL
-SELECT (NULL OR NULL)    AS expression_output; -- Result: NULL
+SELECT name
+FROM
+VALUES
+    ('Joe', true),
+    ('Marry', CAST(NULL AS BOOLEAN)),
+    ('Mike', false)
+AS t(name, flag)
+WHERE NOT flag;
 ```
 
-### NOT — NULL Stays NULL
-
-```sql
-SELECT NOT(NULL)         AS expression_output; -- Result: NULL
-SELECT NOT(TRUE)         AS expression_output; -- Result: FALSE
-SELECT NOT(FALSE)        AS expression_output; -- Result: TRUE
+```text
++----+
+|name|
++----+
+|Mike|
++----+
 ```
 
-### Practical Filter Using OR to Retain NULLs
+`NOT NULL` is still `NULL`, so the `Marry` row is excluded.
 
-```sql
--- Without OR IS NULL: Marry and Albert (age=NULL) are excluded
--- because NULL > 0 evaluates to NULL (not TRUE).
-SELECT name FROM person WHERE age > 0;
--- Result: Joe, Mike, Fred, Michelle, Dan
+______________________________________________________________________
 
--- With OR IS NULL: NULLs are explicitly included.
-SELECT name FROM person WHERE age > 0 OR age IS NULL;
--- Result: Joe, Marry, Mike, Fred, Albert, Michelle, Dan
-```
+## :material-lightbulb-outline: Practical Takeaways
 
----
+- `FALSE AND NULL` is `FALSE`.
+- `TRUE OR NULL` is `TRUE`.
+- `NOT NULL` stays `NULL`, so nullable booleans need careful filtering.
 
-## :material-brain: When to Use
-
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Ensure a NULL column does not exclude rows | `WHERE col > 0 OR col IS NULL` |
-| Guard against NULL in AND chain | Place the most likely FALSE condition first |
-| Guard against NULL in OR chain | Place the most likely TRUE condition first |
-| Negate a nullable boolean | `NOT col IS TRUE` (avoids NOT NULL = NULL pitfall) |
-| Check if at least one condition is met, ignoring NULLs | `COALESCE(condition_col, FALSE)` |
+<script src="../../assets/js/querying-nulls-viz.js"></script>

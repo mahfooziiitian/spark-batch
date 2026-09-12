@@ -1,92 +1,80 @@
-# :material-scale-unbalanced: Skewed Data?
+# :material-call-split: Separating Hot Keys from Normal Keys
 
-Data skew happens when a few keys in your join/groupBy/aggregation have disproportionately more rows than others.
+A practical manual skew strategy is to send the worst hot keys through a special join path and keep the rest of the data on a normal join path.
 
-Example:
+### :material-animation-play: Interactive Visualization — Split Heavy Keys, Then Recombine
 
-SELECT customer_id, COUNT(*)
-FROM transactions
-GROUP BY customer_id;
+<div id="viz-joins-skew-separation" class="ts-viz"></div>
 
+This split-path view is useful when only a handful of values cause the skew and you want a targeted fix instead of salting every row.
 
-:material-arrow-right: If 1 customer has 10M transactions, while most have ~100, Spark will put that skewed key into one task, creating a straggler.
+<script src="../../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-:material-circle-small: Handling Skew in Spark SQL
-1. Salting (Key Randomization)
+______________________________________________________________________
 
-Duplicate skewed keys into multiple buckets by adding a random salt.
+## :material-information-outline: Why It Works
 
--- Step 1: Salt the skewed key
-SELECT t.*, CONCAT(customer_id, '_', CAST(FLOOR(RAND() * 10) AS INT)) AS salted_id
-FROM transactions t;
+If only a few keys are pathological, you do not need to penalize the entire dataset. Instead:
 
+1. Identify hot keys.
+2. Route hot keys into a specialized path.
+3. Keep normal keys on a regular equi-join.
+4. `UNION ALL` the results.
 
-Then join/group by salted_id.
-Later, aggregate results back on customer_id.
+______________________________________________________________________
 
-2. Map-side Skew Join Hint
+## :material-code-tags: Example Pattern
 
-Spark SQL supports skew hints to optimize joins.
-
-SELECT /*+ SKEW(t) */ *
-FROM transactions t
-JOIN customers c
-  ON t.customer_id = c.id;
-
-
-:material-arrow-right: Spark will split skewed keys into multiple partitions automatically.
-
-3. Broadcast Join (Small Table)
-
-If one side of the join is small, avoid shuffle skew:
-
-SELECT /*+ BROADCAST(customers) */ *
-FROM transactions t
-JOIN customers c
-  ON t.customer_id = c.id;
-
-4. Adaptive Query Execution (AQE) Skew Join Handling
-
-From Spark 3.x, AQE can automatically detect and handle skewed partitions.
-
-SET spark.sql.adaptive.enabled = true;
-SET spark.sql.adaptive.skewJoin.enabled = true;
-SET spark.sql.adaptive.skewJoin.skewedPartitionFactor = 5;
-SET spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 64MB;
-
-
-:material-arrow-right: Spark splits large skewed partitions into smaller ones at runtime.
-
-5. Repartition / Bucketing
-
-Repartition data more evenly on the join key:
-
-CREATE TABLE transactions_bucketed
-USING parquet
-CLUSTERED BY (customer_id) INTO 32 BUCKETS;
-
-
-This ensures skewed keys distribute better.
-
-:material-circle-small: Quick Comparison
-Method	When to Use	Notes
-Salting	Extreme skew on a few keys	Manual, works well but needs re-aggregation
-SKEW hint	Large tables with known skew	Spark does partition splitting
-Broadcast join	One side small (<10MB-100MB)	Avoids shuffle
-AQE Skew Handling	Spark 3+ with adaptive enabled	Automatic, best option
-Bucketing / Repartitioning	ETL pipelines with known skew	Preprocessing heavy but efficient
-
-:material-check-circle-outline: Summary:
-In Spark SQL, skewed data can be handled using salting, skew hints, broadcast joins, AQE adaptive handling, or bucketing. Best approach is AQE + hints, but if skew is extreme → add salting.
-
-### :material-sitemap: Overview
-
-```mermaid
-graph LR
-    D[Dataset] -->|detect skew| SK[Skewed keys]
-    D -->|detect normal| NS[Normal keys]
-    SK -->|separate join| J1[Skew join path]
-    NS -->|separate join| J2[Normal join path]
-    J1 --> U[Union results]
-    J2 --> U
+```sql
+with hot_keys as (
+    select customer_id
+    from fact_orders
+    group by customer_id
+    having count(*) > 100000
+),
+hot_fact as (
+    select f.*
+    from fact_orders f
+    join hot_keys h
+      on f.customer_id = h.customer_id
+),
+normal_fact as (
+    select f.*
+    from fact_orders f
+    left anti join hot_keys h
+      on f.customer_id = h.customer_id
+)
+select /*+ broadcast(dim_customer) */ *
+from hot_fact hf
+join dim_customer dc
+  on hf.customer_id = dc.customer_id
+union all
+select *
+from normal_fact nf
+join dim_customer dc
+  on nf.customer_id = dc.customer_id;
 ```
+
+______________________________________________________________________
+
+## :material-table: When It Beats Salting
+
+| Better for separation                  | Better for salting                                          |
+| -------------------------------------- | ----------------------------------------------------------- |
+| Only a few known hot keys              | Many skewed keys or unknown heavy values                    |
+| You want different strategies per path | You want one uniform transformed join                       |
+| You can maintain a hot-key list        | You prefer automatic distribution once keys are transformed |
+
+______________________________________________________________________
+
+## :material-alert-outline: Costs
+
+- More query text and more maintenance.
+- Need a trustworthy way to identify hot keys.
+- Potential double work if the split predicates are not mutually exclusive.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Use manual separation when skew is highly concentrated and identifiable, especially if the hot path can use broadcast while the normal path keeps a standard shuffle join.

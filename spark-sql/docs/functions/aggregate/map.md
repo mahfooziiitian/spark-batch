@@ -2,7 +2,7 @@
 
 Map aggregate functions create key-value map structures from grouped data.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,13 +11,20 @@ graph LR
     C --> D[One Row per Group]
 ```
 
+### :material-animation-play: Interactive Visualization — Pivot Rows into a Map
+
+<div id="viz-map-pivot" class="ts-viz"></div>
+
+Watch `COLLECT_LIST(STRUCT(key, value))` → `MAP_FROM_ENTRIES(...)` turn a
+group of key/value rows into a single map value per group.
+
 ## :material-pin: Functions
 
-| Function | Description | Returns |
-|----------|-------------|---------|
-| `MAP_FROM_ENTRIES(array)` | Create map from array of key-value structs | `MAP<K,V>` |
-| `MAP_FROM_ARRAYS(keys, values)` | Create map from two arrays | `MAP<K,V>` |
-| `MAP(key1, val1, ...)` | Create map from literal key-value pairs | `MAP<K,V>` |
+| Function                        | Description                                | Returns    |
+| ------------------------------- | ------------------------------------------ | ---------- |
+| `MAP_FROM_ENTRIES(array)`       | Create map from array of key-value structs | `MAP<K,V>` |
+| `MAP_FROM_ARRAYS(keys, values)` | Create map from two arrays                 | `MAP<K,V>` |
+| `MAP(key1, val1, ...)`          | Create map from literal key-value pairs    | `MAP<K,V>` |
 
 ## :material-pin: Syntax
 
@@ -81,10 +88,10 @@ FROM config
 GROUP BY service;
 ```
 
-| service | settings |
-|---------|----------|
-| app | {timeout -> 30, retries -> 3} |
-| db | {pool_size -> 10, timeout -> 60} |
+| service | settings                         |
+| ------- | -------------------------------- |
+| app     | {timeout -> 30, retries -> 3}    |
+| db      | {pool_size -> 10, timeout -> 60} |
 
 ### Access Map Values
 
@@ -97,9 +104,9 @@ SELECT
 
 ## :material-brain: When to Use
 
-| Scenario | Approach |
-|----------|----------|
-| Create static lookup | `MAP('key1', val1, ...)` |
+| Scenario                        | Approach                                       |
+| ------------------------------- | ---------------------------------------------- |
+| Create static lookup            | `MAP('key1', val1, ...)`                       |
 | Pivot key-value rows into a map | `MAP_FROM_ENTRIES(COLLECT_LIST(STRUCT(k, v)))` |
-| Combine two parallel arrays | `MAP_FROM_ARRAYS(keys_array, values_array)` |
-| Dynamic configuration objects | Aggregate + `MAP_FROM_ENTRIES` |
+| Combine two parallel arrays     | `MAP_FROM_ARRAYS(keys_array, values_array)`    |
+| Dynamic configuration objects   | Aggregate + `MAP_FROM_ENTRIES`                 |

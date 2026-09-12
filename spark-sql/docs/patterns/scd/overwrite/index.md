@@ -12,28 +12,30 @@ graph LR
     D --> E
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
 <div id="viz-scd-type1" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: When to Use
 
 !!! success "Good fit"
+
     - History is irrelevant — only the **current state** matters (e.g. phone number, email)
     - Correcting data quality errors in the source
     - Dimension attributes used purely for filtering/grouping, not for trend analysis
     - Storage or performance constraints make versioning impractical
 
 !!! failure "Not a good fit"
+
     - You need to answer *"what was the customer's city six months ago?"*
     - Auditing or compliance requires a full change trail
     - Fact rows must be re-attributed to the attribute value at the time of the event
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Table Design
 
@@ -51,10 +53,11 @@ PARTITIONED BY (city);
 ```
 
 !!! tip "Why `row_hash`?"
+
     Computing `md5(concat_ws('||', name, email, city))` once in the staging CTE lets the MERGE
     skip rows that have not changed with a single string comparison — no per-column `!=` chains.
 
----
+______________________________________________________________________
 
 ## :material-database-import: Seed Data
 
@@ -73,7 +76,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-tray-arrow-down: Incoming Staging Data
 
@@ -87,7 +90,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-repeat: SCD Type 1 MERGE
 
@@ -119,7 +122,7 @@ WHEN NOT MATCHED THEN
             src.row_hash, current_timestamp());
 ```
 
----
+______________________________________________________________________
 
 ## :material-format-list-bulleted-type: Variant Patterns
 
@@ -222,21 +225,21 @@ WHEN NOT MATCHED THEN
             src.row_hash, current_timestamp());
 ```
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Final Output
 
 After the merge, `dim_customer` contains one row per customer with only current values:
 
-| customer_id | name    | email                  | city | updated_at          |
-|-------------|---------|------------------------|------|---------------------|
-| cust1       | Alice   | alice@example.com      | NY   | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | bob@newdomain.com      | CA   | 2024-06-15 09:00:00 |
-| cust3       | Charlie | charlie@example.com    | WA   | 2024-06-15 09:00:00 |
+| customer_id | name    | email               | city | updated_at          |
+| ----------- | ------- | ------------------- | ---- | ------------------- |
+| cust1       | Alice   | alice@example.com   | NY   | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | bob@newdomain.com   | CA   | 2024-06-15 09:00:00 |
+| cust3       | Charlie | charlie@example.com | WA   | 2024-06-15 09:00:00 |
 
 `cust1` was unchanged — `updated_at` stays at its original value.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Validation Queries
 
@@ -291,20 +294,20 @@ WHERE customer_id IS NULL;
 -- Expected: 0
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
-| Pitfall | Consequence | Solution |
-|---------|-------------|---------|
-| Updating unchanged rows | Inflated `updated_at`, wasted I/O | Use `row_hash` guard on `WHEN MATCHED` |
-| Duplicate keys in staging | MERGE non-determinism, wrong winner | Deduplicate with `ROW_NUMBER()` before MERGE |
-| NULL business key in staging | Silent INSERT of a NULL-keyed row | Add a NOT NULL constraint or a pre-merge filter |
-| Hash collision (rare) | False negative — changed row not updated | Include a version/timestamp column in the hash |
-| Missing columns in INSERT | NULL values silently written | Enumerate all columns explicitly in INSERT clause |
-| Partitioned table + full scan | Slow MERGE on large tables | Filter staging to only relevant partition values |
+| Pitfall                       | Consequence                              | Solution                                          |
+| ----------------------------- | ---------------------------------------- | ------------------------------------------------- |
+| Updating unchanged rows       | Inflated `updated_at`, wasted I/O        | Use `row_hash` guard on `WHEN MATCHED`            |
+| Duplicate keys in staging     | MERGE non-determinism, wrong winner      | Deduplicate with `ROW_NUMBER()` before MERGE      |
+| NULL business key in staging  | Silent INSERT of a NULL-keyed row        | Add a NOT NULL constraint or a pre-merge filter   |
+| Hash collision (rare)         | False negative — changed row not updated | Include a version/timestamp column in the hash    |
+| Missing columns in INSERT     | NULL values silently written             | Enumerate all columns explicitly in INSERT clause |
+| Partitioned table + full scan | Slow MERGE on large tables               | Filter staging to only relevant partition values  |
 
----
+______________________________________________________________________
 
 ## :material-cog-outline: Best Practices
 
@@ -315,15 +318,15 @@ WHERE customer_id IS NULL;
 5. **Add `updated_at`** — even though Type 1 keeps no history, a timestamp tells you when the ETL last touched the row.
 6. **Run validation assertions** after every merge before signalling success to downstream jobs.
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: SCD Type Comparison
 
-| Scenario | Recommended Type |
-|----------|-----------------|
-| Only current values, no history | **Type 1** |
-| Full history with effective-date ranges | Type 2 |
-| Current + one previous value per attribute | Type 3 |
-| Current table + separate history table | Type 4 |
-| Current table + history table with FK link | Type 5 |
-| Current + history + previous value, single table | Type 6 |
+| Scenario                                         | Recommended Type |
+| ------------------------------------------------ | ---------------- |
+| Only current values, no history                  | **Type 1**       |
+| Full history with effective-date ranges          | Type 2           |
+| Current + one previous value per attribute       | Type 3           |
+| Current table + separate history table           | Type 4           |
+| Current table + history table with FK link       | Type 5           |
+| Current + history + previous value, single table | Type 6           |

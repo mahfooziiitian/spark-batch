@@ -2,7 +2,7 @@ title: Optimization
 nav:
   - index.md
   - optimization.md
-  - predicate_pushdown.md
+  - predicate-pushdown.md
   - shuffling.md
   - profiling.md
   - Catalyst: catalyst

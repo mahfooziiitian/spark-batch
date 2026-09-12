@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
 from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
-from tests._helpers import assert_query_in_source, create_view
+
+from spark_sql._helpers import assert_query_in_source, create_view
 
 if TYPE_CHECKING:
     from pyspark.sql import DataFrame, SparkSession

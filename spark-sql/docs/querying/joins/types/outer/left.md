@@ -6,11 +6,10 @@ A **Left Outer Join** returns:
 - :material-check-circle-outline: **Matching rows from the right table**
 - :material-close-circle-outline: **If no match:** right-side columns are filled with `NULL`
 
-> **In plain English:**  
+> **In plain English:**\
 > _“Give me everything from the left side, and add matching info from the right if it exists.”_
 
-
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -20,7 +19,7 @@ graph LR
     J -->|no match| N[Left row + NULLs for right]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pencil-outline: SQL Syntax in Spark
 
@@ -33,7 +32,7 @@ LEFT OUTER JOIN B
 
 _Short form: `LEFT JOIN`_
 
----
+______________________________________________________________________
 
 ## :material-chart-bar: Example
 
@@ -43,18 +42,18 @@ _Short form: `LEFT JOIN`_
 
 **Left Table (`Customers`)**
 
-| id | name  |
-|----|-------|
-| 1  | Alice |
-| 2  | Bob   |
-| 3  | Carol |
+| id  | name  |
+| --- | ----- |
+| 1   | Alice |
+| 2   | Bob   |
+| 3   | Carol |
 
 **Right Table (`Orders`)**
 
-| id | product |
-|----|---------|
-| 2  | Laptop  |
-| 3  | Phone   |
+| id  | product |
+| --- | ------- |
+| 2   | Laptop  |
+| 3   | Phone   |
 
 **Query:**
 
@@ -67,27 +66,27 @@ LEFT JOIN Orders o
 
 **Result:**
 
-| id | name  | product |
-|----|-------|---------|
-| 1  | Alice | NULL    |
-| 2  | Bob   | Laptop  |
-| 3  | Carol | Phone   |
+| id  | name  | product |
+| --- | ----- | ------- |
+| 1   | Alice | NULL    |
+| 2   | Bob   | Laptop  |
+| 3   | Carol | Phone   |
 
 > - Alice (`id=1`) appears, but since she has no order, `product = NULL`.
 > - **All customers are retained** (left side).
 
----
+______________________________________________________________________
 
 ## :material-cog-outline:️ Physical Execution in Spark
 
-- **Equi-joins** (`A.id = B.id`):  
-  - Sort-Merge Join  
-  - Shuffle Hash Join  
-  - Broadcast Hash Join (best if right side is small)
-- **Non-equi joins** (`<`, `>`, `BETWEEN`):  
-  - Falls back to Nested Loop Joins
+- **Equi-joins** (`A.id = B.id`):
+    - Sort-Merge Join
+    - Shuffle Hash Join
+    - Broadcast Hash Join (best if right side is small)
+- **Non-equi joins** (`<`, `>`, `BETWEEN`):
+    - Falls back to Nested Loop Joins
 
----
+______________________________________________________________________
 
 ## :material-earth: Real-World Use Cases
 
@@ -96,24 +95,25 @@ LEFT JOIN Orders o
 - **Logs vs Reference Table:** Keep all logs, even if reference lookup fails.
 - **ETL Pipelines:** Detect “missing mappings” by checking for `NULL` values on the right side.
 
----
+______________________________________________________________________
 
 ## :material-rocket-launch: Performance Considerations
 
-- **Broadcast Join Optimization:**  
-  If the right table is small (dimension/lookup), broadcast it:
+- **Broadcast Join Optimization:**\
+    If the right table is small (dimension/lookup), broadcast it:
 
-  ```python
-  from pyspark.sql.functions import broadcast
-  df_left.join(broadcast(df_right), "id", "left")
-  ```
+    ```python
+    from pyspark.sql.functions import broadcast
+    df_left.join(broadcast(df_right), "id", "left")
+    ```
 
-- **Shuffles:**  
-  If both sides are large, Spark may use a shuffle-heavy Sort-Merge Join.
-- **Skew:**  
-  If some join keys are very frequent, some partitions may become bottlenecks.
+- **Shuffles:**\
+    If both sides are large, Spark may use a shuffle-heavy Sort-Merge Join.
 
----
+- **Skew:**\
+    If some join keys are very frequent, some partitions may become bottlenecks.
+
+______________________________________________________________________
 
 ## :material-palette: Diagram (Venn Style)
 
@@ -131,18 +131,18 @@ classDef right fill:#ffc8dd,stroke:#000,stroke-width:1px;
 classDef result fill:#caffbf,stroke:#000,stroke-width:2px;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Quick Comparison
 
-| Join Type   | Keeps All Left? | Keeps All Right? | Keeps Matches? |
-|-------------|:---------------:|:----------------:|:--------------:|
-| Inner Join  | :material-close-circle-outline:              | :material-close-circle-outline:               | :material-check-circle-outline:             |
-| Left Join   | :material-check-circle-outline:              | :material-close-circle-outline:               | :material-check-circle-outline:             |
-| Right Join  | :material-close-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:             |
-| Full Join   | :material-check-circle-outline:              | :material-check-circle-outline:               | :material-check-circle-outline:             |
+| Join Type  |         Keeps All Left?         |        Keeps All Right?         |         Keeps Matches?          |
+| ---------- | :-----------------------------: | :-----------------------------: | :-----------------------------: |
+| Inner Join | :material-close-circle-outline: | :material-close-circle-outline: | :material-check-circle-outline: |
+| Left Join  | :material-check-circle-outline: | :material-close-circle-outline: | :material-check-circle-outline: |
+| Right Join | :material-close-circle-outline: | :material-check-circle-outline: | :material-check-circle-outline: |
+| Full Join  | :material-check-circle-outline: | :material-check-circle-outline: | :material-check-circle-outline: |
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Summary
 

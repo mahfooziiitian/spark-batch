@@ -15,7 +15,8 @@ from pyspark.sql.types import (
     StructField,
     StructType,
 )
-from tests._helpers import assert_query_in_source, create_view
+
+from spark_sql._helpers import assert_query_in_source, create_view
 
 if TYPE_CHECKING:
     from pyspark.sql import DataFrame, SparkSession

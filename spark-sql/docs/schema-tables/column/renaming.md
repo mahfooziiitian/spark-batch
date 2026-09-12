@@ -4,7 +4,7 @@
 table without rewriting data (for Delta tables). For non-Delta tables, most schema
 changes require a full table rewrite.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -44,7 +44,7 @@ ALTER TABLE table_name ALTER COLUMN col_name AFTER other_col;
 ALTER TABLE table_name ALTER COLUMN col_name FIRST;
 ```
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
@@ -55,7 +55,7 @@ ALTER TABLE table_name ALTER COLUMN col_name FIRST;
 5. Adding a column always appends it to the end of the schema unless `AFTER` / `FIRST` is used.
 6. For **non-Delta** Parquet/ORC tables, most `ALTER COLUMN` changes (rename, drop, reorder) require recreating the table.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -148,34 +148,35 @@ DESCRIBE TABLE customers;
 DESCRIBE TABLE EXTENDED customers;   -- includes comments, defaults, constraints
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: Delta vs Non-Delta Schema Changes
 
-| Operation | Delta | Parquet/ORC |
-|-----------|-------|------------|
-| `ADD COLUMN` | Metadata only — instant | Metadata only (Hive metastore) |
-| `RENAME COLUMN` | Metadata only (column mapping required) | Requires full rewrite |
-| `DROP COLUMN` | Metadata only — files unchanged until VACUUM | Requires full rewrite |
-| `ALTER TYPE` (widening) | Metadata only | Requires full rewrite |
-| `ALTER TYPE` (narrowing) | Full rewrite required | Full rewrite required |
-| `REORDER COLUMN` | Metadata only | Requires full rewrite |
+| Operation                | Delta                                        | Parquet/ORC                    |
+| ------------------------ | -------------------------------------------- | ------------------------------ |
+| `ADD COLUMN`             | Metadata only — instant                      | Metadata only (Hive metastore) |
+| `RENAME COLUMN`          | Metadata only (column mapping required)      | Requires full rewrite          |
+| `DROP COLUMN`            | Metadata only — files unchanged until VACUUM | Requires full rewrite          |
+| `ALTER TYPE` (widening)  | Metadata only                                | Requires full rewrite          |
+| `ALTER TYPE` (narrowing) | Full rewrite required                        | Full rewrite required          |
+| `REORDER COLUMN`         | Metadata only                                | Requires full rewrite          |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Command |
-|----------|---------|
-| Fix a column name typo | `RENAME COLUMN` |
-| Add descriptive metadata | `ALTER COLUMN ... COMMENT` |
-| Increase integer range | `ALTER COLUMN ... TYPE BIGINT` |
-| Add a new business attribute | `ADD COLUMN` |
-| Remove obsolete / sensitive column | `DROP COLUMN` |
-| Promote a column to the front | `ALTER COLUMN ... FIRST` |
-| Enforce data quality | `ALTER COLUMN ... SET NOT NULL` |
+| Scenario                           | Command                         |
+| ---------------------------------- | ------------------------------- |
+| Fix a column name typo             | `RENAME COLUMN`                 |
+| Add descriptive metadata           | `ALTER COLUMN ... COMMENT`      |
+| Increase integer range             | `ALTER COLUMN ... TYPE BIGINT`  |
+| Add a new business attribute       | `ADD COLUMN`                    |
+| Remove obsolete / sensitive column | `DROP COLUMN`                   |
+| Promote a column to the front      | `ALTER COLUMN ... FIRST`        |
+| Enforce data quality               | `ALTER COLUMN ... SET NOT NULL` |
 
 !!! tip "Run VACUUM after dropping columns"
+
     `DROP COLUMN` on a Delta table only marks the column as dropped in the transaction
     log — the underlying Parquet files still contain the column data.
     Run `VACUUM table_name RETAIN 0 HOURS` (after disabling retention check) to

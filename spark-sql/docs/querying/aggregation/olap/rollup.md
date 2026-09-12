@@ -2,7 +2,7 @@
 
 `ROLLUP` extends `GROUP BY` to produce aggregate rows along a **left-to-right hierarchy**, generating one subtotal row per prefix of the column list plus a single grand total.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph TD
@@ -12,7 +12,13 @@ graph TD
     A --> E["Grand Total"]
 ```
 
----
+### :material-animation-play: Interactive Visualization — ROLLUP Hierarchy
+
+<div id="viz-olap-rollup-path" class="ts-viz"></div>
+
+Step through the hierarchy to see why `ROLLUP(a, b)` can emit `gid` values `0`, `1`, and `3`, but never `2`.
+
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -24,10 +30,10 @@ GROUP BY ROLLUP (col1 [, col2, ...]);
 
 For `n` columns, `ROLLUP` produces **n + 1** grouping sets:
 
-| Columns | Grouping sets generated |
-|---------|------------------------|
-| `(a)` | `(a)`, `()` → 2 sets |
-| `(a, b)` | `(a, b)`, `(a)`, `()` → 3 sets |
+| Columns     | Grouping sets generated                  |
+| ----------- | ---------------------------------------- |
+| `(a)`       | `(a)`, `()` → 2 sets                     |
+| `(a, b)`    | `(a, b)`, `(a)`, `()` → 3 sets           |
 | `(a, b, c)` | `(a,b,c)`, `(a,b)`, `(a)`, `()` → 4 sets |
 
 `ROLLUP(a, b, c)` is equivalent to:
@@ -41,7 +47,7 @@ GROUPING SETS (
 )
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -49,9 +55,9 @@ GROUPING SETS (
 2. **Order is significant** — `ROLLUP(region, product)` and `ROLLUP(product, region)` produce different subtotal combinations.
 3. **NULL as subtotal marker** — columns removed at a grouping level appear as `NULL` in those rows; use `GROUPING(col)` to distinguish these from real `NULL` data values.
 4. **Grand total** — the empty grouping `()` always produces exactly one grand-total row.
-5. **Row count** — the result contains the detail rows from a plain `GROUP BY` plus `n` additional subtotal/grand-total rows per distinct combination prefix.
+5. **Row count** — the exact output size depends on the distinct values at each prefix level; real `NULL` values can also create detail rows that visually resemble subtotal rows until you inspect `GROUPING()` or `GROUPING_ID()`.
 
----
+______________________________________________________________________
 
 ## :material-tag-outline: GROUPING_ID()
 
@@ -59,13 +65,14 @@ GROUPING SETS (
 
 Because `ROLLUP` removes columns strictly from the **right**, only specific `GROUPING_ID` values are ever produced — those where every removed column is contiguous from the rightmost position:
 
-| `GROUPING(region)` | `GROUPING(product)` | `GROUPING_ID` | Grouping level |
-|--------------------|---------------------|---------------|----------------|
-| 0 | 0 | 0 | Detail `(region, product)` |
-| 0 | 1 | 1 | Region subtotal `(region)` |
-| 1 | 1 | 3 | Grand total `()` |
+| `GROUPING(region)` | `GROUPING(product)` | `GROUPING_ID` | Grouping level             |
+| ------------------ | ------------------- | ------------- | -------------------------- |
+| 0                  | 0                   | 0             | Detail `(region, product)` |
+| 0                  | 1                   | 1             | Region subtotal `(region)` |
+| 1                  | 1                   | 3             | Grand total `()`           |
 
 !!! note "ID=2 is absent from ROLLUP"
+
     `GROUPING_ID = 2` would represent a `(product)` only subtotal — that grouping set exists in [`CUBE`](cube.md) but **not** in `ROLLUP`. For `ROLLUP(a, b, c)` the valid IDs are `0`, `1`, `3`, `7`.
 
 ```sql
@@ -84,7 +91,18 @@ GROUP BY ROLLUP (region, product)
 ORDER BY grp_id, region NULLS LAST, product NULLS LAST;
 ```
 
----
+!!! tip "Verified with real NULL inputs"
+
+    In PySpark 4.2, `ROLLUP(region, product)` over rows containing `(region='East', product=NULL, amount=NULL)` and `(region=NULL, product='Widget', amount=50)` produced all of the following distinct rows:
+
+    - `region='East', product=NULL, gid=0` — real detail row with a data `NULL` product
+    - `region='East', product=NULL, gid=1` — region subtotal
+    - `region=NULL, product=NULL, gid=1` — subtotal for the real `region=NULL` group
+    - `region=NULL, product=NULL, gid=3` — grand total
+
+    The visible `NULL` values are therefore ambiguous until you inspect the grouping bits.
+
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -123,12 +141,12 @@ ORDER BY region NULLS LAST;
 
 ??? success "Expected output"
 
-    | region | total_sales | Note |
-    |--------|-------------|------|
-    | East | 650.0 | detail (region) |
-    | North | 300.0 | detail (region) |
-    | West | 760.0 | detail (region) |
-    | NULL | 1710.0 | grand total () |
+    | region | total_sales | Note            |
+    | ------ | ----------- | --------------- |
+    | East   | 650.0       | detail (region) |
+    | North  | 300.0       | detail (region) |
+    | West   | 760.0       | detail (region) |
+    | NULL   | 1710.0      | grand total ()  |
 
 ### 2 — Two-column ROLLUP (region → product hierarchy)
 
@@ -144,18 +162,18 @@ ORDER BY region NULLS LAST, product NULLS LAST;
 
 ??? success "Expected output"
 
-    | region | product | total_sales | Note |
-    |--------|---------|-------------|------|
-    | East | Gadget | 450.0 | detail |
-    | East | Widget | 200.0 | detail |
-    | East | NULL | 650.0 | region subtotal |
-    | North | Gadget | 210.0 | |
-    | North | Widget | 90.0 | |
-    | North | NULL | 300.0 | region subtotal |
-    | West | Gadget | 610.0 | |
-    | West | Widget | 150.0 | |
-    | West | NULL | 760.0 | region subtotal |
-    | NULL | NULL | 1710.0 | grand total |
+    | region | product | total_sales | Note            |
+    | ------ | ------- | ----------- | --------------- |
+    | East   | Gadget  | 450.0       | detail          |
+    | East   | Widget  | 200.0       | detail          |
+    | East   | NULL    | 650.0       | region subtotal |
+    | North  | Gadget  | 210.0       |                 |
+    | North  | Widget  | 90.0        |                 |
+    | North  | NULL    | 300.0       | region subtotal |
+    | West   | Gadget  | 610.0       |                 |
+    | West   | Widget  | 150.0       |                 |
+    | West   | NULL    | 760.0       | region subtotal |
+    | NULL   | NULL    | 1710.0      | grand total     |
 
 ### 3 — Three-level hierarchy (year → region → product)
 
@@ -172,6 +190,7 @@ ORDER BY sale_year NULLS LAST, region NULLS LAST, product NULLS LAST;
 ```
 
 !!! tip
+
     Generates 4 grouping levels:
 
     - `(year, region, product)` → detail rows
@@ -194,6 +213,7 @@ ORDER BY region NULLS LAST, product NULLS LAST;
 ```
 
 !!! tip
+
     `GROUPING()` returns `1` for columns rolled up into the subtotal and `0` for columns still present at that grouping level.
 
 ### 5 — Readable labels with `GROUPING()`
@@ -210,18 +230,18 @@ ORDER BY region_label, product_label;
 
 ??? success "Expected output"
 
-    | region_label | product_label | total_sales | Note |
-    |--------------|---------------|-------------|------|
-    | All Regions | All Products | 1710.0 | grand total |
-    | East | All Products | 650.0 | region subtotal |
-    | East | Gadget | 450.0 | |
-    | East | Widget | 200.0 | |
-    | North | All Products | 300.0 | |
-    | North | Gadget | 210.0 | |
-    | North | Widget | 90.0 | |
-    | West | All Products | 760.0 | |
-    | West | Gadget | 610.0 | |
-    | West | Widget | 150.0 | |
+    | region_label | product_label | total_sales | Note            |
+    | ------------ | ------------- | ----------- | --------------- |
+    | All Regions  | All Products  | 1710.0      | grand total     |
+    | East         | All Products  | 650.0       | region subtotal |
+    | East         | Gadget        | 450.0       |                 |
+    | East         | Widget        | 200.0       |                 |
+    | North        | All Products  | 300.0       |                 |
+    | North        | Gadget        | 210.0       |                 |
+    | North        | Widget        | 90.0        |                 |
+    | West         | All Products  | 760.0       |                 |
+    | West         | Gadget        | 610.0       |                 |
+    | West         | Widget        | 150.0       |                 |
 
 ### 6 — Multiple aggregates in one pass
 
@@ -239,6 +259,7 @@ ORDER BY GROUPING_ID(region, product), region_label, product_label;
 ```
 
 !!! tip
+
     A single scan produces every subtotal level with all four KPIs.
 
 ### 7 — Year → Quarter → Month time hierarchy
@@ -279,6 +300,7 @@ ORDER BY GROUPING_ID(sale_year, quarter, month_name), yr, qtr, mth;
 ```
 
 !!! tip
+
     4 grouping levels (`GROUPING_ID` values: `0`, `1`, `3`, `7`):
 
     - `0` → monthly detail `(year, quarter, month)`
@@ -323,6 +345,7 @@ ORDER BY grp_id, year_label, quarter_label, region_label;
 ```
 
 !!! tip "Pre-filter before ROLLUP"
+
     Placing `WHERE` inside a CTE before the `GROUP BY ROLLUP` reduces the data scanned in the shuffle stage, which is especially important on large fact tables.
 
 ### 9 — Filtering to a specific hierarchy level
@@ -381,6 +404,7 @@ ORDER BY grp_id, category_label, subcategory_label, product_label;
 ```
 
 !!! tip
+
     `grp_id` values identify each hierarchy level:
 
     - `0` → product detail
@@ -388,7 +412,7 @@ ORDER BY grp_id, category_label, subcategory_label, product_label;
     - `3` → category subtotal
     - `7` → grand total
 
----
+______________________________________________________________________
 
 ## :material-magnify: Decision Flow
 
@@ -406,50 +430,55 @@ flowchart TD
     H --> K["Exactly the sets you list"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
 !!! warning "Column order is critical"
+
     `ROLLUP(region, product)` and `ROLLUP(product, region)` produce **different** subtotals. The leftmost column forms the highest-level hierarchy; always list columns from most-general to most-specific.
 
 !!! warning "NULL ambiguity without GROUPING()"
+
     A `NULL` output column may be a subtotal placeholder *or* genuine `NULL` data. Always use `GROUPING(col)` or `GROUPING_ID()` to distinguish them — never filter on `col IS NULL` alone.
 
 !!! warning "Do not skip hierarchy levels"
-    `ROLLUP(category, product)` will not produce a `subcategory` subtotal — it only rolls up in the order given. If you need non-contiguous subtotals (e.g., category + month, skipping subcategory), use [`GROUPING SETS`](group_set.md) instead.
+
+    `ROLLUP(category, product)` will not produce a `subcategory` subtotal — it only rolls up in the order given. If you need non-contiguous subtotals (e.g., category + month, skipping subcategory), use [`GROUPING SETS`](group-set.md) instead.
 
 !!! note "ROLLUP is not symmetric — CUBE is"
+
     Unlike [`CUBE`](cube.md), swapping column order in `ROLLUP` changes which subtotals are generated. Design the column order to match your actual data hierarchy.
 
 !!! tip "Prefer ROLLUP over CUBE for strict hierarchies"
+
     A time dimension (year → quarter → month) has a natural parent-child order. `ROLLUP` generates exactly `n+1` sets instead of `CUBE`'s `2ⁿ`, keeping query cost proportional and predictable.
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Details |
-|-----|---------|
-| Pre-filter in a CTE | Apply `WHERE` inside a CTE before `GROUP BY ROLLUP` so only relevant rows enter the shuffle stage. |
-| Predictable cost | `ROLLUP` on `n` columns produces exactly `n+1` grouping sets — much cheaper than `CUBE` (2ⁿ) when `n` is large. |
-| AQE coalesces partitions | Spark AQE (`spark.sql.adaptive.coalescePartitions.enabled = true`) right-sizes shuffle output partitions for rollup queries. |
-| Partition pruning | When the first `ROLLUP` column is also a table partition column (e.g., `sale_year`), Spark can skip irrelevant partitions at the scan stage. |
+| Tip                                  | Details                                                                                                                                                              |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pre-filter in a CTE                  | Apply `WHERE` inside a CTE before `GROUP BY ROLLUP` so only relevant rows enter the shuffle stage.                                                                   |
+| Predictable cost                     | `ROLLUP` on `n` columns produces exactly `n+1` grouping sets — much cheaper than `CUBE` (2ⁿ) when `n` is large.                                                      |
+| AQE coalesces partitions             | Spark AQE (`spark.sql.adaptive.coalescePartitions.enabled = true`) right-sizes shuffle output partitions for rollup queries.                                         |
+| Partition pruning                    | When the first `ROLLUP` column is also a table partition column (e.g., `sale_year`), Spark can skip irrelevant partitions at the scan stage.                         |
 | Avoid high-cardinality inner columns | High-cardinality columns in the middle of the hierarchy (e.g., `order_id`) create a huge number of partial-aggregate rows. Aggregate to a coarser granularity first. |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Year → Quarter → Month hierarchy | `ROLLUP(year, quarter, month)` |
-| Country → Region → City breakdown | `ROLLUP(country, region, city)` |
-| Category → Subcategory → Product totals | `ROLLUP(category, subcategory, product)` |
-| Department → Team → Employee cost reporting | `ROLLUP(department, team, employee)` |
-| Fiscal year → Period → Week financial rollup | `ROLLUP(fiscal_year, period, week)` |
-| Compact row-type classifier per level | `GROUPING_ID()` alongside `ROLLUP` |
-| Distinguish data NULLs from subtotal NULLs | `GROUPING(col)` alongside `ROLLUP` |
-| Grand total only (no subtotals) | Plain `GROUP BY` |
-| All possible subtotal combinations | [`CUBE`](cube.md) |
-| Non-contiguous or non-hierarchical combinations | [`GROUPING SETS`](group_set.md) |
+| Scenario                                        | Recommended Pattern                      |
+| ----------------------------------------------- | ---------------------------------------- |
+| Year → Quarter → Month hierarchy                | `ROLLUP(year, quarter, month)`           |
+| Country → Region → City breakdown               | `ROLLUP(country, region, city)`          |
+| Category → Subcategory → Product totals         | `ROLLUP(category, subcategory, product)` |
+| Department → Team → Employee cost reporting     | `ROLLUP(department, team, employee)`     |
+| Fiscal year → Period → Week financial rollup    | `ROLLUP(fiscal_year, period, week)`      |
+| Compact row-type classifier per level           | `GROUPING_ID()` alongside `ROLLUP`       |
+| Distinguish data NULLs from subtotal NULLs      | `GROUPING(col)` alongside `ROLLUP`       |
+| Grand total only (no subtotals)                 | Plain `GROUP BY`                         |
+| All possible subtotal combinations              | [`CUBE`](cube.md)                        |
+| Non-contiguous or non-hierarchical combinations | [`GROUPING SETS`](group-set.md)          |

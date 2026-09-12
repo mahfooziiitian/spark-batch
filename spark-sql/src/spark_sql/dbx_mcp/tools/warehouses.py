@@ -1,3 +1,5 @@
+"""SQL warehouse listing and name resolution for the ``dbx_mcp`` server."""
+
 import logging
 
 from spark_sql.dbx_mcp.clients.databricks_client import (
@@ -8,8 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 def list_warehouses() -> list[dict]:
-    """
-    List SQL warehouses visible to the configured Databricks PAT.
+    """List SQL warehouses visible to the configured Databricks credentials.
+
+    Returns:
+        One dict per warehouse with ``id``, ``name``, and ``state`` keys.
     """
     logger.info("Listing SQL warehouses")
     workspace_client = get_workspace_client()

@@ -3,7 +3,7 @@
 Detect and resolve data integrity issues — duplicates, inconsistencies, and orphan records —
 before they propagate downstream.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Pipeline Flow
 
@@ -15,16 +15,16 @@ flowchart LR
     RESOLVE --> CLEAN["Clean dataset"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Problem | Technique |
-|------|---------|-----------|
-| [Finding Duplicates](finding.md) | Identify duplicate rows | `GROUP BY HAVING`, window functions, hash comparison |
-| [Deduplication](removal.md) | Remove duplicates, keep best row | `ROW_NUMBER`, `QUALIFY`, `MERGE` |
+| Page                             | Problem                          | Technique                                            |
+| -------------------------------- | -------------------------------- | ---------------------------------------------------- |
+| [Finding Duplicates](finding.md) | Identify duplicate rows          | `GROUP BY HAVING`, window functions, hash comparison |
+| [Deduplication](removal.md)      | Remove duplicates, keep best row | `ROW_NUMBER`, `QUALIFY`, `MERGE`                     |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
@@ -32,8 +32,9 @@ flowchart LR
 - Ingestion layer — catch duplicates introduced by retry logic or late-arriving data.
 - Master data management — merge customer/product records from multiple sources.
 
----
+______________________________________________________________________
 
 !!! note "Related"
+
     For **detection** patterns — change detection, outliers, snapshot diffs, and fraud
     signals — see the parent [Data Quality](../index.md) section.

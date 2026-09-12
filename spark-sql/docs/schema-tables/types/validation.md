@@ -119,14 +119,14 @@ FROM raw_data;
 
 ## :material-brain: When to Use
 
-| Scenario | Function |
-|----------|----------|
-| Convert types safely | `TRY_CAST` |
-| Validate string patterns | `RLIKE` / `REGEXP` |
-| Check for NULLs | `IS NULL` / `IS NOT NULL` |
-| Inspect column type at runtime | `TYPEOF` |
-| Flag bad records | `TRY_CAST(...) IS NULL` |
-| Filter to clean data only | Combine `TRY_CAST` + `RLIKE` in WHERE |
+| Scenario                       | Function                              |
+| ------------------------------ | ------------------------------------- |
+| Convert types safely           | `TRY_CAST`                            |
+| Validate string patterns       | `RLIKE` / `REGEXP`                    |
+| Check for NULLs                | `IS NULL` / `IS NOT NULL`             |
+| Inspect column type at runtime | `TYPEOF`                              |
+| Flag bad records               | `TRY_CAST(...) IS NULL`               |
+| Filter to clean data only      | Combine `TRY_CAST` + `RLIKE` in WHERE |
 
 > **Tip:** Always use `TRY_CAST` instead of `CAST` when processing untrusted data —
 > it prevents query failures from bad values.

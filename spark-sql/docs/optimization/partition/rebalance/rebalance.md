@@ -1,174 +1,194 @@
 # :material-scale-balance: REBALANCE
 
-`REBALANCE` is an AQE-powered hint that shuffles data into **optimally-sized,
-evenly-distributed partitions** at runtime — balancing between `REPARTITION`
-(explicit shuffle) and `COALESCE` (no shuffle) by letting the Adaptive Query
-Engine decide the final partition count and sizes.
+`REBALANCE` is an AQE-aware partition hint for reshaping final output after a
+shuffle. In Spark 4.2 it is most useful near writes, where AQE can merge small
+shuffle partitions and split skewed ones into more practical output chunks.
 
-!!! note "Requires AQE"
-    `REBALANCE` only takes effect when `spark.sql.adaptive.enabled = true`
-    (default in Spark 3.2+). Without AQE it falls back to a standard shuffle.
+!!! note "AQE is required"
 
----
+    In PySpark 4.2, `REBALANCE` only has an effect when
+    `spark.sql.adaptive.enabled = true`. With AQE disabled, Spark ignores the
+    hint entirely rather than falling back to a normal repartition shuffle.
+
+______________________________________________________________________
+
+### :material-animation-play: Interactive Visualization — REBALANCE With AQE On vs Off
+
+<div id="viz-rebalance-aqe" class="ts-viz"></div>
+
+Toggle AQE to compare a skewed input layout with the adaptive outcome Spark is trying to produce for a write-friendly final stage.
+
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
 ```sql
--- Rebalance without a key — uniform distribution
-SELECT /*+ REBALANCE */ * FROM table;
-
--- Rebalance into n target partitions
-SELECT /*+ REBALANCE(n) */ * FROM table;
-
--- Rebalance by column — co-locate rows with the same key
-SELECT /*+ REBALANCE(col) */ * FROM table;
-
--- Rebalance by count + column
-SELECT /*+ REBALANCE(n, col1, col2) */ * FROM table;
+SELECT /*+ REBALANCE */ * FROM table_name;
+SELECT /*+ REBALANCE(4) */ * FROM table_name;
+SELECT /*+ REBALANCE(key_col) */ * FROM table_name;
+SELECT /*+ REBALANCE(4, key_col) */ * FROM table_name;
 ```
 
----
+______________________________________________________________________
+
+## :material-check-decagram: Verified Spark 4.2 Findings
+
+These checks were run with PySpark 4.2.0.
+
+### With AQE enabled
+
+```sql
+EXPLAIN FORMATTED
+SELECT /*+ REBALANCE(4) */ * FROM range(100);
+
+-- == Physical Plan ==
+-- AdaptiveSparkPlan
+-- +- Exchange
+--    Arguments: RoundRobinPartitioning(4), REBALANCE_PARTITIONS_BY_NONE
+```
+
+```sql
+EXPLAIN FORMATTED
+SELECT /*+ REBALANCE(4, id) */ * FROM range(100);
+
+-- == Physical Plan ==
+-- AdaptiveSparkPlan
+-- +- Exchange
+--    Arguments: hashpartitioning(id, 4), REBALANCE_PARTITIONS_BY_COL
+```
+
+### With AQE disabled
+
+```sql
+EXPLAIN FORMATTED
+SELECT /*+ REBALANCE(4) */ * FROM range(100);
+
+-- == Physical Plan ==
+-- Range
+```
+
+No rebalance exchange appears at all. That corrects a common misconception:
+`REBALANCE` is **not** a synonym for `REPARTITION` when AQE is off.
+
+### Final plan after execution
+
+On a skewed test dataset, the executed plan finished as an
+`AdaptiveSparkPlan isFinalPlan=true` with `AQEShuffleRead skewed` or
+`AQEShuffleRead coalesced and skewed`, confirming that AQE can rewrite the
+post-shuffle read side after the rebalance exchange is inserted.
+
+______________________________________________________________________
 
 ## :material-sitemap: How REBALANCE Works
 
 ```mermaid
 flowchart LR
-    subgraph Shuffle Stage
-        P1["Partition 1\n200 MB (hot)"]
-        P2["Partition 2\n5 MB"]
-        P3["Partition 3\n3 MB"]
+    subgraph Before shuffle output
+        P1["P1\nvery large"]
+        P2["P2\nsmall"]
+        P3["P3\nsmall"]
+        P4["P4\nmedium"]
     end
-    AQE["AQE Runtime\nStatistics"]
-    subgraph Optimised Output
-        O1["Output 1\n~128 MB"]
-        O2["Output 2\n~128 MB"]
-        O3["Output 3\n~80 MB (last)"]
+    EX["Exchange tagged\nREBALANCE_PARTITIONS_*"]
+    AQE["AQE runtime stats"]
+    subgraph Final output
+        O1["~balanced"]
+        O2["~balanced"]
+        O3["~balanced"]
     end
-    P1 --> AQE
-    P2 --> AQE
-    P3 --> AQE
-    AQE -->|splits hot partition| O1
-    AQE -->|merges cold partitions| O2
+    P1 --> EX
+    P2 --> EX
+    P3 --> EX
+    P4 --> EX
+    EX --> AQE
+    AQE --> O1
+    AQE --> O2
     AQE --> O3
 ```
 
-AQE collects runtime statistics after the shuffle and then coalesces small
-partitions and splits large ones to hit the target partition size
-(`spark.sql.adaptive.advisoryPartitionSizeInBytes`, default 64 MB).
+The hint inserts a rebalance-style shuffle, then AQE decides whether the read
+side should be coalesced, split for skew, or both.
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Examples
+## :material-flask-outline: Verified Examples
 
-### Balanced write without specifying a count
-
-```sql
--- AQE decides how many output files to write
-INSERT INTO analytics.orders
-SELECT /*+ REBALANCE */
-    order_id, customer, amount, region, order_date
-FROM staging_orders;
-```
-
-### Target a specific file count
+### Rebalance without a key
 
 ```sql
--- Aim for ~20 output partitions; AQE adjusts based on actual data size
-SELECT /*+ REBALANCE(20) */
-    order_id, region, amount
-FROM orders
-WHERE order_date = '2024-06-01';
+SELECT /*+ REBALANCE */ *
+FROM range(100);
 ```
 
-### Co-locate by key for downstream joins
+Verified initial plan under AQE:
+
+- `AdaptiveSparkPlan`
+- `Exchange RoundRobinPartitioning(200), REBALANCE_PARTITIONS_BY_NONE`
+
+The `200` comes from `spark.sql.shuffle.partitions` when no count is supplied.
+
+### Rebalance by key
 
 ```sql
--- Rebalance so all rows for the same customer_id are in the same partition
--- Reduces shuffle in the subsequent join
-WITH rebalanced AS (
-    SELECT /*+ REBALANCE(customer_id) */
-        order_id, customer_id, amount
-    FROM orders
-)
-SELECT r.order_id, c.name, r.amount
-FROM rebalanced r
-JOIN customers c ON r.customer_id = c.customer_id;
+SELECT /*+ REBALANCE(4, id) */ *
+FROM range(100);
 ```
 
-### Fix skewed aggregation output
+Verified initial plan under AQE:
 
-```sql
--- Large regions (US) bloat a single partition; REBALANCE splits them
-SELECT /*+ REBALANCE(region) */
-    region,
-    product_id,
-    SUM(amount)  AS revenue,
-    COUNT(*)     AS order_count
-FROM sales
-GROUP BY region, product_id;
+- `AdaptiveSparkPlan`
+- `Exchange hashpartitioning(id, 4), REBALANCE_PARTITIONS_BY_COL`
+
+### Why `REBALANCE(4)` is not a fixed output guarantee
+
+A larger skewed test query produced final executed plans such as:
+
+```text
+AdaptiveSparkPlan isFinalPlan=true
++- ResultQueryStage
+   +- AQEShuffleRead skewed
+      +- ShuffleQueryStage
+         +- Exchange RoundRobinPartitioning(4), REBALANCE_PARTITIONS_BY_NONE
 ```
 
-### Balanced Delta table write (recommended pattern)
+That is the important contract: `4` controls the initial exchange width, but AQE
+can still reshape the final read side.
 
-```sql
--- Write balanced files into a Delta table — avoid small-file accumulation
-INSERT INTO delta.`/mnt/delta/orders/`
-SELECT /*+ REBALANCE */
-    order_id, customer, amount, region, order_date
-FROM staging
-WHERE order_date = current_date() - INTERVAL 1 DAY;
-```
-
----
+______________________________________________________________________
 
 ## :material-cog: Relevant Configuration
 
-| Property | Default | Description |
-|----------|---------|-------------|
-| `spark.sql.adaptive.enabled` | `true` | Must be enabled for REBALANCE to work |
-| `spark.sql.adaptive.advisoryPartitionSizeInBytes` | `64m` | Target size per output partition |
-| `spark.sql.adaptive.coalescePartitions.minPartitionSize` | `1m` | Minimum partition size after coalescing |
-| `spark.sql.adaptive.coalescePartitions.enabled` | `true` | Enable AQE partition coalescing |
+| Property                                          | Typical effect                              |
+| ------------------------------------------------- | ------------------------------------------- |
+| `spark.sql.adaptive.enabled`                      | Must be `true` for the hint to matter       |
+| `spark.sql.shuffle.partitions`                    | Default width when `REBALANCE` has no count |
+| `spark.sql.adaptive.advisoryPartitionSizeInBytes` | Guides AQE's target output chunk size       |
+| `spark.sql.adaptive.coalescePartitions.enabled`   | Lets AQE merge small shuffle partitions     |
 
 ```sql
--- Check current advisory partition size
-SET spark.sql.adaptive.advisoryPartitionSizeInBytes;
-
--- Increase target to 128 MB for large writes
+SET spark.sql.adaptive.enabled = true;
 SET spark.sql.adaptive.advisoryPartitionSizeInBytes = 134217728;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: REBALANCE vs REPARTITION vs COALESCE
 
-| Feature | `REBALANCE` | `REPARTITION(n)` | `COALESCE(n)` |
-|---------|:-----------:|:----------------:|:-------------:|
-| Shuffle | Yes (AQE) | Yes (full) | No |
-| Partition count decided at | Runtime | Planning | Planning |
-| Handles skew | Yes | Yes (with key) | No |
-| Splits large partitions | Yes | Yes | No |
-| Merges small partitions | Yes | No | Yes |
-| Requires AQE | Yes | No | No |
-| Cost | Medium | High | Low |
+| Feature                             | `REBALANCE(...)`     | `REPARTITION(...)`                 | `COALESCE(n)`                      |
+| ----------------------------------- | -------------------- | ---------------------------------- | ---------------------------------- |
+| Full shuffle inserted               | Yes, when AQE is on  | Yes                                | No                                 |
+| Works with AQE off                  | No meaningful effect | Yes                                | Yes                                |
+| Final partition count deterministic | No                   | Usually yes for the exchange       | Yes for the coalesce target        |
+| Skew handling help                  | Yes, via AQE         | Only via the shuffle you requested | No                                 |
+| Good near writes                    | Yes                  | Sometimes                          | Yes, when data is already balanced |
 
----
-
-## :material-magnify: Behavior Notes
-
-1. **AQE-only** — without AQE, `REBALANCE` behaves like `REPARTITION(n)` with a fixed count.
-2. **Advisory size, not guaranteed** — AQE targets `advisoryPartitionSizeInBytes` but the actual size varies with data distribution.
-3. **Key-based REBALANCE preserves locality** — `REBALANCE(col)` groups identical key values but may split a single key across partitions if it exceeds the advisory size.
-4. **Better than REPARTITION for Delta writes** — produces near-optimal file sizes without over-specifying a partition count.
-
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Write balanced files to Delta / Parquet | `REBALANCE` (no count needed) |
-| AQE is enabled and you want hands-off tuning | `REBALANCE` |
-| Skewed aggregation output | `REBALANCE(key)` |
-| Need deterministic, fixed partition count | `REPARTITION(n)` |
-| Cheaply reduce files on uniform data | `COALESCE(n)` |
+| Scenario                                         | Recommendation                              |
+| ------------------------------------------------ | ------------------------------------------- |
+| AQE-enabled write path needs balanced files      | `REBALANCE`                                 |
+| Need a strict, predictable shuffle width         | `REPARTITION(...)`                          |
+| Only need fewer partitions and no redistribution | `COALESCE(n)`                               |
+| AQE disabled                                     | Do not use `REBALANCE`; choose another hint |

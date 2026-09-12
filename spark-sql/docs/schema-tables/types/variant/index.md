@@ -1,6 +1,7 @@
 # :material-code-json: VARIANT Data Type
 
 !!! info "Spark 4.0"
+
     The VARIANT data type is new in Apache Spark 4.0.
 
 The **VARIANT** type stores semi-structured data (JSON-like) without requiring a
@@ -8,7 +9,7 @@ fixed schema. Values are held in an optimized binary format and queried with the
 `:` field-extraction and `::` cast operators — giving you **schema-on-read**:
 ingest raw JSON now, decide its shape at query time.
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: Why VARIANT?
 
@@ -26,14 +27,16 @@ flowchart LR
 ```
 
 !!! success "Use VARIANT when"
+
     - The schema is **unknown, evolving, or heterogeneous** (one column, many shapes).
     - You ingest **third-party JSON / webhook / event** payloads.
     - You want to **land raw now, model later** without an `ALTER TABLE` migration.
 
 !!! failure "Prefer STRUCT when"
+
     - The schema is **known and stable** — columnar `STRUCT` is faster and enforces types.
 
----
+______________________________________________________________________
 
 ## :material-pin: Creating VARIANT Values
 
@@ -51,7 +54,7 @@ SELECT TRY_PARSE_JSON('{not valid}') AS v;   -- NULL
 SELECT TO_VARIANT_OBJECT(NAMED_STRUCT('id', 1, 'tier', 'gold')) AS v;
 ```
 
----
+______________________________________________________________________
 
 ## :material-key: Field Extraction
 
@@ -84,28 +87,29 @@ SELECT v:['field-name']::STRING   FROM events;
 SELECT v:['promo.code']::STRING   FROM events;   -- literal key 'promo.code'
 ```
 
----
+______________________________________________________________________
 
 ## :material-function: VARIANT Functions
 
-| Function | Description |
-|----------|-------------|
-| `parse_json(str)` | Parse a JSON string into VARIANT (errors on bad input) |
-| `try_parse_json(str)` | Parse, returning NULL on invalid JSON |
-| `variant_get(v, path, type)` | Extract a path with an explicit result type |
-| `try_variant_get(v, path, type)` | Extract, returning NULL on a cast failure |
-| `to_variant_object(struct)` | Build a VARIANT object from a STRUCT/MAP |
-| `typeof(v)` | Runtime type name (`'string'`, `'array'`, `'object'`, …) |
-| `is_variant_null(v)` | Distinguish a JSON `null` from SQL `NULL` |
-| `schema_of_variant(v)` | Infer the schema of a single VARIANT value |
-| `schema_of_variant_agg(v)` | Infer a unified schema across a whole column |
+| Function                         | Description                                              |
+| -------------------------------- | -------------------------------------------------------- |
+| `parse_json(str)`                | Parse a JSON string into VARIANT (errors on bad input)   |
+| `try_parse_json(str)`            | Parse, returning NULL on invalid JSON                    |
+| `variant_get(v, path, type)`     | Extract a path with an explicit result type              |
+| `try_variant_get(v, path, type)` | Extract, returning NULL on a cast failure                |
+| `to_variant_object(struct)`      | Build a VARIANT object from a STRUCT/MAP                 |
+| `typeof(v)`                      | Runtime type name (`'string'`, `'array'`, `'object'`, …) |
+| `is_variant_null(v)`             | Distinguish a JSON `null` from SQL `NULL`                |
+| `schema_of_variant(v)`           | Infer the schema of a single VARIANT value               |
+| `schema_of_variant_agg(v)`       | Infer a unified schema across a whole column             |
 
 !!! tip "`:` vs `variant_get`"
+
     `payload:user.id::BIGINT` and `variant_get(payload, '$.user.id', 'BIGINT')` are
     equivalent. The `:` operator reads better inline; the function form is handy when
     the path is a **parameter** or built dynamically.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Full Runnable Example
 
@@ -118,7 +122,7 @@ VARIANT, a persisted column, and an analytics rollup.
 --8<-- "sql/types/variant/variant.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-chart-box-outline: Real-World Demo — Event Analytics
 
@@ -138,16 +142,17 @@ GROUP BY payload:user.tier::STRING
 ORDER BY total_revenue DESC NULLS LAST;
 ```
 
-| tier | event_count | purchases | total_revenue |
-|------|-------------|-----------|---------------|
-| silver | 2 | 1 | 89.90 |
-| gold | 2 | 1 | 12.50 |
+| tier   | event_count | purchases | total_revenue |
+| ------ | ----------- | --------- | ------------- |
+| silver | 2           | 1         | 89.90         |
+| gold   | 2           | 1         | 12.50         |
 
 !!! note "Missing fields are `NULL`, not errors"
+
     `click` events carry no `amount`; the `::DECIMAL` cast yields SQL `NULL` and
     `SUM` simply ignores it. One query spans many payload shapes safely.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: More Examples
 
@@ -200,7 +205,7 @@ SELECT event_id, payload:type::STRING AS event_type
 FROM raw_events;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare-horizontal: VARIANT vs Struct vs Map
 
@@ -212,14 +217,14 @@ flowchart TD
     Q -->|"Uniform key/value,<br/>same value type"| MP[MAP<br/>dynamic keys]
 ```
 
-| Feature | VARIANT | Struct | Map |
-|---------|---------|--------|-----|
-| Schema required | No | Yes (fixed) | Partial (key/value types) |
-| Nested access | `:` dot notation | `.` dot notation | `[]` bracket |
-| Mixed value types | Yes | No | No |
-| Schema evolution | Automatic | `ALTER TABLE` | Automatic |
-| Performance | Good (binary format) | Best (columnar) | Good |
-| Best for | Unknown / evolving schemas | Known fixed schemas | Key-value data |
+| Feature           | VARIANT                    | Struct              | Map                       |
+| ----------------- | -------------------------- | ------------------- | ------------------------- |
+| Schema required   | No                         | Yes (fixed)         | Partial (key/value types) |
+| Nested access     | `:` dot notation           | `.` dot notation    | `[]` bracket              |
+| Mixed value types | Yes                        | No                  | No                        |
+| Schema evolution  | Automatic                  | `ALTER TABLE`       | Automatic                 |
+| Performance       | Good (binary format)       | Best (columnar)     | Good                      |
+| Best for          | Unknown / evolving schemas | Known fixed schemas | Key-value data            |
 
-See also: [STRUCT](../datatype/complextype/structs/struct_data_type.md) ·
+See also: [STRUCT](../datatype/complextype/structs/struct-data-type.md) ·
 [Data Types overview](../index.md).

@@ -15,29 +15,31 @@ graph LR
     E --> F
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
 <div id="viz-scd-type3" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: When to Use
 
 !!! success "Good fit"
+
     - You need exactly **one level of history** for one or two slowly-changing attributes
     - Analysts must compare **current vs previous** value in a single row without a join
     - Common examples: previous city, previous department, previous job title, previous tier
     - Storage or schema simplicity is a priority
 
 !!! failure "Not a good fit"
+
     - More than one previous value must be retained — each generation needs a new column pair, which is unsustainable
     - Full audit trail required — use Type 2
     - The attribute changes frequently — the previous value is overwritten on every change, losing all earlier history
     - Point-in-time fact joins are needed — use Type 2 with a surrogate key
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Table Design
 
@@ -75,11 +77,12 @@ USING DELTA;
 ```
 
 !!! warning "Schema growth limit"
-    Every new tracked attribute adds two columns.  Beyond two or three tracked attributes
+
+    Every new tracked attribute adds two columns. Beyond two or three tracked attributes
     the schema becomes unwieldy — consider switching to Type 6 (single table, full history)
     or Type 4/5 (separate history table).
 
----
+______________________________________________________________________
 
 ## :material-database-import: Seed Data
 
@@ -91,7 +94,7 @@ VALUES
     ('cust2', 'Bob',   'CA', NULL, NULL, TIMESTAMP '2024-01-01 00:00:00');
 ```
 
----
+______________________________________________________________________
 
 ## :material-tray-arrow-down: Incoming Staging Data
 
@@ -105,7 +108,7 @@ FROM VALUES
 AS t(customer_id, name, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-repeat: SCD Type 3 MERGE
 
@@ -134,10 +137,11 @@ WHEN NOT MATCHED THEN
 ```
 
 !!! tip "NULL-safe comparison"
+
     If `current_city` can be NULL (e.g. on initial load), replace `src.city <> tgt.current_city`
     with `NOT (src.city <=> tgt.current_city)` to avoid NULL comparisons returning UNKNOWN.
 
----
+______________________________________________________________________
 
 ## :material-format-list-bulleted-type: Variant Patterns
 
@@ -162,9 +166,9 @@ WHEN MATCHED AND src.city <> tgt.current_city THEN
         updated_at      = current_timestamp();
 ```
 
-| customer_id | current_city | previous_city | Note |
-|-------------|-------------|---------------|------|
-| cust2       | FL          | TX            | CA (the original) is permanently overwritten |
+| customer_id | current_city | previous_city | Note                                         |
+| ----------- | ------------ | ------------- | -------------------------------------------- |
+| cust2       | FL           | TX            | CA (the original) is permanently overwritten |
 
 ### Track two attributes independently
 
@@ -213,17 +217,17 @@ ALTER TABLE dim_customer ADD COLUMNS (
 );
 ```
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Final Output
 
 After processing the staging batch:
 
 | customer_id | name    | current_city | previous_city | city_changed_at     | updated_at          |
-|-------------|---------|-------------|---------------|---------------------|---------------------|
-| cust1       | Alice   | NY          | NULL          | NULL                | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | TX          | CA            | 2024-06-15 09:00:00 | 2024-06-15 09:00:00 |
-| cust3       | Charlie | WA          | NULL          | NULL                | 2024-06-15 09:00:00 |
+| ----------- | ------- | ------------ | ------------- | ------------------- | ------------------- |
+| cust1       | Alice   | NY           | NULL          | NULL                | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | TX           | CA            | 2024-06-15 09:00:00 | 2024-06-15 09:00:00 |
+| cust3       | Charlie | WA           | NULL          | NULL                | 2024-06-15 09:00:00 |
 
 Key observations:
 
@@ -231,7 +235,7 @@ Key observations:
 - `cust2` — `current_city` flipped to TX, `previous_city` now holds CA, `city_changed_at` set.
 - `cust3` — inserted with `previous_city = NULL` (first version, no prior city).
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Analytical Queries
 
@@ -303,30 +307,31 @@ JOIN dim_customer  AS c USING (customer_id);
 ```
 
 !!! warning "Type 3 cannot reconstruct the past"
+
     If `cust2` placed an order when they lived in CA, the join above will show TX (current).
     Use Type 2 with a surrogate key for accurate point-in-time attribution.
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
-| Pitfall | Consequence | Solution |
-|---------|-------------|---------|
-| Comparing NULL with `<>` | NULL city never triggers the update | Use `NOT (src.city <=> tgt.current_city)` |
-| Multiple tracked attributes with a single `OR` | One attribute change overwrites BOTH `previous_*` columns | Use `CASE WHEN` per attribute (see variant above) |
-| Applying Type 3 to high-churn attributes | `previous_city` overwritten constantly — no meaningful history | Use Type 2 for frequently changing columns |
-| Forgetting `city_changed_at` column | Cannot tell when the city last changed | Add a `*_changed_at` timestamp per tracked attribute |
-| Schema grows unboundedly | Table definition becomes unmanageable | Hard limit: max 2–3 tracked attributes per table |
+| Pitfall                                        | Consequence                                                    | Solution                                             |
+| ---------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------- |
+| Comparing NULL with `<>`                       | NULL city never triggers the update                            | Use `NOT (src.city <=> tgt.current_city)`            |
+| Multiple tracked attributes with a single `OR` | One attribute change overwrites BOTH `previous_*` columns      | Use `CASE WHEN` per attribute (see variant above)    |
+| Applying Type 3 to high-churn attributes       | `previous_city` overwritten constantly — no meaningful history | Use Type 2 for frequently changing columns           |
+| Forgetting `city_changed_at` column            | Cannot tell when the city last changed                         | Add a `*_changed_at` timestamp per tracked attribute |
+| Schema grows unboundedly                       | Table definition becomes unmanageable                          | Hard limit: max 2–3 tracked attributes per table     |
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: SCD Type Comparison
 
-| Scenario | Recommended Type |
-|----------|-----------------|
-| Only current values, no history | Type 1 |
-| Full history with point-in-time accuracy | Type 2 |
-| **Current + one previous value per attribute** | **Type 3** |
-| Current table + separate history table | Type 4 |
-| Current table + history table with FK link | Type 5 |
-| Current + history + previous value, single table | Type 6 |
+| Scenario                                         | Recommended Type |
+| ------------------------------------------------ | ---------------- |
+| Only current values, no history                  | Type 1           |
+| Full history with point-in-time accuracy         | Type 2           |
+| **Current + one previous value per attribute**   | **Type 3**       |
+| Current table + separate history table           | Type 4           |
+| Current table + history table with FK link       | Type 5           |
+| Current + history + previous value, single table | Type 6           |

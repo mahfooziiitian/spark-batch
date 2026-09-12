@@ -1,9 +1,9 @@
 nav:
   - index.md
-  - inner_join.md
+  - inner-join.md
   - outer
-  - left_semi.md
-  - left_anti.md
+  - left-semi.md
+  - left-anti.md
   - cartesian.md
-  - lateral_join.md
+  - lateral-join.md
   - non_equi_join

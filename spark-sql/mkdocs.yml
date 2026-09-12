@@ -98,3 +98,35 @@ extra_javascript:
   - assets/js/application-patterns-viz.js
   - assets/js/patterns-overview-viz.js
   - assets/js/join-viz.js
+  - assets/js/generator-viz.js
+  - assets/js/lambda-viz.js
+  - assets/js/macro-viz.js
+  - assets/js/scalar-index-viz.js
+  - assets/js/scalar-core-viz.js
+  - assets/js/scalar-misc-viz.js
+  - assets/js/datetime-viz.js
+  - assets/js/encryption-viz.js
+  - assets/js/regex-viz.js
+  - assets/js/sql-udf-viz.js
+  - assets/js/udf-viz.js
+  - assets/js/structure-viz.js
+  - assets/js/collection-viz.js
+  - assets/js/aggregate-viz.js
+  - assets/js/internals-viz.js
+  - assets/js/optimization-top-viz.js
+  - assets/js/catalyst-viz.js
+  - assets/js/aqe-viz.js
+  - assets/js/caching-viz.js
+  - assets/js/execution-viz.js
+  - assets/js/partition-viz.js
+  - assets/js/querying-condition-viz.js
+  - assets/js/querying-cte-viz.js
+  - assets/js/querying-having-viz.js
+  - assets/js/querying-joins-core-viz.js
+  - assets/js/querying-nulls-viz.js
+  - assets/js/querying-subquery-viz.js
+  - assets/js/querying-aggregation-viz.js
+  - assets/js/querying-filter-viz.js
+  - assets/js/querying-joins-issues-viz.js
+  - assets/js/querying-joins-strategy-viz.js
+  - assets/js/querying-operator-viz.js

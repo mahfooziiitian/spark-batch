@@ -4,7 +4,7 @@ The **Hive catalog** (`spark_catalog`) integrates Spark SQL with an external
 **Hive Metastore** (HMS) for persistent, cross-session, cross-cluster metadata
 storage. It is the default persistent catalog for on-prem and many cloud Spark deployments.
 
----
+______________________________________________________________________
 
 ## :material-cog: Configuration
 
@@ -28,10 +28,11 @@ spark = (SparkSession.builder
 ```
 
 !!! note "Local Embedded Metastore"
+
     Without `hive.metastore.uris`, Spark creates a local Derby-backed metastore in
     `./metastore_db`. Suitable for testing only — not shared across processes.
 
----
+______________________________________________________________________
 
 ## :material-table: Managed vs External Tables
 
@@ -53,7 +54,7 @@ USING PARQUET
 LOCATION '/mnt/raw/logs';
 ```
 
----
+______________________________________________________________________
 
 ## :material-folder: Partitioned Tables and MSCK REPAIR
 
@@ -72,7 +73,7 @@ MSCK REPAIR TABLE sales;
 SHOW PARTITIONS sales;
 ```
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -149,19 +150,19 @@ ANALYZE TABLE orders COMPUTE STATISTICS FOR COLUMNS amount, order_date;
 ANALYZE TABLE orders PARTITION (order_date = '2024-06-01') COMPUTE STATISTICS;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: Managed vs External — Key Differences
 
-| Aspect | Managed | External |
-|--------|:-------:|:--------:|
-| Data location | `warehouse.dir/<db>/<table>` | User-specified `LOCATION` |
-| `DROP TABLE` deletes data | Yes | No |
-| `TRUNCATE TABLE` supported | Yes | No |
-| Created by `CTAS` | Managed | N/A |
-| Typical use | ETL outputs, marts | Raw landing zones |
+| Aspect                     |           Managed            |         External          |
+| -------------------------- | :--------------------------: | :-----------------------: |
+| Data location              | `warehouse.dir/<db>/<table>` | User-specified `LOCATION` |
+| `DROP TABLE` deletes data  |             Yes              |            No             |
+| `TRUNCATE TABLE` supported |             Yes              |            No             |
+| Created by `CTAS`          |           Managed            |            N/A            |
+| Typical use                |      ETL outputs, marts      |     Raw landing zones     |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -170,14 +171,14 @@ ANALYZE TABLE orders PARTITION (order_date = '2024-06-01') COMPUTE STATISTICS;
 3. **SerDe support** — Hive tables with custom SerDes (ORC, Avro, custom) are readable via `USING HIVE OPTIONS (fileFormat 'ORC')`.
 4. **Stats expire** — Spark does not auto-update statistics; re-run `ANALYZE` after large data changes for accurate query plans.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| On-prem Hadoop / multi-cluster sharing | Hive Metastore catalog |
-| Legacy Hive pipelines | `spark_catalog` with `enableHiveSupport()` |
-| Modern Databricks workload | Migrate to Unity Catalog |
-| Partitioned tables added outside Spark | `MSCK REPAIR TABLE` |
-| Large tables with complex joins | `ANALYZE TABLE` to collect statistics |
+| Scenario                               | Recommendation                             |
+| -------------------------------------- | ------------------------------------------ |
+| On-prem Hadoop / multi-cluster sharing | Hive Metastore catalog                     |
+| Legacy Hive pipelines                  | `spark_catalog` with `enableHiveSupport()` |
+| Modern Databricks workload             | Migrate to Unity Catalog                   |
+| Partitioned tables added outside Spark | `MSCK REPAIR TABLE`                        |
+| Large tables with complex joins        | `ANALYZE TABLE` to collect statistics      |

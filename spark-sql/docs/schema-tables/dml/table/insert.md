@@ -3,7 +3,7 @@
 `INSERT` adds rows to a table. Spark SQL supports appending rows, overwriting
 entire tables or specific partitions, and inserting literal values.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -13,7 +13,7 @@ graph LR
     B --> E["INSERT OVERWRITE PARTITION: replace partition"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -40,31 +40,31 @@ INSERT INTO table_name [(col1, col2, ...)]
 VALUES (val1, val2, ...), (val3, val4, ...);
 ```
 
-| Clause | Purpose |
-|--------|---------|
-| `INTO` | Appends rows to existing data |
+| Clause      | Purpose                                          |
+| ----------- | ------------------------------------------------ |
+| `INTO`      | Appends rows to existing data                    |
 | `OVERWRITE` | Replaces data (whole table or target partitions) |
-| `PARTITION` | Targets specific partition columns |
-| `VALUES` | Inserts literal rows without a SELECT |
+| `PARTITION` | Targets specific partition columns               |
+| `VALUES`    | Inserts literal rows without a SELECT            |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. **Schema matching** — Column count and types of the source must match the
-   target. Column names are matched by *position*, not by name.
+    target. Column names are matched by *position*, not by name.
 2. **Dynamic partition overwrite** — When `spark.sql.sources.partitionOverwriteMode`
-   is `dynamic`, `INSERT OVERWRITE` replaces only the partitions present in the
-   source data, leaving other partitions untouched.
+    is `dynamic`, `INSERT OVERWRITE` replaces only the partitions present in the
+    source data, leaving other partitions untouched.
 3. **Static partition insert** — Providing literal values in the `PARTITION`
-   clause (e.g., `PARTITION (year = 2024)`) writes all rows to that partition
-   regardless of row content.
+    clause (e.g., `PARTITION (year = 2024)`) writes all rows to that partition
+    regardless of row content.
 4. **Auto-create partitions** — New partition directories are created
-   automatically if they do not exist.
+    automatically if they do not exist.
 5. **Atomicity** — On Delta tables, `INSERT` is transactional. On Hive/Parquet
-   tables, a failed write may leave partial files.
+    tables, a failed write may leave partial files.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -117,36 +117,36 @@ INSERT INTO view_events
   SELECT * WHERE event_type = 'view';
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|-------------------|
-| Append new records | `INSERT INTO ... SELECT` |
-| Rebuild a full partition | `INSERT OVERWRITE ... PARTITION (...)` |
-| Replace only touched partitions | Dynamic partition overwrite mode |
-| Seed reference data | `INSERT INTO ... VALUES` |
-| Split rows to multiple targets | Multi-table `FROM ... INSERT` |
+| Scenario                        | Recommended Pattern                    |
+| ------------------------------- | -------------------------------------- |
+| Append new records              | `INSERT INTO ... SELECT`               |
+| Rebuild a full partition        | `INSERT OVERWRITE ... PARTITION (...)` |
+| Replace only touched partitions | Dynamic partition overwrite mode       |
+| Seed reference data             | `INSERT INTO ... VALUES`               |
+| Split rows to multiple targets  | Multi-table `FROM ... INSERT`          |
 
----
+______________________________________________________________________
 
 > **Tip:** Prefer `MERGE INTO` over `INSERT` + `UPDATE` when you need
 > upsert semantics on Delta tables.
 
----
+______________________________________________________________________
 
 ## :material-compare: INSERT INTO vs INSERT OVERWRITE
 
-| Aspect | `INSERT INTO` | `INSERT OVERWRITE` |
-|--------|:-------------:|:------------------:|
-| Effect on existing rows | Appends — existing rows untouched | Replaces — existing rows removed |
-| Partition scope | All partitions | Targeted partitions (with `PARTITION` clause) |
-| Dynamic partition overwrite | N/A | Replaces only partitions present in source data |
-| Idempotent re-run | No — duplicates on re-run | Yes — safe to re-run with same data |
-| Delta transactional | :material-check: | :material-check: |
+| Aspect                      |           `INSERT INTO`           |               `INSERT OVERWRITE`                |
+| --------------------------- | :-------------------------------: | :---------------------------------------------: |
+| Effect on existing rows     | Appends — existing rows untouched |        Replaces — existing rows removed         |
+| Partition scope             |          All partitions           |  Targeted partitions (with `PARTITION` clause)  |
+| Dynamic partition overwrite |                N/A                | Replaces only partitions present in source data |
+| Idempotent re-run           |     No — duplicates on re-run     |       Yes — safe to re-run with same data       |
+| Delta transactional         |         :material-check:          |                :material-check:                 |
 
----
+______________________________________________________________________
 
 ## :material-database-import: Advanced Patterns
 
@@ -194,6 +194,7 @@ ALTER TABLE events DROP PARTITION (event_date = '2024-01-01');
 ```
 
 !!! note "TRUNCATE vs DELETE"
+
     `TRUNCATE TABLE` is faster than `DELETE FROM table` (no WHERE) because it replaces the
     data files in one operation. On Delta, `TRUNCATE` resets time-travel history.
 
@@ -214,14 +215,14 @@ INSERT INTO ref.status_codes (code, label) VALUES
     ('X', 'Cancelled');
 ```
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Reason |
-|-----|--------|
-| Use `INSERT OVERWRITE` for full-partition reloads | Avoids small-file accumulation from repeated appends |
+| Tip                                                      | Reason                                                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------- |
+| Use `INSERT OVERWRITE` for full-partition reloads        | Avoids small-file accumulation from repeated appends                |
 | Set `spark.sql.sources.partitionOverwriteMode = dynamic` | Safe for multi-partition rewrites without touching other partitions |
-| Coalesce source before insert | `SELECT /*+ COALESCE(8) */ ...` reduces output file count |
-| Batch large inserts with CTEs or temp views | Avoids driver OOM on huge `VALUES` lists |
-| Avoid `INSERT INTO ... VALUES` for bulk loads | Use `COPY INTO` or a temp view for large datasets |
+| Coalesce source before insert                            | `SELECT /*+ COALESCE(8) */ ...` reduces output file count           |
+| Batch large inserts with CTEs or temp views              | Avoids driver OOM on huge `VALUES` lists                            |
+| Avoid `INSERT INTO ... VALUES` for bulk loads            | Use `COPY INTO` or a temp view for large datasets                   |

@@ -2,13 +2,13 @@
 
 Spark SQL supports multiple join types, each with different matching behavior and output shape.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
 ```mermaid
 graph TD
-    T[":material-set-all: Join Types"] --> I[Inner]
+    T["Join Types"] --> I[Inner]
     T --> L[Left Outer]
     T --> R[Right Outer]
     T --> F[Full Outer]
@@ -18,28 +18,28 @@ graph TD
     T --> NE[Non-Equi]
 ```
 
----
+______________________________________________________________________
 
 ## :material-table: Types at a Glance
 
-| Type | Keyword | Left Rows | Right Rows | Right Columns | NULLs |
-|------|---------|:---------:|:----------:|:-------------:|:-----:|
-| Inner | `JOIN` / `INNER JOIN` | Matched | Matched | Yes | None |
-| Left Outer | `LEFT JOIN` | **All** | Matched | Yes | Right cols for unmatched |
-| Right Outer | `RIGHT JOIN` | Matched | **All** | Yes | Left cols for unmatched |
-| Full Outer | `FULL OUTER JOIN` | **All** | **All** | Yes | Both sides |
-| Left Semi | `LEFT SEMI JOIN` | Matched | Not returned | No | None |
-| Left Anti | `LEFT ANTI JOIN` | Unmatched | Not returned | No | None |
-| Cross | `CROSS JOIN` | All | All (× n) | Yes | None |
-| Non-Equi | any `JOIN … ON <, >, BETWEEN` | Conditional | Conditional | Yes | Varies |
+| Type        | Keyword                       |  Left Rows  |  Right Rows  | Right Columns |          NULLs           |
+| ----------- | ----------------------------- | :---------: | :----------: | :-----------: | :----------------------: |
+| Inner       | `JOIN` / `INNER JOIN`         |   Matched   |   Matched    |      Yes      |           None           |
+| Left Outer  | `LEFT JOIN`                   |   **All**   |   Matched    |      Yes      | Right cols for unmatched |
+| Right Outer | `RIGHT JOIN`                  |   Matched   |   **All**    |      Yes      | Left cols for unmatched  |
+| Full Outer  | `FULL OUTER JOIN`             |   **All**   |   **All**    |      Yes      |        Both sides        |
+| Left Semi   | `LEFT SEMI JOIN`              |   Matched   | Not returned |      No       |           None           |
+| Left Anti   | `LEFT ANTI JOIN`              |  Unmatched  | Not returned |      No       |           None           |
+| Cross       | `CROSS JOIN`                  |     All     |  All (× n)   |      Yes      |           None           |
+| Non-Equi    | any `JOIN … ON <, >, BETWEEN` | Conditional | Conditional  |      Yes      |          Varies          |
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Comparison
 
 <div id="viz-join-types-overview" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Syntax Examples
 
@@ -75,22 +75,22 @@ FROM products a
 CROSS JOIN regions b;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Join Type |
-|----------|-----------------------|
-| Only matching rows | `INNER JOIN` |
-| All left rows, optional right data | `LEFT JOIN` |
-| All right rows, optional left data | `RIGHT JOIN` |
-| All rows from both sides | `FULL OUTER JOIN` |
-| Check if a record exists | `LEFT SEMI JOIN` |
-| Find records absent from another table | `LEFT ANTI JOIN` |
-| Generate all combinations | `CROSS JOIN` |
-| Match on ranges or inequalities | Non-Equi join |
+| Scenario                               | Recommended Join Type |
+| -------------------------------------- | --------------------- |
+| Only matching rows                     | `INNER JOIN`          |
+| All left rows, optional right data     | `LEFT JOIN`           |
+| All right rows, optional left data     | `RIGHT JOIN`          |
+| All rows from both sides               | `FULL OUTER JOIN`     |
+| Check if a record exists               | `LEFT SEMI JOIN`      |
+| Find records absent from another table | `LEFT ANTI JOIN`      |
+| Generate all combinations              | `CROSS JOIN`          |
+| Match on ranges or inequalities        | Non-Equi join         |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 

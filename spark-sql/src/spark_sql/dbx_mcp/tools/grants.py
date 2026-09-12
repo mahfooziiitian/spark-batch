@@ -1,3 +1,5 @@
+"""Unity Catalog privilege inspection and mutation for the ``dbx_mcp`` server."""
+
 import logging
 
 from databricks.sdk.service.catalog import (
@@ -16,10 +18,15 @@ logger = logging.getLogger(__name__)
 def show_grants(
     catalog_name: str,
 ) -> list[dict]:
-    """
-    Show current privilege assignments on a Unity Catalog catalog.
-    """
+    """Show current privilege assignments on a Unity Catalog catalog.
 
+    Args:
+        catalog_name: Name of the catalog to inspect.
+
+    Returns:
+        One dict per principal with ``principal`` and ``privileges`` (list of
+        privilege names) keys.
+    """
     logger.info("Showing grants on catalog=%s", catalog_name)
     workspace_client = get_workspace_client()
 
@@ -42,13 +49,19 @@ def grant_catalog_privileges(
     principal: str,
     privileges: list[str],
 ) -> str:
-    """
-    Grant privileges on a catalog to a principal.
+    """Grant privileges on a catalog to a principal.
 
     Follow least-privilege: pass only the specific privileges needed
     (e.g. ["USE_CATALOG", "USE_SCHEMA"]) rather than ALL_PRIVILEGES.
-    """
 
+    Args:
+        catalog_name: Name of the catalog to grant on.
+        principal: User, service principal, or group to grant to.
+        privileges: Privilege names to add (e.g. ``["USE_CATALOG", "USE_SCHEMA"]``).
+
+    Returns:
+        A human-readable confirmation message.
+    """
     logger.info("Granting %s on catalog=%s to principal=%s", privileges, catalog_name, principal)
     workspace_client = get_workspace_client()
 
@@ -74,10 +87,16 @@ def revoke_catalog_privileges(
     principal: str,
     privileges: list[str],
 ) -> str:
-    """
-    Revoke privileges on a catalog from a principal.
-    """
+    """Revoke privileges on a catalog from a principal.
 
+    Args:
+        catalog_name: Name of the catalog to revoke on.
+        principal: User, service principal, or group to revoke from.
+        privileges: Privilege names to remove.
+
+    Returns:
+        A human-readable confirmation message.
+    """
     logger.info("Revoking %s on catalog=%s from principal=%s", privileges, catalog_name, principal)
     workspace_client = get_workspace_client()
 

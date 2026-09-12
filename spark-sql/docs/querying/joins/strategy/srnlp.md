@@ -1,86 +1,84 @@
-# :material-cog-transfer: Shuffle-and-Replicate Nested Loop Join (SRNLJ)
+# :material-grid: Shuffle-Replicate Nested-Loop / Cartesian Path
 
-Used for **cross joins** or **non-equi joins** when neither side is small enough to broadcast.
+`SHUFFLE_REPLICATE_NL` is a Spark hint and planner strategy family, but Spark 4.2 typically exposes the resulting physical node as `CartesianProduct` rather than a separate operator named `ShuffleReplicateNestedLoopJoin`.
 
----
+### :material-animation-play: Interactive Visualization — Cartesian and Replicated Nested-Loop Path
 
-## :material-sitemap: Overview
+<div id="viz-joins-strategy-srnl" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    S[Smaller Table] -->|replicate to all partitions| P1[Partition 1]
-    S -->|replicate to all partitions| P2[Partition 2]
-    L[Larger Table] -->|shuffle| P1
-    L -->|shuffle| P2
-    P1 --> O[Cross / Non-Equi Result]
-    P2 --> O
-```
+Use this comparison to distinguish the planner hint name from the actual physical operator name that appears in `EXPLAIN FORMATTED`.
 
----
+<script src="../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-## :material-cog-outline: How It Works
+______________________________________________________________________
 
-| Phase | Description |
-|-------|-------------|
-| **Shuffle** | The larger table is shuffled across the cluster. |
-| **Replicate** | The entire smaller table is replicated to every partition of the larger table. |
-| **Nested Loop** | Within each partition, every row of the smaller replicated copy is compared against every row of the larger partition. |
-| **Output** | Rows satisfying the condition are emitted. |
+## :material-check-decagram: Verified in PySpark 4.2
 
-Output size: **N × M rows** (Cartesian product if no condition, or filtered subset for non-equi).
-
----
-
-## :material-flask-outline: Examples
+With broadcast disabled:
 
 ```sql
--- Cross join: all product × region combinations
-SELECT p.product_id, r.region_name, p.base_price
-FROM products p
-CROSS JOIN regions r;
-
--- Non-equi join: match events to overlapping campaigns
-SELECT e.event_id, c.campaign_id
-FROM events e
-JOIN campaigns c
-    ON e.event_date >= c.start_date AND e.event_date <= c.end_date;
-
--- Force SRNLJ with hint
-SELECT /*+ SHUFFLE_REPLICATE_NL(dates) */
-    t.transaction_id, dates.fiscal_period
-FROM transactions t
-CROSS JOIN fiscal_dates dates;
+select *
+from range(0, 1000) a
+cross join range(0, 200) b;
 ```
 
----
+Spark showed:
 
-## :material-table: SRNLJ vs BNLJ
+```text
+CartesianProduct
+Join type: Inner
+```
 
-| Factor | SRNLJ | BNLJ |
-|--------|-------|------|
-| Small-side handling | Replicated via shuffle | Broadcast by driver |
-| Memory requirement | Lower (replicated in parts) | High (must fit in executor RAM) |
-| Network cost | High (shuffle + replication) | High (broadcast) |
-| When used | Both sides too large to broadcast | One side small enough to broadcast |
-| Non-equi support | Yes | Yes |
+And with an equi-join plus `SHUFFLE_REPLICATE_NL`:
 
----
+```sql
+select /*+ shuffle_replicate_nl(s) */ *
+from (select id, id % 5 as k from range(0, 1000)) b
+join (select id, id % 5 as k from range(0, 200)) s
+  on b.k = s.k;
+```
 
-## :material-alert-circle: Performance Warnings
+Spark still showed `CartesianProduct`, with the equality predicate attached as the join condition.
 
-!!! warning
-    SRNLJ is **extremely expensive**. Output is up to N × M rows. Use only when:
+______________________________________________________________________
 
-    - A true Cartesian product is required (e.g., generating date × dimension combos).
-    - Both sides are too large to broadcast.
+## :material-information-outline: What This Page Really Means
 
-    Always apply aggressive filters before the join to minimise input sizes.
+This page exists because older articles often use names like SRNLJ or SRNLP. In Spark 4.2 terminology:
 
----
+| Term                          | What it refers to                                           |
+| ----------------------------- | ----------------------------------------------------------- |
+| `SHUFFLE_REPLICATE_NL`        | A join hint                                                 |
+| Shuffle-replicate nested-loop | A planner strategy idea                                     |
+| `CartesianProduct`            | The physical operator name you will usually see in the plan |
 
-## :material-magnify: Behavior Notes
+______________________________________________________________________
 
-1. Triggered by `CROSS JOIN`, or by any non-equi join where broadcast is not possible.
-2. Can also be forced with the `SHUFFLE_REPLICATE_NL` hint.
-3. AQE cannot optimise this strategy after the fact — reduce data volume before the join.
-4. For large range joins, the `RANGE_JOIN` hint (Databricks) partitions the range space efficiently and is far cheaper.
+## :material-code-tags: Cross-Join Controls
+
+```sql
+-- Explicit cartesian join: legal without extra config
+select *
+from a
+cross join b;
+
+-- Implicit cartesian join: needs a config change
+set spark.sql.crossJoin.enabled = true;
+select * from a join b;
+```
+
+When `spark.sql.crossJoin.enabled=false`, a conditionless `JOIN` raises an `AnalysisException` instead of planning a cartesian operator.
+
+______________________________________________________________________
+
+## :material-alert-outline: Performance Characteristics
+
+- Output can grow to `N x M` rows very quickly.
+- No hash-table probe or merge shortcut exists here.
+- Broadcasting a small side can change the plan from `CartesianProduct` to `BroadcastNestedLoopJoin`.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Use this path only when cartesian semantics are truly required or when a non-equi shape leaves Spark no cheaper physical alternative.

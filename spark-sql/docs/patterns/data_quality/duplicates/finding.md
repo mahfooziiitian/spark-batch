@@ -3,22 +3,22 @@
 Identify duplicate rows in Spark SQL / Databricks SQL using `GROUP BY HAVING`,
 window functions, and subquery patterns. All techniques work on Delta and Parquet tables.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A[":material-database:️ Source Table"] --> B{"Duplicate\nDetection"}
+    A["Source Table"] --> B{"Duplicate\nDetection"}
     B -->|"GROUP BY + HAVING"| C["Count > 1\n→ duplicated keys"]
     B -->|"ROW_NUMBER()"| D["rn > 1\n→ duplicate rows"]
     B -->|"CTE + JOIN"| E["Full duplicate\nrow records"]
-    C --> F[":material-clipboard-list-outline: Report / Alert"]
+    C --> F["Report / Alert"]
     D --> F
     E --> F
 ```
 
----
+______________________________________________________________________
 
 ## :material-database: Sample Data
 
@@ -50,19 +50,19 @@ SELECT * FROM VALUES
 AS users(id, email, full_name, status, created_at);
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Approach Comparison
 
-| Approach | Returns | Best For |
-|----------|---------|----------|
-| `GROUP BY HAVING COUNT(*) > 1` | Key values only | Quick frequency audit |
-| `ROW_NUMBER() WHERE rn > 1` | Full duplicate rows | Exact row inspection |
-| `CTE + INNER JOIN` | Full rows joined back | Retrieving all columns |
-| `IN (subquery)` | Full rows | Simple single-key duplication |
-| `COUNT(DISTINCT) = COUNT(*)` | Boolean | Candidate primary key check |
+| Approach                       | Returns               | Best For                      |
+| ------------------------------ | --------------------- | ----------------------------- |
+| `GROUP BY HAVING COUNT(*) > 1` | Key values only       | Quick frequency audit         |
+| `ROW_NUMBER() WHERE rn > 1`    | Full duplicate rows   | Exact row inspection          |
+| `CTE + INNER JOIN`             | Full rows joined back | Retrieving all columns        |
+| `IN (subquery)`                | Full rows             | Simple single-key duplication |
+| `COUNT(DISTINCT) = COUNT(*)`   | Boolean               | Candidate primary key check   |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Approach 1 — GROUP BY + HAVING (key frequency)
 
@@ -82,16 +82,17 @@ ORDER BY duplicate_count DESC;
 ??? success "Expected output"
 
     | name    | age | duplicate_count |
-    |---------|-----|-----------------|
+    | ------- | --- | --------------- |
     | Alice   | 20  | 3               |
     | Bob     | 22  | 2               |
     | Charlie | 21  | 2               |
 
 !!! note
+
     Returns only the key columns, not the full rows. Use this to audit which
     values are duplicated and how many times.
 
----
+______________________________________________________________________
 
 ## :material-magnify: Approach 2 — CTE + INNER JOIN (full rows)
 
@@ -116,17 +117,17 @@ ORDER BY s.name, s.id;
 
 ??? success "Expected output"
 
-    | id | name    | age | department | created_at |
-    |----|---------|-----|------------|------------|
-    | 1  | Alice   | 20  | CS         | 2024-01-10 |
-    | 3  | Alice   | 20  | CS         | 2024-02-15 |
-    | 6  | Alice   | 20  | CS         | 2024-03-10 |
-    | 2  | Bob     | 22  | Math       | 2024-01-12 |
-    | 5  | Bob     | 22  | Math       | 2024-03-01 |
-    | 4  | Charlie | 21  | Physics    | 2024-01-20 |
-    | 8  | Charlie | 21  | Physics    | 2024-02-28 |
+    | id  | name    | age | department | created_at |
+    | --- | ------- | --- | ---------- | ---------- |
+    | 1   | Alice   | 20  | CS         | 2024-01-10 |
+    | 3   | Alice   | 20  | CS         | 2024-02-15 |
+    | 6   | Alice   | 20  | CS         | 2024-03-10 |
+    | 2   | Bob     | 22  | Math       | 2024-01-12 |
+    | 5   | Bob     | 22  | Math       | 2024-03-01 |
+    | 4   | Charlie | 21  | Physics    | 2024-01-20 |
+    | 8   | Charlie | 21  | Physics    | 2024-02-28 |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Approach 3 — ROW_NUMBER() (identify specific duplicate rows)
 
@@ -152,14 +153,14 @@ WHERE rn > 1; -- (3)!
 
 ??? success "Expected output"
 
-    | id | name    | age | department | created_at | rn |
-    |----|---------|-----|------------|------------|----|
-    | 3  | Alice   | 20  | CS         | 2024-02-15 | 2  |
-    | 6  | Alice   | 20  | CS         | 2024-03-10 | 3  |
-    | 5  | Bob     | 22  | Math       | 2024-03-01 | 2  |
-    | 8  | Charlie | 21  | Physics    | 2024-02-28 | 2  |
+    | id  | name    | age | department | created_at | rn  |
+    | --- | ------- | --- | ---------- | ---------- | --- |
+    | 3   | Alice   | 20  | CS         | 2024-02-15 | 2   |
+    | 6   | Alice   | 20  | CS         | 2024-03-10 | 3   |
+    | 5   | Bob     | 22  | Math       | 2024-03-01 | 2   |
+    | 8   | Charlie | 21  | Physics    | 2024-02-28 | 2   |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Approach 4 — IN subquery (single-column key)
 
@@ -179,8 +180,8 @@ ORDER BY email, id;
 
 ??? success "Expected output"
 
-    | id  | email            | full_name   | status   | created_at          |
-    |-----|------------------|-------------|----------|---------------------|
+    | id  | email             | full_name   | status   | created_at          |
+    | --- | ----------------- | ----------- | -------- | ------------------- |
     | 101 | alice@example.com | Alice Smith | active   | 2024-01-10 09:00:00 |
     | 103 | alice@example.com | Alice S.    | pending  | 2024-02-15 14:00:00 |
     | 106 | alice@example.com | Alice Smith | active   | 2024-03-10 16:00:00 |
@@ -188,10 +189,11 @@ ORDER BY email, id;
     | 105 | bob@example.com   | Bob J.      | inactive | 2024-03-01 11:00:00 |
 
 !!! warning
+
     Avoid `IN` with multi-column composite keys — concatenation can cause false
     positives. Use the CTE + JOIN approach instead.
 
----
+______________________________________________________________________
 
 ## :material-magnify: Approach 5 — Candidate Primary Key check
 
@@ -210,10 +212,10 @@ FROM users;
 ??? success "Expected output"
 
     | id_is_unique | email_is_unique |
-    |--------------|-----------------|
+    | ------------ | --------------- |
     | true         | false           |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Approach 6 — Duplicate count summary
 
@@ -232,10 +234,10 @@ FROM students;
 ??? success "Expected output"
 
     | total_rows | duplicate_rows | duplicate_pct |
-    |------------|----------------|---------------|
+    | ---------- | -------------- | ------------- |
     | 8          | 4              | 50.0          |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Full Example with Sample Data
 
@@ -243,19 +245,20 @@ FROM students;
 --8<-- "sql/application/duplicate/finding/find-duplicate.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Quick audit — how many duplicates? | `GROUP BY HAVING COUNT(*) > 1` |
-| Need all columns of duplicate rows | `CTE + INNER JOIN` |
-| Need to tag and review specific rows | `ROW_NUMBER() WHERE rn > 1` |
-| Single-column key, small table | `IN (subquery)` |
-| Validate uniqueness of a column | `COUNT(DISTINCT) = COUNT(*)` |
-| Data quality metrics | `COUNT(*) - COUNT(DISTINCT ...)` |
+| Scenario                             | Recommended Approach             |
+| ------------------------------------ | -------------------------------- |
+| Quick audit — how many duplicates?   | `GROUP BY HAVING COUNT(*) > 1`   |
+| Need all columns of duplicate rows   | `CTE + INNER JOIN`               |
+| Need to tag and review specific rows | `ROW_NUMBER() WHERE rn > 1`      |
+| Single-column key, small table       | `IN (subquery)`                  |
+| Validate uniqueness of a column      | `COUNT(DISTINCT) = COUNT(*)`     |
+| Data quality metrics                 | `COUNT(*) - COUNT(DISTINCT ...)` |
 
 !!! tip "Performance"
+
     `GROUP BY HAVING` is the fastest — it scans the table once.
     `ROW_NUMBER()` is preferred when you also need to de-duplicate in the same query.

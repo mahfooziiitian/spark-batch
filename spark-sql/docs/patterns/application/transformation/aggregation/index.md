@@ -2,7 +2,7 @@
 
 Summarise raw sales data using GROUP BY, conditional aggregation, and boolean aggregates.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -13,21 +13,21 @@ graph LR
     C --> D[Result Set]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| SUM / AVG / MIN / MAX | Total and average sales metrics | `SUM()`, `AVG()`, `MIN()`, `MAX()` |
-| GROUP BY multi-column | Breakdown by make and model | `GROUP BY col1, col2` |
-| COUNT variants | Row counts including / excluding NULLs | `COUNT(*)`, `COUNT(col)` |
-| HAVING filter | Keep only groups above a threshold | `HAVING SUM(...) > n` |
-| Threshold per group | Conditional counts within groups | `COUNT(CASE WHEN ...)` |
-| Cross-column aggregation | Aggregate across related columns | Multi-column `SUM` / `CASE` |
-| BOOL_AND / BOOL_OR | Boolean aggregation over a group | `BOOL_AND()`, `BOOL_OR()` |
+| Technique                | Use Case                               | Key Function                       |
+| ------------------------ | -------------------------------------- | ---------------------------------- |
+| SUM / AVG / MIN / MAX    | Total and average sales metrics        | `SUM()`, `AVG()`, `MIN()`, `MAX()` |
+| GROUP BY multi-column    | Breakdown by make and model            | `GROUP BY col1, col2`              |
+| COUNT variants           | Row counts including / excluding NULLs | `COUNT(*)`, `COUNT(col)`           |
+| HAVING filter            | Keep only groups above a threshold     | `HAVING SUM(...) > n`              |
+| Threshold per group      | Conditional counts within groups       | `COUNT(CASE WHEN ...)`             |
+| Cross-column aggregation | Aggregate across related columns       | Multi-column `SUM` / `CASE`        |
+| BOOL_AND / BOOL_OR       | Boolean aggregation over a group       | `BOOL_AND()`, `BOOL_OR()`          |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -39,7 +39,7 @@ Standard SUM, AVG, MIN, MAX over the sales table.
 --8<-- "sql/application/aggregation/basic_aggregates.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Grouped Aggregations
 
@@ -49,7 +49,7 @@ Aggregate metrics grouped by make and model.
 --8<-- "sql/application/aggregation/grouped_aggregations.sql"
 ```
 
----
+______________________________________________________________________
 
 ### COUNT Operations
 
@@ -59,7 +59,7 @@ Difference between `COUNT(*)` and `COUNT(column)` with NULL behaviour.
 --8<-- "sql/application/aggregation/count_operations.sql"
 ```
 
----
+______________________________________________________________________
 
 ### HAVING Filters
 
@@ -69,12 +69,13 @@ Filter grouped results to only those meeting a minimum threshold.
 --8<-- "sql/application/aggregation/having_filters.sql"
 ```
 
----
+______________________________________________________________________
 
 !!! note "Conditional aggregation lives in the canonical page"
+
     `SUM(CASE WHEN ...)` / `COUNT(CASE WHEN ...)` threshold aggregation and the
     `CASE` vs `IF` vs `FILTER` comparison are covered in depth in
-    [Conditional Aggregation](../../../aggregation/conditional_agg.md).
+    [Conditional Aggregation](../../../aggregation/conditional-agg.md).
 
 ### Cross-Column Aggregation
 
@@ -84,7 +85,7 @@ Aggregate across multiple related columns in a single pass.
 --8<-- "sql/application/aggregation/cross_column_aggregation.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Boolean Aggregations
 
@@ -94,22 +95,24 @@ Use BOOL_AND and BOOL_OR to reduce boolean expressions across a group.
 --8<-- "sql/application/aggregation/bool_aggregations.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Summarise total sales revenue | `SUM` / `AVG` with `GROUP BY` |
-| Conditional totals per segment | `HAVING` clause |
-| Boolean flag across a group | `BOOL_AND` / `BOOL_OR` |
-| Grouped statistics by dimension | `GROUP BY` multi-column |
-| Min / max per group | `MIN` / `MAX` with `GROUP BY` |
+| Scenario                        | Recommended Approach          |
+| ------------------------------- | ----------------------------- |
+| Summarise total sales revenue   | `SUM` / `AVG` with `GROUP BY` |
+| Conditional totals per segment  | `HAVING` clause               |
+| Boolean flag across a group     | `BOOL_AND` / `BOOL_OR`        |
+| Grouped statistics by dimension | `GROUP BY` multi-column       |
+| Min / max per group             | `MIN` / `MAX` with `GROUP BY` |
 
 !!! tip
+
     Use FILTER (WHERE ...) with aggregate functions for conditional aggregation without CASE WHEN.
 
 !!! note "Related"
+
     This page covers `GROUP BY` aggregation as a transformation step. For canonical,
-    self-contained deep-dives see [Conditional Aggregation](../../../aggregation/conditional_agg.md)
-    and [String Aggregation](../../../aggregation/string_agg.md).
+    self-contained deep-dives see [Conditional Aggregation](../../../aggregation/conditional-agg.md)
+    and [String Aggregation](../../../aggregation/string-agg.md).

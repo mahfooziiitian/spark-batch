@@ -4,7 +4,7 @@ A derived column is any `SELECT` expression that computes a value rather than re
 it directly from a table column — arithmetic, functions, conditional logic, window
 expressions, and subqueries all produce derived columns.
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
@@ -14,7 +14,7 @@ expressions, and subqueries all produce derived columns.
 4. Expressions involving `NULL` propagate `NULL` — use `COALESCE` or `IFNULL` to substitute defaults.
 5. Window function–based derived columns require an `OVER (...)` clause and are computed after `GROUP BY`.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -183,17 +183,17 @@ SELECT
 FROM access_logs;
 ```
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Compute totals / ratios | Arithmetic expression |
-| Normalise strings | `TRIM`, `UPPER`, `LOWER`, `||` |
-| Derive date parts | `YEAR`, `MONTH`, `DATE_TRUNC` |
-| Classify rows into segments | `CASE WHEN` |
-| Replace NULL with a default | `COALESCE(col, default)` |
-| Running totals / ranks | Window function derived column |
-| Multi-step computed column | CTE per derivation step |
-| Extract from unstructured text | `REGEXP_EXTRACT` |
+| Scenario                       | Pattern                        |
+| ------------------------------ | ------------------------------ |
+| Compute totals / ratios        | Arithmetic expression          |
+| Normalise strings              | `TRIM`, `UPPER`, `LOWER`, \`   |
+| Derive date parts              | `YEAR`, `MONTH`, `DATE_TRUNC`  |
+| Classify rows into segments    | `CASE WHEN`                    |
+| Replace NULL with a default    | `COALESCE(col, default)`       |
+| Running totals / ranks         | Window function derived column |
+| Multi-step computed column     | CTE per derivation step        |
+| Extract from unstructured text | `REGEXP_EXTRACT`               |

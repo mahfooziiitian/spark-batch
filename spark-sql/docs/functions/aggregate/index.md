@@ -4,7 +4,7 @@ Aggregate functions compute a **single result from a group of rows**.
 They are used in `GROUP BY` queries, as window functions with `OVER (...)`,
 and with the `FILTER` clause for conditional aggregation.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Processing Flow
 
@@ -16,23 +16,30 @@ flowchart LR
     FI --> OR["One Row\nper Group"]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Aggregate Category Explorer
+
+<div id="viz-aggregate-categories" class="ts-viz"></div>
+
+Pick a category to see its member functions and a one-line description of
+what makes that category distinct.
+
+______________________________________________________________________
 
 ## :material-compare: Function Categories
 
-| Category | Key Functions | Description |
-|----------|--------------|-------------|
-| **Simple** | `SUM`, `AVG`, `MIN`, `MAX`, `MEAN` | Numeric aggregation |
-| **Count** | `COUNT`, `COUNT_IF`, `APPROX_COUNT_DISTINCT` | Row and distinct counting |
-| **First / Last** | `FIRST`, `LAST`, `FIRST_VALUE`, `LAST_VALUE` | Positional value retrieval |
-| **Boolean** | `EVERY`, `BOOL_AND`, `SOME`, `BOOL_OR`, `ANY` | Boolean aggregation |
-| **Array** | `ARRAY_AGG`, `COLLECT_LIST`, `COLLECT_SET` | Collect values into arrays |
-| **Map** | `MAP_FROM_ENTRIES`, `MAP_FROM_ARRAYS` | Aggregate into maps |
-| **Group identity** | `GROUPING`, `GROUPING_ID` | Identify levels in ROLLUP/CUBE |
-| **Statistics** | `STDDEV`, `VARIANCE`, `CORR`, `PERCENTILE`, `MEDIAN` | Statistical measures |
-| **String** | `CONCAT_WS` + `COLLECT_LIST` | String concatenation across rows |
+| Category           | Key Functions                                        | Description                      |
+| ------------------ | ---------------------------------------------------- | -------------------------------- |
+| **Simple**         | `SUM`, `AVG`, `MIN`, `MAX`, `MEAN`                   | Numeric aggregation              |
+| **Count**          | `COUNT`, `COUNT_IF`, `APPROX_COUNT_DISTINCT`         | Row and distinct counting        |
+| **First / Last**   | `FIRST`, `LAST`, `FIRST_VALUE`, `LAST_VALUE`         | Positional value retrieval       |
+| **Boolean**        | `EVERY`, `BOOL_AND`, `SOME`, `BOOL_OR`, `ANY`        | Boolean aggregation              |
+| **Array**          | `ARRAY_AGG`, `COLLECT_LIST`, `COLLECT_SET`           | Collect values into arrays       |
+| **Map**            | `MAP_FROM_ENTRIES`, `MAP_FROM_ARRAYS`                | Aggregate into maps              |
+| **Group identity** | `GROUPING`, `GROUPING_ID`                            | Identify levels in ROLLUP/CUBE   |
+| **Statistics**     | `STDDEV`, `VARIANCE`, `CORR`, `PERCENTILE`, `MEDIAN` | Statistical measures             |
+| **String**         | `CONCAT_WS` + `COLLECT_LIST`                         | String concatenation across rows |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Core Examples
 
@@ -84,7 +91,7 @@ FROM events
 GROUP BY department;
 ```
 
----
+______________________________________________________________________
 
 ## :material-filter: FILTER Clause
 
@@ -104,7 +111,7 @@ FROM orders
 GROUP BY region;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -114,21 +121,21 @@ GROUP BY region;
 4. **Window functions** — any aggregate can be used as a window function by adding `OVER (PARTITION BY ... ORDER BY ...)`.
 5. **FILTER is a single-pass optimisation** — multiple `AGG FILTER (WHERE ...)` in the same `SELECT` scan the table once.
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Contents |
-|------|----------|
-| [Simple](simple.md) | `SUM`, `AVG`, `MIN`, `MAX`, `MEAN` |
-| [Any Value](any_value.md) | `ANY_VALUE` — arbitrary value from a group |
-| [Count](count.md) | `COUNT`, `COUNT_IF`, `APPROX_COUNT_DISTINCT` |
-| [First / Last](first.md) | `FIRST`, `LAST`, ignoreNulls |
-| [Every / Some](every.md) | `EVERY`, `BOOL_AND`, `SOME`, `BOOL_OR` |
-| [Array](array.md) | `COLLECT_LIST`, `COLLECT_SET`, `ARRAY_AGG` |
-| [List](list.md) | `COLLECT_LIST` patterns |
-| [Set](set.md) | `COLLECT_SET` patterns |
-| [Map](map.md) | `MAP_FROM_ENTRIES`, `MAP_FROM_ARRAYS` |
-| [Group](group.md) | `GROUPING`, `GROUPING_ID` for ROLLUP/CUBE |
-| [Statistics](stats.md) | `STDDEV`, `VARIANCE`, `CORR`, `PERCENTILE`, `MEDIAN` |
-| [Strings](strings.md) | `CONCAT_WS` + `COLLECT_LIST` string aggregation |
+| Page                      | Contents                                             |
+| ------------------------- | ---------------------------------------------------- |
+| [Simple](simple.md)       | `SUM`, `AVG`, `MIN`, `MAX`, `MEAN`                   |
+| [Any Value](any-value.md) | `ANY_VALUE` — arbitrary value from a group           |
+| [Count](count.md)         | `COUNT`, `COUNT_IF`, `APPROX_COUNT_DISTINCT`         |
+| [First / Last](first.md)  | `FIRST`, `LAST`, ignoreNulls                         |
+| [Every / Some](every.md)  | `EVERY`, `BOOL_AND`, `SOME`, `BOOL_OR`               |
+| [Array](array.md)         | `COLLECT_LIST`, `COLLECT_SET`, `ARRAY_AGG`           |
+| [List](list.md)           | `COLLECT_LIST` patterns                              |
+| [Set](set.md)             | `COLLECT_SET` patterns                               |
+| [Map](map.md)             | `MAP_FROM_ENTRIES`, `MAP_FROM_ARRAYS`                |
+| [Group](group.md)         | `GROUPING`, `GROUPING_ID` for ROLLUP/CUBE            |
+| [Statistics](stats.md)    | `STDDEV`, `VARIANCE`, `CORR`, `PERCENTILE`, `MEDIAN` |
+| [Strings](strings.md)     | `CONCAT_WS` + `COLLECT_LIST` string aggregation      |

@@ -2,7 +2,7 @@
 
 Generate hierarchical subtotals, cross-dimensional aggregations, and custom grouping combinations.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -14,25 +14,25 @@ graph LR
     B -->|custom| E[GROUPING SETS]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| ROLLUP | Hierarchical subtotals (Year → Month) | `GROUP BY ROLLUP(col1, col2)` |
-| CUBE | All dimension combinations | `GROUP BY CUBE(col1, col2)` |
-| GROUPING SETS | Custom combination selection | `GROUP BY GROUPING SETS(...)` |
-| GROUPING() | Label subtotal rows | `GROUPING(col)` |
+| Technique     | Use Case                              | Key Function                  |
+| ------------- | ------------------------------------- | ----------------------------- |
+| ROLLUP        | Hierarchical subtotals (Year → Month) | `GROUP BY ROLLUP(col1, col2)` |
+| CUBE          | All dimension combinations            | `GROUP BY CUBE(col1, col2)`   |
+| GROUPING SETS | Custom combination selection          | `GROUP BY GROUPING SETS(...)` |
+| GROUPING()    | Label subtotal rows                   | `GROUPING(col)`               |
 
-| Need | Use |
-|------|-----|
-| Hierarchy (Year → Month) | ROLLUP |
-| All combinations | CUBE |
-| Selected combinations | GROUPING SETS |
-| Performance-sensitive | GROUPING SETS |
+| Need                     | Use           |
+| ------------------------ | ------------- |
+| Hierarchy (Year → Month) | ROLLUP        |
+| All combinations         | CUBE          |
+| Selected combinations    | GROUPING SETS |
+| Performance-sensitive    | GROUPING SETS |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -44,7 +44,7 @@ Drill-down subtotals from year down to month with grand total.
 --8<-- "sql/application/grouping/rollup_hierarchical_totals.sql"
 ```
 
----
+______________________________________________________________________
 
 ### CUBE — Cross-Dimensional Aggregation
 
@@ -54,7 +54,7 @@ Produce totals for every combination of dimensions.
 --8<-- "sql/application/grouping/cube_cross_dimensional.sql"
 ```
 
----
+______________________________________________________________________
 
 ### GROUPING SETS — Custom Combinations
 
@@ -64,16 +64,17 @@ Select only the specific grouping combinations you need.
 --8<-- "sql/application/grouping/grouping_sets_custom.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Drill-down report | `ROLLUP` |
-| Cross-tab report | `CUBE` |
-| Only some combinations needed | `GROUPING SETS` |
-| Flag subtotal rows in output | `GROUPING()` |
+| Scenario                      | Recommended Approach |
+| ----------------------------- | -------------------- |
+| Drill-down report             | `ROLLUP`             |
+| Cross-tab report              | `CUBE`               |
+| Only some combinations needed | `GROUPING SETS`      |
+| Flag subtotal rows in output  | `GROUPING()`         |
 
 !!! tip
+
     GROUPING SETS is the most flexible and most performant — ROLLUP and CUBE are syntactic sugar that expands to GROUPING SETS internally.

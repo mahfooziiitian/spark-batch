@@ -3,7 +3,7 @@
 Spark SQL provides functions to **parse**, **generate**, **extract from**, and **inspect**
 JSON data — enabling full JSON processing within SQL expressions.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -11,6 +11,14 @@ graph LR
     B --> C[Struct Column]
     C --> D["col.field access"]
 ```
+
+### :material-animation-play: Interactive Visualization — JSON String → Struct
+
+<div id="viz-json-parse-tree" class="ts-viz"></div>
+
+Toggle between a well-formed JSON string and a malformed one to see how
+`PERMISSIVE` mode (the default) nulls the whole struct rather than failing
+the query, and how `FAILFAST` mode raises instead.
 
 ## :material-pin: FROM_JSON — Parse JSON String
 
@@ -20,11 +28,11 @@ graph LR
 FROM_JSON(json_string, schema [, options])
 ```
 
-| Parameter | Description |
-|-----------|-------------|
+| Parameter     | Description                            |
+| ------------- | -------------------------------------- |
 | `json_string` | Column or literal containing JSON text |
-| `schema` | DDL schema string or `STRUCT` type |
-| `options` | *(Optional)* Map of parsing options |
+| `schema`      | DDL schema string or `STRUCT` type     |
+| `options`     | *(Optional)* Map of parsing options    |
 
 ### :material-flask-outline: Examples
 
@@ -66,7 +74,25 @@ FROM (
 -- Result: Alice, Bob
 ```
 
----
+#### PERMISSIVE vs FAILFAST Parse Mode
+
+```sql
+-- Default mode: PERMISSIVE — malformed text nulls the whole struct, no error
+SELECT FROM_JSON('{"a":1, bad}', 'a INT') AS parsed;
+-- Result: {NULL}
+
+-- FAILFAST: raise instead of silently nulling
+SELECT FROM_JSON('{"a":1, bad}', 'a INT', MAP('mode', 'FAILFAST')) AS parsed;
+-- Error: [MALFORMED_RECORD_IN_PARSING.WITHOUT_SUGGESTION]
+--   Malformed records are detected in record parsing: [null].
+```
+
+> **Verified (Spark 4.2):** the default `PERMISSIVE` mode returns a struct
+> whose fields are **all** `NULL` when the raw JSON text itself is malformed
+> — it does not throw and does not drop the row. Use `FAILFAST` in
+> validation/testing pipelines where malformed input should stop the job.
+
+______________________________________________________________________
 
 ## :material-pin: TO_JSON — Serialize to JSON String
 
@@ -89,7 +115,7 @@ SELECT TO_JSON(ARRAY(1, 2, 3)) AS json;
 -- Result: '[1,2,3]'
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: GET_JSON_OBJECT — Extract by JSONPath
 
@@ -115,7 +141,7 @@ SELECT GET_JSON_OBJECT('{"items":[{"name":"pen"},{"name":"book"}]}', '$.items[1]
 
 > Returns `NULL` if the path does not match. Always returns a STRING.
 
----
+______________________________________________________________________
 
 ## :material-pin: JSON_TUPLE — Extract Multiple Keys
 
@@ -134,7 +160,7 @@ SELECT JSON_TUPLE('{"a":1, "b":2, "c":3}', 'a', 'b') AS (val_a, val_b);
 
 > Used as a generator function — works with `LATERAL VIEW` or in SELECT.
 
----
+______________________________________________________________________
 
 ## :material-pin: JSON_ARRAY_LENGTH — Count Array Elements
 
@@ -158,7 +184,7 @@ SELECT JSON_ARRAY_LENGTH('{"a":1}');
 -- Result: NULL
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: JSON_OBJECT_KEYS — List Object Keys
 
@@ -186,7 +212,7 @@ SELECT JSON_OBJECT_KEYS('[1,2]');
 -- Result: NULL
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: SCHEMA_OF_JSON — Infer Schema
 
@@ -206,31 +232,31 @@ SELECT SCHEMA_OF_JSON('[{"col":01}]', MAP('allowNumericLeadingZeros', 'true'));
 -- Result: 'ARRAY<STRUCT<col: BIGINT>>'
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Summary
 
-| Function | Input | Output | NULL Handling |
-|----------|-------|--------|--------------|
-| `FROM_JSON` | JSON string | STRUCT / ARRAY | NULL if parse fails |
-| `TO_JSON` | STRUCT / MAP / ARRAY | JSON string | NULL if input is NULL |
-| `GET_JSON_OBJECT` | JSON string + path | STRING | NULL if path not found |
-| `JSON_TUPLE` | JSON string + keys | Multiple STRING cols | NULL per missing key |
-| `JSON_ARRAY_LENGTH` | JSON array string | INT | NULL if not an array |
-| `JSON_OBJECT_KEYS` | JSON object string | ARRAY\<STRING\> | NULL if not an object |
-| `SCHEMA_OF_JSON` | JSON string | DDL STRING | — |
+| Function            | Input                | Output               | NULL Handling          |
+| ------------------- | -------------------- | -------------------- | ---------------------- |
+| `FROM_JSON`         | JSON string          | STRUCT / ARRAY       | NULL if parse fails    |
+| `TO_JSON`           | STRUCT / MAP / ARRAY | JSON string          | NULL if input is NULL  |
+| `GET_JSON_OBJECT`   | JSON string + path   | STRING               | NULL if path not found |
+| `JSON_TUPLE`        | JSON string + keys   | Multiple STRING cols | NULL per missing key   |
+| `JSON_ARRAY_LENGTH` | JSON array string    | INT                  | NULL if not an array   |
+| `JSON_OBJECT_KEYS`  | JSON object string   | ARRAY\<STRING>       | NULL if not an object  |
+| `SCHEMA_OF_JSON`    | JSON string          | DDL STRING           | —                      |
 
 ## :material-brain: When to Use
 
-| Scenario | Function |
-|----------|----------|
-| Parse JSON column into typed struct | `FROM_JSON` |
-| Serialize structs/maps for export | `TO_JSON` |
-| Extract one field by path | `GET_JSON_OBJECT` |
-| Extract multiple fields efficiently | `JSON_TUPLE` |
-| Count elements in JSON array | `JSON_ARRAY_LENGTH` |
-| Discover keys in JSON object | `JSON_OBJECT_KEYS` |
-| Infer schema for unknown JSON | `SCHEMA_OF_JSON` |
+| Scenario                            | Function            |
+| ----------------------------------- | ------------------- |
+| Parse JSON column into typed struct | `FROM_JSON`         |
+| Serialize structs/maps for export   | `TO_JSON`           |
+| Extract one field by path           | `GET_JSON_OBJECT`   |
+| Extract multiple fields efficiently | `JSON_TUPLE`        |
+| Count elements in JSON array        | `JSON_ARRAY_LENGTH` |
+| Discover keys in JSON object        | `JSON_OBJECT_KEYS`  |
+| Infer schema for unknown JSON       | `SCHEMA_OF_JSON`    |
 
 > **Tip:** For repeated access to multiple JSON fields, parse once with `FROM_JSON` and use
 > struct dot notation — it's far more efficient than calling `GET_JSON_OBJECT` multiple times.

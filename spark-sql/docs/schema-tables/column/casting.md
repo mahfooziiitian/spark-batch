@@ -3,7 +3,7 @@
 Casting converts a column from one data type to another. Spark SQL provides
 `CAST` (strict), `TRY_CAST` (null-on-failure), and implicit coercion for compatible types.
 
----
+______________________________________________________________________
 
 ## :material-code-tags: Syntax
 
@@ -21,7 +21,7 @@ expression::target_type
 Common target types: `INT`, `BIGINT`, `DOUBLE`, `DECIMAL(p, s)`, `STRING`, `DATE`,
 `TIMESTAMP`, `BOOLEAN`, `ARRAY<T>`, `MAP<K,V>`, `STRUCT<...>`.
 
----
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
@@ -32,7 +32,7 @@ Common target types: `INT`, `BIGINT`, `DOUBLE`, `DECIMAL(p, s)`, `STRING`, `DATE
 5. Spark promotes types automatically in arithmetic expressions (`INT + DOUBLE → DOUBLE`) — explicit casts are only needed to force a specific output type.
 6. Casting to `DECIMAL(p, s)` may silently truncate digits if precision/scale is too narrow when ANSI is off.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -146,30 +146,31 @@ SELECT
 FROM raw_events;
 ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: CAST vs TRY_CAST
 
-| Aspect | `CAST` | `TRY_CAST` |
-|--------|--------|-----------|
-| On invalid input (ANSI mode) | Raises error | Returns `NULL` |
-| On invalid input (non-ANSI) | Returns `NULL` | Returns `NULL` |
-| Use case | Clean, trusted source data | Dirty or external data |
-| NULL input | Returns `NULL` | Returns `NULL` |
+| Aspect                       | `CAST`                     | `TRY_CAST`             |
+| ---------------------------- | -------------------------- | ---------------------- |
+| On invalid input (ANSI mode) | Raises error               | Returns `NULL`         |
+| On invalid input (non-ANSI)  | Returns `NULL`             | Returns `NULL`         |
+| Use case                     | Clean, trusted source data | Dirty or external data |
+| NULL input                   | Returns `NULL`             | Returns `NULL`         |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Convert string column to numeric | `CAST(col AS DECIMAL(18,2))` |
-| Parse ISO date string | `CAST(col AS DATE)` |
-| Parse non-ISO date | `TO_DATE(col, 'dd/MM/yyyy')` |
-| Dirty data with invalid values | `TRY_CAST(col AS type)` |
-| Ensure schema match before INSERT | `CAST` all columns to target types |
-| Avoid predicate pushdown penalty | Cast target literal, not the column |
+| Scenario                          | Pattern                             |
+| --------------------------------- | ----------------------------------- |
+| Convert string column to numeric  | `CAST(col AS DECIMAL(18,2))`        |
+| Parse ISO date string             | `CAST(col AS DATE)`                 |
+| Parse non-ISO date                | `TO_DATE(col, 'dd/MM/yyyy')`        |
+| Dirty data with invalid values    | `TRY_CAST(col AS type)`             |
+| Ensure schema match before INSERT | `CAST` all columns to target types  |
+| Avoid predicate pushdown penalty  | Cast target literal, not the column |
 
 !!! warning "CAST in WHERE disables pushdown"
+
     `WHERE CAST(string_col AS INT) = 5` prevents the filter from being pushed to the
     Parquet/Delta reader. Store data in the correct type or compare using `string_col = '5'`.

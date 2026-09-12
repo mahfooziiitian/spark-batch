@@ -1,112 +1,89 @@
-# :material-cog-transfer: Broadcast Nested Loop Join (BNLJ)
+# :material-vector-polyline: Broadcast Nested-Loop Join
 
-BNLJ is Spark's fallback join strategy for **non-equi joins** and **cross joins** where hash-based strategies cannot be applied.
+`BroadcastNestedLoopJoin` is Spark 4.2's broadcast-based fallback for join shapes that cannot use the equi-join operators, especially non-equi predicates and some cartesian cases.
 
----
+### :material-animation-play: Interactive Visualization — Broadcast Nested-Loop Join
 
-## :material-sitemap: Overview
+<div id="viz-joins-strategy-bnlj" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    D[Driver] -->|broadcast small table| E1[Executor 1]
-    D -->|broadcast small table| E2[Executor 2]
-    E1 -->|nested loop over each row| L1[Large DF Part 1]
-    E2 -->|nested loop over each row| L2[Large DF Part 2]
-```
+Toggle between non-equi and cross-style cases to see when Spark keeps the nested-loop path local by broadcasting one side.
 
----
+<script src="../../../assets/js/querying-joins-strategy-viz.js"></script>
 
-## :material-cog-outline: When Spark Uses BNLJ
+______________________________________________________________________
 
-| Trigger | Example |
-|---------|---------|
-| Non-equi join condition | `ON a.amount > b.min_amount` |
-| `CROSS JOIN` (no predicate) | `FROM a CROSS JOIN b` |
-| `OR` condition in join | `ON a.id = b.id OR a.code = b.code` |
-| `BROADCAST` hint on a non-equi join | `/*+ BROADCAST(dim) */` with `<`, `LIKE`, `!=` |
+## :material-check-decagram: Verified in PySpark 4.2
 
----
-
-## :material-refresh: How It Works
-
-1. **Broadcast** — The smaller DataFrame is serialized and sent to every executor.
-2. **Nested loop** — Each executor iterates over every row of its local partition of the large DataFrame. For each large-table row, it iterates over every row of the broadcast copy and evaluates the join condition.
-3. **Emit** — Rows where the condition evaluates to `true` are included in the result.
-
-The time complexity is **O(N × M)** per executor, making this strategy expensive for large inputs.
-
----
-
-## :material-sitemap: Execution Diagram
-
-```mermaid
-flowchart TB
-    subgraph Driver
-        smallDF[Small DataFrame]
-    end
-
-    subgraph WorkerNode1
-        smallCopy1[Small DF Copy]
-        largePart1[Large DF Partition 1]
-    end
-
-    subgraph WorkerNode2
-        smallCopy2[Small DF Copy]
-        largePart2[Large DF Partition 2]
-    end
-
-    smallDF -- Broadcast --> smallCopy1
-    smallDF -- Broadcast --> smallCopy2
-
-    smallCopy1 -- Nested Loop --> largePart1
-    smallCopy2 -- Nested Loop --> largePart2
-
-    largePart1 --> out1[Join Output 1]
-    largePart2 --> out2[Join Output 2]
-```
-
----
-
-## :material-flask-outline: Examples
+For:
 
 ```sql
--- Non-equi range join (amount must fall within a slab)
-SELECT t.transaction_id, t.amount, s.tax_rate
-FROM transactions t
-JOIN tax_slabs s
-    ON t.amount BETWEEN s.min_amount AND s.max_amount;
-
--- Date overlap join
-SELECT a.event_id, b.campaign_id
-FROM events a
-JOIN campaigns b
-    ON a.event_date BETWEEN b.start_date AND b.end_date;
-
--- CROSS JOIN (all combinations)
-SELECT p.product_id, r.region_name
-FROM products p
-CROSS JOIN regions r;
+select *
+from (select id, id % 5 as k from range(0, 1000)) b
+join (select id, id % 5 as k from range(0, 10)) s
+  on b.k < s.k;
 ```
 
----
+`EXPLAIN FORMATTED` showed:
 
-## :material-alert-circle: Performance Notes
+```text
+BroadcastExchange
+BroadcastNestedLoopJoin Inner BuildRight
+Join condition: (k#8L < k#9L)
+```
 
-| Concern | Detail |
-|---------|--------|
-| Cost | O(N × M) per executor — avoid for large inputs |
-| OOM risk | Broadcast side must fit in executor memory |
-| No sort required | Neither side needs to be sorted |
-| Join types | Supports all except full outer join (when broadcast side is the right table) |
+A tested `LEFT OUTER` non-equi join also produced `BroadcastNestedLoopJoin`, and a tested `FULL OUTER` non-equi join produced `BroadcastNestedLoopJoin FullOuter`.
 
-!!! warning
-    BNLJ can cause out-of-memory errors and very long run times on large datasets.
-    Pre-filter both sides aggressively before a non-equi join.
+______________________________________________________________________
 
----
+## :material-information-outline: When Spark Uses It
 
-## :material-magnify: Behavior Notes
+Typical triggers:
 
-1. AQE does **not** convert BNLJ to a cheaper strategy — it only optimises equi-joins.
-2. For range joins on large datasets, consider the `RANGE_JOIN` hint (Databricks) or bucketing both sides by range boundaries.
-3. Use `EXPLAIN` to confirm BNLJ is chosen; look for `BroadcastNestedLoopJoin` in the plan.
+| Pattern                                                  | Why nested-loop is needed                                                  |
+| -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `a.x < b.y`, `BETWEEN`, or other non-equality predicates | Hash and merge joins require equi-join keys                                |
+| Explicit `CROSS JOIN` with a broadcastable side          | Spark can still broadcast one input and evaluate every combination locally |
+| `BROADCAST` hint on a non-equi join                      | Forces the broadcast nested-loop family                                    |
+
+If neither side can be broadcast, Spark may fall back to `CartesianProduct` instead.
+
+______________________________________________________________________
+
+## :material-code-tags: Verified Query Shapes
+
+```sql
+select /*+ broadcast(s) */ *
+from big_table b
+join small_ranges s
+  on b.metric between s.min_metric and s.max_metric;
+
+select *
+from products
+cross join regions;
+```
+
+______________________________________________________________________
+
+## :material-table: Properties
+
+| Property              | Broadcast nested-loop behavior                          |
+| --------------------- | ------------------------------------------------------- |
+| Predicate support     | Works with non-equi and cross joins                     |
+| Broadcast requirement | One side should be small enough or explicitly hinted    |
+| Complexity            | Compares each streamed row with many broadcast rows     |
+| Memory risk           | Broadcast side must fit in memory                       |
+| Physical plan clue    | `BroadcastNestedLoopJoin` plus `BuildLeft`/`BuildRight` |
+
+______________________________________________________________________
+
+## :material-alert-outline: What Not to Assume
+
+- It is not limited to inner joins; tested `LeftOuter` and `FullOuter` plans also worked.
+- It is usually much more expensive than broadcast-hash because Spark cannot probe a hash table on a single equality key.
+- Explicit `CROSS JOIN` does not depend on `spark.sql.crossJoin.enabled`; only implicit cartesian joins do.
+
+______________________________________________________________________
+
+## :material-lightbulb-outline: When to Use
+
+Treat `BroadcastNestedLoopJoin` as a necessary fallback when your predicate is inherently non-equi and one side is still small enough to distribute safely.

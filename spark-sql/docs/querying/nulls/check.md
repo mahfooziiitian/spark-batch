@@ -1,125 +1,136 @@
-# :material-null: NULL Checks
+# :material-null: NULL Checks and Replacement Functions
 
-`IS NULL` and `IS NOT NULL` are the only reliable predicates for detecting NULL.
-Never use `= NULL` — it always returns NULL (unknown), not TRUE.
+Spark 4.2 provides dedicated predicates and functions for testing NULLs and substituting fallback values without relying on `= NULL`.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
-```mermaid
-graph LR
-    A[Column Value] --> B{Check}
-    B --> C["IS NULL → TRUE / FALSE"]
-    B --> D["IS NOT NULL → TRUE / FALSE"]
-    B --> E["COALESCE → first non-NULL"]
-    B --> F["NULLIF → NULL if equal to sentinel"]
-```
+| Construct                    | Verified behavior                             |
+| ---------------------------- | --------------------------------------------- |
+| `expr IS NULL`               | Returns `TRUE` only when `expr` is NULL       |
+| `expr IS NOT NULL`           | Returns `TRUE` only when `expr` is not NULL   |
+| `COALESCE(a, b, ...)`        | Returns the first non-NULL argument           |
+| `NULLIF(a, b)`               | Returns `NULL` when `a = b`, else returns `a` |
+| `IFNULL(a, b)` / `NVL(a, b)` | Returns `b` when `a` is NULL, else `a`        |
+| `NVL2(a, b, c)`              | Returns `b` when `a` is not NULL, else `c`    |
 
----
+### :material-animation-play: Interactive Visualization — NULL Check Helpers
 
-## :material-table: NULL-Handling Functions
+<div id="viz-null-check" class="ts-viz"></div>
 
-| Function / Predicate | Returns | Example |
-|----------------------|---------|---------|
-| `col IS NULL` | `TRUE` if col is NULL | `WHERE age IS NULL` |
-| `col IS NOT NULL` | `TRUE` if col is not NULL | `WHERE email IS NOT NULL` |
-| `COALESCE(a, b, ...)` | First non-NULL argument | `COALESCE(phone, mobile, 'N/A')` |
-| `NULLIF(a, b)` | NULL if `a = b`, else `a` | `NULLIF(discount, 0)` |
-| `IFNULL(a, b)` | `b` if `a` is NULL, else `a` | `IFNULL(country, 'Unknown')` |
-| `NVL(a, b)` | Alias for `IFNULL` | `NVL(middle_name, '')` |
-| `NVL2(a, b, c)` | `b` if `a` not NULL, else `c` | `NVL2(email, 'has email', 'no email')` |
-| `ISNULL(a)` | `TRUE` if `a` is NULL | `ISNULL(deleted_at)` |
-| `ISNOTNULL(a)` | `TRUE` if `a` is not NULL | `ISNOTNULL(email)` |
+Switch between NULL-handling helpers to see the exact output Spark 4.2 returns for the selected inputs.
 
----
+______________________________________________________________________
 
-## :material-flask-outline: Examples
+## :material-magnify: Verified Rules
 
-### Find rows with missing data
+- `expr = NULL` never returns `TRUE`.
+- `IS NULL` and `IS NOT NULL` always return `TRUE` or `FALSE`, never `NULL`.
+- `IFNULL` and `NVL` are two-argument fallback helpers; `COALESCE` extends the idea to more than two inputs.
+- `NVL2` branches on whether its first argument is NULL.
 
-```sql
-SELECT * FROM users WHERE email IS NULL;
+______________________________________________________________________
 
-SELECT name, age FROM person WHERE age IS NULL;
-```
+## :material-flask-outline: Verified Examples
 
-### Exclude rows with missing data
-
-```sql
-SELECT * FROM users WHERE email IS NOT NULL;
-
-SELECT name, age FROM person WHERE age IS NOT NULL;
-```
-
-### Replace NULL with a default
-
-```sql
--- COALESCE: pick the first non-NULL from a fallback chain
-SELECT
-    user_id,
-    COALESCE(phone, mobile, work_phone, 'No phone') AS contact_number
-FROM users;
-```
-
-### Turn a sentinel value into NULL
-
-```sql
--- NULLIF: treat 0 as "unknown" so aggregates skip it
-SELECT
-    product_id,
-    SUM(amount) / NULLIF(COUNT(units), 0) AS avg_unit_price
-FROM order_lines
-GROUP BY product_id;
-```
-
-### Conditional label based on NULL
+### `IS NULL` and `IS NOT NULL`
 
 ```sql
 SELECT
-    user_id,
-    NVL2(last_login, 'Active', 'Never logged in') AS status
-FROM users;
+    NULL IS NULL AS is_null_pred,
+    NULL IS NOT NULL AS is_not_null_pred,
+    ISNULL(NULL) AS isnull_fn,
+    ISNOTNULL(1) AS isnotnull_fn;
 ```
 
-### Filter after outer join for anti-join pattern
+```text
++------------+----------------+---------+-------------+
+|is_null_pred|is_not_null_pred|isnull_fn|isnotnull_fn|
++------------+----------------+---------+-------------+
+|true        |false           |true     |true         |
++------------+----------------+---------+-------------+
+```
+
+### `COALESCE`, `IFNULL`, and `NVL`
 
 ```sql
--- Customers with no orders (anti-join via LEFT JOIN + IS NULL)
-SELECT c.customer_id, c.name
-FROM customers c
-LEFT JOIN orders o ON c.customer_id = o.customer_id
-WHERE o.order_id IS NULL;
+SELECT
+    COALESCE(NULL, NULL, 7) AS coalesce_v,
+    IFNULL(NULL, 'x') AS ifnull_v,
+    NVL(NULL, 'y') AS nvl_v;
 ```
 
-### Delta table NOT NULL constraint
+```text
++----------+--------+-----+
+|coalesce_v|ifnull_v|nvl_v|
++----------+--------+-----+
+|7         |x       |y    |
++----------+--------+-----+
+```
+
+### `NULLIF`
 
 ```sql
--- Enforce NOT NULL at write time
-ALTER TABLE products
-ALTER COLUMN price SET NOT NULL;
-
--- Verify
-DESCRIBE TABLE EXTENDED products;
+SELECT
+    NULLIF(5, 5) AS nullif_eq,
+    NULLIF(5, 6) AS nullif_ne;
 ```
 
----
+```text
++---------+---------+
+|nullif_eq|nullif_ne|
++---------+---------+
+|NULL     |5        |
++---------+---------+
+```
+
+### `NVL2`
+
+```sql
+SELECT
+    NVL2(NULL, 'yes', 'no') AS nvl2_null,
+    NVL2('a', 'yes', 'no') AS nvl2_not_null;
+```
+
+```text
++---------+-------------+
+|nvl2_null|nvl2_not_null|
++---------+-------------+
+|no       |yes          |
++---------+-------------+
+```
+
+### Using `COALESCE` in a filter-friendly projection
+
+```sql
+SELECT
+    name,
+    COALESCE(age, -1) AS age_or_default
+FROM
+VALUES
+    ('Joe', 30),
+    ('Marry', CAST(NULL AS INT))
+AS person(name, age);
+```
+
+```text
++-----+--------------+
+|name |age_or_default|
++-----+--------------+
+|Joe  |30            |
+|Marry|-1            |
++-----+--------------+
+```
+
+______________________________________________________________________
 
 ## :material-alert-circle: Common Mistakes
 
-| Mistake | Problem | Fix |
-|---------|---------|-----|
-| `WHERE col = NULL` | Always returns NULL — no rows matched | `WHERE col IS NULL` |
-| `WHERE col != NULL` | Always returns NULL | `WHERE col IS NOT NULL` |
-| `COALESCE(col, '')` on numeric | Empty string causes cast error | Use `COALESCE(col, 0)` for numerics |
-| `NULLIF(col, 0)` on strings | Valid — turns `'0'` into NULL | Ensure types match |
+| Mistake                           | Why it fails                                             | Better pattern          |
+| --------------------------------- | -------------------------------------------------------- | ----------------------- |
+| `WHERE col = NULL`                | Result is `NULL`, so the row is not kept                 | `WHERE col IS NULL`     |
+| `WHERE col != NULL`               | Result is `NULL`, not `TRUE`                             | `WHERE col IS NOT NULL` |
+| `NULLIF(a, b)` for null detection | It compares values; it does not test whether `a` is NULL | Use `a IS NULL`         |
 
----
-
-## :material-magnify: Behavior Notes
-
-1. `IS NULL` / `IS NOT NULL` always return `TRUE` or `FALSE` — never NULL.
-2. `COALESCE` evaluates arguments left-to-right and stops at the first non-NULL.
-3. `NULLIF(a, b)` is shorthand for `CASE WHEN a = b THEN NULL ELSE a END`.
-4. Delta Lake enforces `NOT NULL` constraints at write time; reads are unaffected.
-
+<script src="../../assets/js/querying-nulls-viz.js"></script>

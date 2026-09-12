@@ -2,7 +2,7 @@
 
 Check for dynamic key existence in MAP columns using MAP_ENTRIES and EXISTS on Databricks system tables.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -13,17 +13,17 @@ graph LR
     C --> D[Filtered rows]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
-| MAP_ENTRIES | Iterate over map key-value pairs as array of structs | `MAP_ENTRIES(map_col)` |
-| EXISTS(array, pred) | Test if any element matches a predicate | `EXISTS(arr, x -> condition)` |
-| FILTER | Keep only matching map entries | `FILTER(MAP_ENTRIES(col), ...)` |
+| Technique           | Use Case                                             | Key Function                    |
+| ------------------- | ---------------------------------------------------- | ------------------------------- |
+| MAP_ENTRIES         | Iterate over map key-value pairs as array of structs | `MAP_ENTRIES(map_col)`          |
+| EXISTS(array, pred) | Test if any element matches a predicate              | `EXISTS(arr, x -> condition)`   |
+| FILTER              | Keep only matching map entries                       | `FILTER(MAP_ENTRIES(col), ...)` |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -35,15 +35,16 @@ Check whether any key in a MAP column matches a runtime predicate — demonstrat
 --8<-- "sql/application/key_n_struct/any_key_exists_in_struct.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Check if any key exists in a map | `EXISTS` + `MAP_ENTRIES` |
-| Databricks system tables with MAP columns | `system.billing.usage` pattern |
+| Scenario                                   | Recommended Approach            |
+| ------------------------------------------ | ------------------------------- |
+| Check if any key exists in a map           | `EXISTS` + `MAP_ENTRIES`        |
+| Databricks system tables with MAP columns  | `system.billing.usage` pattern  |
 | Dynamic key check without knowing key name | Runtime predicate with `EXISTS` |
 
 !!! note
+
     MAP_ENTRIES returns an array of structs. Combine with EXISTS to check dynamic keys without knowing the key name at query-write time.

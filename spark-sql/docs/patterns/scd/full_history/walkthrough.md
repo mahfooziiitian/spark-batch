@@ -3,7 +3,7 @@
 A complete walkthrough: create the dimension, seed initial data, process a change batch,
 verify results, and run point-in-time queries — all in a single Spark SQL session.
 
----
+______________________________________________________________________
 
 ## :material-numeric-1-circle: Create the Dimension Table
 
@@ -25,7 +25,7 @@ USING DELTA
 PARTITIONED BY (is_current);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-2-circle: Seed Initial State
 
@@ -49,12 +49,12 @@ AS t(customer_id, name, email, city);
 
 **State after seed:**
 
-| customer_sk | customer_id | name  | email               | city | is_current | start_date          | end_date |
-|-------------|-------------|-------|---------------------|------|------------|---------------------|----------|
-| 1           | cust1       | Alice | alice@example.com   | NY   | true       | 2024-01-01 00:00:00 | NULL     |
-| 2           | cust2       | Bob   | bob@example.com     | CA   | true       | 2024-01-01 00:00:00 | NULL     |
+| customer_sk | customer_id | name  | email             | city | is_current | start_date          | end_date |
+| ----------- | ----------- | ----- | ----------------- | ---- | ---------- | ------------------- | -------- |
+| 1           | cust1       | Alice | alice@example.com | NY   | true       | 2024-01-01 00:00:00 | NULL     |
+| 2           | cust2       | Bob   | bob@example.com   | CA   | true       | 2024-01-01 00:00:00 | NULL     |
 
----
+______________________________________________________________________
 
 ## :material-numeric-3-circle: Incoming Staging Batch
 
@@ -68,7 +68,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-4-circle: Pre-Merge Inspection
 
@@ -88,9 +88,9 @@ JOIN dim_customer      AS d
 WHERE md5(concat_ws('||', s.name, s.email, s.city)) <> d.row_hash;
 ```
 
-| customer_id | old_name | new_name | old_city | new_city | old_email           | new_email           |
-|-------------|----------|----------|----------|----------|---------------------|---------------------|
-| cust2       | Bob      | Bobby    | CA       | TX       | bob@example.com     | bob@newdomain.com   |
+| customer_id | old_name | new_name | old_city | new_city | old_email       | new_email         |
+| ----------- | -------- | -------- | -------- | -------- | --------------- | ----------------- |
+| cust2       | Bob      | Bobby    | CA       | TX       | bob@example.com | bob@newdomain.com |
 
 ```sql
 -- Rows that will be INSERTED (new)
@@ -101,11 +101,11 @@ LEFT JOIN dim_customer AS d
 WHERE d.customer_id IS NULL;
 ```
 
-| customer_id | name    | email                  | city |
-|-------------|---------|------------------------|------|
-| cust3       | Charlie | charlie@example.com    | WA   |
+| customer_id | name    | email               | city |
+| ----------- | ------- | ------------------- | ---- |
+| cust3       | Charlie | charlie@example.com | WA   |
 
----
+______________________________________________________________________
 
 ## :material-numeric-5-circle: Step 1 — Expire Changed Rows
 
@@ -130,10 +130,10 @@ WHEN MATCHED THEN
 **After Step 1** — `cust2`'s original row is now closed:
 
 | customer_sk | customer_id | name | city | is_current | end_date            |
-|-------------|-------------|------|------|------------|---------------------|
+| ----------- | ----------- | ---- | ---- | ---------- | ------------------- |
 | 2           | cust2       | Bob  | CA   | **false**  | 2024-06-15 09:00:00 |
 
----
+______________________________________________________________________
 
 ## :material-numeric-6-circle: Step 2 — Insert New Version Rows
 
@@ -164,12 +164,13 @@ WHEN NOT MATCHED THEN
 ```
 
 !!! note "Why does Step 1 not interfere with Step 2?"
+
     After Step 1, the expired `cust2` row has `is_current = FALSE` and its `row_hash` no longer
-    matches the staging hash.  Step 2's USING query sees `d.is_current = TRUE` returning NULL
+    matches the staging hash. Step 2's USING query sees `d.is_current = TRUE` returning NULL
     for `cust2` (no active row left), so `cust2` qualifies under `d.customer_id IS NULL` and
     gets a fresh insert — exactly the intended behaviour.
 
----
+______________________________________________________________________
 
 ## :material-numeric-7-circle: Post-Merge Verification
 
@@ -183,12 +184,12 @@ FROM dim_customer
 ORDER BY customer_id, start_date;
 ```
 
-| customer_sk | customer_id | name    | email                  | city | is_current | start_date          | end_date            |
-|-------------|-------------|---------|------------------------|------|------------|---------------------|---------------------|
-| 1           | cust1       | Alice   | alice@example.com      | NY   | true       | 2024-01-01 00:00:00 | NULL                |
-| 2           | cust2       | Bob     | bob@example.com        | CA   | **false**  | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3           | cust2       | Bobby   | bob@newdomain.com      | TX   | **true**   | 2024-06-15 09:00:00 | NULL                |
-| 4           | cust3       | Charlie | charlie@example.com    | WA   | true       | 2024-06-15 09:00:00 | NULL                |
+| customer_sk | customer_id | name    | email               | city | is_current | start_date          | end_date            |
+| ----------- | ----------- | ------- | ------------------- | ---- | ---------- | ------------------- | ------------------- |
+| 1           | cust1       | Alice   | alice@example.com   | NY   | true       | 2024-01-01 00:00:00 | NULL                |
+| 2           | cust2       | Bob     | bob@example.com     | CA   | **false**  | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3           | cust2       | Bobby   | bob@newdomain.com   | TX   | **true**   | 2024-06-15 09:00:00 | NULL                |
+| 4           | cust3       | Charlie | charlie@example.com | WA   | true       | 2024-06-15 09:00:00 | NULL                |
 
 ### Assertions
 
@@ -216,7 +217,7 @@ GROUP BY customer_id HAVING cnt > 1;
 -- Expected: 0 rows
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-8-circle: Point-in-Time Queries
 
@@ -231,7 +232,7 @@ WHERE customer_id = 'cust2'
 ```
 
 | customer_id | name | email           | city | start_date          | end_date            |
-|-------------|------|-----------------|------|---------------------|---------------------|
+| ----------- | ---- | --------------- | ---- | ------------------- | ------------------- |
 | cust2       | Bob  | bob@example.com | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
 
 ### Enrich orders with city at time of purchase
@@ -251,7 +252,7 @@ JOIN dim_customer  AS c
 ORDER BY o.order_date;
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-9-circle: Idempotency Check
 
@@ -291,7 +292,7 @@ FROM dim_customer;
 -- Expected: total_rows = 4, active_rows = 3
 ```
 
----
+______________________________________________________________________
 
 ## :material-numeric-10-circle: Delta History and Optimisation
 

@@ -45,6 +45,7 @@ Separate major sections with `---`.
 3. Links: relative paths to `.md` files — never to directories, never absolute URLs.
 4. Admonitions: `!!! tip`, `!!! note`, `!!! warning`, `!!! success`, `!!! failure`.
 5. Tables: GFM pipe syntax.
+6. Filenames: lower-case, hyphen-separated (`kebab-case.md`) — no `CamelCase`, no `snake_case`, no spaces. Rename with `git mv` to preserve history, and update every relative link/`.pages` entry pointing at the old name.
 
 ## Interactive Visualizations (D3.js)
 

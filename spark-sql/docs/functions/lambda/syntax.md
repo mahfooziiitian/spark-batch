@@ -1,8 +1,16 @@
 # :material-code-parentheses: Lambda Syntax
 
----
+______________________________________________________________________
 
 ## :material-pin: Basic Forms
+
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-param-binding" class="ts-viz"></div>
+
+Click a lambda signature to see how positional arguments bind to parameter
+names — the binding is purely by **position**, not by any implicit naming
+convention (`x`, `acc`, `k` are just conventions, not keywords).
 
 ### Single parameter
 
@@ -80,19 +88,19 @@ SELECT MAP_ZIP_WITH(
 -- Result: {x -> 11, y -> 22}
 ```
 
----
+______________________________________________________________________
 
 ## :material-information: Parameter Rules
 
-| Rule | Detail |
-|------|--------|
+| Rule            | Detail                                                       |
+| --------------- | ------------------------------------------------------------ |
 | Parameter names | Arbitrary — use descriptive names (`price`, `person`, `acc`) |
-| Parameter types | Inferred from the array element / map key-value types |
-| Parameter count | Must match the HOF's expected lambda signature |
-| Scope | Parameters are only visible inside the lambda expression |
-| Side effects | None — lambdas are pure expressions |
+| Parameter types | Inferred from the array element / map key-value types        |
+| Parameter count | Must match the HOF's expected lambda signature               |
+| Scope           | Parameters are only visible inside the lambda expression     |
+| Side effects    | None — lambdas are pure expressions                          |
 
----
+______________________________________________________________________
 
 ## :material-layers: Nested Lambdas
 
@@ -117,7 +125,7 @@ SELECT TRANSFORM(
 -- Result: [{b -> 5}, {a -> 3}]
 ```
 
----
+______________________________________________________________________
 
 ## :material-function-variant: Using SQL Expressions Inside Lambdas
 
@@ -150,7 +158,7 @@ SELECT FILTER(
 -- Result: [{name: Alice, age: 25}]
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -159,3 +167,14 @@ SELECT FILTER(
 3. **NULL propagation** — if an element is NULL the lambda receives NULL; guard with `COALESCE` or `IF(x IS NULL, ...)` inside the lambda.
 4. **Cannot call UDFs inside lambdas** — only built-in SQL functions are allowed inside lambda expressions.
 5. **No pushdown** — HOFs with lambdas are evaluated in Spark memory; they cannot be pushed to Parquet/Delta scan filters.
+6. **Parameter names are arbitrary, not positional keywords** — `x`, `acc`, `k`/`v` are naming conventions only; Spark binds lambda arguments strictly by position in the HOF's call signature, so `(a, b) -> a - b` and `(x, y) -> x - y` are identical, but reusing an outer column name as a parameter name silently shadows it inside the lambda body.
+
+```sql
+-- Pitfall: lambda parameter 'price' shadows the outer 'price' column
+SELECT price, TRANSFORM(discounts, price -> price * 0.9) AS discounted
+FROM products;
+-- Inside the lambda, 'price' now refers to each *discount* element, not the
+-- outer products.price column -- rename the lambda parameter to avoid confusion
+SELECT price, TRANSFORM(discounts, d -> d * 0.9) AS discounted
+FROM products;
+```

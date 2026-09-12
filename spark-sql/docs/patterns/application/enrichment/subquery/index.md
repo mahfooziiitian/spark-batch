@@ -2,7 +2,7 @@
 
 Use correlated subqueries, EXISTS anti-joins, and scalar subqueries to filter and enrich result sets.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -13,20 +13,20 @@ graph LR
     C --> D[Filter or value in outer query]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Quick Reference
 
-| Technique | Use Case | Key Function |
-|-----------|----------|-------------|
+| Technique           | Use Case                                  | Key Function                                            |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------- |
 | Correlated subquery | Per-row inner query referencing outer row | `WHERE col = (SELECT ... FROM t WHERE t.id = outer.id)` |
-| EXISTS | Check for the presence of matching rows | `WHERE EXISTS (SELECT 1 FROM ...)` |
-| NOT EXISTS | Anti-join pattern — rows with no match | `WHERE NOT EXISTS (SELECT 1 FROM ...)` |
-| Subquery in WHERE | Filter outer result on inner aggregation | `WHERE col > (SELECT AVG(...) FROM ...)` |
-| Aggregated subquery | Scalar value from inner aggregation | `(SELECT SUM(...) FROM ...)` |
-| Percentage of total | Subquery in SELECT list for ratio | `col / (SELECT SUM(col) FROM ...)` |
+| EXISTS              | Check for the presence of matching rows   | `WHERE EXISTS (SELECT 1 FROM ...)`                      |
+| NOT EXISTS          | Anti-join pattern — rows with no match    | `WHERE NOT EXISTS (SELECT 1 FROM ...)`                  |
+| Subquery in WHERE   | Filter outer result on inner aggregation  | `WHERE col > (SELECT AVG(...) FROM ...)`                |
+| Aggregated subquery | Scalar value from inner aggregation       | `(SELECT SUM(...) FROM ...)`                            |
+| Percentage of total | Subquery in SELECT list for ratio         | `col / (SELECT SUM(col) FROM ...)`                      |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Examples
 
@@ -38,7 +38,7 @@ Simple correlated subquery referencing the outer query's current row.
 --8<-- "sql/application/subquery/correlated_basics.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Correlated Advanced
 
@@ -48,7 +48,7 @@ Advanced correlated patterns including EXISTS and NOT EXISTS.
 --8<-- "sql/application/subquery/correlated_advanced.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Subquery Filtering
 
@@ -58,7 +58,7 @@ Use subqueries in WHERE to filter rows based on inner aggregations.
 --8<-- "sql/application/subquery/subquery_filtering.sql"
 ```
 
----
+______________________________________________________________________
 
 ### Subquery Aggregation
 
@@ -68,16 +68,17 @@ Scalar subqueries in the SELECT list for ratio and percentage calculations.
 --8<-- "sql/application/subquery/subquery_aggregation.sql"
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Approach |
-|----------|---------------------|
-| Per-row aggregation against outer row | Correlated subquery |
-| Anti-join (rows with no match) | `NOT EXISTS` |
-| Scalar lookup in SELECT | Subquery in SELECT list |
-| Filter on an aggregated value | Subquery in WHERE |
+| Scenario                              | Recommended Approach    |
+| ------------------------------------- | ----------------------- |
+| Per-row aggregation against outer row | Correlated subquery     |
+| Anti-join (rows with no match)        | `NOT EXISTS`            |
+| Scalar lookup in SELECT               | Subquery in SELECT list |
+| Filter on an aggregated value         | Subquery in WHERE       |
 
 !!! tip
+
     For large datasets, prefer JOIN + aggregation or window functions over correlated subqueries — they typically have better query plans.

@@ -2,19 +2,19 @@
 
 Navigation functions access values from other rows relative to the current row within a window partition.
 
----
+______________________________________________________________________
 
 ## :material-pin: Functions
 
-| Function | Syntax | Description |
-|----------|--------|-------------|
-| `LAG` | `LAG(col [, offset [, default]]) OVER (...)` | Returns the value `offset` rows *before* the current row |
-| `LEAD` | `LEAD(col [, offset [, default]]) OVER (...)` | Returns the value `offset` rows *after* the current row |
-| `FIRST_VALUE` | `FIRST_VALUE(col) [IGNORE NULLS] OVER (...)` | Returns the first value in the window frame |
-| `LAST_VALUE` | `LAST_VALUE(col) [IGNORE NULLS] OVER (...)` | Returns the last value in the window frame |
-| `NTH_VALUE` | `NTH_VALUE(col, n) [IGNORE NULLS] OVER (...)` | Returns the `n`-th value in the window frame (1-based index) |
+| Function      | Syntax                                        | Description                                                  |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------ |
+| `LAG`         | `LAG(col [, offset [, default]]) OVER (...)`  | Returns the value `offset` rows *before* the current row     |
+| `LEAD`        | `LEAD(col [, offset [, default]]) OVER (...)` | Returns the value `offset` rows *after* the current row      |
+| `FIRST_VALUE` | `FIRST_VALUE(col) [IGNORE NULLS] OVER (...)`  | Returns the first value in the window frame                  |
+| `LAST_VALUE`  | `LAST_VALUE(col) [IGNORE NULLS] OVER (...)`   | Returns the last value in the window frame                   |
+| `NTH_VALUE`   | `NTH_VALUE(col, n) [IGNORE NULLS] OVER (...)` | Returns the `n`-th value in the window frame (1-based index) |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -25,7 +25,7 @@ Navigation functions access values from other rows relative to the current row w
 5. **IGNORE NULLS**: `FIRST_VALUE`, `LAST_VALUE`, and `NTH_VALUE` support `IGNORE NULLS` (placed after the closing parenthesis in Spark 4) to skip `NULL` values when scanning the frame.
 6. **Frame clause and LAG/LEAD**: `LAG` and `LEAD` do **not** accept a frame clause — specifying one causes a parse error.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -58,7 +58,7 @@ ORDER BY rep, sale_date;
 ??? success "Expected Output"
 
     | rep   | sale_date  | amount | prev_sale | next_sale |
-    |-------|------------|-------:|----------:|----------:|
+    | ----- | ---------- | -----: | --------: | --------: |
     | Alice | 2024-01-01 |    100 |      NULL |       200 |
     | Alice | 2024-01-05 |    200 |       100 |       300 |
     | Alice | 2024-01-10 |    300 |       200 |      NULL |
@@ -89,7 +89,7 @@ ORDER BY rep, sale_date;
 ??? success "Expected Output"
 
     | rep   | sale_date  | amount | diff_from_last | pct_change |
-    |-------|------------|-------:|---------------:|-----------:|
+    | ----- | ---------- | -----: | -------------: | ---------: |
     | Alice | 2024-01-01 |    100 |           NULL |       NULL |
     | Alice | 2024-01-05 |    200 |            100 |      100.0 |
     | Alice | 2024-01-10 |    300 |            100 |       50.0 |
@@ -121,7 +121,7 @@ ORDER BY rep, sale_date;
 ??? success "Expected Output"
 
     | rep   | sale_date  | amount | first_sale | last_sale |
-    |-------|------------|-------:|-----------:|----------:|
+    | ----- | ---------- | -----: | ---------: | --------: |
     | Alice | 2024-01-01 |    100 |        100 |       300 |
     | Alice | 2024-01-05 |    200 |        100 |       300 |
     | Alice | 2024-01-10 |    300 |        100 |       300 |
@@ -134,8 +134,10 @@ ORDER BY rep, sale_date;
     - `last_sale` — always the most recent sale (requires full-partition frame).
 
 !!! warning "LAST_VALUE without explicit frame"
+
     Without `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`,
     `LAST_VALUE` returns the **current row** — making it seem like a no-op:
+
     ```sql
     -- ✗ Returns current row's amount (misleading)
     LAST_VALUE(amount) OVER (PARTITION BY rep ORDER BY sale_date)
@@ -164,7 +166,7 @@ ORDER BY rep, sale_date;
 ??? success "Expected Output"
 
     | rep   | sale_date  | amount | second_sale |
-    |-------|------------|-------:|------------:|
+    | ----- | ---------- | -----: | ----------: |
     | Alice | 2024-01-01 |    100 |         200 |
     | Alice | 2024-01-05 |    200 |         200 |
     | Alice | 2024-01-10 |    300 |         200 |
@@ -192,7 +194,7 @@ ORDER BY rep, sale_date;
 ??? success "Expected Output"
 
     | rep   | sale_date  | amount | prev_sale |
-    |-------|------------|-------:|----------:|
+    | ----- | ---------- | -----: | --------: |
     | Alice | 2024-01-01 |    100 |         0 |
     | Alice | 2024-01-05 |    200 |       100 |
     | Alice | 2024-01-10 |    300 |       200 |
@@ -222,7 +224,7 @@ ORDER BY rep, sale_date;
 ??? success "Expected Output"
 
     | rep   | sale_date  | amount | prev_1 | prev_2 |
-    |-------|------------|-------:|-------:|-------:|
+    | ----- | ---------- | -----: | -----: | -----: |
     | Alice | 2024-01-01 |    100 |   NULL |   NULL |
     | Alice | 2024-01-05 |    200 |    100 |   NULL |
     | Alice | 2024-01-10 |    300 |    200 |    100 |
@@ -234,7 +236,7 @@ ORDER BY rep, sale_date;
     - `LAG(amount, 2)` returns NULL when fewer than 2 preceding rows exist.
     - Useful for comparing to 2 periods ago, 3 periods ago, etc.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Scenario Examples
 
@@ -280,7 +282,7 @@ ORDER BY trade_date;
 ??? success "Expected Output"
 
     | ticker | trade_date | price | delta | prev_delta | signal        |
-    |--------|------------|------:|------:|-----------:|---------------|
+    | ------ | ---------- | ----: | ----: | ---------: | ------------- |
     | ACME   | 2024-01-01 | 100.0 |  NULL |       NULL |               |
     | ACME   | 2024-01-02 | 105.0 |   5.0 |       NULL |               |
     | ACME   | 2024-01-03 | 110.0 |   5.0 |        5.0 |               |
@@ -322,7 +324,7 @@ ORDER BY customer_id, order_date;
 ??? success "Expected Output"
 
     | customer_id | order_date | amount | prev_order_date | days_since_last_order |
-    |-------------|------------|-------:|-----------------|----------------------:|
+    | ----------- | ---------- | -----: | --------------- | --------------------: |
     | C001        | 2024-01-05 |    250 | NULL            |                  NULL |
     | C001        | 2024-01-12 |    180 | 2024-01-05      |                     7 |
     | C001        | 2024-02-01 |    320 | 2024-01-12      |                    20 |
@@ -368,7 +370,7 @@ ORDER BY ticker, trade_date;
 ??? success "Expected Output"
 
     | ticker | month      | trade_date | price | month_open | month_close |
-    |--------|------------|------------|------:|-----------:|------------:|
+    | ------ | ---------- | ---------- | ----: | ---------: | ----------: |
     | ACME   | 2024-01-01 | 2024-01-02 | 100.0 |      100.0 |       112.0 |
     | ACME   | 2024-01-01 | 2024-01-15 | 108.0 |      100.0 |       112.0 |
     | ACME   | 2024-01-01 | 2024-01-31 | 112.0 |      100.0 |       112.0 |
@@ -414,7 +416,7 @@ ORDER BY dept, salary DESC;
 ??? success "Expected Output"
 
     | dept        | name  | salary | second_highest | diff_from_2nd |
-    |-------------|-------|-------:|---------------:|--------------:|
+    | ----------- | ----- | -----: | -------------: | ------------: |
     | Engineering | Alice | 110000 |         102000 |          8000 |
     | Engineering | Carol | 102000 |         102000 |             0 |
     | Engineering | Bob   |  95000 |         102000 |         -7000 |
@@ -425,6 +427,55 @@ ORDER BY dept, salary DESC;
 
     `NTH_VALUE(salary, 2)` with `ORDER BY salary DESC` gives the
     second-highest salary — a useful benchmark for the department.
+
+### Scenario 4b — Extracting the Nth *Row* Itself (Not Just a Column Value)
+
+A related but different question: "what is each customer's **3rd transaction**?" —
+the whole row (transaction id, amount, timestamp), not just one column's value
+repeated across the partition. `NTH_VALUE` isn't the right tool here: it projects a
+single expression's value onto *every* row in the partition (and `NULL` when the
+partition has fewer than `n` rows), it doesn't filter down to one row. Verified on
+Spark 4.2:
+
+```sql
+CREATE OR REPLACE TEMP VIEW transactions AS
+SELECT * FROM VALUES
+  ('c1', 't1', TIMESTAMP '2024-01-01', 50.0),
+  ('c1', 't2', TIMESTAMP '2024-01-03', 75.0),
+  ('c1', 't3', TIMESTAMP '2024-01-05', 120.0),
+  ('c1', 't4', TIMESTAMP '2024-01-08', 40.0),
+  ('c2', 't5', TIMESTAMP '2024-01-02', 30.0),
+  ('c2', 't6', TIMESTAMP '2024-01-04', 60.0)   -- only 2 transactions
+AS t(customer_id, txn_id, txn_ts, amount);
+
+-- NTH_VALUE: still one output row per input row, NULL-padded for short partitions
+SELECT customer_id, txn_id, txn_ts, amount,
+    NTH_VALUE(txn_id, 3) OVER (
+        PARTITION BY customer_id ORDER BY txn_ts
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ) AS third_txn_id
+FROM transactions;
+-- c1's 4 rows all show third_txn_id = 't3'; c2's 2 rows both show NULL
+-- (c2 never had a 3rd transaction) -- 6 rows out, same as rows in
+```
+
+```sql
+-- ROW_NUMBER() = n: filters to exactly one row per customer, with every column
+SELECT * FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY txn_ts) AS rn
+    FROM transactions
+)
+WHERE rn = 3;
+-- exactly 1 row out: c1 / t3 / 2024-01-05 / 120.0 -- c2 correctly produces NO row,
+-- rather than two NULL-padded rows
+```
+
+!!! tip "NTH_VALUE annotates every row; ROW_NUMBER = n selects one row"
+
+    Use `NTH_VALUE` when you need the Nth value available *alongside* every row for a
+    comparison (Scenario 4's "diff from 2nd-highest"). Use `ROW_NUMBER() OVER (...) = n` (or `RANK`/`DENSE_RANK` if ties should share a position) when you need the Nth
+    row **itself**, with all of its columns, and want groups with fewer than `n` rows
+    to simply disappear from the result instead of surfacing as `NULL`-padded rows.
 
 ### Scenario 5 — Forward-Fill with IGNORE NULLS
 
@@ -457,7 +508,7 @@ ORDER BY device_id, ts;
 ??? success "Expected Output"
 
     | device_id | ts               | status  | effective_status |
-    |-----------|------------------|---------|------------------|
+    | --------- | ---------------- | ------- | ---------------- |
     | D1        | 2024-01-01 08:00 | ONLINE  | ONLINE           |
     | D1        | 2024-01-01 09:00 | NULL    | ONLINE           |
     | D1        | 2024-01-01 10:00 | NULL    | ONLINE           |
@@ -468,17 +519,18 @@ ORDER BY device_id, ts;
     `IGNORE NULLS` skips NULL entries and returns the most recent
     non-null status — the classic forward-fill pattern.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Compare each row to the previous / next row | `LAG` / `LEAD` |
-| Calculate period-over-period change | `amount - LAG(amount) OVER (...)` |
-| Detect trend reversals | Compare `LAG(delta)` sign to current delta |
-| Time between events | `DATEDIFF(date, LAG(date) OVER (...))` |
-| Retrieve opening or closing value per group | `FIRST_VALUE` / `LAST_VALUE` with explicit frame |
-| Access a specific ranked row's value | `NTH_VALUE(col, n)` with full-partition frame |
-| Avoid NULL on boundary rows | `LAG(col, 1, default_value)` |
-| Forward-fill missing values | `LAST_VALUE(col) IGNORE NULLS` with frame to current row |
+| Scenario                                    | Recommended Pattern                                      |
+| ------------------------------------------- | -------------------------------------------------------- |
+| Compare each row to the previous / next row | `LAG` / `LEAD`                                           |
+| Calculate period-over-period change         | `amount - LAG(amount) OVER (...)`                        |
+| Detect trend reversals                      | Compare `LAG(delta)` sign to current delta               |
+| Time between events                         | `DATEDIFF(date, LAG(date) OVER (...))`                   |
+| Retrieve opening or closing value per group | `FIRST_VALUE` / `LAST_VALUE` with explicit frame         |
+| Access a specific ranked row's value        | `NTH_VALUE(col, n)` with full-partition frame            |
+| Retrieve the Nth row itself (all columns)   | `ROW_NUMBER() OVER (...) = n` filter, not `NTH_VALUE`    |
+| Avoid NULL on boundary rows                 | `LAG(col, 1, default_value)`                             |
+| Forward-fill missing values                 | `LAST_VALUE(col) IGNORE NULLS` with frame to current row |

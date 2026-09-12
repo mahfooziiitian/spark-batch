@@ -3,7 +3,7 @@
 Profiling identifies bottlenecks before you tune. Start with `EXPLAIN`, then inspect
 the Spark UI for stage-level evidence.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Profiling Workflow
 
@@ -23,7 +23,7 @@ flowchart TD
     PF --> FIX5["Add stats, improve\npartition scheme, Z-ORDER"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-text-box-outline: EXPLAIN Modes
 
@@ -50,7 +50,7 @@ EXPLAIN CODEGEN
 SELECT SUM(amount) FROM orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Reading EXPLAIN FORMATTED Output
 
@@ -70,27 +70,37 @@ AdaptiveSparkPlan (1)                     ← AQE wraps the plan
 ```
 
 !!! tip "What to check in `FileScan`"
+
     - **`PartitionFilters`** non-empty → partition pruning is working.
     - **`PushedFilters`** non-empty → predicate pushed to Parquet reader.
     - **`ReadSchema`** only has needed columns → column pruning active.
 
----
+______________________________________________________________________
+
+### :material-animation-play: Interactive Visualization — EXPLAIN FORMATTED Plan Tree
+
+<div id="viz-explain-tree" class="ts-viz"></div>
+
+Click each numbered node to see exactly what to check on it — shuffle cost on `Exchange`,
+`PushedFilters`/`PartitionFilters`/`ReadSchema` on `FileScan`.
+
+______________________________________________________________________
 
 ## :material-eye: Spark UI — Stage Metrics
 
 Navigate to **Stages** → click a stage → **Tasks**.
 
-| Metric | Normal | Warning |
-|--------|--------|---------|
-| Duration (Median vs Max) | Close | Max > 3× Median → skew |
-| Shuffle Write Size | — | Single task > 1 GB → investigate |
-| Shuffle Read Size | — | Much larger than write → amplification |
-| Spill (Memory) | 0 | Any → executor memory too low |
-| Spill (Disk) | 0 | Any → critical, job will be slow |
-| GC Time | < 5% of task time | > 10% → reduce heap pressure |
-| Input Size per Task | Balanced | High variance → uneven partitioning |
+| Metric                   | Normal            | Warning                                |
+| ------------------------ | ----------------- | -------------------------------------- |
+| Duration (Median vs Max) | Close             | Max > 3× Median → skew                 |
+| Shuffle Write Size       | —                 | Single task > 1 GB → investigate       |
+| Shuffle Read Size        | —                 | Much larger than write → amplification |
+| Spill (Memory)           | 0                 | Any → executor memory too low          |
+| Spill (Disk)             | 0                 | Any → critical, job will be slow       |
+| GC Time                  | < 5% of task time | > 10% → reduce heap pressure           |
+| Input Size per Task      | Balanced          | High variance → uneven partitioning    |
 
----
+______________________________________________________________________
 
 ## :material-table-search: Useful Diagnostic Queries
 
@@ -110,7 +120,7 @@ EXPLAIN FORMATTED
 SELECT region, SUM(amount) FROM orders GROUP BY region;
 ```
 
----
+______________________________________________________________________
 
 ## :material-run-fast: ANALYZE TABLE — Feed the Optimiser
 
@@ -131,19 +141,20 @@ DESCRIBE EXTENDED orders;
 ```
 
 !!! note "When stats matter most"
+
     CBO uses stats to reorder multi-way joins. Without stats, Catalyst uses
     `spark.sql.defaultSizeInBytes` (default 1 GB per table) — almost always wrong.
 
----
+______________________________________________________________________
 
 ## :material-clipboard-list: Bottleneck Identification Checklist
 
-| Symptom | Likely Cause | First Fix |
-|---------|-------------|-----------|
-| Long `FileScan` stage | No partition/predicate pruning | Check `EXPLAIN` filters |
-| Long shuffle stage | Wrong join strategy | Add `BROADCAST` hint |
-| One task much slower | Data skew | Enable AQE skew join |
-| OOM / spill | Partition too large | Lower shuffle partitions or increase memory |
-| High GC time | Too much heap fragmentation | Use off-heap memory or smaller executor |
-| Many tiny tasks | Too many shuffle partitions | Reduce `shuffle.partitions` or enable AQE |
-| Stage succeeds but is slow | UDF overhead | Replace with SQL built-ins |
+| Symptom                    | Likely Cause                   | First Fix                                   |
+| -------------------------- | ------------------------------ | ------------------------------------------- |
+| Long `FileScan` stage      | No partition/predicate pruning | Check `EXPLAIN` filters                     |
+| Long shuffle stage         | Wrong join strategy            | Add `BROADCAST` hint                        |
+| One task much slower       | Data skew                      | Enable AQE skew join                        |
+| OOM / spill                | Partition too large            | Lower shuffle partitions or increase memory |
+| High GC time               | Too much heap fragmentation    | Use off-heap memory or smaller executor     |
+| Many tiny tasks            | Too many shuffle partitions    | Reduce `shuffle.partitions` or enable AQE   |
+| Stage succeeds but is slow | UDF overhead                   | Replace with SQL built-ins                  |

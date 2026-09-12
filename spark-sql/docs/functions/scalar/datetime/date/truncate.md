@@ -1,71 +1,96 @@
-# :material-calendar-clock: Date truncate
+# :material-calendar-remove: Date Truncation
 
-date_trunc is a handy function used to truncate a timestamp or date to the specified unit of time — like truncating to the start of the year, month, day, hour, etc.
+`DATE_TRUNC` rounds a timestamp down to the start of a requested unit such as year, month, week,
+hour, or millisecond. It is useful for bucketing event time for aggregation.
 
-### :material-sitemap: Overview
+______________________________________________________________________
+
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
-    A[Input Date / Timestamp] --> B[DateTime Function]
-    B --> C[Result Value]
+    A[Timestamp input] --> B[DATE_TRUNC(unit, value)]
+    B --> C[Boundary-aligned timestamp]
 ```
 
-## :material-calendar-clock: Purpose
+### :material-animation-play: Interactive Visualization — Truncation Granularity
 
-Truncate a timestamp/date to a specified precision, returning the start of that unit.
+<div id="viz-date-trunc" class="ts-viz"></div>
 
-## :material-calendar-clock: Syntax
+Choose a truncation unit to watch the same timestamp snap to progressively coarser boundaries. This
+makes it easier to see what information is retained and what is zeroed out.
+
+## :material-pin: Syntax
 
 ```sql
-date_trunc(format, timestamp)
+DATE_TRUNC(format, timestamp)
 ```
 
-1. `format`: A string specifying the unit to truncate to (e.g., 'year', 'month', 'day', 'hour', 'minute', 'second').
-2. `timestamp`: The timestamp or date to be truncated.
-3. `Returns`: A timestamp truncated to the specified unit.
+Common units include `YEAR`, `MONTH`, `WEEK`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, `MILLISECOND`, and
+`MICROSECOND`.
 
-It Returns timestamp ts truncated to the unit specified by the format model fmt.
+## :material-information-outline: Behavior
 
-## :material-calendar-clock: Examples
+1. `DATE_TRUNC` returns the input rounded down to the start of the requested unit.
+2. The result type is timestamp-like even if you pass a `DATE`.
+3. Larger units zero out more fields.
+4. `MILLISECOND` keeps three fractional digits; `MICROSECOND` keeps full microsecond precision.
+5. `WEEK` truncation aligns to the start of Spark's week.
+6. **Spark truncates weeks to Monday** — that detail matters when your business week starts on Sunday or when you compare Spark output with another BI tool.
 
-### 1. Truncate to Year
+______________________________________________________________________
+
+## :material-flask-outline: Practical Examples
+
+### :material-toy-brick: 1. Truncate to Year
 
 ```sql
-SELECT date_trunc('YEAR', '2015-03-05T09:32:05.359');
+SELECT DATE_TRUNC('YEAR', TIMESTAMP '2015-03-05 09:32:05.359') AS year_start;
+-- 2015-01-01 00:00:00
 ```
 
-### 2. Truncate to Month
+### :material-toy-brick: 2. Truncate to Month
 
 ```sql
-SELECT date_trunc('MM', '2015-03-05T09:32:05.359');
+SELECT DATE_TRUNC('MONTH', TIMESTAMP '2015-03-05 09:32:05.359') AS month_start;
+-- 2015-03-01 00:00:00
 ```
 
-### 3. Truncate to Day
+### :material-toy-brick: 3. Truncate to Hour
 
 ```sql
-SELECT date_trunc('DD', '2015-03-05T09:32:05.359');
+SELECT DATE_TRUNC('HOUR', TIMESTAMP '2015-03-05 09:32:05.359') AS hour_start;
+-- 2015-03-05 09:00:00
 ```
 
-### 4. Truncate to Hour
+### :material-toy-brick: 4. Truncate to Millisecond
 
 ```sql
-SELECT date_trunc('HOUR', '2015-03-05T09:32:05.359');
+SELECT DATE_TRUNC('MILLISECOND', TIMESTAMP '2015-03-05 09:32:05.123456') AS milli_value;
+-- 2015-03-05 09:32:05.123
 ```
 
-### 5. Truncate to minute
+### :material-toy-brick: 5. Microsecond Truncation Keeps Full Precision
 
 ```sql
-SELECT date_trunc('MINUTE', '2015-03-05T09:32:05.123456');
+SELECT DATE_TRUNC('MICROSECOND', TIMESTAMP '2015-03-05 09:32:05.123456') AS micro_value;
+-- 2015-03-05 09:32:05.123456
 ```
 
-### 6. Truncate to second
+### :material-alert-circle-outline: 6. `WEEK` Starts on Monday
 
 ```sql
-SELECT date_trunc('SECOND', '2015-03-05T09:32:05.123456');
+SELECT DATE_TRUNC('WEEK', TIMESTAMP '2024-07-17 14:35:10') AS week_start;
+-- 2024-07-15 00:00:00
 ```
 
-### 7. Truncate to milli-second
+______________________________________________________________________
 
-```sql
-SELECT date_trunc('MILLISECOND', '2015-03-05T09:32:05.123456');
-```
+## :material-lightbulb-outline: When to Use
+
+| Scenario             | Why `DATE_TRUNC` helps                       |
+| -------------------- | -------------------------------------------- |
+| Monthly rollups      | Normalize timestamps to month starts         |
+| Hourly dashboards    | Bucket event timestamps for grouping         |
+| Week-based reporting | Create deterministic week boundaries         |
+| Precision checks     | Compare millisecond vs microsecond retention |

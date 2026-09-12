@@ -1,81 +1,88 @@
 # :material-lightbulb-on: Join Hints
 
-Join hints let you influence the physical join strategy chosen by the Spark planner.
-They are expressed as inline SQL comments: `/*+ HINT_NAME(table) */`.
+Join hints let you bias Spark's physical join selection. PySpark 4.2 confirmed that the core join-strategy hints below do change the physical operator for equi joins when the strategy is supported.
 
----
+### :material-animation-play: Interactive Visualization — Hint Alias Mapper
 
-## :material-sitemap: Overview
+<div id="viz-join-hints-core" class="ts-viz"></div>
 
-```mermaid
-graph LR
-    Q["SELECT /*+ BROADCAST(dim) */ ..."] --> P[Planner]
-    P --> J[Forced Join Strategy]
-```
+Pick a hint alias to see the physical join operator that `EXPLAIN FORMATTED` showed during PySpark 4.2 verification.
 
----
+<script src="../../../assets/js/querying-joins-core-viz.js"></script>
 
-## :material-table: Hint Reference
+______________________________________________________________________
 
-| Hint | Strategy Forced | Best When |
-|------|-----------------|-----------|
-| `BROADCAST(t)` | Broadcast Hash Join | One side is small (< broadcast threshold) |
-| `MERGE(t)` | Sort-Merge Join | Both sides large, keys sortable |
-| `SHUFFLE_HASH(t)` | Shuffle Hash Join | Both sides large, enough memory for hash table |
-| `SHUFFLE_REPLICATE_NL(t)` | Shuffle-and-Replicate Nested Loop | Cross joins or non-equi joins |
-| `SKEW(t)` | AQE skew split override | Known skewed keys that AQE misses |
+## :material-table: Verified Hint Reference
 
----
+| Hint syntax                       | Verified physical operator in PySpark 4.2   | Notes                                                                                             |
+| --------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `BROADCAST(t)`                    | `BroadcastHashJoin`                         | `BROADCASTJOIN(t)` and `MAPJOIN(t)` behaved the same                                              |
+| `MERGE(t)`                        | `SortMergeJoin`                             | `SHUFFLE_MERGE(t)` and `MERGEJOIN(t)` behaved the same                                            |
+| `SHUFFLE_HASH(t)`                 | `ShuffledHashJoin`                          | Forces shuffle-hash selection for the tested equi join                                            |
+| `SHUFFLE_REPLICATE_NL(t)`         | `CartesianProduct`                          | `EXPLAIN FORMATTED` exposed the nested-loop family as `CartesianProduct` in the tested inner join |
+| `[Databricks] RANGE_JOIN(t, bin)` | No change in open-source Spark 4.2          | See [range-join-hint.md](range-join-hint.md); the tested OSS plan stayed `CartesianProduct`       |
+| `[Databricks] SKEW(...)`          | No strategy change in open-source Spark 4.2 | Not an OSS join-strategy hint in the verification run                                             |
+
+______________________________________________________________________
 
 ## :material-pencil-outline: Syntax
 
 ```sql
--- Single table hint
-SELECT /*+ BROADCAST(dim) */ f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id;
-
--- Multiple hints in one query
-SELECT /*+ BROADCAST(dim), SKEW('orders') */ *
-FROM orders
-JOIN dim_region dim ON orders.region_id = dim.id;
-
--- Hint on aliased table
-SELECT /*+ MERGE(a) */ *
-FROM large_table_a a
-JOIN large_table_b b ON a.id = b.id;
+SELECT /*+ BROADCAST(dim) */
+    f.order_id,
+    dim.region
+FROM fact_orders AS f
+JOIN dim_region AS dim
+    ON f.region_id = dim.id;
 ```
 
----
+```sql
+SELECT /*+ MERGE(a), SHUFFLE_HASH(b) */ *
+FROM large_a AS a
+JOIN large_b AS b
+    ON a.id = b.id;
+```
 
-## :material-sort-numeric-ascending: Hint Precedence
+Hints target the relation name or alias that is visible at that point in the query.
 
-When both sides carry conflicting hints, the planner resolves them in this priority order:
+______________________________________________________________________
+
+## :material-sort-numeric-ascending: Verified Precedence
+
+When both sides of the same join carry conflicting strategy hints, PySpark 4.2 matched Spark's documented priority order:
 
 1. `BROADCAST`
 2. `MERGE`
 3. `SHUFFLE_HASH`
 4. `SHUFFLE_REPLICATE_NL`
 
-Higher-priority hints win. If the same hint appears on both sides, Spark picks the build side based on join type and relative sizes.
+Verified examples:
 
----
+- `BROADCAST(left_t)` + `MERGE(right_t)` -> `BroadcastHashJoin`
+- `MERGE(left_t)` + `SHUFFLE_HASH(right_t)` -> `SortMergeJoin`
+- `SHUFFLE_HASH(left_t)` + `SHUFFLE_REPLICATE_NL(right_t)` -> `ShuffledHashJoin`
+
+When both sides were hinted with `BROADCAST`, the symmetric test query built on the right side. That build-side choice can still vary with join type and statistics.
+
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
-1. Hints are **best-effort** — if a hint is physically impossible (e.g., table too large to broadcast), Spark falls back to its normal strategy selection with a warning.
-2. Use `EXPLAIN` to verify that your hint was honoured.
-3. Broadcast joins require the build side to fit in executor memory; exceeding the limit causes OOM.
-4. The `SKEW` hint is only recognised in Databricks Runtime; in open-source Spark, AQE handles skew automatically.
+1. Hints influence physical planning; they do not change join semantics.
+2. Use the alias actually present in the query. A hint attached to an out-of-scope or wrong relation name is ignored.
+3. Unsupported combinations can fall back. In the verification run, `FULL OUTER JOIN` plus `BROADCAST` still planned as `SortMergeJoin`.
+4. `EXPLAIN FORMATTED` is the fastest way to confirm whether Spark honored the hint.
 
----
+______________________________________________________________________
 
-## :material-code-tags: Verify with EXPLAIN
+## :material-code-tags: Verify with `EXPLAIN FORMATTED`
 
 ```sql
-EXPLAIN
-SELECT /*+ BROADCAST(dim) */ f.order_id, dim.region
-FROM fact_orders f
-JOIN dim_region dim ON f.region_id = dim.id;
--- Look for: BroadcastHashJoin in the plan output
+EXPLAIN FORMATTED
+SELECT /*+ SHUFFLE_HASH(dim) */
+    f.sale_id,
+    dim.category
+FROM fact_sales AS f
+JOIN dim_product AS dim
+    ON f.product_id = dim.product_id;
 ```

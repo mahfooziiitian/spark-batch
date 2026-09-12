@@ -1,4 +1,4 @@
 nav:
   - index.md
-  - query_lifecycle.md
+  - query-lifecycle.md
   - explain.md

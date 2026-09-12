@@ -3,16 +3,16 @@
 Tables are the core storage abstraction in Spark SQL. They can be managed or
 external and use formats like Parquet, ORC, or Delta.
 
----
+______________________________________________________________________
 
 ## :material-pin: Table Types
 
-| Type | Description |
-|------|-------------|
-| Managed | Spark controls data and metadata |
+| Type     | Description                           |
+| -------- | ------------------------------------- |
+| Managed  | Spark controls data and metadata      |
 | External | Data stored outside Spark's warehouse |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Example
 
@@ -23,12 +23,12 @@ CREATE TABLE orders (
 ) USING PARQUET;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Spark-managed lifecycle | Managed tables |
-| Shared storage | External tables |
-| ACID operations | Delta tables |
+| Scenario                | Recommendation  |
+| ----------------------- | --------------- |
+| Spark-managed lifecycle | Managed tables  |
+| Shared storage          | External tables |
+| ACID operations         | Delta tables    |

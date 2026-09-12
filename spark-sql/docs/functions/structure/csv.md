@@ -3,13 +3,21 @@
 Spark SQL provides functions to **parse CSV strings into structs** and **serialize structs back
 to CSV** — enabling inline CSV processing without file I/O.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
     A[Raw CSV String Column] --> B["from_csv(col, schema)"]
     B --> C[Struct Column]
 ```
+
+### :material-animation-play: Interactive Visualization — Positional Field Mapping
+
+<div id="viz-csv-position-map" class="ts-viz"></div>
+
+`FROM_CSV` matches fields **by position**, not by name — the Nth comma-separated
+value always maps to the Nth schema field, regardless of what the CSV
+"header" text says (there is no header row here, only field order).
 
 ## :material-pin: FROM_CSV — Parse CSV String
 
@@ -19,11 +27,11 @@ graph LR
 FROM_CSV(csv_string, schema [, options])
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `csv_string` | Column or literal containing CSV text |
-| `schema` | DDL schema string defining field names and types |
-| `options` | *(Optional)* Map of parsing options |
+| Parameter    | Description                                      |
+| ------------ | ------------------------------------------------ |
+| `csv_string` | Column or literal containing CSV text            |
+| `schema`     | DDL schema string defining field names and types |
+| `options`    | *(Optional)* Map of parsing options              |
 
 ### :material-magnify: Behavior
 
@@ -79,18 +87,35 @@ FROM raw_data;
 -- {Alice, 30, New York}, {Bob, 45, San Francisco}
 ```
 
+#### :material-toy-brick: 6. PERMISSIVE vs FAILFAST on a Type Mismatch
+
+```sql
+-- Default PERMISSIVE mode: the offending field becomes NULL, other fields survive
+SELECT FROM_CSV('a,notanint', 'x STRING, y INT') AS parsed;
+-- Result: {x: a, y: NULL}
+
+-- FAILFAST: raise instead
+SELECT FROM_CSV('a,notanint', 'x STRING, y INT', MAP('mode', 'FAILFAST')) AS parsed;
+-- Error: [MALFORMED_RECORD_IN_PARSING.WITHOUT_SUGGESTION]
+```
+
+> **Verified (Spark 4.2):** unlike `FROM_JSON`, when the CSV text itself
+> parses fine but one value doesn't match its declared type, `FROM_CSV`
+> nulls only the **offending field**, leaving sibling fields intact — a
+> more forgiving default than JSON's whole-struct nulling.
+
 ### Common Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `delimiter` | Field delimiter | `,` |
-| `quote` | Quote character | `"` |
-| `escape` | Escape character | `\` |
-| `multiLine` | Fields spanning multiple lines | `false` |
-| `mode` | `PERMISSIVE`, `DROPMALFORMED`, `FAILFAST` | `PERMISSIVE` |
-| `columnNameOfCorruptRecord` | Capture corrupt record column | — |
+| Option                      | Description                               | Default      |
+| --------------------------- | ----------------------------------------- | ------------ |
+| `delimiter`                 | Field delimiter                           | `,`          |
+| `quote`                     | Quote character                           | `"`          |
+| `escape`                    | Escape character                          | `\`          |
+| `multiLine`                 | Fields spanning multiple lines            | `false`      |
+| `mode`                      | `PERMISSIVE`, `DROPMALFORMED`, `FAILFAST` | `PERMISSIVE` |
+| `columnNameOfCorruptRecord` | Capture corrupt record column             | —            |
 
----
+______________________________________________________________________
 
 ## :material-pin: TO_CSV — Serialize Struct to CSV
 
@@ -111,7 +136,7 @@ SELECT TO_CSV(NAMED_STRUCT('a', 1, 'b', 2), MAP('delimiter', '|')) AS csv;
 -- Result: '1|2'
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: SCHEMA_OF_CSV — Infer Schema
 
@@ -128,24 +153,24 @@ SELECT SCHEMA_OF_CSV('Alice,30,NYC');
 -- Result: 'STRUCT<_c0: STRING, _c1: INT, _c2: STRING>'
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: FROM_CSV vs File-Based CSV Reading
 
-| Feature | `read.csv()` / `USING csv` | `FROM_CSV()` |
-|---------|---------------------------|-------------|
-| Reads CSV files | :material-check-circle-outline: Yes | :material-close-circle-outline: No |
-| Parses CSV strings | :material-close-circle-outline: No | :material-check-circle-outline: Yes |
+| Feature                 | `read.csv()` / `USING csv`                  | `FROM_CSV()`                               |
+| ----------------------- | ------------------------------------------- | ------------------------------------------ |
+| Reads CSV files         | :material-check-circle-outline: Yes         | :material-close-circle-outline: No         |
+| Parses CSV strings      | :material-close-circle-outline: No          | :material-check-circle-outline: Yes        |
 | Used in SQL expressions | :material-check-circle-outline: (USING csv) | :material-check-circle-outline: (function) |
-| Returns | DataFrame | STRUCT column |
-| Use case | Batch file ingestion | Inline string parsing |
+| Returns                 | DataFrame                                   | STRUCT column                              |
+| Use case                | Batch file ingestion                        | Inline string parsing                      |
 
 ## :material-brain: When to Use
 
-| Scenario | Function |
-|----------|----------|
-| CSV data embedded in a column | `FROM_CSV` |
-| Export structs as CSV strings | `TO_CSV` |
-| Explore unknown CSV structure | `SCHEMA_OF_CSV` |
-| Custom delimiters / quoting | `FROM_CSV` with options map |
-| File-based CSV ingestion | Use `USING csv` reader instead |
+| Scenario                      | Function                       |
+| ----------------------------- | ------------------------------ |
+| CSV data embedded in a column | `FROM_CSV`                     |
+| Export structs as CSV strings | `TO_CSV`                       |
+| Explore unknown CSV structure | `SCHEMA_OF_CSV`                |
+| Custom delimiters / quoting   | `FROM_CSV` with options map    |
+| File-based CSV ingestion      | Use `USING csv` reader instead |

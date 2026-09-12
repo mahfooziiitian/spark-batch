@@ -20,28 +20,28 @@ graph LR
     CT -. hist_key .-> HT
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
 <div id="viz-scd-type5" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-layers-triple: How Type 5 Differs from Its Parents
 
-| Feature | Type 1 | Type 4 | **Type 5** |
-|---------|--------|--------|-----------|
-| Current values | Overwritten | Overwritten | Overwritten |
-| Full history | :material-close: No | :material-check: Separate table | :material-check: Separate table |
-| Foreign key to history | :material-close: No | :material-close: No | :material-check: `hist_key` in main dim |
-| Query complexity | Low | Medium | Low (current) / Medium (history) |
-| Storage overhead | Minimal | Moderate | Moderate |
+| Feature                | Type 1              | Type 4                          | **Type 5**                              |
+| ---------------------- | ------------------- | ------------------------------- | --------------------------------------- |
+| Current values         | Overwritten         | Overwritten                     | Overwritten                             |
+| Full history           | :material-close: No | :material-check: Separate table | :material-check: Separate table         |
+| Foreign key to history | :material-close: No | :material-close: No             | :material-check: `hist_key` in main dim |
+| Query complexity       | Low                 | Medium                          | Low (current) / Medium (history)        |
+| Storage overhead       | Minimal             | Moderate                        | Moderate                                |
 
 The key differentiator over pure Type 4 is the `hist_key` column in the main dimension.
 It acts as a foreign key pointing to the *latest* row in the history table, making joins trivial.
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Table Design
 
@@ -80,10 +80,11 @@ USING DELTA;
 ```
 
 !!! note "Identity column support"
+
     `GENERATED ALWAYS AS IDENTITY` is available in Databricks Runtime 10.4 LTS and later.
     On open-source Spark, generate `hist_key` using `MONOTONICALLY_INCREASING_ID()` or a UUID.
 
----
+______________________________________________________________________
 
 ## :material-tray-arrow-down: Seed Data
 
@@ -112,7 +113,7 @@ FROM dim_customer_history h
 WHERE h.valid_to IS NULL;
 ```
 
----
+______________________________________________________________________
 
 ## :material-database-import: Incoming Staging Data
 
@@ -126,7 +127,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-repeat: Step-by-Step SCD Type 5 Logic
 
@@ -222,11 +223,12 @@ WHEN NOT MATCHED THEN
 ```
 
 !!! tip "Run order matters"
+
     Steps 2 → 3 → 4 must execute in sequence.
     Step 2 closes old rows before Step 3 opens new ones; Step 4 reads the freshly-opened rows
     to get the correct `hist_key`.
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Final Output
 
@@ -234,24 +236,24 @@ After processing the staging batch:
 
 **`dim_customer`** (current values, always 1 row per customer)
 
-| customer_id | name    | email                  | city | hist_key | updated_at          |
-|-------------|---------|------------------------|------|----------|---------------------|
-| cust1       | Alice   | alice@example.com      | NY   | 1        | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | bob@newdomain.com      | TX   | 3        | 2024-06-15 09:00:00 |
-| cust3       | Charlie | charlie@example.com    | WA   | 4        | 2024-06-15 09:00:00 |
+| customer_id | name    | email               | city | hist_key | updated_at          |
+| ----------- | ------- | ------------------- | ---- | -------- | ------------------- |
+| cust1       | Alice   | alice@example.com   | NY   | 1        | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | bob@newdomain.com   | TX   | 3        | 2024-06-15 09:00:00 |
+| cust3       | Charlie | charlie@example.com | WA   | 4        | 2024-06-15 09:00:00 |
 
 **`dim_customer_history`** (full audit trail)
 
-| hist_key | customer_id | name    | email                  | city | valid_from          | valid_to            |
-|----------|-------------|---------|------------------------|------|---------------------|---------------------|
-| 1        | cust1       | Alice   | alice@example.com      | NY   | 2024-01-01 00:00:00 | NULL                |
-| 2        | cust2       | Bob     | bob@example.com        | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
-| 3        | cust2       | Bobby   | bob@newdomain.com      | TX   | 2024-06-15 09:00:00 | NULL                |
-| 4        | cust3       | Charlie | charlie@example.com    | WA   | 2024-06-15 09:00:00 | NULL                |
+| hist_key | customer_id | name    | email               | city | valid_from          | valid_to            |
+| -------- | ----------- | ------- | ------------------- | ---- | ------------------- | ------------------- |
+| 1        | cust1       | Alice   | alice@example.com   | NY   | 2024-01-01 00:00:00 | NULL                |
+| 2        | cust2       | Bob     | bob@example.com     | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
+| 3        | cust2       | Bobby   | bob@newdomain.com   | TX   | 2024-06-15 09:00:00 | NULL                |
+| 4        | cust3       | Charlie | charlie@example.com | WA   | 2024-06-15 09:00:00 | NULL                |
 
 Seed generated `hist_key` 1 and 2. The batch generated 3 (new `cust2` version) and 4 (new `cust3` row).
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Analytical Queries
 
@@ -340,44 +342,46 @@ JOIN dim_customer            AS c USING (customer_id)
 JOIN dim_customer_history    AS h ON h.hist_key = c.hist_key;
 ```
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
-| Pitfall | Consequence | Solution |
-|---------|-------------|---------|
-| Running Step 4 before Step 3 | `hist_key` join finds no active row — inserts fail | Always run Steps 2 → 3 → 4 in sequence |
-| Step 2 misses a changed row | Stale `hist_key` in main dimension | Ensure hash comparison covers all tracked columns |
-| `hist_key` not updated in Step 4 | Main dim still points to the old (now-closed) history row | Confirm Step 4 MERGE sources `WHERE valid_to IS NULL` |
-| Duplicate keys in staging | Double-insert into history + double-update of main dim | Deduplicate staging with `ROW_NUMBER()` before Step 1 |
-| Identity column unavailable | `hist_key` generation fails | Use `MONOTONICALLY_INCREASING_ID()` or `UUID()` as fallback |
-| History table not partitioned | Full scans on per-customer history queries | Add `PARTITIONED BY (customer_id)` to the history table |
+| Pitfall                          | Consequence                                               | Solution                                                    |
+| -------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| Running Step 4 before Step 3     | `hist_key` join finds no active row — inserts fail        | Always run Steps 2 → 3 → 4 in sequence                      |
+| Step 2 misses a changed row      | Stale `hist_key` in main dimension                        | Ensure hash comparison covers all tracked columns           |
+| `hist_key` not updated in Step 4 | Main dim still points to the old (now-closed) history row | Confirm Step 4 MERGE sources `WHERE valid_to IS NULL`       |
+| Duplicate keys in staging        | Double-insert into history + double-update of main dim    | Deduplicate staging with `ROW_NUMBER()` before Step 1       |
+| Identity column unavailable      | `hist_key` generation fails                               | Use `MONOTONICALLY_INCREASING_ID()` or `UUID()` as fallback |
+| History table not partitioned    | Full scans on per-customer history queries                | Add `PARTITIONED BY (customer_id)` to the history table     |
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use SCD Type 5
 
 !!! success "Good fit"
+
     - BI dashboards need clean, fast access to **current values** without `is_current` filters
     - Analytics also requires **full change history** for audits, compliance, or ML feature stores
     - You want to **avoid the complexity** of Type 2's effective-date range queries in day-to-day reporting
     - Dimension tables are large and you need **partition pruning** on the main dim for performance
 
 !!! failure "Not a good fit"
+
     - Change history is never queried — use Type 1 instead (simpler, less storage)
     - You need point-in-time snapshots of the main fact table — use Type 2 instead
     - The mini-dimension grows extremely fast (high-cardinality, frequent changes) — history table becomes a bottleneck
     - Your platform does not support identity columns or efficient MERGE — operational complexity increases
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: Type Comparison Summary
 
-| Scenario | Recommended Type |
-|----------|-----------------|
-| Only current state matters | Type 1 |
-| Full history with effective dates in main table | Type 2 |
-| Mix: current + partial history as extra columns | Type 3 |
-| Separate current and history tables, no FK link | Type 4 |
-| Separate tables **with** `hist_key` foreign key | **Type 5** |
-| Type 2 history + Type 1 overwrite hybrid | Type 6 |
+| Scenario                                        | Recommended Type |
+| ----------------------------------------------- | ---------------- |
+| Only current state matters                      | Type 1           |
+| Full history with effective dates in main table | Type 2           |
+| Mix: current + partial history as extra columns | Type 3           |
+| Separate current and history tables, no FK link | Type 4           |
+| Separate tables **with** `hist_key` foreign key | **Type 5**       |
+| Type 2 history + Type 1 overwrite hybrid        | Type 6           |

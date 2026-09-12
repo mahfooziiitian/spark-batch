@@ -4,7 +4,7 @@ Apache Parquet is the **default production format** for Spark SQL.
 Its columnar, compressed layout enables column pruning and predicate pushdown —
 often 10–100× faster than scanning equivalent CSV.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Parquet Read Flow
 
@@ -19,22 +19,22 @@ graph LR
     F --> G[DataFrame]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Options Reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `path` | — | File or directory path |
-| `mergeSchema` | `false` | Union schemas from all files (schema evolution) |
-| `compression` | `snappy` | Codec: `none`, `snappy`, `gzip`, `lz4`, `zstd` |
-| `parquet.block.size` | 128 MB | Row-group size in bytes |
-| `parquet.page.size` | 1 MB | Page size within a row group |
-| `recursiveFileLookup` | `false` | Search subdirectories recursively |
-| `pathGlobFilter` | — | Glob pattern to filter files, e.g. `*.parquet` |
-| `modifiedBefore` / `modifiedAfter` | — | Filter files by modification time |
+| Option                             | Default  | Description                                     |
+| ---------------------------------- | -------- | ----------------------------------------------- |
+| `path`                             | —        | File or directory path                          |
+| `mergeSchema`                      | `false`  | Union schemas from all files (schema evolution) |
+| `compression`                      | `snappy` | Codec: `none`, `snappy`, `gzip`, `lz4`, `zstd`  |
+| `parquet.block.size`               | 128 MB   | Row-group size in bytes                         |
+| `parquet.page.size`                | 1 MB     | Page size within a row group                    |
+| `recursiveFileLookup`              | `false`  | Search subdirectories recursively               |
+| `pathGlobFilter`                   | —        | Glob pattern to filter files, e.g. `*.parquet`  |
+| `modifiedBefore` / `modifiedAfter` | —        | Filter files by modification time               |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -134,45 +134,46 @@ SET spark.sql.parquet.mergeSchema       = 'false';
 SET spark.sql.parquet.filterPushdown    = 'true';
 ```
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Why |
-|-----|-----|
-| Partition by a low-cardinality date/region column | Enables partition pruning |
-| Use `zstd` compression | Better ratio than `snappy` with similar speed |
-| Keep row groups 128 MB–512 MB | Matches HDFS/S3 block sizes |
-| Avoid `SELECT *` on wide tables | Read only needed columns for column pruning |
-| Co-locate related data with `ZORDER BY` (Delta) | Row-group skipping for high-cardinality filters |
-| Avoid too many small files | Causes metadata overhead — compact periodically |
+| Tip                                               | Why                                             |
+| ------------------------------------------------- | ----------------------------------------------- |
+| Partition by a low-cardinality date/region column | Enables partition pruning                       |
+| Use `zstd` compression                            | Better ratio than `snappy` with similar speed   |
+| Keep row groups 128 MB–512 MB                     | Matches HDFS/S3 block sizes                     |
+| Avoid `SELECT *` on wide tables                   | Read only needed columns for column pruning     |
+| Co-locate related data with `ZORDER BY` (Delta)   | Row-group skipping for high-cardinality filters |
+| Avoid too many small files                        | Causes metadata overhead — compact periodically |
 
----
+______________________________________________________________________
 
 ## :material-compare: Parquet vs Delta
 
-| Feature | Parquet | Delta |
-|---------|:-------:|:-----:|
-| Columnar | :material-check: | :material-check: |
-| ACID transactions | :material-close: | :material-check: |
+| Feature                       |     Parquet      |      Delta       |
+| ----------------------------- | :--------------: | :--------------: |
+| Columnar                      | :material-check: | :material-check: |
+| ACID transactions             | :material-close: | :material-check: |
 | `MERGE` / `UPDATE` / `DELETE` | :material-close: | :material-check: |
-| Time travel | :material-close: | :material-check: |
-| Schema enforcement | :material-close: | :material-check: |
-| Streaming upserts | :material-close: | :material-check: |
-| Portability (non-Databricks) | :material-check: | Limited |
+| Time travel                   | :material-close: | :material-check: |
+| Schema enforcement            | :material-close: | :material-check: |
+| Streaming upserts             | :material-close: | :material-check: |
+| Portability (non-Databricks)  | :material-check: |     Limited      |
 
 !!! tip
+
     Start with Parquet. Upgrade to Delta when you need `MERGE`, `UPDATE`, streaming ingestion,
     or need to query historical snapshots.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use Parquet
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Read-heavy analytics | Parquet — columnar + compression |
-| Immutable historical archives | Parquet (no update needed) |
-| Cross-platform / non-Databricks | Parquet (universally supported) |
-| Upserts / incremental loads | Switch to Delta |
-| Streaming targets | Switch to Delta |
+| Scenario                        | Recommendation                   |
+| ------------------------------- | -------------------------------- |
+| Read-heavy analytics            | Parquet — columnar + compression |
+| Immutable historical archives   | Parquet (no update needed)       |
+| Cross-platform / non-Databricks | Parquet (universally supported)  |
+| Upserts / incremental loads     | Switch to Delta                  |
+| Streaming targets               | Switch to Delta                  |

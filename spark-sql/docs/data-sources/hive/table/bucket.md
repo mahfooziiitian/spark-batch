@@ -5,7 +5,7 @@ or more columns. When two tables are bucketed on the same key into the same numb
 buckets, a join on that key can avoid the shuffle/exchange — a **bucketed (shuffle-free)
 join**.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -15,7 +15,7 @@ graph LR
     B --> E["... Bucket N-1"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -36,13 +36,13 @@ CREATE TABLE bucketed_sorted (
 CLUSTERED BY (id) SORTED BY (id) INTO 32 BUCKETS;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. Each bucket is a physical file; row placement is `hash(key) % numBuckets`.
 2. `DESCRIBE FORMATTED` reports **`Num Buckets`** and **`Bucket Columns`**
-   (verified in Spark 4).
+    (verified in Spark 4).
 3. Joins between identically-bucketed tables can skip the shuffle exchange.
 4. The bucket count is fixed at create time — changing it requires rewriting the table.
 
@@ -50,28 +50,29 @@ CLUSTERED BY (id) SORTED BY (id) INTO 32 BUCKETS;
 DESCRIBE FORMATTED bucketed_sales;   -- Num Buckets -> 32, Bucket Columns -> [`id`]
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: Bucketing vs Partitioning
 
-| Aspect | Bucketing | Partitioning |
-|--------|-----------|--------------|
-| Layout | Fixed # of hash files | Directory per value |
-| Cardinality fit | High-cardinality keys | Low-cardinality columns |
-| Skew handling | Even hash distribution | Can skew per value |
-| Main benefit | Shuffle-free joins | Partition pruning |
+| Aspect          | Bucketing              | Partitioning            |
+| --------------- | ---------------------- | ----------------------- |
+| Layout          | Fixed # of hash files  | Directory per value     |
+| Cardinality fit | High-cardinality keys  | Low-cardinality columns |
+| Skew handling   | Even hash distribution | Can skew per value      |
+| Main benefit    | Shuffle-free joins     | Partition pruning       |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Repeated joins on a large key | Bucket both sides on the join key |
-| High-cardinality join column | Bucketing (partitioning would explode dirs) |
-| Small tables | Not needed — broadcast join instead |
-| Low-cardinality filter column | Prefer [partitioning](partition/ddl.md) |
+| Scenario                      | Recommendation                              |
+| ----------------------------- | ------------------------------------------- |
+| Repeated joins on a large key | Bucket both sides on the join key           |
+| High-cardinality join column  | Bucketing (partitioning would explode dirs) |
+| Small tables                  | Not needed — broadcast join instead         |
+| Low-cardinality filter column | Prefer [partitioning](partition/ddl.md)     |
 
 !!! note "Match on both sides"
+
     A shuffle-free bucketed join requires the **same bucket count and key** on both tables.
     Mismatched bucketing falls back to a normal shuffle join.

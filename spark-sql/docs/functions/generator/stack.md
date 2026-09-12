@@ -4,7 +4,7 @@
 each with a fixed number of columns. It is Spark SQL's primary tool for **unpivoting** wide
 data into a tall format.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -14,6 +14,13 @@ graph LR
     B --> E[Row N]
 ```
 
+### :material-animation-play: Interactive Visualization
+
+<div id="viz-stack" class="ts-viz"></div>
+
+The same flat list of `K = 6` expressions is regrouped differently depending on `n` — click a
+value to see which output cell (row, column) it lands in for the selected `n`.
+
 ## :material-pin: Syntax
 
 ```sql
@@ -22,9 +29,9 @@ STACK(n, expr1, expr2, ..., exprK)
 
 ### Parameters
 
-| Parameter | Description |
-|-----------|-------------|
-| `n` | Number of output rows to generate |
+| Parameter     | Description                                            |
+| ------------- | ------------------------------------------------------ |
+| `n`           | Number of output rows to generate                      |
 | `expr1…exprK` | Values to distribute across the rows (row-major order) |
 
 The total number of expressions `K` must be divisible by the number of output columns.
@@ -45,6 +52,7 @@ LATERAL VIEW STACK(n, expr1, expr2, ...) AS col0, col1;
 3. Override column names with `AS name1, name2, …`.
 4. Expressions can reference table columns — enabling unpivoting of existing data.
 5. Can be used standalone (without a table) to generate literal rows.
+6. **`K` must be evenly divisible by `n`** — `STACK(3, 'a', 1, 'b', 2)` (5 expressions, 3 rows) raises an analysis error; pad the trailing row with explicit `NULL`s to force an uneven fill (see Example 7).
 
 ## :material-flask-outline: Practical Examples
 
@@ -145,14 +153,32 @@ LATERAL VIEW STACK(4,
 ) AS code, description;
 ```
 
+### :material-alert-circle-outline: 7. Divisibility Requirement and NULL Padding
+
+```sql
+-- FAILS: 5 expressions cannot be split evenly across 3 rows (5 / 3 is not an integer)
+-- SELECT STACK(3, 'A', 100, 'B', 200, 'C');
+-- Error: The number of columns produced by STACK must be a whole number, ...
+
+-- FIX: explicitly pad the last row's missing value with NULL to reach 6 = 3 * 2
+SELECT label, value
+FROM (SELECT 1) AS dummy
+LATERAL VIEW STACK(3,
+  'A', 100,
+  'B', 200,
+  'C', CAST(NULL AS INT)
+) AS label, value;
+-- (A, 100), (B, 200), (C, NULL)
+```
+
 ## :material-brain: When to Use
 
-| Scenario | Why `STACK`? |
-|----------|-------------|
-| Unpivot wide columns → tall rows | Convert `col1, col2, col3` into `name, value` pairs |
-| Generate small reference tables | Inline lookup data without CREATE TABLE |
-| Feature flag / config reporting | Turn boolean columns into a name+value list |
-| Metric summaries | Label and stack KPIs for dashboards |
+| Scenario                         | Why `STACK`?                                              |
+| -------------------------------- | --------------------------------------------------------- |
+| Unpivot wide columns → tall rows | Convert `col1, col2, col3` into `name, value` pairs       |
+| Generate small reference tables  | Inline lookup data without CREATE TABLE                   |
+| Feature flag / config reporting  | Turn boolean columns into a name+value list               |
+| Metric summaries                 | Label and stack KPIs for dashboards                       |
 | Monthly/quarterly pivot reversal | Convert month columns into a single `month, value` column |
 
 > **Tip:** `STACK` is the inverse of `PIVOT` — use it whenever you need to convert

@@ -2,7 +2,7 @@
 
 Spark SQL provides higher-order functions (HOFs) and built-in functions for filtering and interrogating array columns.
 
----
+______________________________________________________________________
 
 ## Setup
 
@@ -14,11 +14,12 @@ SELECT * FROM VALUES
   (3, 103, ARRAY('priority', 'support'),           ARRAY(95, 88)),
   (4, 104, ARRAY('alert'),                         ARRAY(40)),
   (5, 105, NULL,                                   ARRAY(70, 65)),
-  (6, 106, ARRAY('info', 'priority', 'support'),   NULL)
+  (6, 106, ARRAY('info', 'priority', 'support'),   NULL),
+  (7, 107, ARRAY(),                                ARRAY())
 AS t(event_id, user_id, tags, scores);
 ```
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
@@ -32,31 +33,37 @@ flowchart LR
     A --> SZ[size\nlength check]
 ```
 
----
+### :material-animation-play: Interactive Visualization — Array Predicate Outcomes
+
+<div id="viz-filter-array" class="ts-viz"></div>
+
+Switch among membership, `exists`, `filter`, and `forall` to see whether a row is kept, skipped, or becomes `NULL`. The outputs match Spark 4.2 checks on populated, `NULL`, and empty arrays.
+
+______________________________________________________________________
 
 ## Array Functions Reference
 
-| Function | Description |
-|----------|-------------|
-| `array_contains(arr, val)` | Returns TRUE if `val` is in the array |
-| `exists(arr, x -> condition)` | TRUE if any element satisfies the lambda |
-| `filter(arr, x -> condition)` | Returns sub-array of matching elements |
-| `size(arr)` | Returns the number of elements (-1 for NULL in some modes) |
-| `element_at(arr, pos)` | Returns element at 1-based position |
-| `array_position(arr, val)` | Returns 1-based index of first occurrence |
-| `forall(arr, x -> condition)` | TRUE if all elements satisfy the lambda |
+| Function                      | Description                                                          |
+| ----------------------------- | -------------------------------------------------------------------- |
+| `array_contains(arr, val)`    | Returns TRUE if `val` is in the array                                |
+| `exists(arr, x -> condition)` | TRUE if any element satisfies the lambda                             |
+| `filter(arr, x -> condition)` | Returns sub-array of matching elements                               |
+| `size(arr)`                   | Returns the number of elements (`NULL` for `NULL` arrays by default) |
+| `element_at(arr, pos)`        | Returns element at 1-based position                                  |
+| `array_position(arr, val)`    | Returns 1-based index of first occurrence                            |
+| `forall(arr, x -> condition)` | TRUE if all elements satisfy the lambda                              |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
 1. **1-based indexing** — `element_at` and `array_position` use 1-based indexes; position 0 raises an error.
-2. **array_contains with NULL** — `array_contains(arr, NULL)` returns NULL (not TRUE/FALSE); use `exists` with a null-safe lambda instead.
+2. **`array_contains` with a raw `NULL` literal is rejected** — Spark 4.2 raises an analysis error for `array_contains(arr, NULL)`. If you cast the `NULL` to the element type, the result is `NULL`.
 3. **HOFs are not pushed down** — `exists` and `filter` HOFs are evaluated by Spark in memory; they cannot be pushed to Parquet or Delta scans.
 4. **filter HOF returns an array** — The `filter` HOF returns a new array; wrap with `size(filter(...)) > 0` to use as a row predicate.
-5. **forall on empty array** — `forall(ARRAY(), x -> condition)` returns TRUE (vacuous truth).
+5. **`forall` on empty vs `NULL` arrays** — `forall(ARRAY(), x -> condition)` returns TRUE (vacuous truth), while `forall(NULL, ...)` returns `NULL`.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -128,8 +135,9 @@ WHERE forall(scores, s -> s >= 60);
 -- event_id | scores
 -- ---------|----------
 -- 1        | [90, 85, 78]
--- 2        | [60, 55]   -- 55 < 60, excluded
 -- 3        | [95, 88]
+-- 5        | [70, 65]
+-- 7        | []
 ```
 
 ### :material-numeric-6-circle: Filter on array length
@@ -147,20 +155,20 @@ WHERE size(tags) >= 2;
 -- 6        | [info, priority, support]   | 3
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended |
-|----------|-------------|
-| Check if a specific value is in an array | `array_contains` |
-| Check if any element matches a pattern | `exists` HOF with lambda |
-| Extract matching sub-array | `filter` HOF |
-| Access element at a known position | `element_at` |
-| Verify all elements meet a condition | `forall` HOF |
-| Filter rows by array length | `size(arr) >= N` in `WHERE` |
+| Scenario                                 | Recommended                 |
+| ---------------------------------------- | --------------------------- |
+| Check if a specific value is in an array | `array_contains`            |
+| Check if any element matches a pattern   | `exists` HOF with lambda    |
+| Extract matching sub-array               | `filter` HOF                |
+| Access element at a known position       | `element_at`                |
+| Verify all elements meet a condition     | `forall` HOF                |
+| Filter rows by array length              | `size(arr) >= N` in `WHERE` |
 
----
+______________________________________________________________________
 
 ## :material-set-merge: Set Operations on Arrays
 
@@ -179,9 +187,9 @@ SELECT id, array_union(tags_a, tags_b) AS all_tags
 FROM tag_pairs;
 ```
 
----
+______________________________________________________________________
 
-## :material-transform: transform HOF
+## :material-function-variant: transform HOF
 
 `transform(arr, x -> expr)` maps each element through an expression, returning a new array.
 
@@ -198,7 +206,7 @@ SELECT event_id,
 FROM events;
 ```
 
----
+______________________________________________________________________
 
 ## :material-calculator: aggregate HOF (fold / reduce)
 
@@ -219,7 +227,7 @@ SELECT event_id,
 FROM events;
 ```
 
----
+______________________________________________________________________
 
 ## :material-layers-triple: flatten for Nested Arrays
 
@@ -239,7 +247,7 @@ FROM nested;
 -- 2  | [5,6,7,8,9]
 ```
 
----
+______________________________________________________________________
 
 ## :material-sort: sort_array and Combined HOF Patterns
 
@@ -255,3 +263,5 @@ SELECT event_id,
        sort_array(filter(tags, t -> t LIKE 'p%')) AS sorted_p_tags
 FROM events;
 ```
+
+<script src="../../../../assets/js/querying-filter-viz.js"></script>

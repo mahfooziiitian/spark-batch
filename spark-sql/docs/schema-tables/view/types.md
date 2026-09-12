@@ -1,6 +1,6 @@
 # :material-eye-settings: View Types
 
----
+______________________________________________________________________
 
 ## :material-clock-fast: 1. Temporary View
 
@@ -28,10 +28,11 @@ DROP VIEW IF EXISTS cleaned_orders;
 ```
 
 !!! tip "Caching a temp view"
+
     Pair with `CACHE TABLE cleaned_orders` to avoid recomputing the same
     transformation multiple times in the same job.
 
----
+______________________________________________________________________
 
 ## :material-earth: 2. Global Temporary View
 
@@ -53,10 +54,11 @@ DROP VIEW IF EXISTS global_temp.global_products;
 ```
 
 !!! warning "Not cross-cluster"
+
     Global temp views are NOT shared across different Databricks clusters or
     different Spark applications. Use a permanent view or Delta table for that.
 
----
+______________________________________________________________________
 
 ## :material-database: 3. Permanent View
 
@@ -98,7 +100,7 @@ GRANT SELECT ON VIEW main.sales.premium_customers TO `analyst@company.com`;
 GRANT SELECT ON VIEW main.sales.premium_customers TO `role:data_analysts`;
 ```
 
----
+______________________________________________________________________
 
 ## :material-cached: 4. Materialized View
 
@@ -135,33 +137,33 @@ DROP MATERIALIZED VIEW IF EXISTS main.reporting.mv_daily_sales;
 
 ### Refresh Modes
 
-| Mode | How | When |
-|------|-----|------|
-| Manual | `REFRESH MATERIALIZED VIEW mv` | On demand |
-| Scheduled | Databricks SQL serverless pipeline | Cron or trigger |
-| Continuous (DLT) | Delta Live Tables pipeline | Near-real-time |
+| Mode             | How                                | When            |
+| ---------------- | ---------------------------------- | --------------- |
+| Manual           | `REFRESH MATERIALIZED VIEW mv`     | On demand       |
+| Scheduled        | Databricks SQL serverless pipeline | Cron or trigger |
+| Continuous (DLT) | Delta Live Tables pipeline         | Near-real-time  |
 
 ### Materialized View Limitations
 
-| Limitation | Detail |
-|------------|--------|
-| No DML | Cannot `INSERT`/`UPDATE`/`DELETE` — refresh only |
-| Schema lock | Dropping a source column invalidates the MV |
-| Storage cost | Result stored as Delta table — billed separately |
-| Not for streaming | Use Delta Live Tables for continuous ingestion |
-| No OPTIMIZE hint | Run `OPTIMIZE` on the underlying Delta table if needed |
+| Limitation        | Detail                                                 |
+| ----------------- | ------------------------------------------------------ |
+| No DML            | Cannot `INSERT`/`UPDATE`/`DELETE` — refresh only       |
+| Schema lock       | Dropping a source column invalidates the MV            |
+| Storage cost      | Result stored as Delta table — billed separately       |
+| Not for streaming | Use Delta Live Tables for continuous ingestion         |
+| No OPTIMIZE hint  | Run `OPTIMIZE` on the underlying Delta table if needed |
 
----
+______________________________________________________________________
 
 ## :material-compare: All Types Side by Side
 
-| Aspect | Temp | Global Temp | Permanent | Materialized |
-|--------|:----:|:-----------:|:---------:|:------------:|
-| Session lifetime | Yes | App lifetime | Forever | Forever |
-| Stored in catalog | No | No (global_temp) | Yes | Yes |
-| Data stored | No | No | No | Yes (Delta) |
-| Cross-session | No | Yes (same app) | Yes | Yes |
-| Cross-cluster | No | No | Yes | Yes |
-| Fast repeated reads | No | No | No | Yes |
-| Supports GRANT | No | No | Yes | Yes |
-| Refresh needed | — | — | — | Yes |
+| Aspect              | Temp |   Global Temp    | Permanent | Materialized |
+| ------------------- | :--: | :--------------: | :-------: | :----------: |
+| Session lifetime    | Yes  |   App lifetime   |  Forever  |   Forever    |
+| Stored in catalog   |  No  | No (global_temp) |    Yes    |     Yes      |
+| Data stored         |  No  |        No        |    No     | Yes (Delta)  |
+| Cross-session       |  No  |  Yes (same app)  |    Yes    |     Yes      |
+| Cross-cluster       |  No  |        No        |    Yes    |     Yes      |
+| Fast repeated reads |  No  |        No        |    No     |     Yes      |
+| Supports GRANT      |  No  |        No        |    Yes    |     Yes      |
+| Refresh needed      |  —   |        —         |     —     |     Yes      |

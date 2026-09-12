@@ -1,22 +1,24 @@
 # :material-content-duplicate: CTE for Deduplication
 
-CTEs combined with window functions (`ROW_NUMBER`, `RANK`) are the standard pattern for
-removing duplicate rows before loading, merging, or reporting. The CTE labels duplicates;
-the outer query discards them.
+CTEs plus window functions are a standard Spark SQL dedup pattern. In Spark 4.2 you can still use the classic `WITH ranked AS (...) SELECT ... WHERE rn = 1`, but you can also express the final filter with `QUALIFY` when you do not need to reuse the ranked rows.
 
----
+### :material-animation-play: Interactive Visualization — Ranking and Filtering
+
+<div id="viz-cte-dedup-steps" class="ts-viz"></div>
+
+The animation shows duplicate groups receiving `ROW_NUMBER()` values and then being filtered down to one survivor per key. Toggle between `WHERE rn = 1` and `QUALIFY` to compare two verified Spark 4.2 shapes for the same logic.
+
+______________________________________________________________________
 
 ## :material-information-outline: Behavior
 
-1. `ROW_NUMBER()` assigns a unique sequential integer within each duplicate group — always use this when you want exactly one row per key.
-2. `RANK()` assigns the same number to tied rows — use when ties should be treated equally (e.g., multiple rows with the same `updated_at`).
-3. The deduplication CTE does **not** modify data; it adds a row number column. The outer `WHERE rn = 1` (or `WHERE rn <= N`) performs the actual filtering.
-4. For **MERGE**, deduplicate the source before the `USING` clause — Delta raises `UnsupportedOperationException` if multiple source rows match one target row.
-5. Choosing `ORDER BY` inside the window spec determines which duplicate to keep:
-   - `ORDER BY updated_at DESC` → keep the most recent.
-   - `ORDER BY created_at ASC` → keep the earliest (first occurrence).
+1. **`ROW_NUMBER()` is the go-to dedup function** — it guarantees one row per partition after filtering on `1`.
+2. **`QUALIFY` works in Spark 4.2** — `QUALIFY ROW_NUMBER() OVER (...) = 1` executed successfully in PySpark 4.2.
+3. **CTEs remain useful even with `QUALIFY`** — use a CTE when you want to inspect duplicates, compute extra diagnostics, or feed the ranked result into another step.
+4. **Tie-breakers should be deterministic when you care which row survives** — for example, `ORDER BY updated_at DESC, source_file DESC`.
+5. **If you omit a meaningful tie-breaker, the surviving row is arbitrary** — `ORDER BY (SELECT NULL)` is accepted, but it intentionally does not make the result deterministic.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -37,7 +39,18 @@ FROM ranked
 WHERE rn = 1;
 ```
 
-### Deduplicate before INSERT
+### Equivalent `QUALIFY` form
+
+```sql
+SELECT order_id, customer_id, amount, status, updated_at
+FROM staging_orders
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY order_id
+    ORDER BY updated_at DESC
+) = 1;
+```
+
+### Deduplicate before `INSERT`
 
 ```sql
 WITH deduped AS (
@@ -55,7 +68,7 @@ FROM deduped
 WHERE rn = 1;
 ```
 
-### Deduplicate source before MERGE
+### Deduplicate before `MERGE`
 
 ```sql
 WITH deduped_source AS (
@@ -73,37 +86,28 @@ WITH deduped_source AS (
 )
 MERGE INTO dim_customer AS t
 USING deduped_source AS s
-    ON t.customer_id = s.customer_id
-WHEN MATCHED AND t.row_hash <> md5(concat_ws('||', s.name, s.email, s.city)) THEN
-    UPDATE SET
-        name     = s.name,
-        email    = s.email,
-        city     = s.city,
-        row_hash = md5(concat_ws('||', s.name, s.email, s.city))
-WHEN NOT MATCHED THEN
-    INSERT (customer_id, name, email, city, row_hash)
-    VALUES (s.customer_id, s.name, s.email, s.city,
-            md5(concat_ws('||', s.name, s.email, s.city)));
+ON t.customer_id = s.customer_id
+WHEN MATCHED THEN UPDATE SET
+    name = s.name,
+    email = s.email,
+    city = s.city,
+    updated_at = s.updated_at
+WHEN NOT MATCHED THEN INSERT (
+    customer_id,
+    name,
+    email,
+    city,
+    updated_at
+) VALUES (
+    s.customer_id,
+    s.name,
+    s.email,
+    s.city,
+    s.updated_at
+);
 ```
 
-### Keep first occurrence (earliest created_at)
-
-```sql
-WITH first_occurrence AS (
-    SELECT
-        *,
-        ROW_NUMBER() OVER (
-            PARTITION BY email
-            ORDER BY created_at ASC
-        ) AS rn
-    FROM user_registrations
-)
-SELECT user_id, email, name, created_at
-FROM first_occurrence
-WHERE rn = 1;
-```
-
-### Flag and inspect duplicates before removal
+### Flag duplicates before removing them
 
 ```sql
 WITH flagged AS (
@@ -116,37 +120,21 @@ WITH flagged AS (
         COUNT(*) OVER (PARTITION BY order_id) AS dup_count
     FROM staging_orders
 )
--- View the duplicates first
-SELECT * FROM flagged WHERE dup_count > 1 ORDER BY order_id, rn;
+SELECT *
+FROM flagged
+WHERE dup_count > 1
+ORDER BY order_id, rn;
 ```
 
-### Deduplicate across multiple key columns
+### Remove exact duplicates with an arbitrary survivor
 
 ```sql
-WITH deduped AS (
-    SELECT
-        *,
-        ROW_NUMBER() OVER (
-            PARTITION BY customer_id, product_id, order_date
-            ORDER BY ingested_at DESC
-        ) AS rn
-    FROM raw_order_lines
-)
-SELECT customer_id, product_id, order_date, quantity, unit_price
-FROM deduped
-WHERE rn = 1;
-```
-
-### Remove exact duplicates (all columns identical)
-
-```sql
--- When no timestamp is available, any column order works
 WITH deduped AS (
     SELECT
         *,
         ROW_NUMBER() OVER (
             PARTITION BY order_id, customer_id, amount, status
-            ORDER BY (SELECT NULL)   -- arbitrary tie-break
+            ORDER BY (SELECT NULL)
         ) AS rn
     FROM orders
 )
@@ -155,7 +143,7 @@ FROM deduped
 WHERE rn = 1;
 ```
 
-### Top-N per group (keep 3 most recent orders per customer)
+### Keep the top 3 most recent rows per customer
 
 ```sql
 WITH ranked AS (
@@ -173,28 +161,26 @@ WHERE rn <= 3
 ORDER BY customer_id, rn;
 ```
 
----
+______________________________________________________________________
 
-## :material-swap-horizontal: ROW_NUMBER vs RANK vs DENSE_RANK for Deduplication
+## :material-swap-horizontal: `ROW_NUMBER` vs `RANK` vs `DENSE_RANK`
 
-| Function | Tie behaviour | Use when |
-|----------|--------------|----------|
-| `ROW_NUMBER` | No ties — always unique | You want exactly one row per key regardless of ties |
-| `RANK` | Tied rows share the same rank; next rank skips | Ties should be treated equally; OK to keep all tied rows |
-| `DENSE_RANK` | Tied rows share the same rank; no skipping | Same as RANK but ranks are contiguous |
+| Function     | Tie behavior                 | Best use              |
+| ------------ | ---------------------------- | --------------------- |
+| `ROW_NUMBER` | Always unique                | True deduplication    |
+| `RANK`       | Ties share rank, gaps appear | Keep all tied leaders |
+| `DENSE_RANK` | Ties share rank, no gaps     | Tiering or reporting  |
 
-For deduplication, **always prefer `ROW_NUMBER`** — it guarantees exactly one row per
-partition group.
+For strict deduplication, `ROW_NUMBER` is the safest default because it guarantees one chosen row per partition.
 
----
+______________________________________________________________________
 
 ## :material-lightbulb-outline: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Staging table has duplicate keys | `ROW_NUMBER` CTE + `WHERE rn = 1` before `INSERT` |
-| MERGE fails with duplicate source rows | Dedup CTE in `USING` clause |
-| Keep only the latest version of each record | `ORDER BY updated_at DESC` in window spec |
-| Keep only the first occurrence | `ORDER BY created_at ASC` in window spec |
-| Inspect duplicates before removing | Add `dup_count = COUNT(*) OVER (PARTITION BY key)` |
-| Top-N records per group | `WHERE rn <= N` |
+| Scenario                                          | Pattern                                   |
+| ------------------------------------------------- | ----------------------------------------- |
+| Keep the latest row per business key              | `ROW_NUMBER()` + descending timestamp     |
+| Keep exactly one arbitrary copy of identical rows | `ROW_NUMBER()` + `ORDER BY (SELECT NULL)` |
+| Express the filter inline                         | `QUALIFY ROW_NUMBER() ... = 1`            |
+| Debug duplicates before removing them             | CTE with `dup_count` and `rn`             |
+| Keep top-N records per group                      | `ROW_NUMBER()` + `WHERE rn <= N`          |

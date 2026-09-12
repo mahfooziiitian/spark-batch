@@ -6,7 +6,7 @@ nav:
       - querying
       - window-functions
       - functions
-      - sql-scripting
+      - scripting
   - Data Sources: data-sources
   - Patterns: patterns
   - Performance:
@@ -14,4 +14,6 @@ nav:
       - internals
   - Operations:
       - configuration
+      - SQL Runner: sql-runner.md
       - MCP Server: mcp-server.md
+      - Changelog: changelog.md

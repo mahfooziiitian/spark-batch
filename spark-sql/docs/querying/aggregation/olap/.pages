@@ -1,4 +1,5 @@
 nav:
+  - index.md
   - cube.md
   - rollup.md
-  - group_set.md
+  - group-set.md

@@ -1,8 +1,0 @@
-nav:
-  - index.md
-  - transform.md
-  - filter.md
-  - aggregate.md
-  - exists.md
-  - array.md
-  - map.md

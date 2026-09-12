@@ -4,4 +4,4 @@ nav:
   - Numeric: numeric/index.md
   - Date Strings: date_string/index.md
   - Keys & Structs: key_n_struct/index.md
-  - Replace Map Key: replace_key/map/replace_map_key.md
+  - Replace Map Key: replace_key/map/replace-map-key.md

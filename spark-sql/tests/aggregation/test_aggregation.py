@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 from chispa.dataframe_comparer import assert_df_equality
-from tests._helpers import create_view, statement_containing
+
+from spark_sql._helpers import create_view, statement_containing
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession

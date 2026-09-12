@@ -1,13 +1,14 @@
 # :material-merge: MERGE INTO (Upsert)
 
 !!! note "[Databricks] Delta Lake Required"
+
     `MERGE INTO` requires Delta tables. Not supported on Hive/Parquet/CSV tables.
 
 `MERGE INTO` performs an atomic **upsert** — a single statement that can
 `INSERT`, `UPDATE`, and `DELETE` rows by comparing a target table against a
 source. It is the most powerful DML statement in Delta Lake.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -17,7 +18,7 @@ graph LR
     B -->|No match in source| E["WHEN NOT MATCHED BY SOURCE: DELETE"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Syntax
 
@@ -35,34 +36,34 @@ ON merge_condition
 [WHEN NOT MATCHED BY SOURCE [AND condition] THEN DELETE];
 ```
 
-| Clause | Purpose |
-|--------|---------|
-| `USING` | Source table, view, subquery, or CTE |
-| `ON` | Join condition linking target and source rows |
-| `WHEN MATCHED` | Action for rows that exist in **both** target and source |
-| `WHEN NOT MATCHED` | Action for rows in the **source** that have no target match |
+| Clause                       | Purpose                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `USING`                      | Source table, view, subquery, or CTE                                     |
+| `ON`                         | Join condition linking target and source rows                            |
+| `WHEN MATCHED`               | Action for rows that exist in **both** target and source                 |
+| `WHEN NOT MATCHED`           | Action for rows in the **source** that have no target match              |
 | `WHEN NOT MATCHED BY SOURCE` | Action for rows in the **target** that have no source match (Delta 2.4+) |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
 1. **At most one match** — Each target row must match at most one source row.
-   If multiple source rows match the same target row, Spark raises an error.
-   Deduplicate the source first if needed.
+    If multiple source rows match the same target row, Spark raises an error.
+    Deduplicate the source first if needed.
 2. **Clause ordering** — Multiple `WHEN MATCHED` or `WHEN NOT MATCHED` clauses
-   are evaluated in the order they appear; the first matching clause wins.
+    are evaluated in the order they appear; the first matching clause wins.
 3. **Star syntax** — `UPDATE SET *` and `INSERT *` map columns by name between
-   source and target, simplifying schemas with many columns.
+    source and target, simplifying schemas with many columns.
 4. **Condition guards** — Adding `AND condition` to any clause allows branching
-   logic (e.g., update if changed, delete if flagged).
+    logic (e.g., update if changed, delete if flagged).
 5. **Atomicity** — The entire merge is a single transaction. Partial application
-   is impossible.
+    is impossible.
 6. **Performance** — Spark pushes the `ON` predicate into the scan. Ensure the
-   merge key has good data locality (e.g., partitioned or Z-ordered) for best
-   performance.
+    merge key has good data locality (e.g., partitioned or Z-ordered) for best
+    performance.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -161,20 +162,20 @@ WHEN MATCHED THEN
     UPDATE SET t.status = s.latest_status;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| CDC / incremental load | `MERGE ... WHEN MATCHED UPDATE WHEN NOT MATCHED INSERT` |
-| Idempotent data ingestion | Merge with deduplication on business key |
-| SCD Type 1 (overwrite) | `MERGE ... WHEN MATCHED UPDATE SET *` |
-| SCD Type 2 (history) | Two-step: merge to close + insert new versions |
-| Full sync (mirror source) | Add `WHEN NOT MATCHED BY SOURCE THEN DELETE` |
-| Conditional deletes during upsert | `WHEN MATCHED AND flag = 'D' THEN DELETE` |
+| Scenario                          | Pattern                                                 |
+| --------------------------------- | ------------------------------------------------------- |
+| CDC / incremental load            | `MERGE ... WHEN MATCHED UPDATE WHEN NOT MATCHED INSERT` |
+| Idempotent data ingestion         | Merge with deduplication on business key                |
+| SCD Type 1 (overwrite)            | `MERGE ... WHEN MATCHED UPDATE SET *`                   |
+| SCD Type 2 (history)              | Two-step: merge to close + insert new versions          |
+| Full sync (mirror source)         | Add `WHEN NOT MATCHED BY SOURCE THEN DELETE`            |
+| Conditional deletes during upsert | `WHEN MATCHED AND flag = 'D' THEN DELETE`               |
 
----
+______________________________________________________________________
 
 > **Tip:** Deduplicate your source before merging to avoid the
 > "multiple source rows matched the same target row" error:
@@ -186,7 +187,7 @@ WHEN MATCHED THEN
 > ) AS s
 > ```
 
----
+______________________________________________________________________
 
 ## :material-database-arrow-right: Advanced Patterns
 
@@ -290,20 +291,21 @@ WHEN MATCHED THEN UPDATE SET t.value = s.value
 WHEN NOT MATCHED THEN INSERT (key, value) VALUES (s.key, s.value);
 ```
 
----
+______________________________________________________________________
 
 ## :material-speedometer: Performance Tips
 
-| Tip | Reason |
-|-----|--------|
-| Partition target by merge key | Prunes files during the scan phase |
-| `ZORDER BY` merge key | Row-group skipping for high-cardinality keys |
-| Deduplicate source before merge | Avoids runtime error + unnecessary file rewrites |
-| Use `row_hash` to skip unchanged rows | Avoids rewriting files when nothing changed |
-| Filter source to only changed rows | Smaller source = fewer target partitions touched |
-| Avoid `MERGE` on unpartitioned tables | Full table scan on both sides |
-| Run `OPTIMIZE` after large merges | Compacts small files created by the rewrite |
+| Tip                                   | Reason                                           |
+| ------------------------------------- | ------------------------------------------------ |
+| Partition target by merge key         | Prunes files during the scan phase               |
+| `ZORDER BY` merge key                 | Row-group skipping for high-cardinality keys     |
+| Deduplicate source before merge       | Avoids runtime error + unnecessary file rewrites |
+| Use `row_hash` to skip unchanged rows | Avoids rewriting files when nothing changed      |
+| Filter source to only changed rows    | Smaller source = fewer target partitions touched |
+| Avoid `MERGE` on unpartitioned tables | Full table scan on both sides                    |
+| Run `OPTIMIZE` after large merges     | Compacts small files created by the rewrite      |
 
 !!! warning "One match per target row"
+
     If multiple source rows match the same target row, Spark raises
     `"MERGE_CARDINALITY_VIOLATION"`. Always deduplicate the source on the merge key first.

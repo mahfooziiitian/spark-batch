@@ -4,19 +4,19 @@ The **session catalog** is Spark's built-in in-memory catalog that holds
 **temporary views** and **temporary functions**. Objects in the session catalog
 exist only for the lifetime of the current Spark session.
 
----
+______________________________________________________________________
 
 ## :material-compare: Session vs Global Temp vs Permanent Objects
 
-| Object type | Scope | Persisted? | Namespace |
-|-------------|-------|:----------:|-----------|
-| Temp view | Current session | No | (none — no prefix) |
-| Global temp view | All sessions on same cluster | No | `global_temp.view_name` |
-| Permanent view | Any session | Yes | `db.view_name` |
-| Temp function | Current session | No | (none) |
-| Permanent function | Any session | Yes | `db.function_name` |
+| Object type        | Scope                        | Persisted? | Namespace               |
+| ------------------ | ---------------------------- | :--------: | ----------------------- |
+| Temp view          | Current session              |     No     | (none — no prefix)      |
+| Global temp view   | All sessions on same cluster |     No     | `global_temp.view_name` |
+| Permanent view     | Any session                  |    Yes     | `db.view_name`          |
+| Temp function      | Current session              |     No     | (none)                  |
+| Permanent function | Any session                  |    Yes     | `db.function_name`      |
 
----
+______________________________________________________________________
 
 ## :material-eye: Temporary Views
 
@@ -66,7 +66,7 @@ GROUP BY 1, 2;
 SELECT * FROM hourly_counts ORDER BY hour, cnt DESC;
 ```
 
----
+______________________________________________________________________
 
 ## :material-earth: Global Temporary Views
 
@@ -86,10 +86,11 @@ DROP VIEW IF EXISTS global_temp.shared_lookup;
 ```
 
 !!! note "Scope of global_temp"
+
     Global temp views survive across sessions but disappear when the Spark
     application (driver) stops. They are not persisted to a metastore.
 
----
+______________________________________________________________________
 
 ## :material-function-variant: Temporary Functions
 
@@ -112,7 +113,7 @@ SHOW USER FUNCTIONS;
 DROP FUNCTION IF EXISTS cents_to_dollars;
 ```
 
----
+______________________________________________________________________
 
 ## :material-console: Introspection Commands
 
@@ -131,7 +132,7 @@ DESCRIBE TABLE recent_orders;
 SHOW CREATE TABLE recent_orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -147,14 +148,14 @@ SELECT COUNT(*) FROM recent_orders;   -- served from memory
 UNCACHE TABLE recent_orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Intermediate ETL steps | `CREATE OR REPLACE TEMP VIEW` |
-| Sharing a reference dataset across notebook cells | `GLOBAL TEMP VIEW` |
-| Custom helper logic in SQL | `CREATE TEMP FUNCTION` |
-| Production persistent objects | Use permanent tables/views instead |
-| Repeated expensive query | `CACHE TABLE` the temp view |
+| Scenario                                          | Recommendation                     |
+| ------------------------------------------------- | ---------------------------------- |
+| Intermediate ETL steps                            | `CREATE OR REPLACE TEMP VIEW`      |
+| Sharing a reference dataset across notebook cells | `GLOBAL TEMP VIEW`                 |
+| Custom helper logic in SQL                        | `CREATE TEMP FUNCTION`             |
+| Production persistent objects                     | Use permanent tables/views instead |
+| Repeated expensive query                          | `CACHE TABLE` the temp view        |

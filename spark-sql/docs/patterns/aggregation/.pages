@@ -1,7 +1,8 @@
 title: Aggregation
 nav:
-  - running_total.md
-  - moving_average.md
-  - growing_window.md
-  - conditional_agg.md
-  - string_agg.md
+  - running-total.md
+  - moving-average.md
+  - growing-window.md
+  - conditional-agg.md
+  - string-agg.md
+  - relational-division.md

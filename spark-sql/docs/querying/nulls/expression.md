@@ -1,121 +1,115 @@
 # :material-null: NULL in Expressions
 
-Spark expressions fall into two categories: **null-intolerant** (return NULL when any input is NULL) and **null-tolerant** (handle NULL inputs gracefully).
+Spark 4.2 expressions are easiest to understand as either null-intolerant or null-aware.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Overview
 
-```mermaid
-graph LR
-    A[Expression Input] --> B{Contains NULL?}
-    B -->|"Null-intolerant"| C[Returns NULL]
-    B -->|"Null-tolerant"| D["COALESCE / NULLIF / IS NULL / ..."]
-    D --> E[Non-NULL result possible]
-```
+| Expression type     | Verified behavior                                      |
+| ------------------- | ------------------------------------------------------ |
+| Null-intolerant     | Returns `NULL` when a required input is `NULL`         |
+| Null-aware helper   | Produces a useful non-NULL result for some NULL inputs |
+| NaN-specific helper | Handles `NaN`, which is different from `NULL`          |
 
----
+### :material-animation-play: Interactive Visualization — Expression Categories
 
-## :material-table: Null-Intolerant Expressions
+<div id="viz-null-expression" class="ts-viz"></div>
 
-Return NULL whenever **any** argument is NULL. Most built-in functions fall into this category.
+Switch between representative expressions to see which ones propagate NULL and which ones intentionally handle it.
 
-| Expression | Example | Result when arg is NULL |
-|------------|---------|------------------------|
-| String concat (`\|\|` / `CONCAT`) | `CONCAT('John', NULL)` | NULL |
-| Arithmetic (`+`, `-`, `*`, `/`) | `NULL + 5` | NULL |
-| `UPPER` / `LOWER` | `UPPER(NULL)` | NULL |
-| `TO_DATE` / `DATE_FORMAT` | `TO_DATE(NULL)` | NULL |
-| `CAST` | `CAST(NULL AS INT)` | NULL |
-| `LENGTH` | `LENGTH(NULL)` | NULL |
-| `SUBSTR` | `SUBSTR(NULL, 1)` | NULL |
+______________________________________________________________________
 
-```sql
-SELECT CONCAT('John', NULL)   AS r1;  -- NULL
-SELECT UPPER(NULL)            AS r2;  -- NULL
-SELECT TO_DATE(NULL)          AS r3;  -- NULL
-SELECT NULL + 5               AS r4;  -- NULL
-```
+## :material-table: Verified Null-Intolerant Expressions
 
----
+| Expression              | Result with NULL input |
+| ----------------------- | ---------------------- |
+| `CONCAT('John', NULL)`  | `NULL`                 |
+| `CAST(NULL AS INT) + 5` | `NULL`                 |
+| `UPPER(NULL)`           | `NULL`                 |
+| `TO_DATE(NULL)`         | `NULL`                 |
+| `LENGTH(NULL)`          | `NULL`                 |
 
-## :material-table: Null-Tolerant Expressions
+These expressions propagate the unknown value instead of manufacturing a replacement.
 
-These expressions are designed to handle NULL inputs and may return a non-NULL result.
+______________________________________________________________________
 
-| Expression | Behaviour | Example |
-|------------|-----------|---------|
-| `COALESCE(a, b, ...)` | First non-NULL argument | `COALESCE(NULL, 0)` → `0` |
-| `NULLIF(a, b)` | NULL if `a = b`, else `a` | `NULLIF(0, 0)` → NULL |
-| `IFNULL(a, b)` | `b` if `a` is NULL, else `a` | `IFNULL(NULL, 'N/A')` → `'N/A'` |
-| `NVL(a, b)` | Alias for `IFNULL` | `NVL(NULL, -1)` → `-1` |
-| `NVL2(a, b, c)` | `b` if `a` not NULL, else `c` | `NVL2(NULL, 'yes', 'no')` → `'no'` |
-| `ISNULL(a)` | TRUE if `a` is NULL | `ISNULL(NULL)` → `true` |
-| `ISNOTNULL(a)` | TRUE if `a` is not NULL | `ISNOTNULL(5)` → `true` |
-| `ISNAN(a)` | TRUE if `a` is NaN (not NULL) | `ISNAN(double('NaN'))` → `true` |
-| `NANVL(a, b)` | `b` if `a` is NaN, else `a` | `NANVL(NaN, 0.0)` → `0.0` |
-| `IN(a, list)` | NULL if `a` is NULL or list contains NULL with no match | `NULL IN (1, 2)` → NULL |
-| `CONCAT_WS(sep, ...)` | Skips NULL arguments | `CONCAT_WS(',', 'a', NULL, 'b')` → `'a,b'` |
+## :material-table: Verified Null-Aware Expressions
 
----
+| Expression                       | Result  |
+| -------------------------------- | ------- |
+| `COALESCE(NULL, 0)`              | `0`     |
+| `IFNULL(NULL, 'N/A')`            | `'N/A'` |
+| `NVL(NULL, -1)`                  | `-1`    |
+| `NVL2(NULL, 'yes', 'no')`        | `'no'`  |
+| `CONCAT_WS(',', 'a', NULL, 'b')` | `'a,b'` |
 
-## :material-flask-outline: Practical Examples
+______________________________________________________________________
 
-### COALESCE fallback chain
+## :material-flask-outline: Verified Examples
+
+### Null-intolerant expressions
 
 ```sql
 SELECT
-    user_id,
-    COALESCE(phone, mobile, work_phone, 'No contact') AS best_phone
-FROM users;
+    CONCAT('John', NULL) AS concat_null,
+    CAST(NULL AS INT) + 5 AS plus_null,
+    UPPER(NULL) AS upper_null,
+    TO_DATE(NULL) AS to_date_null,
+    LENGTH(NULL) AS len_null;
 ```
 
-### NULLIF to avoid division-by-zero
+```text
++-----------+---------+----------+------------+--------+
+|concat_null|plus_null|upper_null|to_date_null|len_null|
++-----------+---------+----------+------------+--------+
+|NULL       |NULL     |NULL      |NULL        |NULL    |
++-----------+---------+----------+------------+--------+
+```
+
+### Null-aware helpers
 
 ```sql
 SELECT
-    product_id,
-    SUM(revenue) / NULLIF(SUM(units), 0) AS revenue_per_unit
-FROM sales
-GROUP BY product_id;
+    COALESCE(NULL, NULL, 7) AS coalesce_v,
+    IFNULL(NULL, 'x') AS ifnull_v,
+    NVL(NULL, 'y') AS nvl_v,
+    NVL2(NULL, 'yes', 'no') AS nvl2_v,
+    CONCAT_WS(',', 'a', NULL, 'b') AS concat_ws_v;
 ```
 
-### NVL2 for conditional labelling
+```text
++----------+--------+-----+------+-----------+
+|coalesce_v|ifnull_v|nvl_v|nvl2_v|concat_ws_v|
++----------+--------+-----+------+-----------+
+|7         |x       |y    |no    |a,b        |
++----------+--------+-----+------+-----------+
+```
+
+### `NaN` is not `NULL`
 
 ```sql
 SELECT
-    customer_id,
-    NVL2(email, 'Email available', 'No email') AS email_status
-FROM customers;
+    ISNAN(CAST('NaN' AS DOUBLE)) AS isnan_nan,
+    ISNAN(NULL) AS isnan_null,
+    NANVL(CAST('NaN' AS DOUBLE), 0.0D) AS nanvl_nan,
+    NANVL(2.0D, 0.0D) AS nanvl_num;
 ```
 
-### CONCAT_WS skips NULLs
-
-```sql
--- Safe string assembly — NULLs omitted, no double separators
-SELECT CONCAT_WS(', ', first_name, middle_name, last_name) AS full_name
-FROM employees;
+```text
++---------+----------+---------+---------+
+|isnan_nan|isnan_null|nanvl_nan|nanvl_num|
++---------+----------+---------+---------+
+|true     |false     |0.0      |2.0      |
++---------+----------+---------+---------+
 ```
 
-### CASE WHEN for complex null handling
+______________________________________________________________________
 
-```sql
-SELECT
-    order_id,
-    CASE
-        WHEN shipped_at IS NOT NULL THEN 'Shipped'
-        WHEN confirmed_at IS NOT NULL THEN 'Confirmed'
-        ELSE 'Pending'
-    END AS status
-FROM orders;
-```
+## :material-lightbulb-outline: Practical Takeaways
 
----
+- Use null-intolerant expressions when NULL propagation is correct.
+- Use `COALESCE`, `IFNULL`, `NVL`, `NVL2`, or `CONCAT_WS` when you need a fallback.
+- Keep `NaN` handling separate from NULL handling.
 
-## :material-magnify: Behavior Notes
-
-1. `CONCAT` propagates NULL — use `CONCAT_WS` when any argument may be NULL.
-2. `COALESCE` short-circuits — arguments after the first non-NULL are not evaluated.
-3. `NaN` and `NULL` are distinct in Spark — `ISNAN` and `ISNULL` test for different conditions.
-4. `IN (list)` returns NULL (not FALSE) when the value is NULL or the list contains NULL without a match — this is the source of the classic `NOT IN` NULL trap.
-
+<script src="../../assets/js/querying-nulls-viz.js"></script>

@@ -3,13 +3,20 @@
 Comprehensive reference for Spark SQL functions that **create, query, and transform maps**
 (key-value collections).
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
     A[Keys and Values] --> B[Map Functions]
     B --> C[Map Type]
 ```
+
+### :material-animation-play: Interactive Visualization — What You Can't Do With a MAP
+
+<div id="viz-map-limits" class="ts-viz"></div>
+
+Pick an operation to see whether Spark SQL supports it directly on a `MAP`
+column, or requires converting to an array of entries first.
 
 ## :material-pin: Creating Maps
 
@@ -39,7 +46,7 @@ SELECT MAP_FROM_ENTRIES(ARRAY(STRUCT(1, 'a'), STRUCT(2, 'b')));
 -- Result: {1 -> a, 2 -> b}
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Querying Maps
 
@@ -81,7 +88,35 @@ SELECT MAP_ENTRIES(MAP(1, 'a', 2, 'b'));
 -- Result: [{1, a}, {2, b}]
 ```
 
----
+______________________________________________________________________
+
+## :material-alert-outline: What MAP Cannot Do
+
+`MAP` intentionally has **no defined key order**, so Spark disallows any
+operation that would require comparing or ordering two maps. Verified on
+Spark 4.2:
+
+```sql
+-- No equality / ordering operator
+SELECT MAP(1,'a') = MAP(1,'a');
+-- Error: [DATATYPE_MISMATCH.INVALID_ORDERING_TYPE]
+-- The `=` does not support ordering on type "MAP<INT, STRING>".
+
+-- No DISTINCT / GROUP BY / INTERSECT / EXCEPT on a MAP column
+SELECT DISTINCT MAP(1,'a') FROM VALUES (1),(2) t(x);
+-- Error: [UNSUPPORTED_FEATURE.SET_OPERATION_ON_MAP_TYPE]
+```
+
+**Workaround:** convert the map to a sorted array of entries — `ARRAY` (and
+`STRUCT`) *do* support ordering — then compare, dedupe, or group on that:
+
+```sql
+SELECT ARRAY_SORT(MAP_ENTRIES(MAP('b', 2, 'a', 1))) AS sorted_entries;
+-- Result: [{a, 1}, {b, 2}]
+-- Two maps are "equal" iff ARRAY_SORT(MAP_ENTRIES(m1)) = ARRAY_SORT(MAP_ENTRIES(m2))
+```
+
+______________________________________________________________________
 
 ## :material-pin: Merging Maps
 
@@ -149,7 +184,7 @@ SELECT MAP_FILTER(m, (k, v) -> v > 10) AS filtered FROM zipped;
 -- Result: {b -> 22, c -> 30}
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: MAP_ZIP_WITH Behavior & Edge Cases
 
@@ -160,14 +195,14 @@ SELECT MAP_FILTER(m, (k, v) -> v > 10) AS filtered FROM zipped;
 
 ### MAP_ZIP_WITH vs Alternatives
 
-| Function | Use Case |
-|----------|----------|
-| `MAP_ZIP_WITH` | Per-key computations across two maps |
-| `MAP_CONCAT` | Simple merge (later values overwrite) |
-| `TRANSFORM_VALUES` | Transform values within one map |
+| Function            | Use Case                              |
+| ------------------- | ------------------------------------- |
+| `MAP_ZIP_WITH`      | Per-key computations across two maps  |
+| `MAP_CONCAT`        | Simple merge (later values overwrite) |
+| `TRANSFORM_VALUES`  | Transform values within one map       |
 | Explode + aggregate | Complex multi-map logic (higher cost) |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Real-World Patterns
 
@@ -195,16 +230,16 @@ SELECT MAP_FILTER(flag_map, (k, v) -> v IS NOT NULL) AS changed_keys
 FROM zipped;
 ```
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Function(s) |
-|----------|------------|
-| Create a map from literals | `MAP(k1, v1, …)` |
-| Build map from arrays / structs | `MAP_FROM_ARRAYS`, `MAP_FROM_ENTRIES` |
-| Look up a value by key | `ELEMENT_AT`, `MAP_CONTAINS_KEY` |
-| Extract keys or values | `MAP_KEYS`, `MAP_VALUES`, `MAP_ENTRIES` |
-| Merge two maps | `MAP_CONCAT` (simple) or `MAP_ZIP_WITH` (with logic) |
-| Transform keys or values | `TRANSFORM_KEYS`, `TRANSFORM_VALUES` (see HOF section) |
-| Filter map entries | `MAP_FILTER` (see HOF section) |
+| Scenario                        | Function(s)                                            |
+| ------------------------------- | ------------------------------------------------------ |
+| Create a map from literals      | `MAP(k1, v1, …)`                                       |
+| Build map from arrays / structs | `MAP_FROM_ARRAYS`, `MAP_FROM_ENTRIES`                  |
+| Look up a value by key          | `ELEMENT_AT`, `MAP_CONTAINS_KEY`                       |
+| Extract keys or values          | `MAP_KEYS`, `MAP_VALUES`, `MAP_ENTRIES`                |
+| Merge two maps                  | `MAP_CONCAT` (simple) or `MAP_ZIP_WITH` (with logic)   |
+| Transform keys or values        | `TRANSFORM_KEYS`, `TRANSFORM_VALUES` (see HOF section) |
+| Filter map entries              | `MAP_FILTER` (see HOF section)                         |

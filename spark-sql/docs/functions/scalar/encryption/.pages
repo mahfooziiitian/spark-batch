@@ -1,6 +1,7 @@
 nav:
   - index.md
   - intro.md
+  - aes.md
   - md5.md
   - sha.md
   - crc32.md

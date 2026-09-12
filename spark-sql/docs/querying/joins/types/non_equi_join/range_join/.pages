@@ -1,4 +1,4 @@
 nav:
   - index.md
-  - point_in_interval.md
-  - interval_overlap.md
+  - point-in-interval.md
+  - interval-overlap.md

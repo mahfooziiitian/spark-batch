@@ -3,9 +3,10 @@
 Ranking functions assign a position to each row within a partition based on an ordering expression.
 
 !!! note "Source"
+
     Full runnable example: `sql/window/ranking/ranking.sql`
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -15,21 +16,21 @@ graph LR
     A --> E["NTILE(n): bucket assignment"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Functions
 
-| Function | Syntax | Description |
-|----------|--------|-------------|
-| `ROW_NUMBER` | `ROW_NUMBER() OVER ([PARTITION BY ...] ORDER BY ...)` | Assigns a unique sequential integer to each row within the partition |
-| `RANK` | `RANK() OVER ([PARTITION BY ...] ORDER BY ...)` | Assigns rank with gaps — tied rows share the same rank, the next rank skips |
-| `DENSE_RANK` | `DENSE_RANK() OVER ([PARTITION BY ...] ORDER BY ...)` | Assigns rank without gaps — tied rows share the same rank, next rank increments by 1 |
-| `NTILE(n)` | `NTILE(n) OVER ([PARTITION BY ...] ORDER BY ...)` | Divides rows into `n` roughly equal buckets and returns the bucket number |
-| `PERCENT_RANK` | `PERCENT_RANK() OVER ([PARTITION BY ...] ORDER BY ...)` | Returns relative rank as a value in `[0.0, 1.0]`: `(rank − 1) / (rows − 1)` |
+| Function       | Syntax                                                  | Description                                                                          |
+| -------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ROW_NUMBER`   | `ROW_NUMBER() OVER ([PARTITION BY ...] ORDER BY ...)`   | Assigns a unique sequential integer to each row within the partition                 |
+| `RANK`         | `RANK() OVER ([PARTITION BY ...] ORDER BY ...)`         | Assigns rank with gaps — tied rows share the same rank, the next rank skips          |
+| `DENSE_RANK`   | `DENSE_RANK() OVER ([PARTITION BY ...] ORDER BY ...)`   | Assigns rank without gaps — tied rows share the same rank, next rank increments by 1 |
+| `NTILE(n)`     | `NTILE(n) OVER ([PARTITION BY ...] ORDER BY ...)`       | Divides rows into `n` roughly equal buckets and returns the bucket number            |
+| `PERCENT_RANK` | `PERCENT_RANK() OVER ([PARTITION BY ...] ORDER BY ...)` | Returns relative rank as a value in `[0.0, 1.0]`: `(rank − 1) / (rows − 1)`          |
 
 All ranking functions require `ORDER BY` inside the `OVER` clause.
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior
 
@@ -39,7 +40,7 @@ All ranking functions require `ORDER BY` inside the `OVER` clause.
 4. **PERCENT_RANK formula**: `(rank − 1) / (rows_in_partition − 1)`. The first row always yields `0.0`; the last row always yields `1.0`. Returns `0.0` when the partition contains exactly one row.
 5. Ranking functions ignore any window frame specification — they always operate over the full partition.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Practical Examples
 
@@ -75,7 +76,7 @@ FROM sales;
 ??? success "Expected Output"
 
     | region | rep   | amount | row_num | rnk | dense_rnk | bucket |
-    |--------|-------|-------:|--------:|----:|----------:|-------:|
+    | ------ | ----- | -----: | ------: | --: | --------: | -----: |
     | North  | Alice |    300 |       1 |   1 |         1 |      1 |
     | North  | Bob   |    300 |       2 |   1 |         1 |      1 |
     | North  | Alice |    200 |       3 |   3 |         2 |      2 |
@@ -109,7 +110,7 @@ WHERE rn <= 2;
 ??? success "Expected Output"
 
     | region | rep   | sale_date  | amount |
-    |--------|-------|------------|-------:|
+    | ------ | ----- | ---------- | -----: |
     | North  | Alice | 2024-01-10 |    300 |
     | North  | Alice | 2024-01-05 |    200 |
     | North  | Bob   | 2024-01-06 |    300 |
@@ -131,7 +132,7 @@ FROM sales;
 ??? success "Expected Output"
 
     | region | rep   | amount | pct_rank |
-    |--------|-------|-------:|---------:|
+    | ------ | ----- | -----: | -------: |
     | North  | Alice |    100 |     0.00 |
     | North  | Bob   |    150 |     0.25 |
     | North  | Alice |    200 |     0.50 |
@@ -164,12 +165,12 @@ WHERE rn = 1;
 ??? success "Expected Output"
 
     | region | rep   | sale_date  | amount |
-    |--------|-------|------------|-------:|
+    | ------ | ----- | ---------- | -----: |
     | North  | Alice | 2024-01-10 |    300 |
     | North  | Bob   | 2024-01-06 |    300 |
     | South  | Carol | 2024-01-07 |    500 |
 
----
+______________________________________________________________________
 
 ### Example 5 — NTILE Deep Dive
 
@@ -209,7 +210,7 @@ ORDER BY dept, salary;
 ??? success "Expected Output"
 
     | dept        | name  | salary | quartile |
-    |-------------|-------|-------:|---------:|
+    | ----------- | ----- | -----: | -------: |
     | Engineering | Frank |  85000 |        1 |
     | Engineering | Bob   |  88000 |        1 |
     | Engineering | Dave  |  91000 |        2 |
@@ -229,7 +230,7 @@ ORDER BY dept, salary;
     - **Sales** (5 rows ÷ 4 buckets): 5 mod 4 = 1 remainder → first bucket gets 2 rows, remaining get 1.
 
     | Partition (N rows) | NTILE(4) | Bucket sizes |
-    |--------------------|----------|--------------|
+    | ------------------ | -------- | ------------ |
     | Engineering (7)    | 4        | 2, 2, 2, 1   |
     | Sales (5)          | 4        | 2, 1, 1, 1   |
 
@@ -254,7 +255,7 @@ ORDER BY salary DESC;
 ??? success "Expected Output"
 
     | dept        | name  | salary | tier | label       |
-    |-------------|-------|-------:|-----:|-------------|
+    | ----------- | ----- | -----: | ---: | ----------- |
     | Engineering | Grace | 110000 |    1 | Top Tier    |
     | Engineering | Carol | 102000 |    1 | Mid Tier    |
     | Engineering | Eve   |  97000 |    1 | Mid Tier    |
@@ -275,27 +276,28 @@ First `remainder` buckets → bucket_size + 1 rows each
 Remaining buckets         → bucket_size rows each
 ```
 
-| N (rows) | NTILE(n) | Bucket sizes | Formula |
-|---------:|---------:|--------------|---------|
-|        7 |        4 | 2, 2, 2, 1   | 7÷4 = 1r3 → first 3 get 2, last gets 1 |
-|        5 |        4 | 2, 1, 1, 1   | 5÷4 = 1r1 → first 1 gets 2, rest get 1 |
+| N (rows) | NTILE(n) | Bucket sizes | Formula                                 |
+| -------: | -------: | ------------ | --------------------------------------- |
+|        7 |        4 | 2, 2, 2, 1   | 7÷4 = 1r3 → first 3 get 2, last gets 1  |
+|        5 |        4 | 2, 1, 1, 1   | 5÷4 = 1r1 → first 1 gets 2, rest get 1  |
 |       10 |        3 | 4, 3, 3      | 10÷3 = 3r1 → first 1 gets 4, rest get 3 |
-|       12 |        4 | 3, 3, 3, 3   | 12÷4 = 3r0 → all equal |
+|       12 |        4 | 3, 3, 3, 3   | 12÷4 = 3r0 → all equal                  |
 |        3 |        5 | 1, 1, 1      | Only 3 buckets used (n > N → max n = N) |
 
 !!! note "When n > partition size"
+
     If `NTILE(5)` is applied to a partition with only 3 rows, only buckets
     1, 2, 3 are assigned — buckets 4 and 5 remain empty (no rows receive those values).
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommended Pattern |
-|----------|---------------------|
-| Top-N records per group | `ROW_NUMBER` in a subquery with `WHERE rn <= N` |
-| Ranking with ties preserved | `RANK` or `DENSE_RANK` |
-| Splitting rows into equal buckets | `NTILE(n)` |
-| Percentile scoring / relative position | `PERCENT_RANK` |
+| Scenario                                | Recommended Pattern                                     |
+| --------------------------------------- | ------------------------------------------------------- |
+| Top-N records per group                 | `ROW_NUMBER` in a subquery with `WHERE rn <= N`         |
+| Ranking with ties preserved             | `RANK` or `DENSE_RANK`                                  |
+| Splitting rows into equal buckets       | `NTILE(n)`                                              |
+| Percentile scoring / relative position  | `PERCENT_RANK`                                          |
 | Removing duplicates, keeping latest row | `ROW_NUMBER` ordered by timestamp DESC, filter `rn = 1` |
-| Pagination over ordered results | `ROW_NUMBER` with `WHERE rn BETWEEN x AND y` |
+| Pagination over ordered results         | `ROW_NUMBER` with `WHERE rn BETWEEN x AND y`            |

@@ -2,7 +2,7 @@
 
 `collect_list` collects values from a group into a list, preserving duplicates.
 
-### :material-sitemap: Overview
+## :material-sitemap: Overview
 
 ```mermaid
 graph LR
@@ -50,10 +50,10 @@ FROM orders
 GROUP BY customer;
 ```
 
-| customer | products |
-|----------|----------|
-| Alice | [laptop, mouse] |
-| Bob | [keyboard, monitor, mouse] |
+| customer | products                   |
+| -------- | -------------------------- |
+| Alice    | [laptop, mouse]            |
+| Bob      | [keyboard, monitor, mouse] |
 
 ### NULL Handling
 
@@ -72,8 +72,16 @@ FROM VALUES (3), (1), (2), (1) AS tab(col);
 
 ## :material-brain: collect_list vs collect_set
 
-| Feature | collect_list | collect_set |
-|---------|-------------|-------------|
-| Duplicates | Preserved | Removed |
-| NULLs | Excluded | Excluded |
-| Use case | Ordered lists | Unique values |
+| Feature    | collect_list  | collect_set   |
+| ---------- | ------------- | ------------- |
+| Duplicates | Preserved     | Removed       |
+| NULLs      | Excluded      | Excluded      |
+| Use case   | Ordered lists | Unique values |
+
+!!! tip "Deeper array reference"
+
+    For array-manipulation functions to apply *after* collecting (sorting,
+    deduplicating, flattening, slicing), see
+    [Array Functions](../collection/array.md) and
+    [List Functions](../collection/list.md) in the Collection Functions
+    section.

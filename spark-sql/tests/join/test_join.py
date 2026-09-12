@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import pytest
-from tests._helpers import create_view, execute_sql_file, statement_containing
+
+from spark_sql._helpers import create_view, execute_sql_file, statement_containing
 
 if TYPE_CHECKING:
     from pyspark.sql import SparkSession

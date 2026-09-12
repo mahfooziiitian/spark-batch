@@ -4,13 +4,13 @@ Scalar functions operate on **individual values** and return a single result
 per input row. They are used in `SELECT`, `WHERE`, `ORDER BY`, `CASE WHEN`,
 and anywhere an expression is valid.
 
----
+______________________________________________________________________
 
 ## :material-sitemap: Categories
 
 ```mermaid
-flowchart TD
-    S[":material-function: Scalar Functions"] --> STR["String\nUPPER · TRIM · SPLIT · REGEXP_REPLACE"]
+flowchart LR
+    S["Scalar Functions"] --> STR["String\nUPPER · TRIM · SPLIT · REGEXP_REPLACE"]
     S --> MTH["Math\nABS · ROUND · MOD · POWER"]
     S --> DT["DateTime\nDATE_ADD · DATE_TRUNC · TO_TIMESTAMP"]
     S --> NL["NULL Handling\nCOALESCE · NVL · NULLIF · IFNULL"]
@@ -23,26 +23,36 @@ flowchart TD
     S --> AC["ACL\nCURRENT_USER · IS_MEMBER"]
 ```
 
----
+______________________________________________________________________
+
+## :material-animation-play: Interactive Visualization — Category Explorer
+
+<div id="viz-category-explorer" class="ts-viz"></div>
+
+Click a category to see its function list and a one-line "when to reach for
+this" hint — useful when you know the shape of the problem but not which
+scalar function family solves it.
+
+______________________________________________________________________
 
 ## :material-compare: Category Summary
 
-| Category | Key Functions | Common use |
-|----------|--------------|------------|
-| **String** | `UPPER`, `LOWER`, `TRIM`, `LTRIM`, `RTRIM`, `CONCAT`, `CONCAT_WS`, `SPLIT`, `SUBSTRING`, `LEFT`, `RIGHT`, `REPLACE`, `INSTR`, `LENGTH`, `LPAD`, `RPAD`, `REPEAT`, `REVERSE`, `INITCAP` | Normalise, parse, format text |
-| **Math** | `ABS`, `ROUND`, `CEIL`, `FLOOR`, `MOD`, `POWER`, `SQRT`, `LOG`, `EXP`, `SIGN`, `GREATEST`, `LEAST`, `RAND`, `RANDN` | Numeric transformations |
-| **DateTime** | `CURRENT_DATE`, `CURRENT_TIMESTAMP`, `NOW`, `DATE_ADD`, `DATE_SUB`, `DATEDIFF`, `DATE_TRUNC`, `DATE_FORMAT`, `TO_DATE`, `TO_TIMESTAMP`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, `DAYOFWEEK`, `WEEKOFYEAR` | Date/time arithmetic and formatting |
-| **NULL** | `COALESCE`, `NVL`, `NVL2`, `NULLIF`, `IFNULL`, `NANVL`, `IS NULL`, `IS NOT NULL` | Safe NULL handling |
-| **Conversion** | `CAST`, `TRY_CAST`, `TO_DATE`, `TO_TIMESTAMP`, `TO_UNIX_TIMESTAMP`, `FROM_UNIXTIME`, `HEX`, `UNHEX`, `BIN`, `CONV` | Type conversion |
-| **Control** | `IF`, `IIF`, `CASE WHEN`, `DECODE` | Conditional value selection |
-| **Regex** | `REGEXP_EXTRACT`, `REGEXP_EXTRACT_ALL`, `REGEXP_REPLACE`, `REGEXP_COUNT`, `REGEXP_INSTR`, `REGEXP_SUBSTR`, `RLIKE`, `ILIKE` | Pattern matching |
-| **Encryption** | `MD5`, `SHA1`, `SHA2`, `CRC32`, `HASH`, `XXHASH64`, `MASK`, `MASK_FIRST_N` | Hashing and masking |
-| **Predicate** | `ISNULL`, `ISNOTNULL`, `ISNAN`, `ISNOTNAN`, `IN`, `BETWEEN` | Boolean checks |
-| **Bitwise** | `BIT_AND`, `BIT_OR`, `BIT_XOR`, `SHIFTLEFT`, `SHIFTRIGHT`, `SHIFTRIGHTUNSIGNED` | Integer bit manipulation |
-| **Web** | `PARSE_URL`, `URL_ENCODE`, `URL_DECODE` | URL processing |
-| **ACL** | `CURRENT_USER`, `CURRENT_DATABASE`, `IS_MEMBER`, `SPARK_PARTITION_ID` | Session info |
+| Category       | Key Functions                                                                                                                                                                                                         | Common use                          |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| **String**     | `UPPER`, `LOWER`, `TRIM`, `LTRIM`, `RTRIM`, `CONCAT`, `CONCAT_WS`, `SPLIT`, `SUBSTRING`, `LEFT`, `RIGHT`, `REPLACE`, `INSTR`, `LENGTH`, `LPAD`, `RPAD`, `REPEAT`, `REVERSE`, `INITCAP`                                | Normalise, parse, format text       |
+| **Math**       | `ABS`, `ROUND`, `CEIL`, `FLOOR`, `MOD`, `POWER`, `SQRT`, `LOG`, `EXP`, `SIGN`, `GREATEST`, `LEAST`, `RAND`, `RANDN`                                                                                                   | Numeric transformations             |
+| **DateTime**   | `CURRENT_DATE`, `CURRENT_TIMESTAMP`, `NOW`, `DATE_ADD`, `DATE_SUB`, `DATEDIFF`, `DATE_TRUNC`, `DATE_FORMAT`, `TO_DATE`, `TO_TIMESTAMP`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, `DAYOFWEEK`, `WEEKOFYEAR` | Date/time arithmetic and formatting |
+| **NULL**       | `COALESCE`, `NVL`, `NVL2`, `NULLIF`, `IFNULL`, `NANVL`, `IS NULL`, `IS NOT NULL`                                                                                                                                      | Safe NULL handling                  |
+| **Conversion** | `CAST`, `TRY_CAST`, `TO_DATE`, `TO_TIMESTAMP`, `TO_UNIX_TIMESTAMP`, `FROM_UNIXTIME`, `HEX`, `UNHEX`, `BIN`, `CONV`                                                                                                    | Type conversion                     |
+| **Control**    | `IF`, `IIF`, `CASE WHEN`, `DECODE`                                                                                                                                                                                    | Conditional value selection         |
+| **Regex**      | `REGEXP_EXTRACT`, `REGEXP_EXTRACT_ALL`, `REGEXP_REPLACE`, `REGEXP_COUNT`, `REGEXP_INSTR`, `REGEXP_SUBSTR`, `RLIKE`, `ILIKE`                                                                                           | Pattern matching                    |
+| **Encryption** | `MD5`, `SHA1`, `SHA2`, `CRC32`, `HASH`, `XXHASH64`, `MASK`, `MASK_FIRST_N`                                                                                                                                            | Hashing and masking                 |
+| **Predicate**  | `ISNULL`, `ISNOTNULL`, `ISNAN`, `ISNOTNAN`, `IN`, `BETWEEN`                                                                                                                                                           | Boolean checks                      |
+| **Bitwise**    | `BIT_AND`, `BIT_OR`, `BIT_XOR`, `SHIFTLEFT`, `SHIFTRIGHT`, `SHIFTRIGHTUNSIGNED`                                                                                                                                       | Integer bit manipulation            |
+| **Web**        | `PARSE_URL`, `URL_ENCODE`, `URL_DECODE`                                                                                                                                                                               | URL processing                      |
+| **ACL**        | `CURRENT_USER`, `CURRENT_DATABASE`, `IS_MEMBER`, `SPARK_PARTITION_ID`                                                                                                                                                 | Session info                        |
 
----
+______________________________________________________________________
 
 ## :material-flash: Quick Examples
 
@@ -85,7 +95,7 @@ SELECT MD5(email) AS email_hash FROM users;
 SELECT SHA2(CAST(id AS STRING), 256) AS id_hash FROM orders;
 ```
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
@@ -94,22 +104,24 @@ SELECT SHA2(CAST(id AS STRING), 256) AS id_hash FROM orders;
 3. **NULL propagation** — most scalar functions return NULL when any argument is NULL; use `COALESCE` to provide defaults.
 4. **`CURRENT_DATE()` vs `CURRENT_TIMESTAMP()`** — `CURRENT_DATE()` returns a `DATE`; `CURRENT_TIMESTAMP()` returns a `TIMESTAMP` in the session timezone.
 5. **Determinism** — `RAND()`, `RANDN()`, `NOW()`, `UUID()` are non-deterministic; avoid them in `WHERE` predicates if pushdown is needed.
+6. **`=` vs `<=>` (NULL-safe equality)** — the standard `=` operator returns `NULL` (not `TRUE`/`FALSE`) when either side is `NULL`, so `WHERE a = b` silently excludes rows where both are `NULL`. `<=>` treats two `NULL`s as equal: `SELECT NULL = NULL` → `NULL`, but `SELECT NULL <=> NULL` → `true`. Use `<=>` for `JOIN` conditions or comparisons where `NULL` should match `NULL`.
+7. **`ISNULL` vs `ISNAN`** — these check different conditions: `NaN` (not-a-number, a valid floating-point value from operations like `0.0/0.0`) is **not** `NULL`. `SELECT ISNULL(CAST('nan' AS DOUBLE))` → `false`, but `SELECT ISNAN(CAST('nan' AS DOUBLE))` → `true`. Data with unexpected `NaN` values will pass right through a `WHERE col IS NOT NULL` filter — use `ISNAN` explicitly to catch it.
 
----
+______________________________________________________________________
 
 ## :material-book-open-variant: In This Section
 
-| Page | Contents |
-|------|----------|
-| [String](string.md) | Text manipulation, formatting, pattern matching |
-| [Math](math.md) | Arithmetic, rounding, logarithms, random |
-| [DateTime](datetime/index.md) | Dates, timestamps, intervals, timezones |
-| [NULL](null.md) | `COALESCE`, `NVL`, `NULLIF`, null-safe comparison |
-| [Predicate](predicate.md) | `ISNULL`, `ISNAN`, `IN`, `BETWEEN` |
-| [Control](control.md) | `IF`, `IIF`, `CASE`, `DECODE` |
-| [Conversion](conversion.md) | `CAST`, `TRY_CAST`, `TO_DATE`, `TO_TIMESTAMP` |
-| [Regex](regex/index.md) | `REGEXP_EXTRACT`, `REGEXP_REPLACE`, `RLIKE` |
-| [Encryption](encryption/index.md) | `MD5`, `SHA2`, `CRC32`, `MASK` |
-| [Bitwise](bitwise.md) | Bit operations on integers |
-| [Web](web.md) | `PARSE_URL`, `URL_ENCODE` |
-| [ACL](acl.md) | `CURRENT_USER`, `IS_MEMBER` |
+| Page                                  | Contents                                          |
+| ------------------------------------- | ------------------------------------------------- |
+| [String](text/string.md)              | Text manipulation, formatting, pattern matching   |
+| [Math](numeric/math.md)               | Arithmetic, rounding, logarithms, random          |
+| [DateTime](datetime/index.md)         | Dates, timestamps, intervals, timezones           |
+| [NULL](conditional/null.md)           | `COALESCE`, `NVL`, `NULLIF`, null-safe comparison |
+| [Predicate](conditional/predicate.md) | `ISNULL`, `ISNAN`, `IN`, `BETWEEN`                |
+| [Control](conditional/control.md)     | `IF`, `IIF`, `CASE`, `DECODE`                     |
+| [Conversion](utility/conversion.md)   | `CAST`, `TRY_CAST`, `TO_DATE`, `TO_TIMESTAMP`     |
+| [Regex](text/regex/index.md)          | `REGEXP_EXTRACT`, `REGEXP_REPLACE`, `RLIKE`       |
+| [Encryption](encryption/index.md)     | `MD5`, `SHA2`, `CRC32`, `MASK`                    |
+| [Bitwise](numeric/bitwise.md)         | Bit operations on integers                        |
+| [Web](utility/web.md)                 | `PARSE_URL`, `URL_ENCODE`                         |
+| [ACL](utility/acl.md)                 | `CURRENT_USER`, `IS_MEMBER`                       |

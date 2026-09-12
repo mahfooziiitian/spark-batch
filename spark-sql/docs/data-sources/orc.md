@@ -5,19 +5,19 @@ It offers excellent compression and predicate pushdown for Hive-originated workl
 For new Spark / Databricks projects, prefer **Parquet** or **Delta** — ORC is best when
 interoperating with existing Hive tables.
 
----
+______________________________________________________________________
 
 ## :material-pin: Options Reference
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `path` | — | File or directory path |
-| `mergeSchema` | `false` | Union schemas across ORC files |
-| `compression` | `snappy` | Codec: `none`, `snappy`, `zlib`, `lzo`, `zstd` |
-| `orcFilterPushdown` | `true` | Enable predicate pushdown into ORC stripes |
-| `recursiveFileLookup` | `false` | Search subdirectories |
+| Option                | Default  | Description                                    |
+| --------------------- | -------- | ---------------------------------------------- |
+| `path`                | —        | File or directory path                         |
+| `mergeSchema`         | `false`  | Union schemas across ORC files                 |
+| `compression`         | `snappy` | Codec: `none`, `snappy`, `zlib`, `lzo`, `zstd` |
+| `orcFilterPushdown`   | `true`   | Enable predicate pushdown into ORC stripes     |
+| `recursiveFileLookup` | `false`  | Search subdirectories                          |
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Examples
 
@@ -77,27 +77,27 @@ USING orc
 AS SELECT * FROM staging.events;
 ```
 
----
+______________________________________________________________________
 
 ## :material-compare: ORC vs Parquet vs Delta
 
-| Feature | ORC | Parquet | Delta |
-|---------|:---:|:-------:|:-----:|
-| Columnar | :material-check: | :material-check: | :material-check: |
-| Hive native | :material-check: | Supported | Supported |
-| Spark native | Supported | :material-check: | :material-check: |
-| ACID | Via Hive | :material-close: | :material-check: |
-| Bloom filters | :material-check: | Via write option | :material-check: |
-| Stripe/row-group metadata | Stripes | Row groups | Row groups |
-| Best for | Hive workloads | Spark analytics | Spark + ACID |
+| Feature                   |       ORC        |     Parquet      |      Delta       |
+| ------------------------- | :--------------: | :--------------: | :--------------: |
+| Columnar                  | :material-check: | :material-check: | :material-check: |
+| Hive native               | :material-check: |    Supported     |    Supported     |
+| Spark native              |    Supported     | :material-check: | :material-check: |
+| ACID                      |     Via Hive     | :material-close: | :material-check: |
+| Bloom filters             | :material-check: | Via write option | :material-check: |
+| Stripe/row-group metadata |     Stripes      |    Row groups    |    Row groups    |
+| Best for                  |  Hive workloads  | Spark analytics  |   Spark + ACID   |
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use ORC
 
-| Scenario | Recommendation |
-|----------|----------------|
-| Existing Hive ecosystem | ORC — native format |
-| New Spark / Databricks project | Parquet or Delta |
-| Hive ACID tables | ORC with Hive ACID |
+| Scenario                          | Recommendation      |
+| --------------------------------- | ------------------- |
+| Existing Hive ecosystem           | ORC — native format |
+| New Spark / Databricks project    | Parquet or Delta    |
+| Hive ACID tables                  | ORC with Hive ACID  |
 | Migrating from Hive to Databricks | Convert ORC → Delta |

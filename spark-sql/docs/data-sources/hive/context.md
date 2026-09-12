@@ -5,7 +5,7 @@ Metastore, HiveQL, Hive UDFs, and SerDes — on top of the base `SQLContext`. Si
 2.0 it is **deprecated**; `SparkSession` with `.enableHiveSupport()` is the modern
 replacement and provides a superset of its capabilities.
 
-### :material-sitemap: Evolution of Entry Points
+## :material-sitemap: Evolution of Entry Points
 
 ```mermaid
 graph LR
@@ -15,7 +15,7 @@ graph LR
     C --> D[".enableHiveSupport()"]
 ```
 
----
+______________________________________________________________________
 
 ## :material-pin: Legacy vs Modern
 
@@ -44,39 +44,40 @@ graph LR
     spark.sql("SELECT * FROM default.orders").show()
     ```
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: Migration Map
 
-| `HiveContext` | `SparkSession` equivalent |
-|---------------|---------------------------|
-| `HiveContext(sc)` | `SparkSession.builder.enableHiveSupport().getOrCreate()` |
-| `hc.sql(...)` | `spark.sql(...)` |
-| `hc.table("t")` | `spark.table("t")` |
-| `hc.udf.register(...)` | `spark.udf.register(...)` |
-| `hc.setConf(k, v)` | `spark.conf.set(k, v)` |
+| `HiveContext`          | `SparkSession` equivalent                                |
+| ---------------------- | -------------------------------------------------------- |
+| `HiveContext(sc)`      | `SparkSession.builder.enableHiveSupport().getOrCreate()` |
+| `hc.sql(...)`          | `spark.sql(...)`                                         |
+| `hc.table("t")`        | `spark.table("t")`                                       |
+| `hc.udf.register(...)` | `spark.udf.register(...)`                                |
+| `hc.setConf(k, v)`     | `spark.conf.set(k, v)`                                   |
 
----
+______________________________________________________________________
 
 ## :material-magnify: Behavior Notes
 
 1. `HiveContext` still resolves at runtime for backward compatibility but emits a
-   deprecation warning.
+    deprecation warning.
 2. All Hive features (metastore access, HiveQL, UDFs, SerDes) are available through
-   `SparkSession` once `.enableHiveSupport()` is called.
+    `SparkSession` once `.enableHiveSupport()` is called.
 3. A `SparkSession` created **without** Hive support uses the `in-memory` catalog — table
-   metadata is not persisted across sessions.
+    metadata is not persisted across sessions.
 
----
+______________________________________________________________________
 
 ## :material-brain: When to Use
 
-| Scenario | Recommendation |
-|----------|----------------|
-| New code on Spark 2.x+ | `SparkSession` with `.enableHiveSupport()` |
+| Scenario                          | Recommendation                                 |
+| --------------------------------- | ---------------------------------------------- |
+| New code on Spark 2.x+            | `SparkSession` with `.enableHiveSupport()`     |
 | Maintaining legacy Spark 1.x code | `HiveContext` still works, but plan to migrate |
-| No Hive Metastore required | Plain `SparkSession` (`in-memory` catalog) |
+| No Hive Metastore required        | Plain `SparkSession` (`in-memory` catalog)     |
 
 !!! warning "Deprecated API"
+
     `HiveContext` is retained only for compatibility. Prefer `SparkSession` — see the
     [Hive Integration overview](index.md) for enabling Hive support.

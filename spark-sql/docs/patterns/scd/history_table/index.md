@@ -19,28 +19,30 @@ graph LR
     A --> HT[(dim_customer_history\n1 row per change)]
 ```
 
----
+______________________________________________________________________
 
 ## :material-animation-play: Interactive Demo
 
 <div id="viz-scd-type4" class="ts-viz"></div>
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: When to Use
 
 !!! success "Good fit"
+
     - You need **fast current-state queries** without `WHERE is_current = TRUE` everywhere
     - AND you need a **full change audit trail** for compliance or analytics
     - Teams that own the BI layer and the audit layer are separate — each gets a clean table
     - The history table can be partitioned, archived, or tiered independently of the current table
 
 !!! failure "Not a good fit"
+
     - Point-in-time fact joins via a surrogate key — Type 2 or Type 5 is better
     - The overhead of two write targets per batch is undesirable — Type 2 in one table is simpler
     - You want to navigate directly from a current row to its history without a separate lookup — use Type 5 (`hist_key` FK)
 
----
+______________________________________________________________________
 
 ## :material-toy-brick: Table Design
 
@@ -75,10 +77,11 @@ PARTITIONED BY (customer_id);
 ```
 
 !!! tip "Partition the history table by `customer_id`"
+
     History tables grow unboundedly. Partitioning on `customer_id` keeps per-customer
     history queries fast and enables efficient time-travel lookups.
 
----
+______________________________________________________________________
 
 ## :material-database-import: Seed Data
 
@@ -99,7 +102,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-tray-arrow-down: Incoming Staging Data
 
@@ -113,7 +116,7 @@ FROM VALUES
 AS t(customer_id, name, email, city);
 ```
 
----
+______________________________________________________________________
 
 ## :material-repeat: Step-by-Step SCD Type 4 Logic
 
@@ -199,30 +202,31 @@ WHEN NOT MATCHED THEN
 ```
 
 !!! note "Run order matters"
-    Step 2 must execute **before** Step 3.  If Step 3 runs first, the current table is
+
+    Step 2 must execute **before** Step 3. If Step 3 runs first, the current table is
     overwritten and the old values needed for the history archive are lost.
 
----
+______________________________________________________________________
 
 ## :material-check-circle-outline: Final Output
 
 **`dim_customer_current`** — one row per customer, always current:
 
-| customer_id | name    | email                  | city | updated_at          |
-|-------------|---------|------------------------|------|---------------------|
-| cust1       | Alice   | alice@example.com      | NY   | 2024-01-01 00:00:00 |
-| cust2       | Bobby   | bob@newdomain.com      | TX   | 2024-06-15 09:00:00 |
-| cust3       | Charlie | charlie@example.com    | WA   | 2024-06-15 09:00:00 |
+| customer_id | name    | email               | city | updated_at          |
+| ----------- | ------- | ------------------- | ---- | ------------------- |
+| cust1       | Alice   | alice@example.com   | NY   | 2024-01-01 00:00:00 |
+| cust2       | Bobby   | bob@newdomain.com   | TX   | 2024-06-15 09:00:00 |
+| cust3       | Charlie | charlie@example.com | WA   | 2024-06-15 09:00:00 |
 
 **`dim_customer_history`** — one row per change event:
 
 | customer_id | name | email           | city | valid_from          | valid_to            |
-|-------------|------|-----------------|------|---------------------|---------------------|
+| ----------- | ---- | --------------- | ---- | ------------------- | ------------------- |
 | cust2       | Bob  | bob@example.com | CA   | 2024-01-01 00:00:00 | 2024-06-15 09:00:00 |
 
 Only `cust2` has a history row — it was the only customer whose attributes changed.
 
----
+______________________________________________________________________
 
 ## :material-flask-outline: Analytical Queries
 
@@ -303,44 +307,45 @@ JOIN dim_customer_current    AS c USING (customer_id);
 ```
 
 !!! warning "Current-table join loses historical context"
+
     Joining facts to `dim_customer_current` gives the customer's **current** city, not
-    the city at the time of the order.  For point-in-time attribution, union the history
+    the city at the time of the order. For point-in-time attribution, union the history
     and current tables and apply date-range filtering as shown above.
 
----
+______________________________________________________________________
 
 ## :material-layers-triple: Table Responsibility Summary
 
-| Capability | `dim_customer_current` | `dim_customer_history` |
-|-----------|----------------------|----------------------|
-| Latest values | :material-check-circle-outline: | :material-close-circle-outline: |
-| Full change audit trail | :material-close-circle-outline: | :material-check-circle-outline: |
-| Fast current-state query | :material-check-circle-outline: (no filter needed) | :material-close-circle-outline: |
-| Point-in-time lookup | :material-close-circle-outline: | :material-check-circle-outline: (date-range filter) |
-| Row count | 1 per customer | 1 per change event |
-| Growth rate | Bounded | Unbounded |
+| Capability               | `dim_customer_current`                             | `dim_customer_history`                              |
+| ------------------------ | -------------------------------------------------- | --------------------------------------------------- |
+| Latest values            | :material-check-circle-outline:                    | :material-close-circle-outline:                     |
+| Full change audit trail  | :material-close-circle-outline:                    | :material-check-circle-outline:                     |
+| Fast current-state query | :material-check-circle-outline: (no filter needed) | :material-close-circle-outline:                     |
+| Point-in-time lookup     | :material-close-circle-outline:                    | :material-check-circle-outline: (date-range filter) |
+| Row count                | 1 per customer                                     | 1 per change event                                  |
+| Growth rate              | Bounded                                            | Unbounded                                           |
 
----
+______________________________________________________________________
 
 ## :material-shield-outline: Common Pitfalls
 
-| Pitfall | Consequence | Solution |
-|---------|-------------|---------|
-| Running Step 3 before Step 2 | Old values overwritten before archive — history gap | Always archive first, then upsert |
-| Missing `row_hash` guard | Unchanged rows archived as false changes | Filter `change_type = 'CHANGED'` using hash comparison |
-| No `valid_from` on history row | Cannot reconstruct timeline | Store `updated_at` from current table as `valid_from` |
-| Duplicate keys in staging | Non-deterministic archive + double insert | Deduplicate with `ROW_NUMBER()` before Step 1 |
-| History table not partitioned | Full table scan on per-customer queries | `PARTITIONED BY (customer_id)` |
+| Pitfall                        | Consequence                                         | Solution                                               |
+| ------------------------------ | --------------------------------------------------- | ------------------------------------------------------ |
+| Running Step 3 before Step 2   | Old values overwritten before archive — history gap | Always archive first, then upsert                      |
+| Missing `row_hash` guard       | Unchanged rows archived as false changes            | Filter `change_type = 'CHANGED'` using hash comparison |
+| No `valid_from` on history row | Cannot reconstruct timeline                         | Store `updated_at` from current table as `valid_from`  |
+| Duplicate keys in staging      | Non-deterministic archive + double insert           | Deduplicate with `ROW_NUMBER()` before Step 1          |
+| History table not partitioned  | Full table scan on per-customer queries             | `PARTITIONED BY (customer_id)`                         |
 
----
+______________________________________________________________________
 
 ## :material-swap-horizontal: SCD Type Comparison
 
-| Scenario | Recommended Type |
-|----------|-----------------|
-| Only current values, no history | Type 1 |
-| Full history with point-in-time accuracy, single table | Type 2 |
-| Current + one previous value per attribute | Type 3 |
-| **Separate current and history tables, no FK link** | **Type 4** |
-| Separate tables with `hist_key` FK in current table | Type 5 |
-| Current + history + previous value, single table | Type 6 |
+| Scenario                                               | Recommended Type |
+| ------------------------------------------------------ | ---------------- |
+| Only current values, no history                        | Type 1           |
+| Full history with point-in-time accuracy, single table | Type 2           |
+| Current + one previous value per attribute             | Type 3           |
+| **Separate current and history tables, no FK link**    | **Type 4**       |
+| Separate tables with `hist_key` FK in current table    | Type 5           |
+| Current + history + previous value, single table       | Type 6           |
