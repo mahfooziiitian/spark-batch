@@ -1,0 +1,114 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyspark-ds-html"
+version = "0.1.0"
+description = "PySpark 4 HTML Datasource — tutorials, demos, and reusable library for Spark 4 and Databricks"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark>=4.0.0",
+    "pandas<3.0.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "html5lib>=1.1",
+    "rich>=15.0.0",
+    "python-dotenv>=1.2.3",
+    "rapidfuzz>=3.0.0",
+    "indic-transliteration>=2.3.82",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=6.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.7",
+    "pyarrow>=25.0.0",
+    "ruff>=0.16.0",
+    "mypy>=2.3.0",
+    "bandit>=1.9.4",
+    "pip-audit>=2.10.1",
+    "pip-licenses>=5.5.5",
+    "pytest-cov>=7.1.0",
+    "pymarkdownlnt>=0.9.39",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pys_html"]
+
+[tool.hatch.envs.default.scripts]
+# 01_data_source — reading <table> elements and scraping arbitrary tags
+read-html-tables = "python examples/01_data_source/01_read_html_tables.py {args}"
+read-html-targeted-table = "python examples/01_data_source/02_read_html_targeted_table.py {args}"
+scrape-beautifulsoup = "python examples/01_data_source/03_scrape_with_beautifulsoup.py {args}"
+read-html-file-cli = "python examples/01_data_source/04_read_html_file_cli.py {args}"
+list-tables-attrs = "python examples/01_data_source/05_list_tables_and_attrs.py {args}"
+merge-matching-tables = "python examples/01_data_source/06_merge_matching_tables.py {args}"
+# 02_parsing — column-level UDFs applied within a DataFrame
+extract-links = "python examples/02_parsing/01_extract_links.py {args}"
+extract-text = "python examples/02_parsing/02_extract_text.py {args}"
+extract-meta-tags = "python examples/02_parsing/03_extract_meta_tags.py {args}"
+# 03_dataframe — create, transform, write, pandas round trips
+create-dataframe = "python examples/03_dataframe/01_create_dataframe.py {args}"
+transformations = "python examples/03_dataframe/02_transformations.py {args}"
+write-html = "python examples/03_dataframe/03_write_html.py {args}"
+pandas-bridge = "python examples/03_dataframe/04_pandas_bridge.py {args}"
+semantic-search-bilingual = "python examples/03_dataframe/05_semantic_search_bilingual.py {args}"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "examples", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit (security)
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "T20",  # flake8-print
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "T201",   # allow print() in examples
+    "S603",   # allow subprocess calls (scripts)
+    "S607",   # allow partial executable path
+    "E501",   # allow long lines (HTML strings in examples)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/**/*.py" = ["T201", "S101"]  # allow print and assert in examples
+"tests/**/*.py" = ["S101"]             # allow assert in tests
+
+[tool.ruff.lint.isort]
+known-first-party = ["pys_html"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B101"]  # allow assert
+
+[tool.coverage.run]
+source = ["pys_html"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 50
