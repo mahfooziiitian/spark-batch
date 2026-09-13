@@ -17,15 +17,15 @@ DROP TABLE IF EXISTS customer_accounts;
 -- [Databricks] Requires Delta Lake
 CREATE TABLE customer_accounts (
     customer_id INT,
-    tier        STRING,
-    balance     DOUBLE
+    tier STRING,
+    balance DOUBLE
 ) USING DELTA
-TBLPROPERTIES (delta.enableChangeDataFeed = true);
+TBLPROPERTIES (delta.enableChangeDataFeed = TRUE);
 
 INSERT INTO customer_accounts VALUES
-    (1, 'silver', 100.0),
-    (2, 'gold',   500.0),
-    (3, 'silver',  50.0);
+(1, 'silver', 100.0),
+(2, 'gold', 500.0),
+(3, 'silver', 50.0);
 
 -- Version 1 (after the INSERT above) — CDF has nothing to report yet for reads
 -- starting at version 1, since it captures changes *between* versions.
@@ -37,7 +37,7 @@ INSERT INTO customer_accounts VALUES
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake
-ALTER TABLE customer_accounts SET TBLPROPERTIES (delta.enableChangeDataFeed = true);
+ALTER TABLE customer_accounts SET TBLPROPERTIES (delta.enableChangeDataFeed = TRUE);
 
 ---------------------------------------------------------------------------------------------------
 -- 2. Make some changes to generate a change feed: update, insert, delete
@@ -52,7 +52,8 @@ WHERE customer_id = 1;
 INSERT INTO customer_accounts VALUES (4, 'silver', 20.0);
 
 -- Version 4: customer 3 closes their account
-DELETE FROM customer_accounts WHERE customer_id = 3;
+DELETE FROM customer_accounts
+WHERE customer_id = 3;
 
 ---------------------------------------------------------------------------------------------------
 -- 3. Read the change feed by version range
@@ -62,7 +63,12 @@ DELETE FROM customer_accounts WHERE customer_id = 3;
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake with CDF enabled
-SELECT customer_id, tier, balance, _change_type, _commit_version
+SELECT
+    customer_id,
+    tier,
+    balance,
+    _change_type,
+    _commit_version
 FROM table_changes('customer_accounts', 2, 4)
 ORDER BY _commit_version, customer_id;
 
@@ -78,8 +84,13 @@ ORDER BY _commit_version, customer_id;
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake with CDF enabled
-SELECT customer_id, tier, balance, _change_type, _commit_timestamp
-FROM table_changes('customer_accounts', '2024-01-01T00:00:00', CURRENT_TIMESTAMP())
+SELECT
+    customer_id,
+    tier,
+    balance,
+    _change_type,
+    _commit_timestamp
+FROM table_changes('customer_accounts', '2024-01-01T00:00:00', current_timestamp())
 ORDER BY _commit_timestamp, customer_id;
 
 ---------------------------------------------------------------------------------------------------
@@ -89,7 +100,12 @@ ORDER BY _commit_timestamp, customer_id;
 --    against a reporting table).
 ---------------------------------------------------------------------------------------------------
 
-SELECT customer_id, tier, balance, _change_type, _commit_version
+SELECT
+    customer_id,
+    tier,
+    balance,
+    _change_type,
+    _commit_version
 FROM table_changes('customer_accounts', 2, 4)
 WHERE _change_type != 'update_preimage'
 ORDER BY _commit_version, customer_id;

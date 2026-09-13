@@ -362,6 +362,64 @@ ORDER BY customer_id;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.list_prices` is a built-in Unity Catalog system table that already stores
+    effective-dated Databricks SKU price history — each price change opens a new row and closes
+    the previous one. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. No synthetic sample data setup is required.
+
+### 11 — Current price plus previous version memory on every row
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+WITH sku_price_history AS (
+    SELECT
+        sku_name,
+        cloud,
+        currency_code,
+        usage_unit,
+        price_start_time,
+        price_end_time,
+        pricing.default AS version_price,
+        LAG(pricing.default) OVER (
+            PARTITION BY sku_name, cloud, currency_code, usage_unit
+            ORDER BY price_start_time
+        ) AS previous_version_price,
+        MAX(CASE WHEN price_end_time IS NULL THEN pricing.default END) OVER (
+            PARTITION BY sku_name, cloud, currency_code, usage_unit
+        ) AS current_price
+    FROM system.billing.list_prices
+    WHERE sku_name = 'STANDARD_ALL_PURPOSE_DBU'
+      AND cloud = 'AWS'
+)
+SELECT
+    sku_name,
+    price_start_time,
+    price_end_time,
+    version_price,
+    previous_version_price,
+    current_price
+FROM sku_price_history
+ORDER BY price_start_time;
+-- Result (illustrative):
+-- sku_name                 | price_start_time     | price_end_time       | version_price | previous_version_price | current_price
+-- -------------------------|----------------------|----------------------|---------------|------------------------|--------------
+-- STANDARD_ALL_PURPOSE_DBU | 2024-01-01 00:00:00  | 2024-10-15 00:00:00  | 0.52          | NULL                   | 0.55
+-- STANDARD_ALL_PURPOSE_DBU | 2024-10-15 00:00:00  | NULL                 | 0.55          | 0.52                   | 0.55
+```
+
+!!! tip
+
+    Hybrid SCD reads are just combinations of the same effective-dated rows: a window function
+    can repeat the current value on every historical row and also surface the immediately previous
+    value, giving you Type 1, Type 2, and Type 3 views from one production history table.
+
+______________________________________________________________________
+
 ## :material-numeric-9-plus-circle: Optimise and Clean Up
 
 ```sql

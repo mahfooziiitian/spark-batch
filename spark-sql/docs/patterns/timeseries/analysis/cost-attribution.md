@@ -5,6 +5,16 @@ spend by entity for chargeback, budgeting, and optimisation. **[Databricks]**
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Click a legend entry to focus one warehouse's contribution across the daily spend profile. Hover any stacked segment to inspect the attributed cost for that day.
+
+<div id="viz-cost-attribution" class="ts-viz"></div>
+
+*Stacked daily bars show total cost, while legend clicks isolate each warehouse's chargeback footprint.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Attribution Flow
 
 ```mermaid
@@ -159,6 +169,59 @@ ______________________________________________________________________
 | Query optimisation     | Find top-10 expensive queries to tune                |
 | Warehouse right-sizing | Compare cost vs query count to find over-provisioned |
 | Executive dashboard    | Cost per workspace with MoM comparison               |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records billable usage over time, plus
+    `custom_tags` such as `Team`, `Tenant`, or `Env` when your compute is
+    tagged. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.billing`, and `SELECT` on
+    `system.billing.usage` before these queries will return rows.
+
+### Daily usage attribution by team tag
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    usage_date,
+    COALESCE(custom_tags['Team'], 'unassigned') AS team,
+    sku_name,
+    usage_unit,
+    ROUND(SUM(usage_quantity), 2) AS total_usage_quantity,
+    ROUND(
+        SUM(usage_quantity) * 100.0
+        / SUM(SUM(usage_quantity)) OVER (
+            PARTITION BY usage_date, usage_unit
+        ),
+        1
+    ) AS daily_share_pct
+FROM system.billing.usage
+WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+GROUP BY
+    usage_date,
+    COALESCE(custom_tags['Team'], 'unassigned'),
+    sku_name,
+    usage_unit
+ORDER BY usage_date DESC, daily_share_pct DESC, team;
+-- Result (illustrative):
+-- usage_date | team          | sku_name              | usage_unit | total_usage_quantity | daily_share_pct
+-- ---------- | ------------- | --------------------- | ---------- | -------------------- | ---------------
+-- 2024-07-02 | data-platform | PREMIUM_JOBS_COMPUTE  | DBU        | 842.75               | 46.2
+-- 2024-07-02 | analytics     | SERVERLESS_SQL        | DBU        | 515.20               | 28.2
+-- 2024-07-02 | unassigned    | STANDARD_ALL_PURPOSE  | DBU        | 214.10               | 11.7
+```
+
+!!! tip "Tag-based attribution scales to production chargeback"
+
+    This is the same `GROUP BY` pattern as the sample data version, but now
+    the allocation key comes from real `custom_tags`. If you later join to
+    `system.billing.list_prices`, the exact same grouping produces dollar
+    cost by team, tenant, environment, or cost center.
 
 ______________________________________________________________________
 

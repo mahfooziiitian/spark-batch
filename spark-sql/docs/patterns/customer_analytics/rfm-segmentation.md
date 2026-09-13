@@ -188,6 +188,125 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no
+    synthetic sample data is needed. Reframe each `workspace_id` (or
+    `custom_tags['Tenant']`) as the "customer" and treat billable usage
+    (`usage_quantity`) as the monetary signal. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 1 — Workspace RFM scores from billing activity
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH rfm_base AS (
+    SELECT
+        workspace_id,
+        DATEDIFF(CURRENT_DATE(), MAX(usage_date)) AS recency_days,
+        COUNT(DISTINCT usage_date) AS frequency_days,
+        ROUND(SUM(usage_quantity), 2) AS monetary_usage
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 180)
+    GROUP BY workspace_id
+),
+scored AS (
+    SELECT
+        workspace_id,
+        recency_days,
+        frequency_days,
+        monetary_usage,
+        NTILE(4) OVER (ORDER BY recency_days ASC) AS r_score,
+        NTILE(4) OVER (ORDER BY frequency_days DESC) AS f_score,
+        NTILE(4) OVER (ORDER BY monetary_usage DESC) AS m_score
+    FROM rfm_base
+)
+SELECT
+    workspace_id,
+    recency_days,
+    frequency_days,
+    monetary_usage,
+    r_score,
+    f_score,
+    m_score,
+    CONCAT(r_score, f_score, m_score) AS rfm_cell
+FROM scored
+ORDER BY r_score DESC, f_score DESC, m_score DESC, workspace_id
+LIMIT 10;
+-- Result (illustrative):
+-- workspace_id | recency_days | frequency_days | monetary_usage | r_score | f_score | m_score | rfm_cell
+-- -------------|--------------|----------------|----------------|---------|---------|---------|---------
+-- 123456789    | 1            | 88             | 18420.5        | 4       | 4       | 4       | 444
+-- 987654321    | 3            | 76             | 12995.2        | 4       | 4       | 3       | 443
+-- 555555555    | 17           | 24             | 3105.8         | 2       | 2       | 2       | 222
+```
+
+### 2 — Tenant segment summary
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH rfm_base AS (
+    SELECT
+        custom_tags['Tenant'] AS tenant,
+        DATEDIFF(CURRENT_DATE(), MAX(usage_date)) AS recency_days,
+        COUNT(DISTINCT usage_date) AS frequency_days,
+        ROUND(SUM(usage_quantity), 2) AS monetary_usage
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 180)
+      AND custom_tags['Tenant'] IS NOT NULL
+    GROUP BY custom_tags['Tenant']
+),
+scored AS (
+    SELECT
+        tenant,
+        recency_days,
+        frequency_days,
+        monetary_usage,
+        NTILE(4) OVER (ORDER BY recency_days ASC) AS r_score,
+        NTILE(4) OVER (ORDER BY frequency_days DESC) AS f_score,
+        NTILE(4) OVER (ORDER BY monetary_usage DESC) AS m_score
+    FROM rfm_base
+),
+segmented AS (
+    SELECT
+        tenant,
+        monetary_usage,
+        CASE
+            WHEN r_score >= 3 AND f_score >= 3 AND m_score >= 3 THEN 'Power User'
+            WHEN r_score >= 3 AND f_score >= 2 THEN 'Growing'
+            WHEN r_score <= 2 AND f_score >= 3 THEN 'At Risk'
+            ELSE 'Occasional'
+        END AS segment
+    FROM scored
+)
+SELECT
+    segment,
+    COUNT(*) AS tenants,
+    ROUND(AVG(monetary_usage), 2) AS avg_usage,
+    ROUND(SUM(monetary_usage), 2) AS total_usage
+FROM segmented
+GROUP BY segment
+ORDER BY total_usage DESC;
+-- Result (illustrative):
+-- segment    | tenants | avg_usage | total_usage
+-- -----------|---------|-----------|------------
+-- Power User | 4       | 14522.38  | 58089.52
+-- Growing    | 7       | 6210.41   | 43472.87
+-- At Risk    | 3       | 5175.20   | 15525.60
+-- Occasional | 5       | 1180.44   | 5902.20
+```
+
+!!! tip "Why this works on system tables"
+
+    RFM only needs a last activity date, repeated activity count, and cumulative
+    value. Billing system tables provide all three, so the same segmentation
+    logic used for shoppers or subscribers generalises cleanly to workspaces and
+    tenant-tag chargeback views.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Customer Lifetime Value](clv.md) — includes RFM-based CLV scoring

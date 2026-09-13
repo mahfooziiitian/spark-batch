@@ -5,6 +5,16 @@ identification** — core metrics for supply chain management and working capita
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover any day to compare on-hand stock against the reorder line and see the remaining days of inventory.
+
+<div id="viz-inventory" class="ts-viz"></div>
+
+*Purple line tracks stock on hand. Amber markers flag days that fall below the reorder point.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Analytics Flow
 
 ```mermaid
@@ -431,6 +441,54 @@ ______________________________________________________________________
 | Use latest snapshot only for current state | Avoid full-table scan for status reports         |
 | Materialise demand rates daily             | Reuse across DOI, overstock, and reorder queries |
 | Filter to active SKUs                      | Exclude discontinued items from turnover metrics |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.compute.clusters` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real cluster lifecycle metadata.
+    This is an adaptation of the inventory pattern: instead of physical SKU
+    stock, the "inventory" is active compute capacity by node type over time.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.compute`, and `SELECT` on `system.compute.clusters` before these
+    queries will return rows.
+
+### Daily active cluster inventory by node type
+
+```sql
+-- [Databricks] Requires SELECT on system.compute.clusters
+WITH date_spine AS (
+    SELECT EXPLODE(
+        SEQUENCE(DATE_SUB(CURRENT_DATE(), 14), CURRENT_DATE(), INTERVAL 1 DAY)
+    ) AS snapshot_date
+)
+SELECT
+    d.snapshot_date,
+    COALESCE(c.worker_node_type, c.driver_node_type) AS node_type,
+    COUNT(DISTINCT c.cluster_id) AS active_clusters
+FROM date_spine AS d
+JOIN system.compute.clusters AS c
+    ON c.create_time < d.snapshot_date + INTERVAL 1 DAY
+    AND COALESCE(c.delete_time, CURRENT_TIMESTAMP()) >= d.snapshot_date
+GROUP BY d.snapshot_date, COALESCE(c.worker_node_type, c.driver_node_type)
+ORDER BY d.snapshot_date, node_type;
+-- Result (illustrative):
+-- snapshot_date | node_type          | active_clusters
+-- ------------- | ------------------ | ---------------
+-- 2024-07-01    | i3.xlarge          | 6
+-- 2024-07-01    | m5d.2xlarge        | 4
+-- 2024-07-02    | i3.xlarge          | 7
+```
+
+!!! tip "Snapshot inventory works beyond warehouses and SKUs"
+
+    The same date-spine-plus-snapshot pattern used for stock levels also
+    works for operational capacity inventories. Replace products with cluster
+    types, and the resulting time series supports planning, trend analysis,
+    and right-sizing.
 
 ______________________________________________________________________
 

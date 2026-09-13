@@ -335,6 +335,46 @@ twelve.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog table (no sample data setup
+    needed) that records real billable usage at the account and workspace level. An
+    account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 9 — Daily usage split into environment buckets
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    workspace_id,
+    usage_date,
+    SUM(CASE WHEN custom_tags['Env'] = 'prod' THEN usage_quantity ELSE 0 END) AS prod_usage,
+    SUM(CASE WHEN custom_tags['Env'] = 'dev' THEN usage_quantity ELSE 0 END) AS dev_usage,
+    SUM(CASE WHEN custom_tags['Env'] = 'staging' THEN usage_quantity ELSE 0 END) AS staging_usage,
+    SUM(CASE WHEN custom_tags['Env'] IS NULL THEN usage_quantity ELSE 0 END) AS unlabeled_usage
+FROM system.billing.usage
+WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 7)
+GROUP BY workspace_id, usage_date
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | prod_usage | dev_usage | staging_usage | unlabeled_usage
+-- -------------|-------------|------------|-----------|---------------|----------------
+-- 123456789    | 2024-07-01  | 812.4      | 155.0     | 48.2          | 12.0
+-- 123456789    | 2024-07-02  | 845.7      | 162.6     | 39.5          | 0.0
+-- 987654321    | 2024-07-01  | 214.3      | 91.8      | 0.0           | 7.1
+```
+
+!!! tip "Same pattern, production cost buckets"
+
+    The same `SUM(CASE WHEN ... THEN usage_quantity ELSE 0 END)` shape works for any
+    real cost-allocation dimension in `system.billing.usage`: `Env`, `Tenant`,
+    `Team`, `CostCenter`, or even `sku_name` families. Only the bucket conditions
+    change; the conditional aggregation pattern stays identical.
+
+______________________________________________________________________
+
 ## :material-lightbulb-outline: When to Use
 
 | Scenario                                                            | Pattern                                                                                                |

@@ -708,6 +708,78 @@ the timestamp as the diagnostic signature of this anti-pattern.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample data
+    setup needed) that records real user actions over time. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 11 — Audit-log sessionization with a 30-minute inactivity gap (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH ordered AS (
+    SELECT
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        event_time,
+        service_name,
+        action_name,
+        LAG(event_time) OVER (
+            PARTITION BY COALESCE(user_identity.email, 'unknown')
+            ORDER BY event_time
+        ) AS prev_time
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 1)
+      AND user_identity.email IS NOT NULL
+),
+flagged AS (
+    SELECT *,
+        CASE
+            WHEN prev_time IS NULL OR BIGINT(event_time) - BIGINT(prev_time) > 1800
+                THEN 1 ELSE 0
+        END AS new_session
+    FROM ordered
+),
+sessioned AS (
+    SELECT *,
+        SUM(new_session) OVER (
+            PARTITION BY user_email
+            ORDER BY event_time
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS session_num
+    FROM flagged
+)
+SELECT
+    user_email,
+    session_num,
+    MIN(event_time) AS session_start,
+    MAX(event_time) AS session_end,
+    COUNT(*) AS events_in_session,
+    ROUND((BIGINT(MAX(event_time)) - BIGINT(MIN(event_time))) / 60.0, 1) AS session_minutes
+FROM sessioned
+GROUP BY user_email, session_num
+ORDER BY user_email, session_start
+LIMIT 50;
+-- Result (illustrative):
+-- user_email         | session_num | session_start        | session_end          | events_in_session | session_minutes
+-- -------------------|-------------|----------------------|----------------------|-------------------|----------------
+-- analyst@dataco.io  | 1           | 2024-07-02 09:00:31  | 2024-07-02 09:24:10  | 8                 | 23.6
+-- analyst@dataco.io  | 2           | 2024-07-02 14:02:05  | 2024-07-02 14:11:47  | 3                 | 9.7
+-- ops@dataco.io      | 1           | 2024-07-02 10:01:02  | 2024-07-02 10:33:40  | 5                 | 32.6
+```
+
+!!! tip
+
+    Real audit logs sessionize the same way as clickstream events: order by user and
+    timestamp, flag inactivity gaps, then run a cumulative `SUM` to assign session
+    IDs. Once sessionized, the resulting table supports session-level funnels, depth,
+    and duration metrics without any synthetic setup.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                             | Pattern                                     |

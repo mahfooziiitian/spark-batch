@@ -102,6 +102,53 @@ Cast and validate string columns that contain numeric values.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table with real numeric
+    measures such as `usage_quantity`. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will
+    return rows.
+
+### Rounding, casting, and ratio guards on billed usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH sku_totals AS (
+    SELECT
+        sku_name,
+        SUM(usage_quantity) AS total_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY sku_name
+),
+account_total AS (
+    SELECT SUM(total_quantity) AS all_quantity
+    FROM sku_totals
+)
+SELECT
+    sku_name,
+    CAST(ROUND(total_quantity, 2) AS DECIMAL(18, 2)) AS rounded_quantity,
+    MOD(CAST(ROUND(total_quantity, 0) AS BIGINT), 10) AS bucket_mod_10,
+    ROUND(total_quantity * 100.0 / NULLIF(all_quantity, 0), 2) AS pct_of_account
+FROM sku_totals
+CROSS JOIN account_total
+ORDER BY rounded_quantity DESC;
+-- Result (illustrative):
+-- sku_name                  | rounded_quantity | bucket_mod_10 | pct_of_account
+-- --------------------------|------------------|---------------|---------------
+-- PREMIUM_JOBS_COMPUTE      | 18492.75         | 3             | 52.18
+-- SERVERLESS_SQL            | 6150.20          | 0             | 17.35
+```
+
+!!! tip "Numeric hygiene matters more in production"
+
+    Real billing data makes rounding, casting, and divide-by-zero guards more than an
+    academic exercise. The same numeric functions keep operational and finance-facing
+    reports stable when volumes change over time.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                     | Recommended Approach     |

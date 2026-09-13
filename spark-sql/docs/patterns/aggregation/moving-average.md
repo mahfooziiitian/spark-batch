@@ -633,6 +633,56 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog table (no sample data setup
+    needed) that records real usage across workspaces, SKUs, and custom tags. An
+    account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 11 — 7-day moving average of daily usage by tenant tag
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        COALESCE(custom_tags['Tenant'], 'unassigned') AS tenant,
+        usage_date,
+        SUM(usage_quantity) AS daily_usage
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY COALESCE(custom_tags['Tenant'], 'unassigned'), usage_date
+)
+SELECT
+    tenant,
+    usage_date,
+    daily_usage,
+    ROUND(AVG(daily_usage) OVER (
+        PARTITION BY tenant
+        ORDER BY usage_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ), 2) AS moving_avg_7d
+FROM daily_usage
+ORDER BY tenant, usage_date;
+-- Result (illustrative):
+-- tenant   | usage_date  | daily_usage | moving_avg_7d
+-- ---------|-------------|-------------|--------------
+-- acme-co  | 2024-07-01  | 118.4       | 118.40
+-- acme-co  | 2024-07-02  | 126.8       | 122.60
+-- acme-co  | 2024-07-07  | 132.5       | 124.91
+-- globex   | 2024-07-07  | 84.1        | 81.37
+```
+
+!!! tip "Rolling averages translate directly to observability"
+
+    This is the same 7-row moving-average frame used on stock prices or sales — only
+    the source changes. On production system tables it smooths noisy day-to-day usage
+    swings so you can spot sustained tenant, workspace, or SKU growth instead of
+    reacting to one-off spikes.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                       | Pattern                                                             |

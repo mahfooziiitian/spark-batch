@@ -18,16 +18,16 @@ FROM
     (
         1,
         ARRAY(
-            STRUCT('laptop' AS item, 999.99 AS price),
-            STRUCT('mouse' AS item, 29.99 AS price)
+            STRUCT('laptop' as item, 999.99 as price),
+            STRUCT('mouse' as item, 29.99 as price)
         )
     ),
-    (2, ARRAY(STRUCT('keyboard' AS item, 79.99 AS price))),
+    (2, ARRAY(STRUCT('keyboard' as item, 79.99 as price))),
     (
         3,
         ARRAY(
-            STRUCT('monitor' AS item, 349.99 AS price),
-            STRUCT('cable' AS item, 9.99 AS price)
+            STRUCT('monitor' as item, 349.99 as price),
+            STRUCT('cable' as item, 9.99 as price)
         )
     )
         AS products (order_id, line_items);
@@ -204,7 +204,7 @@ SELECT
     item_row.item,
     item_row.price
 FROM products
-    LATERAL VIEW EXPLODE(line_items) AS item_row;
+    LATERAL VIEW EXPLODE(line_items) as item_row;
 
 -- Total order value (sum prices across struct array)
 SELECT

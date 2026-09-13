@@ -5,6 +5,16 @@ category counts, and composite activity scores for model training.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Toggle the derived lines to compare the raw signal with its 3-period rolling average and rolling maximum. Hover a point to see how each feature transforms the same observation.
+
+<div id="viz-feature-engineering" class="ts-viz"></div>
+
+*Purple = raw metric. Amber = rolling average. Teal = rolling max feature.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Feature Pipeline
 
 ```mermaid
@@ -212,6 +222,62 @@ ______________________________________________________________________
 | Customer segmentation | Composite scores, RFM features             |
 | Fraud detection       | Velocity features, amount anomalies        |
 | Demand forecasting    | Rolling avg, seasonal lags                 |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no
+    sample data setup needed) that stores timestamped workspace activity.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.access`, and `SELECT` on `system.access.audit` before these
+    queries will return rows.
+
+### ML-ready time features from audit activity
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH hourly_events AS (
+    SELECT
+        service_name,
+        DATE_TRUNC('hour', event_time) AS hour_bucket,
+        COUNT(*) AS event_count
+    FROM system.access.audit
+    WHERE event_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+    GROUP BY service_name, DATE_TRUNC('hour', event_time)
+)
+SELECT
+    service_name,
+    hour_bucket,
+    event_count,
+    HOUR(hour_bucket) AS hour_of_day,
+    DAYOFWEEK(hour_bucket) AS day_of_week,
+    LAG(event_count, 1) OVER w AS lag_1_hour,
+    LAG(event_count, 24) OVER w AS lag_24_hours,
+    ROUND(AVG(event_count) OVER (
+        PARTITION BY service_name
+        ORDER BY hour_bucket
+        ROWS BETWEEN 23 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_avg_24h,
+    event_count - LAG(event_count, 24) OVER w AS diff_24h
+FROM hourly_events
+WINDOW w AS (PARTITION BY service_name ORDER BY hour_bucket)
+ORDER BY service_name, hour_bucket;
+-- Result (illustrative):
+-- service_name | hour_bucket         | event_count | hour_of_day | day_of_week | lag_1_hour | lag_24_hours | rolling_avg_24h | diff_24h
+-- ------------ | ------------------- | ----------- | ----------- | ----------- | ---------- | ------------ | --------------- | --------
+-- clusters     | 2024-07-02 09:00:00 | 128         | 9           | 3           | 117        | 102          | 111.46          | 26
+-- notebooks    | 2024-07-02 09:00:00 | 942         | 9           | 3           | 901        | 810          | 854.75          | 132
+```
+
+!!! tip "Operational logs make strong time-series features"
+
+    Hour-of-day, day-of-week, lag, and rolling statistics are often more
+    informative on real audit streams than on synthetic examples. The same
+    feature matrix shape can feed anomaly detection, forecasting, or usage
+    classification models.
 
 ______________________________________________________________________
 

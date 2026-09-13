@@ -93,7 +93,7 @@ docstring-code-format = true
 # ─── SQLFluff ─────────────────────────────────────────────────────────────────
 
 [tool.sqlfluff.core]
-dialect = "sparksql"
+dialect = "databricks"
 templater = "jinja"
 sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
 max_line_length = 120
@@ -140,7 +140,12 @@ markers = [
     "unit: isolated unit tests",
     "spark: requires a SparkSession",
 ]
-filterwarnings = ["ignore::DeprecationWarning:pyspark.*"]
+filterwarnings = [
+    "ignore::DeprecationWarning:pyspark.*",
+    # requests' hardcoded urllib3/charset_normalizer compat table lags behind
+    # actually-compatible releases; harmless noise, not a real dependency issue.
+    "ignore::requests.exceptions.RequestsDependencyWarning",
+]
 
 # ─── Coverage ─────────────────────────────────────────────────────────────────
 
@@ -244,6 +249,13 @@ package = true
 # mounts even though both live on the same underlying filesystem, so
 # hardlinking silently fails; copy instead to avoid the warning/perf hit.
 link-mode = "copy"
+# chardet is a transitive dep (diff-cover, sqlfluff) with no compatible upper
+# bound declared upstream. requests' hardcoded compat check only accepts
+# chardet < 6.0.0 (see requests/__init__.py::check_compatibility); newer
+# chardet trips a spurious RequestsDependencyWarning even though
+# charset-normalizer alone already satisfies requests' character-detection
+# needs. Cap it so the resolved version stays within requests' known-good range.
+constraint-dependencies = ["chardet<6.0.0"]
 
 [build-system]
 requires = ["hatchling"]

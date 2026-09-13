@@ -1,6 +1,7 @@
 """Project configuration — environment setup, paths, and SparkSession factory.
 
 This module centralizes common boilerplate used across all examples:
+- .env file loading (python-dotenv) for local environment overrides
 - Java environment configuration
 - DATA_HOME path resolution
 - SparkSession creation with sensible defaults (Hive support for table demos)
@@ -8,12 +9,14 @@ This module centralizes common boilerplate used across all examples:
 """
 
 import os
+import shutil
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pyspark.sql import SparkSession
 
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 logger = get_logger("config")
 
@@ -28,22 +31,80 @@ def _find_project_root() -> Path:
     return Path.cwd()
 
 
-# Resolve project root and data home once at import time
+# Resolve project root and load its .env file (if present) once at import time,
+# before any environment-derived constants (DATA_HOME, etc.) are read. Existing
+# process environment variables always take precedence over .env values.
 PROJECT_ROOT: Path = _find_project_root()
+_dotenv_path = PROJECT_ROOT / ".env"
+if _dotenv_path.exists():
+    load_dotenv(dotenv_path=_dotenv_path)
+    logger.debug("Loaded environment overrides from %s", _dotenv_path)
+
 DATA_HOME: str = os.environ.get("DATA_HOME", str(PROJECT_ROOT / "data"))
+
+
+def _is_valid_java_home(path: str) -> bool:
+    """Check whether ``path`` looks like a real JDK/JRE home (has bin/java)."""
+    return bool(path) and (Path(path) / "bin" / "java").exists()
+
+
+def _resolve_java_home() -> tuple[str, str]:
+    """Resolve JAVA_HOME using a priority order, validating each candidate.
+
+    Priority:
+        1. An explicit ``JAVA_HOME`` already in the environment (e.g. set via
+           ``.env`` or the shell) — never silently overridden.
+        2. ``JAVA_HOME_17`` — common on machines managing multiple JDKs via
+           SDKMAN/jenv, and matches this project's targeted Java 11 LTS baseline.
+        3. Auto-detected by resolving ``java`` on PATH back to its home directory.
+
+    Returns:
+        A ``(path, source)`` tuple. ``path`` is ``""`` if nothing could be
+        resolved; ``source`` describes where the value came from (for logging).
+    """
+    candidates = [
+        (os.environ.get("JAVA_HOME", ""), "JAVA_HOME"),
+        (os.environ.get("JAVA_HOME_17", ""), "JAVA_HOME_17"),
+    ]
+    java_bin = shutil.which("java")
+    if java_bin:
+        candidates.append((str(Path(java_bin).resolve().parent.parent), "PATH (java binary)"))
+
+    for path, source in candidates:
+        if _is_valid_java_home(path):
+            return path, source
+
+    # Nothing validated — fall back to the first non-empty candidate (if any)
+    # so downstream tools at least see the user's original intent in errors.
+    for path, source in candidates:
+        if path:
+            return path, source
+    return "", "unresolved"
 
 
 def configure_env() -> None:
     """Set up Java and Python environment variables for PySpark.
 
-    Sets JAVA_HOME to JAVA_HOME_17 (if present) and PYSPARK_PYTHON to the
-    current interpreter. Safe to call multiple times.
+    Resolves ``JAVA_HOME`` via :func:`_resolve_java_home` (explicit
+    ``JAVA_HOME`` > ``JAVA_HOME_17`` > auto-detected from ``java`` on PATH),
+    validating that the resolved directory contains a ``bin/java``
+    executable. Logs a warning (without raising) when no valid JDK can be
+    found, since Spark may still locate a JVM on its own. Also sets
+    ``PYSPARK_PYTHON`` to the current interpreter. Safe to call multiple times.
     """
-    if "JAVA_HOME_17" in os.environ:
-        os.environ["JAVA_HOME"] = os.environ["JAVA_HOME_17"]
-        logger.debug("JAVA_HOME set to JAVA_HOME_17: %s", os.environ["JAVA_HOME"])
+    resolved, source = _resolve_java_home()
+    if resolved and _is_valid_java_home(resolved):
+        os.environ["JAVA_HOME"] = resolved
+        logger.debug("JAVA_HOME set to %s (source=%s)", resolved, source)
+    elif resolved:
+        os.environ["JAVA_HOME"] = resolved
+        logger.warning(
+            "JAVA_HOME=%s (source=%s) has no bin/java executable; PySpark may fail to start.", resolved, source
+        )
     else:
-        logger.debug("JAVA_HOME_17 not found; using existing JAVA_HOME=%s", os.environ.get("JAVA_HOME", "<unset>"))
+        logger.warning(
+            "Could not resolve JAVA_HOME (checked JAVA_HOME, JAVA_HOME_17, and PATH); PySpark may fail to start."
+        )
     os.environ["PYSPARK_PYTHON"] = sys.executable
 
 
@@ -58,7 +119,9 @@ def get_spark(
 
     Calls configure_env() automatically before creating the session. Hive
     support is enabled by default so that examples can create managed tables
-    (`saveAsTable`) backed by a local `spark-warehouse/` directory.
+    (`saveAsTable`) backed by a local `spark-warehouse/` directory, with the
+    Derby `metastore_db/` also placed under `DATA_HOME` (instead of the
+    process's current working directory).
 
     Args:
         app_name: Application name for Spark UI.
@@ -83,7 +146,12 @@ def get_spark(
         .config("spark.sql.warehouse.dir", str(Path(DATA_HOME) / "spark-warehouse"))
     )
     if enable_hive_support:
-        builder = builder.enableHiveSupport()
+        metastore_db_path = Path(DATA_HOME) / "metastore_db"
+        builder = builder.enableHiveSupport().config(
+            "spark.hadoop.javax.jdo.option.ConnectionURL",
+            f"jdbc:derby:;databaseName={metastore_db_path};create=true",
+        )
+        logger.debug("Hive metastore_db path: %s", metastore_db_path)
     if configs:
         for key, value in configs.items():
             builder = builder.config(key, value)

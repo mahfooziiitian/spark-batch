@@ -123,7 +123,7 @@ SELECT
     product_name,
     category
 FROM all_products
-UNION
+UNION DISTINCT
 SELECT
     product_id,
     product_name,

@@ -15,7 +15,7 @@ SELECT
     product,
     qty
 FROM orders
-    LATERAL VIEW INLINE(items) AS product, qty;
+    LATERAL VIEW INLINE(items) as product, qty;
 
 -- 2. inline_outer() – Keep NULL if array is empty
 
@@ -32,4 +32,4 @@ SELECT
     product,
     qty
 FROM orders_null
-    LATERAL VIEW INLINE_OUTER(items) AS product, qty;
+    LATERAL VIEW INLINE_OUTER(items) as product, qty;

@@ -16,11 +16,11 @@
 DROP TABLE IF EXISTS events;
 
 CREATE TABLE events (
-    event_id    BIGINT,
+    event_id BIGINT,
     customer_id INT,
-    event_type  STRING,
-    event_date  DATE,
-    payload     STRING
+    event_type STRING,
+    event_date DATE,
+    payload STRING
 ) USING DELTA
 PARTITIONED BY (event_date);
 
@@ -54,7 +54,10 @@ OPTIMIZE events
 ZORDER BY (customer_id);
 
 -- A query filtering on customer_id can now skip files that don't contain it:
-SELECT event_id, event_type, payload
+SELECT
+    event_id,
+    event_type,
+    payload
 FROM events
 WHERE customer_id = 101
 ORDER BY event_id;
@@ -78,8 +81,11 @@ ZORDER BY (customer_id);
 --    numFiles drops after OPTIMIZE compacts small files into fewer, larger ones.
 ---------------------------------------------------------------------------------------------------
 
-SELECT numFiles, sizeInBytes, partitionColumns
-FROM (DESCRIBE DETAIL events);
+SELECT
+    numFiles, -- noqa: CP02
+    sizeInBytes, -- noqa: CP02
+    partitionColumns -- noqa: CP02
+FROM (DESCRIBE DETAIL events); -- noqa: PRS
 
 ---------------------------------------------------------------------------------------------------
 -- 5. VACUUM: physically delete files no longer referenced by the current table version

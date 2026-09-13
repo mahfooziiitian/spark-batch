@@ -5,6 +5,16 @@ and cache hit ratio** — quantify how well resources convert cost into useful w
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover each point to compare utilization and spend, then contrast teal resources with red outliers that sit below the efficiency frontier.
+
+<div id="viz-efficiency" class="ts-viz"></div>
+
+*Utilization rises left-to-right while cost rises bottom-to-top. The dashed frontier marks a better cost-to-utilization trade-off than the red inefficient points.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Efficiency Framework
 
 ```mermaid
@@ -153,6 +163,71 @@ ______________________________________________________________________
 | Cost optimisation      | Cost per query + idle time ratio       |
 | Performance tuning     | Cache hit ratio + query duration       |
 | Executive reporting    | Efficiency scorecard across warehouses |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.compute.node_timeline` and `system.billing.usage` are built-in
+    Unity Catalog system tables (no sample data setup needed) that expose
+    real utilization and billable usage. An account admin must grant
+    `USE CATALOG` on `system`, `USE SCHEMA` on `system.compute` and
+    `system.billing`, and `SELECT` on both tables before these queries will
+    return rows.
+
+### CPU efficiency per billed usage unit
+
+```sql
+-- [Databricks] Requires SELECT on system.compute.node_timeline and system.billing.usage
+WITH daily_util AS (
+    SELECT
+        cluster_id,
+        DATE(start_time) AS metric_date,
+        ROUND(AVG(cpu_user_percent + cpu_system_percent), 1) AS avg_cpu_pct,
+        ROUND(AVG(mem_used_percent), 1) AS avg_mem_pct
+    FROM system.compute.node_timeline
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+    GROUP BY cluster_id, DATE(start_time)
+),
+daily_usage AS (
+    SELECT
+        usage_metadata.cluster_id AS cluster_id,
+        usage_date AS metric_date,
+        ROUND(SUM(usage_quantity), 2) AS daily_usage_quantity,
+        MIN(usage_unit) AS usage_unit
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 14)
+      AND usage_metadata.cluster_id IS NOT NULL
+    GROUP BY usage_metadata.cluster_id, usage_date
+)
+SELECT
+    u.cluster_id,
+    u.metric_date,
+    u.avg_cpu_pct,
+    u.avg_mem_pct,
+    b.daily_usage_quantity,
+    b.usage_unit,
+    ROUND(u.avg_cpu_pct / NULLIF(b.daily_usage_quantity, 0), 2) AS cpu_pct_per_usage_unit,
+    ROUND(u.avg_mem_pct / NULLIF(b.daily_usage_quantity, 0), 2) AS mem_pct_per_usage_unit
+FROM daily_util AS u
+JOIN daily_usage AS b
+    ON u.cluster_id = b.cluster_id
+    AND u.metric_date = b.metric_date
+ORDER BY cpu_pct_per_usage_unit DESC, u.metric_date DESC;
+-- Result (illustrative):
+-- cluster_id        | metric_date | avg_cpu_pct | avg_mem_pct | daily_usage_quantity | usage_unit | cpu_pct_per_usage_unit | mem_pct_per_usage_unit
+-- ----------------- | ----------- | ----------- | ----------- | -------------------- | ---------- | ---------------------- | ----------------------
+-- 0315-1015-abcd123 | 2024-07-02  | 74.2        | 66.8        | 18.40                | DBU        | 4.03                   | 3.63
+-- 0315-2045-efgh456 | 2024-07-02  | 29.5        | 34.2        | 16.90                | DBU        | 1.75                   | 2.02
+```
+
+!!! tip "Efficiency is still output divided by input"
+
+    The metric changes from toy throughput counts to real billed usage, but
+    the same ratio-based logic holds: join a useful-work signal to a cost or
+    capacity input, then compare resources on a common efficiency scale.
 
 ______________________________________________________________________
 

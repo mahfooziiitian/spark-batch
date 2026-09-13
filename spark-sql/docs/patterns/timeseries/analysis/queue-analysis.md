@@ -5,6 +5,16 @@ monitoring, bottleneck identification, and capacity planning.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover each segment to compare queue wait time with active processing time for the same request.
+
+<div id="viz-queue" class="ts-viz"></div>
+
+*Each bar is total time in system: amber for waiting, teal for processing.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Analysis Flow
 
 ```mermaid
@@ -312,6 +322,53 @@ ______________________________________________________________________
 | Partition by `queue_type` and date           | Enables parallel computation per queue              |
 | Use `PERCENTILE_APPROX` for P95/P99          | Faster than exact percentile on large datasets      |
 | Filter to recent time window                 | Queue tables grow quickly; always bound temporally  |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.query.history` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real queueing delays for
+    Databricks SQL warehouses. An account admin must grant `USE CATALOG` on
+    `system`, `USE SCHEMA` on `system.query`, and `SELECT` on
+    `system.query.history` before these queries will return rows.
+
+### Queue wait by warehouse and hour
+
+```sql
+-- [Databricks] Requires SELECT on system.query.history
+SELECT
+    compute.warehouse_id AS warehouse_id,
+    DATE_TRUNC('hour', start_time) AS hour_bucket,
+    COUNT(*) AS query_count,
+    ROUND(AVG(waiting_for_compute_duration_ms), 1) AS avg_compute_wait_ms,
+    ROUND(PERCENTILE_APPROX(waiting_at_capacity_duration_ms, 0.95), 1) AS p95_capacity_wait_ms,
+    ROUND(
+        AVG(waiting_for_compute_duration_ms + waiting_at_capacity_duration_ms),
+        1
+    ) AS avg_total_queue_wait_ms
+FROM system.query.history
+WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+  AND compute.warehouse_id IS NOT NULL
+GROUP BY compute.warehouse_id, DATE_TRUNC('hour', start_time)
+HAVING MAX(
+    waiting_for_compute_duration_ms + waiting_at_capacity_duration_ms
+) > 0
+ORDER BY avg_total_queue_wait_ms DESC, hour_bucket DESC;
+-- Result (illustrative):
+-- warehouse_id | hour_bucket          | query_count | avg_compute_wait_ms | p95_capacity_wait_ms | avg_total_queue_wait_ms
+-- ------------ | -------------------- | ----------- | ------------------- | -------------------- | -----------------------
+-- 6f91a...     | 2024-07-02 10:00:00  | 143         | 220.5               | 1880.0               | 514.2
+-- 8b22c...     | 2024-07-02 14:00:00  | 57          | 18.0                | 95.0                 | 31.6
+```
+
+!!! tip "Queue metrics are just time-series aggregates"
+
+    Once queue wait is exposed as a numeric measure over time, the same
+    aggregation, percentile, and trend patterns apply as they do for any
+    other operational latency series.
 
 ______________________________________________________________________
 

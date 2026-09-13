@@ -5,6 +5,16 @@ characteristics, duration patterns, and resource consumption for capacity planni
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Click a legend entry to highlight a single workload class, or click it again to restore the full mix.
+
+<div id="viz-workload-classification" class="ts-viz"></div>
+
+*Each point represents a query plotted by duration and frequency, colored by its classified workload type.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Classification Flow
 
 ```mermaid
@@ -122,6 +132,65 @@ ______________________________________________________________________
 | Cost allocation  | Charge teams by workload type cost             |
 | Scheduling       | Separate ETL from interactive windows          |
 | Performance SLA  | Different latency targets per type             |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.query.history` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real statement types, durations,
+    and queueing signals. An account admin must grant `USE CATALOG` on
+    `system`, `USE SCHEMA` on `system.query`, and `SELECT` on
+    `system.query.history` before these queries will return rows.
+
+### Classifying real query workloads by type and wait profile
+
+```sql
+-- [Databricks] Requires SELECT on system.query.history
+WITH classified AS (
+    SELECT
+        DATE(start_time) AS query_date,
+        compute.warehouse_id AS warehouse_id,
+        statement_type,
+        total_duration_ms,
+        waiting_at_capacity_duration_ms,
+        CASE
+            WHEN statement_type IN ('COPY INTO', 'MERGE', 'INSERT', 'UPDATE', 'DELETE')
+                THEN 'ingestion_or_dml'
+            WHEN statement_type IN ('CREATE TABLE AS SELECT', 'OPTIMIZE', 'VACUUM')
+                THEN 'maintenance'
+            WHEN waiting_at_capacity_duration_ms > 10000
+                THEN 'contention_heavy'
+            ELSE 'interactive_analytics'
+        END AS workload_class
+    FROM system.query.history
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+      AND compute.warehouse_id IS NOT NULL
+)
+SELECT
+    query_date,
+    warehouse_id,
+    workload_class,
+    COUNT(*) AS statements,
+    ROUND(AVG(total_duration_ms), 1) AS avg_total_duration_ms
+FROM classified
+GROUP BY query_date, warehouse_id, workload_class
+ORDER BY query_date DESC, warehouse_id, statements DESC;
+-- Result (illustrative):
+-- query_date  | warehouse_id | workload_class       | statements | avg_total_duration_ms
+-- ----------- | ------------ | -------------------- | ---------- | ---------------------
+-- 2024-07-02  | 6f91a...     | interactive_analytics| 612        | 1820.4
+-- 2024-07-02  | 6f91a...     | ingestion_or_dml     | 73         | 9315.8
+-- 2024-07-02  | 8b22c...     | contention_heavy     | 18         | 12044.6
+```
+
+!!! tip "Production classification is usually a CASE over telemetry"
+
+    The synthetic pattern carries over directly: derive a class with `CASE`,
+    then aggregate counts and averages by period. Real system tables simply
+    give you richer dimensions such as statement type and queue time.
 
 ______________________________________________________________________
 

@@ -299,6 +299,136 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no synthetic
+    sample data is required. Because Unity Catalog does not have a literal customer
+    table, this example explicitly reframes each `workspace_id` (or `custom_tags['Tenant']`
+    in shared workspaces) as the "customer", each `sku_name` usage day as a touchpoint,
+    and total monthly `usage_quantity` as the conversion value. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. This is an illustrative adaptation of
+    attribution modeling, not a finance-grade cost allocation model.
+
+### First-touch attribution for workspace usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_sku_days AS (
+    SELECT
+        workspace_id,
+        sku_name,
+        usage_date,
+        SUM(usage_quantity) AS daily_dbu
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND usage_unit = 'DBU'
+    GROUP BY workspace_id, sku_name, usage_date
+),
+workspace_totals AS (
+    SELECT
+        workspace_id,
+        ROUND(SUM(daily_dbu), 2) AS total_workspace_dbu,
+        MAX(usage_date) AS conversion_date
+    FROM workspace_sku_days
+    GROUP BY workspace_id
+),
+first_touch AS (
+    SELECT
+        d.workspace_id,
+        d.sku_name,
+        ROW_NUMBER() OVER (
+            PARTITION BY d.workspace_id
+            ORDER BY d.usage_date ASC, d.sku_name
+        ) AS touch_rank
+    FROM workspace_sku_days d
+    JOIN workspace_totals t
+        ON d.workspace_id = t.workspace_id
+    WHERE d.usage_date <= t.conversion_date
+)
+SELECT
+    ft.sku_name,
+    COUNT(*) AS workspaces,
+    ROUND(SUM(t.total_workspace_dbu), 2) AS attributed_dbu
+FROM first_touch ft
+JOIN workspace_totals t
+    ON ft.workspace_id = t.workspace_id
+WHERE ft.touch_rank = 1
+GROUP BY ft.sku_name
+ORDER BY attributed_dbu DESC;
+-- Result (illustrative):
+-- sku_name              | workspaces | attributed_dbu
+-- ----------------------|------------|---------------
+-- ALL_PURPOSE_COMPUTE   | 14         | 9280.40
+-- SERVERLESS_SQL        | 9          | 5175.20
+-- PREMIUM_JOBS_COMPUTE  | 6          | 3011.75
+```
+
+### Last-touch attribution for workspace usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_sku_days AS (
+    SELECT
+        workspace_id,
+        sku_name,
+        usage_date,
+        SUM(usage_quantity) AS daily_dbu
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND usage_unit = 'DBU'
+    GROUP BY workspace_id, sku_name, usage_date
+),
+workspace_totals AS (
+    SELECT
+        workspace_id,
+        ROUND(SUM(daily_dbu), 2) AS total_workspace_dbu,
+        MAX(usage_date) AS conversion_date
+    FROM workspace_sku_days
+    GROUP BY workspace_id
+),
+last_touch AS (
+    SELECT
+        d.workspace_id,
+        d.sku_name,
+        ROW_NUMBER() OVER (
+            PARTITION BY d.workspace_id
+            ORDER BY d.usage_date DESC, d.sku_name DESC
+        ) AS touch_rank
+    FROM workspace_sku_days d
+    JOIN workspace_totals t
+        ON d.workspace_id = t.workspace_id
+    WHERE d.usage_date <= t.conversion_date
+)
+SELECT
+    lt.sku_name,
+    COUNT(*) AS workspaces,
+    ROUND(SUM(t.total_workspace_dbu), 2) AS attributed_dbu
+FROM last_touch lt
+JOIN workspace_totals t
+    ON lt.workspace_id = t.workspace_id
+WHERE lt.touch_rank = 1
+GROUP BY lt.sku_name
+ORDER BY attributed_dbu DESC;
+-- Result (illustrative):
+-- sku_name              | workspaces | attributed_dbu
+-- ----------------------|------------|---------------
+-- SERVERLESS_SQL        | 12         | 8840.10
+-- PREMIUM_JOBS_COMPUTE  | 10         | 5488.25
+-- ALL_PURPOSE_COMPUTE   | 7          | 3138.00
+```
+
+!!! tip "Same journey logic, real platform usage"
+
+    The core pattern is the same as marketing attribution: order touchpoints per
+    customer, pick the first or last one with `ROW_NUMBER()`, then roll up the
+    attributed value. On production system tables, that lets you compare which
+    Databricks SKUs tend to introduce workspace usage versus which ones close it.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Funnel Analysis](funnel-analysis.md) — step-by-step conversion measurement

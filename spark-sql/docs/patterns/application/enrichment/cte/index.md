@@ -48,6 +48,61 @@ Chained CTEs and reuse patterns for complex multi-step pipelines.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no synthetic
+    setup is needed. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### Chained CTEs for workspace cost and usage staging
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH recent_usage AS (
+    SELECT
+        workspace_id,
+        sku_name,
+        usage_date,
+        usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+),
+daily_workspace_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_quantity
+    FROM recent_usage
+    GROUP BY workspace_id, usage_date
+),
+workspace_summary AS (
+    SELECT
+        workspace_id,
+        COUNT(*) AS active_days,
+        ROUND(AVG(daily_quantity), 2) AS avg_daily_quantity,
+        ROUND(MAX(daily_quantity), 2) AS peak_daily_quantity
+    FROM daily_workspace_usage
+    GROUP BY workspace_id
+)
+SELECT workspace_id, active_days, avg_daily_quantity, peak_daily_quantity
+FROM workspace_summary
+ORDER BY peak_daily_quantity DESC;
+-- Result (illustrative):
+-- workspace_id | active_days | avg_daily_quantity | peak_daily_quantity
+-- ------------|-------------|--------------------|--------------------
+-- 123456789   | 30          | 184.62             | 392.40
+-- 987654321   | 28          | 96.15              | 205.75
+```
+
+!!! tip "Readable production pipelines"
+
+    Real billing analysis often needs one stage for row filtering, another for daily
+    aggregation, and a final stage for reporting. Chained CTEs keep that production
+    shape readable without changing the underlying pattern.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                            | Recommended Approach            |

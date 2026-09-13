@@ -230,6 +230,51 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog table (no sample data setup
+    needed) that records real usage by workspace, SKU, and day. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows.
+
+### 7 — Distinct SKU list per workspace and day
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_skus AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SORT_ARRAY(COLLECT_SET(sku_name)) AS sku_names
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 7)
+    GROUP BY workspace_id, usage_date
+)
+SELECT
+    workspace_id,
+    usage_date,
+    ARRAY_JOIN(sku_names, ', ') AS sku_list
+FROM daily_skus
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | sku_list
+-- -------------|-------------|-------------------------------------------------------------
+-- 123456789    | 2024-07-01  | PREMIUM_JOBS_COMPUTE, SERVERLESS_SQL, STANDARD_ALL_PURPOSE
+-- 123456789    | 2024-07-02  | PREMIUM_JOBS_COMPUTE, STANDARD_ALL_PURPOSE
+-- 987654321    | 2024-07-01  | SERVERLESS_SQL
+```
+
+!!! tip "Compact summaries for real audit and billing data"
+
+    `COLLECT_SET` + `ARRAY_JOIN` is just as useful on production observability tables
+    as it is on toy tag lists. Swap `sku_name` for `action_name`, `warehouse_id`, or a
+    custom tag and you get compact, human-readable rollups of distinct activity per
+    user, workspace, or day.
+
+______________________________________________________________________
+
 ## :material-lightbulb-outline: When to Use
 
 | Scenario                            | Pattern                        |

@@ -5,6 +5,16 @@ conflicts, lock contention, and resource saturation.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover any job bar to inspect its run window, and scan the red-highlighted overlap zones to spot when concurrency spikes on the shared resource.
+
+<div id="viz-contention" class="ts-viz"></div>
+
+*Each row is a job or query on the same warehouse. Red badges mark windows where two or more executions overlap and compete for capacity.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Detection Flow
 
 ```mermaid
@@ -156,6 +166,65 @@ ______________________________________________________________________
 | ETL scheduling              | Avoid overlapping heavy jobs      |
 | Database lock contention    | Concurrent DML on same tables     |
 | CI/CD runner capacity       | Jobs waiting for runners          |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.compute.node_timeline` is a built-in Unity Catalog system table
+    (no sample data setup needed) that records real node-level CPU and memory
+    telemetry. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.compute`, and `SELECT` on
+    `system.compute.node_timeline` before these queries will return rows.
+
+### Concurrent hot-node contention windows
+
+```sql
+-- [Databricks] Requires SELECT on system.compute.node_timeline
+WITH hot_nodes AS (
+    SELECT
+        cluster_id,
+        DATE_TRUNC('minute', start_time) AS minute_bucket,
+        instance_id,
+        cpu_user_percent + cpu_system_percent AS cpu_pct,
+        mem_used_percent
+    FROM system.compute.node_timeline
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+),
+contention AS (
+    SELECT
+        cluster_id,
+        minute_bucket,
+        COUNT(*) AS observed_nodes,
+        COUNT(*) FILTER (
+            WHERE cpu_pct >= 85 OR mem_used_percent >= 90
+        ) AS saturated_nodes
+    FROM hot_nodes
+    GROUP BY cluster_id, minute_bucket
+)
+SELECT
+    cluster_id,
+    minute_bucket,
+    saturated_nodes,
+    observed_nodes,
+    ROUND(saturated_nodes * 100.0 / NULLIF(observed_nodes, 0), 1) AS saturated_node_pct
+FROM contention
+WHERE saturated_nodes >= 2
+ORDER BY saturated_node_pct DESC, minute_bucket DESC;
+-- Result (illustrative):
+-- cluster_id        | minute_bucket       | saturated_nodes | observed_nodes | saturated_node_pct
+-- ----------------- | ------------------- | --------------- | -------------- | ------------------
+-- 0315-1015-abcd123 | 2024-07-02 14:08:00 | 5               | 6              | 83.3
+-- 0315-2045-efgh456 | 2024-07-02 09:42:00 | 3               | 4              | 75.0
+```
+
+!!! tip "Contention is easier to spot after coarse time bucketing"
+
+    The same concurrency idea from the sample queries applies to real node
+    telemetry once you bucket it to a common time grain. After that, counts,
+    thresholds, and overlap-style reasoning reveal where contention clusters.
 
 ______________________________________________________________________
 

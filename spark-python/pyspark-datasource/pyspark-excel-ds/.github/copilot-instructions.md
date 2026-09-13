@@ -71,7 +71,7 @@ docs/                      # MkDocs Material site (see mkdocs.yml nav for full s
 | `instructions/examples.instructions.md` | `examples/**/*.py` | Example script structure and conventions |
 | `instructions/project-config.instructions.md` | `pyproject.toml` | Package/build/dependency configuration |
 | `instructions/mkdocs.instructions.md` | `mkdocs.yml`, `docs/**/*.md` | Documentation style and structure |
-| `instructions/logging-rich.instructions.md` | `src/pys_excel/_logging.py`, files using it | Rich logging conventions |
+| `instructions/logging-rich.instructions.md` | `../src/pys_excel/logs.py`, files using it | Rich logging conventions |
 
 ## Things to Avoid
 

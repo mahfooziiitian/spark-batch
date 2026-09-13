@@ -620,6 +620,76 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog table (no synthetic sample
+    data setup needed) that records real workspace activity. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 11 — Daily cluster-to-command funnel from audit logs
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH step_times AS (
+    SELECT
+        event_date,
+        user_identity.email AS user_email,
+        MIN(CASE WHEN action_name = 'createCluster' THEN event_time END) AS t_create,
+        MIN(CASE WHEN action_name = 'startCluster' THEN event_time END) AS t_start,
+        MIN(CASE WHEN action_name = 'runCommand' THEN event_time END) AS t_run,
+        MIN(CASE WHEN action_name = 'terminateCluster' THEN event_time END) AS t_terminate
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND user_identity.email IS NOT NULL
+      AND action_name IN (
+          'createCluster',
+          'startCluster',
+          'runCommand',
+          'terminateCluster'
+      )
+    GROUP BY event_date, user_identity.email
+),
+daily_counts AS (
+    SELECT
+        event_date,
+        SUM(CASE WHEN t_create IS NOT NULL THEN 1 ELSE 0 END) AS create_cluster_users,
+        SUM(CASE WHEN t_start IS NOT NULL AND t_start > t_create THEN 1 ELSE 0 END) AS start_cluster_users,
+        SUM(CASE WHEN t_run IS NOT NULL AND t_run > t_start THEN 1 ELSE 0 END) AS run_command_users,
+        SUM(CASE WHEN t_terminate IS NOT NULL AND t_terminate > t_run THEN 1 ELSE 0 END) AS terminate_cluster_users
+    FROM step_times
+    GROUP BY event_date
+)
+SELECT
+    event_date,
+    create_cluster_users,
+    start_cluster_users,
+    run_command_users,
+    terminate_cluster_users,
+    ROUND(start_cluster_users * 100.0 / NULLIF(create_cluster_users, 0), 1) AS create_to_start_pct,
+    ROUND(run_command_users * 100.0 / NULLIF(start_cluster_users, 0), 1) AS start_to_run_pct,
+    ROUND(terminate_cluster_users * 100.0 / NULLIF(run_command_users, 0), 1) AS run_to_terminate_pct,
+    ROUND(terminate_cluster_users * 100.0 / NULLIF(create_cluster_users, 0), 1) AS overall_completion_pct
+FROM daily_counts
+ORDER BY event_date;
+-- Result (illustrative):
+-- event_date | create_cluster_users | start_cluster_users | run_command_users | terminate_cluster_users | create_to_start_pct | start_to_run_pct | run_to_terminate_pct | overall_completion_pct
+-- -----------|----------------------|---------------------|-------------------|-------------------------|---------------------|------------------|----------------------|-----------------------
+-- 2024-07-01 | 84                   | 72                  | 65                | 58                      | 85.7                | 90.3             | 89.2                 | 69.0
+-- 2024-07-02 | 91                   | 80                  | 74                | 61                      | 87.9                | 92.5             | 82.4                 | 67.0
+```
+
+!!! tip "Same funnel, production telemetry"
+
+    This is the same sequential `MIN(event_time)` funnel used above — only the
+    source changes from a synthetic event table to `system.access.audit`. The
+    pattern generalizes directly to real operational telemetry when you need
+    daily conversion and drop-off rates for audited workflows.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                               | Pattern                                                 |

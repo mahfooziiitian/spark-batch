@@ -9,36 +9,36 @@ FROM
         1,
         'Alice',
         STRUCT(
-            'NY' AS city,
-            'USA' AS country,
-            STRUCT('10001' AS zip, 'Manhattan' AS district) AS area
+            'NY' as city,
+            'USA' as country,
+            STRUCT('10001' as zip, 'Manhattan' as district) as area
         )
     ),
     (
         2,
         'Bob',
         STRUCT(
-            'LA' AS city,
-            'USA' AS country,
-            STRUCT('90001' AS zip, 'Downtown' AS district) AS area
+            'LA' as city,
+            'USA' as country,
+            STRUCT('90001' as zip, 'Downtown' as district) as area
         )
     ),
     (
         3,
         'Carol',
         STRUCT(
-            'Toronto' AS city,
-            'Canada' AS country,
-            STRUCT('M5V' AS zip, 'Waterfront' AS district) AS area
+            'Toronto' as city,
+            'Canada' as country,
+            STRUCT('M5V' as zip, 'Waterfront' as district) as area
         )
     ),
     (
         4,
         'Dana',
         STRUCT(
-            'Vancouver' AS city,
-            'Canada' AS country,
-            STRUCT('V6B' AS zip, 'Gastown' AS district) AS area
+            'Vancouver' as city,
+            'Canada' as country,
+            STRUCT('V6B' as zip, 'Gastown' as district) as area
         )
     )
         AS customers (id, name, address);
@@ -50,16 +50,16 @@ FROM
     (
         101,
         ARRAY(
-            STRUCT('laptop' AS item, 999.99 AS price, 1 AS qty),
-            STRUCT('mouse' AS item, 29.99 AS price, 2 AS qty)
+            STRUCT('laptop' as item, 999.99 as price, 1 as qty),
+            STRUCT('mouse' as item, 29.99 as price, 2 as qty)
         )
     ),
-    (102, ARRAY(STRUCT('keyboard' AS item, 79.99 AS price, 1 AS qty))),
+    (102, ARRAY(STRUCT('keyboard' as item, 79.99 as price, 1 as qty))),
     (
         103,
         ARRAY(
-            STRUCT('monitor' AS item, 349.99 AS price, 1 AS qty),
-            STRUCT('cable' AS item, 9.99 AS price, 3 AS qty)
+            STRUCT('monitor' as item, 349.99 as price, 1 as qty),
+            STRUCT('cable' as item, 9.99 as price, 3 as qty)
         )
     )
         AS order_items (order_id, line_items);
@@ -75,7 +75,7 @@ SELECT STRUCT(1, 'hello', TRUE) AS anon_struct;
 SELECT NAMED_STRUCT('id', 42, 'label', 'widget', 'active', TRUE) AS named;
 
 -- STRUCT literal with AS alias inside VALUES (idiomatic Spark SQL)
-SELECT STRUCT('Paris' AS city, 'France' AS country) AS location;
+SELECT STRUCT('Paris' as city, 'France' as country) AS location;
 
 ---
 -- 2. Dot-notation field access
@@ -119,9 +119,9 @@ SELECT
     customers.id,
     customers.name,
     STRUCT(
-        'UNKNOWN' AS city,      -- overwrite city
-        address.country AS country,   -- keep original
-        address.area AS area       -- keep original
+        'UNKNOWN' as city,      -- overwrite city
+        address.country as country,   -- keep original
+        address.area as area       -- keep original
     ) AS address_anonymised
 FROM customers;
 
@@ -146,7 +146,7 @@ SELECT
     price,
     qty
 FROM order_items
-    LATERAL VIEW INLINE(line_items) AS item, price, qty;
+    LATERAL VIEW INLINE(line_items) as item, price, qty;
 
 -- Or using the INLINE table function directly
 SELECT
@@ -161,20 +161,20 @@ FROM order_items, INLINE(order_items.line_items) AS t;
 -- Structs are equal if all fields are equal
 SELECT
     -- Result: true
-    STRUCT('NY' AS city, 'USA' AS country)
-    = STRUCT('NY' AS city, 'USA' AS country) AS same, -- noqa: ST10
+    STRUCT('NY' as city, 'USA' as country)
+    = STRUCT('NY' as city, 'USA' as country) AS same, -- noqa: ST10
     -- Result: false
-    STRUCT('NY' AS city, 'USA' AS country) = STRUCT('LA' AS city, 'USA' AS country) AS different;
+    STRUCT('NY' as city, 'USA' as country) = STRUCT('LA' as city, 'USA' as country) AS different;
 
 -- Find customers sharing the same country struct field value
 SELECT
     a.name AS name_a,
     b.name AS name_b,
-    a.address.country
+    a.address.country -- noqa: RF01
 FROM customers AS a
 INNER JOIN customers AS b
     ON
-        a.address.country = b.address.country
+        a.address.country = b.address.country -- noqa: RF01
         AND a.id < b.id;
 
 ---
@@ -186,9 +186,9 @@ SELECT
     CAST(1 AS BIGINT) AS customer_id,
     CAST('Alice' AS STRING) AS name,
     STRUCT(
-        CAST('123 Main St' AS STRING) AS street,
-        CAST('NY' AS STRING) AS city,
-        CAST('USA' AS STRING) AS country
+        CAST('123 Main St' AS STRING) as street,
+        CAST('NY' AS STRING) as city,
+        CAST('USA' AS STRING) as country
     ) AS address;
 
 -- In a real Delta table the DDL would be:
@@ -209,7 +209,7 @@ SELECT
         line_items,
         x
         -> STRUCT(
-            x.item AS item, ROUND(x.price * 1.1, 2) AS price, x.qty AS qty
+            x.item as item, ROUND(x.price * 1.1, 2) as price, x.qty as qty
         )
     ) AS line_items_adjusted
 FROM order_items;

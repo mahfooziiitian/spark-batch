@@ -674,6 +674,67 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.lakeflow.job_run_timeline` is a built-in Unity Catalog system
+    table (no sample data setup needed) that records real job run periods.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.lakeflow`, and `SELECT` on
+    `system.lakeflow.job_run_timeline` before these queries will return rows.
+
+### Zero-filled daily run coverage for scheduled jobs
+
+```sql
+-- [Databricks] Requires SELECT on system.lakeflow.job_run_timeline
+WITH date_spine AS (
+    SELECT EXPLODE(
+        SEQUENCE(DATE_SUB(CURRENT_DATE(), 14), CURRENT_DATE(), INTERVAL 1 DAY)
+    ) AS run_date
+),
+job_ids AS (
+    SELECT DISTINCT job_id
+    FROM system.lakeflow.job_run_timeline
+    WHERE period_start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+),
+daily_runs AS (
+    SELECT
+        job_id,
+        DATE(period_start_time) AS run_date,
+        COUNT(*) AS run_count
+    FROM system.lakeflow.job_run_timeline
+    WHERE period_start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+    GROUP BY job_id, DATE(period_start_time)
+)
+SELECT
+    d.run_date,
+    j.job_id,
+    COALESCE(r.run_count, 0) AS run_count
+FROM date_spine AS d
+CROSS JOIN job_ids AS j
+LEFT JOIN daily_runs AS r
+    ON d.run_date = r.run_date
+    AND j.job_id = r.job_id
+ORDER BY j.job_id, d.run_date;
+-- Result (illustrative):
+-- run_date   | job_id | run_count
+-- ---------- | ------ | ---------
+-- 2024-07-01 | 4512   | 1
+-- 2024-07-02 | 4512   | 0
+-- 2024-07-03 | 4512   | 1
+-- 2024-07-04 | 4512   | 0
+```
+
+!!! tip "Gap fill is especially useful on operational schedules"
+
+    Scheduled workloads often skip days because of failures, pauses, or
+    upstream dependencies. A date spine plus `LEFT JOIN` makes those missing
+    runs explicit, which is exactly what you need before rolling reliability
+    or forecast calculations.
+
+______________________________________________________________________
+
 ## :material-animation-play: Interactive Demo
 
 > Click the buttons below the chart to switch between fill strategies.

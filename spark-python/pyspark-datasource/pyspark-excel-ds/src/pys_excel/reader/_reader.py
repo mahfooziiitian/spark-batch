@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 if TYPE_CHECKING:
     from pyspark.sql import DataFrame, SparkSession

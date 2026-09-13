@@ -9,10 +9,14 @@ Key concepts:
       (including Databricks Runtime 15.x/16.x with the Maven library attached)
 
 Running locally requires the spark-excel Maven package on the classpath, which
-this example loads via get_spark_with_excel_package(). On Databricks, skip that
-call and instead attach the library (or rely on the runtime's built-in support):
+this example loads via get_spark_with_excel_package(). The Scala build must
+match the running PySpark (2.12 for PySpark 3.x, 2.13 for PySpark 4.x) —
+resolve_spark_excel_package() auto-selects the matching coordinate. On
+Databricks, skip that call and instead attach the library (or rely on the
+runtime's built-in support):
 
-    Cluster libraries -> Maven -> com.crealytics:spark-excel_2.12:3.5.1_0.20.4
+    Cluster libraries -> Maven -> com.crealytics:spark-excel_2.12:3.5.1_0.20.4  (Spark 3.5.x / DBR 13.3-16.x)
+    Cluster libraries -> Maven -> com.crealytics:spark-excel_2.13:3.5.1_0.20.4  (Spark 4.x)
 """
 
 from pys_excel import (
@@ -24,12 +28,12 @@ from pys_excel import (
     print_warning,
     set_log_level,
 )
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 from pys_excel.spark_excel import (
-    SPARK_EXCEL_PACKAGE_SCALA_2_12,
     get_spark_with_excel_package,
     read_spark_excel,
     resolve_excel_format,
+    resolve_spark_excel_package,
     write_spark_excel,
 )
 
@@ -43,7 +47,7 @@ if __name__ == "__main__":
     print_success(f"Resolved format: {fmt}")
 
     print_header("2. Load a local SparkSession with the spark-excel package")
-    print_path("Maven coordinate", SPARK_EXCEL_PACKAGE_SCALA_2_12)
+    print_path("Maven coordinate", resolve_spark_excel_package())
     try:
         spark = get_spark_with_excel_package()
     except Exception as exc:

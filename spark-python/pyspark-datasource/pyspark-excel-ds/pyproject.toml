@@ -9,18 +9,19 @@ description = "PySpark Excel Datasource — reusable library and examples for re
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pyspark>=3.5.0,<4.0.0",
+    "pyspark>=4.0.0",
     "pandas<3.0.0",
     "openpyxl>=3.1.0",
     "xlsxwriter>=3.2.0",
     "rich>=15.0.0",
+    "python-dotenv>=1.2.3",
 ]
 
 [project.optional-dependencies]
 # Optional: enables MERGE INTO upsert support (pys_excel.table.upsert_table_from_excel)
 # and Delta-backed managed tables. Requires network access to resolve the matching
 # io.delta:delta-spark Maven package the first time a Delta SparkSession is created.
-delta = ["delta-spark>=3.2.0,<4.0.0"]
+delta = ["delta-spark>=4.0.0"]
 
 [dependency-groups]
 dev = [
@@ -32,6 +33,7 @@ dev = [
     "mypy>=2.3.0",
     "bandit>=1.9.4",
     "pymarkdownlnt>=0.9.39",
+    "pyarrow>=25.0.1",
 ]
 
 [tool.pytest.ini_options]
@@ -39,6 +41,12 @@ minversion = "8.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
 pythonpath = ["src"]
+filterwarnings = [
+    # Known third-party deprecations raised inside PySpark's own internals
+    # (not our code) — safe to silence until PySpark drops the usage.
+    "ignore:The distutils package is deprecated.*:DeprecationWarning:pyspark.sql.pandas.utils",
+    "ignore:is_datetime64tz_dtype is deprecated.*:DeprecationWarning:pyspark.sql.pandas.conversion",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pys_excel"]

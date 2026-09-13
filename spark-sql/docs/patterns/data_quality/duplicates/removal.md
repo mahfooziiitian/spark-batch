@@ -524,6 +524,84 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` itself should already be unique by `record_id`, but a
+    raw landing table copied from it can still accumulate accidental duplicates when
+    the same files or API pages are ingested twice. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before you can validate the staging copy against the source system table.
+
+### 9 — Keep one landed row per `record_id` with `ROW_NUMBER()`
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH ranked AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY record_id
+            ORDER BY ingested_at DESC
+        ) AS rn
+    FROM finance.staging.billing_usage_raw
+)
+SELECT
+    record_id,
+    workspace_id,
+    sku_name,
+    usage_date,
+    usage_quantity,
+    ingested_at
+FROM ranked
+WHERE rn = 1
+ORDER BY usage_date DESC, workspace_id, record_id;
+-- Result (illustrative):
+-- record_id                       | workspace_id | sku_name              | usage_date  | usage_quantity | ingested_at
+-- --------------------------------|--------------|-----------------------|-------------|----------------|---------------------
+-- 01f2c8de-4f7d-4b14-8e53-3b6d... | 123456789    | PREMIUM_JOBS_COMPUTE  | 2024-07-18  | 14.5           | 2024-07-19 00:17:42
+-- 9237aa45-40b0-4ef2-9e9e-8ef1... | 987654321    | SERVERLESS_SQL        | 2024-07-18  |  8.0           | 2024-07-19 00:19:08
+```
+
+### 10 — Inspect which landed copies would be discarded
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    record_id,
+    workspace_id,
+    sku_name,
+    usage_date,
+    usage_quantity,
+    ingested_at,
+    rn
+FROM (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY record_id
+            ORDER BY ingested_at DESC
+        ) AS rn
+    FROM finance.staging.billing_usage_raw
+)
+WHERE rn > 1
+ORDER BY record_id, rn;
+-- Result (illustrative):
+-- record_id                       | workspace_id | sku_name             | usage_date  | usage_quantity | ingested_at          | rn
+-- --------------------------------|--------------|----------------------|-------------|----------------|----------------------|---
+-- 01f2c8de-4f7d-4b14-8e53-3b6d... | 123456789    | PREMIUM_JOBS_COMPUTE | 2024-07-18  | 14.5           | 2024-07-19 00:03:11  | 2
+```
+
+!!! tip "Same pattern, production data"
+
+    This is the same non-destructive dedup pattern as the sample tables above:
+    rank duplicate keys, keep `rn = 1`, and review `rn > 1` before rewriting a
+    clean target table. The only production-specific choice is the tie-breaker —
+    here `ingested_at` keeps the latest landed copy.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                                                               | Recommended Strategy                                                                             |

@@ -97,6 +97,44 @@ Use BOOL_AND and BOOL_OR to reduce boolean expressions across a group.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so you can group
+    real usage rows directly. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return
+    rows.
+
+### Aggregate billed quantity by SKU
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    sku_name,
+    COUNT(*) AS record_count,
+    COUNT(DISTINCT workspace_id) AS workspace_count,
+    ROUND(SUM(usage_quantity), 2) AS total_quantity,
+    ROUND(AVG(usage_quantity), 4) AS avg_row_quantity
+FROM system.billing.usage
+WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+GROUP BY sku_name
+HAVING SUM(usage_quantity) > 0
+ORDER BY total_quantity DESC;
+-- Result (illustrative):
+-- sku_name                  | record_count | workspace_count | total_quantity | avg_row_quantity
+-- --------------------------|--------------|-----------------|----------------|-----------------
+-- PREMIUM_JOBS_COMPUTE      | 4821         | 14              | 18492.75       | 3.8353
+-- SERVERLESS_SQL            | 1032         | 11              | 6150.20        | 5.9595
+```
+
+!!! tip "Same GROUP BY, higher-value data"
+
+    Production system tables are still just rows to group. The same `SUM`, `AVG`,
+    `COUNT`, and `HAVING` patterns used on sample sales data become cost, workload,
+    and fleet-utilisation summaries on `system.billing.usage`.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                        | Recommended Approach          |

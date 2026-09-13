@@ -12,7 +12,7 @@ SELECT
     key,
     value
 FROM people_map
-    LATERAL VIEW explode(properties) AS key, value;
+    LATERAL VIEW explode(properties) as key, value;
 
 -- using simple explode to flatten the map
 SELECT

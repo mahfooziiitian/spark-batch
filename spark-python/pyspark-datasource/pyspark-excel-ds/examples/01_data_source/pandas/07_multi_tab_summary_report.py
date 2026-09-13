@@ -22,7 +22,7 @@ from pys_excel import (
     print_success,
     set_log_level,
 )
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 set_log_level("DEBUG")
 logger = get_logger("example.multi_tab_summary_report")

@@ -6,6 +6,16 @@ then applying the exact interval predicate on a dramatically reduced dataset.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover any event to see its exact timestamp and the hourly bin it was assigned to before the final interval filter.
+
+<div id="viz-time-binning" class="ts-viz"></div>
+
+*Dashed lines mark bin boundaries; matching colors show which events fall into the same coarse-grained time bucket.*
+
+______________________________________________________________________
+
 ## :material-sitemap: How It Works
 
 ```mermaid
@@ -1045,6 +1055,76 @@ ______________________________________________________________________
 | Overlap detection (large scale)         | Hour bins + exact interval validation               |
 | Real-time event matching                | 1-min bins                                          |
 | Cost chargeback/showback                | Hour bins split across rate tiers                   |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` and `system.billing.list_prices` are built-in
+    Unity Catalog system tables (no sample data setup needed) that naturally
+    form a range-join problem: usage intervals must be matched to the price
+    interval in effect at that time. An account admin must grant
+    `USE CATALOG` on `system`, `USE SCHEMA` on `system.billing`, and
+    `SELECT` on both tables before these queries will return rows.
+
+### Hour-bin join for usage-to-price matching
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage and system.billing.list_prices
+WITH usage_bins AS (
+    SELECT
+        workspace_id,
+        sku_name,
+        usage_start_time,
+        usage_end_time,
+        EXPLODE(SEQUENCE(
+            FLOOR(UNIX_TIMESTAMP(usage_start_time) / 3600),
+            FLOOR(UNIX_TIMESTAMP(usage_end_time) / 3600)
+        )) AS hour_bin
+    FROM system.billing.usage
+    WHERE usage_start_time >= CURRENT_TIMESTAMP() - INTERVAL 3 DAYS
+      AND usage_end_time IS NOT NULL
+),
+price_bins AS (
+    SELECT
+        sku_name,
+        price_start_time,
+        COALESCE(price_end_time, CURRENT_TIMESTAMP()) AS price_end_time,
+        EXPLODE(SEQUENCE(
+            FLOOR(UNIX_TIMESTAMP(price_start_time) / 3600),
+            FLOOR(UNIX_TIMESTAMP(COALESCE(price_end_time, CURRENT_TIMESTAMP())) / 3600)
+        )) AS hour_bin
+    FROM system.billing.list_prices
+    WHERE price_start_time >= CURRENT_TIMESTAMP() - INTERVAL 30 DAYS
+)
+SELECT
+    u.workspace_id,
+    u.sku_name,
+    u.hour_bin,
+    p.price_start_time,
+    p.price_end_time
+FROM usage_bins AS u
+JOIN price_bins AS p
+    ON u.sku_name = p.sku_name
+    AND u.hour_bin = p.hour_bin
+WHERE u.usage_start_time < p.price_end_time
+  AND p.price_start_time < u.usage_end_time
+ORDER BY u.workspace_id, u.sku_name, u.hour_bin
+LIMIT 20;
+-- Result (illustrative):
+-- workspace_id | sku_name             | hour_bin | price_start_time    | price_end_time
+-- ------------ | -------------------- | -------- | ------------------- | -------------------
+-- 123456789    | PREMIUM_JOBS_COMPUTE | 478065   | 2024-07-01 00:00:00 | 2024-07-15 00:00:00
+-- 123456789    | PREMIUM_JOBS_COMPUTE | 478066   | 2024-07-01 00:00:00 | 2024-07-15 00:00:00
+```
+
+!!! tip "Binning turns a pricing range join into a scalable equi-join"
+
+    This is the same optimization pattern as the tutorial examples: create a
+    coarse time key, hash join on that key, then apply the exact interval
+    predicate only to the small set of surviving candidates.
 
 ______________________________________________________________________
 

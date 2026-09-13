@@ -237,6 +237,50 @@ WHERE city_changed_at IS NOT NULL;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.list_prices` is a built-in Unity Catalog system table that already stores
+    effective-dated Databricks SKU price history — each price change opens a new row and closes
+    the previous one. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. No synthetic sample data setup is required.
+
+### 11 — Derive extra current/history columns from the effective dates
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+SELECT
+    sku_name,
+    cloud,
+    pricing.default AS list_price,
+    price_start_time,
+    price_end_time,
+    price_end_time IS NULL AS is_current,
+    DATEDIFF(
+        COALESCE(CAST(price_end_time AS DATE), CURRENT_DATE()),
+        CAST(price_start_time AS DATE)
+    ) AS effective_days
+FROM system.billing.list_prices
+WHERE sku_name = 'STANDARD_ALL_PURPOSE_DBU'
+  AND cloud = 'AWS'
+ORDER BY price_start_time DESC;
+-- Result (illustrative):
+-- sku_name                 | cloud | list_price | price_start_time     | price_end_time       | is_current | effective_days
+-- -------------------------|-------|------------|----------------------|----------------------|------------|---------------
+-- STANDARD_ALL_PURPOSE_DBU | AWS   | 0.55       | 2024-10-15 00:00:00  | NULL                 | true       | 333
+-- STANDARD_ALL_PURPOSE_DBU | AWS   | 0.52       | 2024-01-01 00:00:00  | 2024-10-15 00:00:00  | false      | 288
+```
+
+!!! tip
+
+    Extra descriptive columns such as `is_current`, effective duration, aging buckets, or
+    "currently active" flags often do not need to be stored physically. On effective-dated system
+    tables, you can derive them directly from the start/end timestamps at read time.
+
+______________________________________________________________________
+
 ## :material-numeric-10-circle: Optimise and Clean Up
 
 ```sql

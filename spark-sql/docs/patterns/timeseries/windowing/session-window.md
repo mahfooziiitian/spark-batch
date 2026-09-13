@@ -136,6 +136,81 @@ ______________________________________________________________________
     Spark Structured Streaming supports `SESSION_WINDOW(event_time, '30 minutes')` natively (Spark 3.2+).
     For batch processing, use the LAG + cumulative SUM approach shown above.
 
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample
+    data setup needed) with per-user event timestamps in `event_time` and
+    `user_identity`. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.access`, and `SELECT` on `system.access.audit`
+    before these queries will return rows.
+
+### Sessionize audit activity with a 30-minute timeout
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH ordered AS (
+    SELECT
+        user_identity.email AS user_email,
+        event_time,
+        service_name,
+        action_name,
+        CASE
+            WHEN LAG(event_time, 1) OVER (
+                PARTITION BY user_identity.email
+                ORDER BY event_time
+            ) IS NULL
+                OR UNIX_TIMESTAMP(event_time) - UNIX_TIMESTAMP(LAG(event_time, 1) OVER (
+                    PARTITION BY user_identity.email
+                    ORDER BY event_time
+                )) > 1800
+                THEN 1
+            ELSE 0
+        END AS is_new_session
+    FROM system.access.audit
+    WHERE event_time >= CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+      AND user_identity.email IS NOT NULL
+),
+sessionized AS (
+    SELECT
+        user_email,
+        event_time,
+        service_name,
+        action_name,
+        SUM(is_new_session) OVER (
+            PARTITION BY user_email
+            ORDER BY event_time
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS session_id
+    FROM ordered
+)
+SELECT
+    user_email,
+    session_id,
+    MIN(event_time) AS session_start,
+    MAX(event_time) AS session_end,
+    COUNT(*) AS event_count
+FROM sessionized
+GROUP BY user_email, session_id
+ORDER BY user_email, session_start;
+-- Result (illustrative):
+-- user_email        | session_id | session_start       | session_end         | event_count
+-- ----------------- | ---------- | ------------------- | ------------------- | -----------
+-- analyst@dataco.io | 1          | 2024-07-02 09:01:12 | 2024-07-02 09:24:44 | 18
+-- analyst@dataco.io | 2          | 2024-07-02 11:03:08 | 2024-07-02 11:18:39 | 7
+```
+
+!!! tip "Session windows are often reconstructed from audit trails"
+
+    Many production systems store events, not explicit sessions. The same
+    `LAG` plus cumulative `SUM` pattern shown in the tutorial is exactly how
+    you turn real user activity streams into analyzable sessions.
+
+______________________________________________________________________
+
 ## :material-animation-play: Interactive Demo
 
 > Hover any event dot to see the user, time, session number, and session duration.

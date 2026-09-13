@@ -5,6 +5,16 @@ identify auto-suspend opportunities, and optimise resource scheduling.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover the hatched gaps to inspect how long the resource sat idle between active intervals. The summary below the chart shows how much of the tracked span was lost to inactivity.
+
+<div id="viz-idle-time" class="ts-viz"></div>
+
+*Teal blocks are active work. Hatched gray spans are idle gaps that drive the idle-time percentage.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Analysis Flow
 
 ```mermaid
@@ -145,6 +155,67 @@ ______________________________________________________________________
 | Cost optimisation                 | Quantify idle-time cost at DBU rate    |
 | Schedule consolidation            | Merge workloads to eliminate idle gaps |
 | Capacity planning                 | Right-size based on actual active time |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.query.history` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real warehouse query intervals.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.query`, and `SELECT` on `system.query.history` before these
+    queries will return rows.
+
+### Idle gaps between warehouse queries
+
+```sql
+-- [Databricks] Requires SELECT on system.query.history
+WITH warehouse_activity AS (
+    SELECT
+        compute.warehouse_id AS warehouse_id,
+        start_time AS active_start,
+        end_time AS active_end
+    FROM system.query.history
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+      AND compute.warehouse_id IS NOT NULL
+      AND end_time IS NOT NULL
+),
+idle_gaps AS (
+    SELECT
+        warehouse_id,
+        active_end AS idle_start,
+        LEAD(active_start) OVER (
+            PARTITION BY warehouse_id
+            ORDER BY active_start
+        ) AS idle_end
+    FROM warehouse_activity
+)
+SELECT
+    warehouse_id,
+    idle_start,
+    idle_end,
+    ROUND(
+        (UNIX_TIMESTAMP(idle_end) - UNIX_TIMESTAMP(idle_start)) / 60.0,
+        1
+    ) AS idle_minutes
+FROM idle_gaps
+WHERE idle_end IS NOT NULL
+ORDER BY idle_minutes DESC, warehouse_id;
+-- Result (illustrative):
+-- warehouse_id | idle_start          | idle_end            | idle_minutes
+-- ------------ | ------------------- | ------------------- | ------------
+-- 6f91a...     | 2024-07-02 11:18:03 | 2024-07-02 13:02:14 | 104.2
+-- 8b22c...     | 2024-07-02 15:47:50 | 2024-07-02 16:11:21 | 23.5
+```
+
+!!! tip "Same gap analysis, real warehouse activity"
+
+    The synthetic `LEAD(next_start) - current_end` pattern translates
+    directly to warehouse activity intervals. Once you have real idle gaps,
+    they can drive auto-stop tuning, schedule consolidation, and cost-saving
+    estimates.
 
 ______________________________________________________________________
 

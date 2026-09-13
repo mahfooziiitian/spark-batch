@@ -55,7 +55,7 @@ pyspark-excel-ds/
 ## Run Your First Example
 
 ```bash
-uv run python examples/01_data_source/01_read_basic.py
+uv run python examples/01_data_source/pandas/01_read_basic.py
 ```
 
 Expected output (Rich formatted):

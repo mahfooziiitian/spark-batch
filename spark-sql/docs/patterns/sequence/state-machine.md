@@ -802,6 +802,103 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.lakeflow.job_run_timeline` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real job-run state periods. An account
+    admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.lakeflow TO <principal>` before these queries will return rows.
+
+### 1 — Validate job-run state transitions (`system.lakeflow.job_run_timeline`)
+
+```sql
+-- [Databricks] Requires SELECT on system.lakeflow.job_run_timeline
+WITH valid_transitions AS (
+    SELECT * FROM VALUES
+        ('PENDING', 'RUNNING'),
+        ('RUNNING', 'SUCCESS'),
+        ('RUNNING', 'FAILED'),
+        ('RUNNING', 'CANCELED')
+    AS t(from_state, to_state)
+),
+transitions AS (
+    SELECT
+        job_id,
+        run_id,
+        result_state AS from_state,
+        LEAD(result_state) OVER (
+            PARTITION BY job_id, run_id
+            ORDER BY period_start_time
+        ) AS to_state,
+        period_start_time AS state_start_time
+    FROM system.lakeflow.job_run_timeline
+    WHERE period_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+)
+SELECT
+    t.job_id,
+    t.run_id,
+    t.from_state,
+    t.to_state,
+    t.state_start_time
+FROM transitions t
+LEFT JOIN valid_transitions v
+    ON t.from_state = v.from_state
+   AND t.to_state = v.to_state
+WHERE t.to_state IS NOT NULL
+  AND v.from_state IS NULL
+ORDER BY t.state_start_time DESC;
+-- Result (illustrative):
+-- job_id | run_id | from_state | to_state | state_start_time
+-- -------|--------|------------|----------|-----------------
+-- 1042   | 99801  | RUNNING    | PENDING  | 2024-07-02 09:17:00
+-- 2048   | 77812  | FAILED     | RUNNING  | 2024-07-02 11:03:00
+```
+
+### 2 — Time spent in each job-run state (`system.lakeflow.job_run_timeline`)
+
+```sql
+-- [Databricks] Requires SELECT on system.lakeflow.job_run_timeline
+WITH timed_states AS (
+    SELECT
+        job_id,
+        run_id,
+        result_state,
+        period_start_time,
+        LEAD(period_start_time) OVER (
+            PARTITION BY job_id, run_id
+            ORDER BY period_start_time
+        ) AS next_state_time
+    FROM system.lakeflow.job_run_timeline
+    WHERE period_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+)
+SELECT
+    job_id,
+    run_id,
+    result_state,
+    period_start_time AS state_start_time,
+    next_state_time AS state_end_time,
+    ROUND((BIGINT(next_state_time) - BIGINT(period_start_time)) / 60.0, 1) AS minutes_in_state
+FROM timed_states
+WHERE next_state_time IS NOT NULL
+ORDER BY job_id, run_id, state_start_time;
+-- Result (illustrative):
+-- job_id | run_id | result_state | state_start_time     | state_end_time       | minutes_in_state
+-- -------|--------|--------------|----------------------|----------------------|-----------------
+-- 1042   | 99801  | PENDING      | 2024-07-02 09:00:00  | 2024-07-02 09:04:00  | 4.0
+-- 1042   | 99801  | RUNNING      | 2024-07-02 09:04:00  | 2024-07-02 09:47:00  | 43.0
+-- 2048   | 77812  | RUNNING      | 2024-07-02 10:11:00  | 2024-07-02 10:59:00  | 48.0
+```
+
+!!! tip
+
+    State-machine logic generalizes directly to production system tables: order the
+    lifecycle rows, derive the next state with `LEAD`, validate allowed transitions,
+    and compute dwell time from consecutive timestamps. The state vocabulary changes,
+    but the SQL shape stays the same.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Sequence Mining](sequence-mining.md) — discover frequent patterns in event logs

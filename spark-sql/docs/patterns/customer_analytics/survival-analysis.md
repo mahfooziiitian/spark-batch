@@ -281,6 +281,104 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no
+    synthetic sample data is needed. Reframe each `workspace_id` (or
+    `custom_tags['Tenant']`) as the "customer" and treat the span from first
+    usage to last usage as the customer lifetime. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 1 — Workspace lifetime and survival bucket
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_lifetimes AS (
+    SELECT
+        workspace_id,
+        MIN(usage_date) AS first_usage_date,
+        MAX(usage_date) AS last_usage_date,
+        DATEDIFF(MAX(usage_date), MIN(usage_date)) AS lifetime_days,
+        DATEDIFF(CURRENT_DATE(), MAX(usage_date)) AS days_since_last_usage
+    FROM system.billing.usage
+    GROUP BY workspace_id
+)
+SELECT
+    workspace_id,
+    first_usage_date,
+    last_usage_date,
+    lifetime_days,
+    days_since_last_usage,
+    CASE
+        WHEN lifetime_days <= 30 THEN '0-30 days'
+        WHEN lifetime_days <= 90 THEN '31-90 days'
+        WHEN lifetime_days <= 180 THEN '91-180 days'
+        ELSE '181+ days'
+    END AS survival_bucket
+FROM workspace_lifetimes
+ORDER BY lifetime_days DESC, workspace_id
+LIMIT 10;
+-- Result (illustrative):
+-- workspace_id | first_usage_date | last_usage_date | lifetime_days | days_since_last_usage | survival_bucket
+-- -------------|------------------|-----------------|---------------|-----------------------|----------------
+-- 123456789    | 2024-01-05       | 2024-09-10      | 249           | 2                     | 181+ days
+-- 987654321    | 2024-03-01       | 2024-08-22      | 174           | 21                    | 91-180 days
+-- 555555555    | 2024-07-15       | 2024-08-01      | 17            | 42                    | 0-30 days
+```
+
+### 2 — Tenant survival distribution
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH tenant_lifetimes AS (
+    SELECT
+        custom_tags['Tenant'] AS tenant,
+        MIN(usage_date) AS first_usage_date,
+        MAX(usage_date) AS last_usage_date,
+        DATEDIFF(MAX(usage_date), MIN(usage_date)) AS lifetime_days
+    FROM system.billing.usage
+    WHERE custom_tags['Tenant'] IS NOT NULL
+    GROUP BY custom_tags['Tenant']
+),
+bucketed AS (
+    SELECT
+        tenant,
+        lifetime_days,
+        CASE
+            WHEN lifetime_days <= 30 THEN '0-30 days'
+            WHEN lifetime_days <= 90 THEN '31-90 days'
+            WHEN lifetime_days <= 180 THEN '91-180 days'
+            ELSE '181+ days'
+        END AS survival_bucket
+    FROM tenant_lifetimes
+)
+SELECT
+    survival_bucket,
+    COUNT(*) AS tenants,
+    ROUND(AVG(lifetime_days), 1) AS avg_lifetime_days
+FROM bucketed
+GROUP BY survival_bucket
+ORDER BY avg_lifetime_days DESC;
+-- Result (illustrative):
+-- survival_bucket | tenants | avg_lifetime_days
+-- ----------------|---------|------------------
+-- 181+ days       | 5       | 244.6
+-- 91-180 days     | 8       | 133.1
+-- 31-90 days      | 6       | 58.7
+-- 0-30 days       | 4       | 12.5
+```
+
+!!! tip "Why this works on system tables"
+
+    Time-to-event analysis generalises from customer churn to workspace or
+    tenant activity lifespan: first usage is the start event, last usage is the
+    observed end event, and the same bucketing logic scales to real billing
+    histories without any synthetic setup.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Churn Detection](churn-detection.md) — classify current churn status (active, at-risk, churned)

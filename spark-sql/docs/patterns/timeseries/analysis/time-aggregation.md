@@ -4,6 +4,16 @@ Group and aggregate time series data by calendar periods using `DATE_TRUNC`, `TO
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Toggle between **Daily**, **Weekly**, and **Monthly** to see how the same raw series rolls up into fewer, taller bars.
+
+<div id="viz-time-aggregation" class="ts-viz"></div>
+
+*21 daily points are re-aggregated live so you can compare raw and rolled-up totals at different calendar grains.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Overview
 
 ```mermaid
@@ -281,6 +291,68 @@ ORDER BY bucket_15m;
     | 2025-07-14 09:30:00 | 1           | 10           |
     | 2025-07-15 10:00:00 | 1           | 200          |
     | 2025-07-15 10:15:00 | 1           | 40           |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no
+    sample data setup needed) that exposes real timestamped usage in
+    `usage_start_time`. An account admin must grant `USE CATALOG` on
+    `system`, `USE SCHEMA` on `system.billing`, and `SELECT` on
+    `system.billing.usage` before these queries will return rows.
+
+### Multi-grain aggregation of billing usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    'hour' AS grain,
+    DATE_TRUNC('hour', usage_start_time) AS bucket_start,
+    sku_name,
+    ROUND(SUM(usage_quantity), 2) AS total_usage_quantity
+FROM system.billing.usage
+WHERE usage_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+GROUP BY DATE_TRUNC('hour', usage_start_time), sku_name
+
+UNION ALL
+
+SELECT
+    'day' AS grain,
+    DATE_TRUNC('day', usage_start_time) AS bucket_start,
+    sku_name,
+    ROUND(SUM(usage_quantity), 2) AS total_usage_quantity
+FROM system.billing.usage
+WHERE usage_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+GROUP BY DATE_TRUNC('day', usage_start_time), sku_name
+
+UNION ALL
+
+SELECT
+    'week' AS grain,
+    DATE_TRUNC('week', usage_start_time) AS bucket_start,
+    sku_name,
+    ROUND(SUM(usage_quantity), 2) AS total_usage_quantity
+FROM system.billing.usage
+WHERE usage_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+GROUP BY DATE_TRUNC('week', usage_start_time), sku_name
+
+ORDER BY grain, bucket_start, sku_name;
+-- Result (illustrative):
+-- grain | bucket_start         | sku_name             | total_usage_quantity
+-- ----- | -------------------- | -------------------- | --------------------
+-- hour  | 2024-07-02 09:00:00  | SERVERLESS_SQL       | 38.40
+-- day   | 2024-07-02 00:00:00  | SERVERLESS_SQL       | 418.25
+-- week  | 2024-07-01 00:00:00  | SERVERLESS_SQL       | 2710.90
+```
+
+!!! tip "Production aggregation is mostly about picking the right grain"
+
+    Whether the source is a billing stream, audit log, or query log, the
+    `DATE_TRUNC` pattern stays the same. Swap the bucket size to move from
+    dashboards to weekly reporting to month-end planning.
 
 ______________________________________________________________________
 

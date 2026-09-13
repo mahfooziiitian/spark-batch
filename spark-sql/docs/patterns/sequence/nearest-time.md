@@ -682,6 +682,88 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample data
+    setup needed) that records real user activity over time. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 11 — Nearest preceding login-style event per user action (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH auth_events AS (
+    SELECT
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        event_time AS auth_time
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND user_identity.email IS NOT NULL
+      AND (
+          LOWER(action_name) LIKE '%login%'
+          OR LOWER(action_name) LIKE '%token%'
+      )
+),
+activity_events AS (
+    SELECT
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        event_time,
+        service_name,
+        action_name
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND user_identity.email IS NOT NULL
+      AND NOT (
+          LOWER(action_name) LIKE '%login%'
+          OR LOWER(action_name) LIKE '%token%'
+      )
+),
+preceding_auth AS (
+    SELECT
+        a.user_email,
+        a.event_time,
+        a.service_name,
+        a.action_name,
+        e.auth_time,
+        ROW_NUMBER() OVER (
+            PARTITION BY a.user_email, a.event_time
+            ORDER BY e.auth_time DESC
+        ) AS rn
+    FROM activity_events a
+    JOIN auth_events e
+        ON a.user_email = e.user_email
+       AND e.auth_time <= a.event_time
+)
+SELECT
+    user_email,
+    event_time,
+    service_name,
+    action_name,
+    auth_time AS nearest_preceding_auth_time,
+    BIGINT(event_time) - BIGINT(auth_time) AS seconds_since_auth
+FROM preceding_auth
+WHERE rn = 1
+ORDER BY user_email, event_time
+LIMIT 50;
+-- Result (illustrative):
+-- user_email        | event_time           | service_name | action_name | nearest_preceding_auth_time | seconds_since_auth
+-- ------------------|----------------------|--------------|-------------|-----------------------------|-------------------
+-- analyst@dataco.io | 2024-07-02 09:11:04  | clusters     | create      | 2024-07-02 09:00:31         | 633
+-- analyst@dataco.io | 2024-07-02 09:19:42  | notebook     | runCommand  | 2024-07-02 09:00:31         | 1151
+-- ops@dataco.io     | 2024-07-02 10:07:15  | jobs         | runNow      | 2024-07-02 10:01:02         | 373
+```
+
+!!! tip
+
+    This is the same as-of pattern used for quotes and trades: restrict to candidates
+    at or before the target timestamp, rank by recency, then keep `rn = 1`. It works
+    equally well on real audit events, authentication records, or other system logs.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                               | Pattern                                                   |

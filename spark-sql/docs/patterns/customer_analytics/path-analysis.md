@@ -286,6 +286,102 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog table (no synthetic sample
+    data setup needed) that records real workspace activity. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### Most common 2-step service/action transitions
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH sequenced AS (
+    SELECT
+        event_date,
+        workspace_id,
+        user_identity.email AS user_email,
+        CONCAT(service_name, '/', action_name) AS current_step,
+        LEAD(CONCAT(service_name, '/', action_name)) OVER (
+            PARTITION BY event_date, user_identity.email
+            ORDER BY event_time
+        ) AS next_step
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND user_identity.email IS NOT NULL
+)
+SELECT
+    current_step,
+    next_step,
+    COUNT(*) AS path_count,
+    ROUND(
+        COUNT(*) * 100.0
+        / SUM(COUNT(*)) OVER (PARTITION BY current_step),
+        1
+    ) AS pct_of_exits
+FROM sequenced
+WHERE next_step IS NOT NULL
+GROUP BY current_step, next_step
+ORDER BY path_count DESC, current_step, next_step
+LIMIT 10;
+-- Result (illustrative):
+-- current_step               | next_step                  | path_count | pct_of_exits
+-- ---------------------------|----------------------------|------------|-------------
+-- clusters/createCluster     | clusters/startCluster      | 415        | 78.2
+-- clusters/startCluster      | notebook/runCommand        | 392        | 74.8
+-- notebook/runCommand        | clusters/terminateCluster  | 281        | 61.4
+```
+
+### Most common 3-step paths per user-day
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH sequenced AS (
+    SELECT
+        event_date,
+        user_identity.email AS user_email,
+        CONCAT(service_name, '/', action_name) AS step_1,
+        LEAD(CONCAT(service_name, '/', action_name), 1) OVER (
+            PARTITION BY event_date, user_identity.email
+            ORDER BY event_time
+        ) AS step_2,
+        LEAD(CONCAT(service_name, '/', action_name), 2) OVER (
+            PARTITION BY event_date, user_identity.email
+            ORDER BY event_time
+        ) AS step_3
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND user_identity.email IS NOT NULL
+)
+SELECT
+    CONCAT(step_1, ' → ', step_2, ' → ', step_3) AS path_3,
+    COUNT(*) AS users_following_path
+FROM sequenced
+WHERE step_2 IS NOT NULL
+  AND step_3 IS NOT NULL
+GROUP BY path_3
+ORDER BY users_following_path DESC, path_3
+LIMIT 10;
+-- Result (illustrative):
+-- path_3                                                            | users_following_path
+-- ------------------------------------------------------------------|---------------------
+-- clusters/createCluster → clusters/startCluster → notebook/runCommand | 244
+-- clusters/startCluster → notebook/runCommand → clusters/terminateCluster | 201
+-- workspace/listNotebookFiles → notebook/runCommand → notebook/runCommand | 97
+```
+
+!!! tip "Same path logic, production audit trails"
+
+    The `LEAD()`-based sequence construction is identical to the page-flow
+    examples above — only the ordered events come from `system.access.audit`
+    instead of a synthetic clickstream table. The same technique scales to real
+    production path analysis for service and action sequences.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Funnel Analysis](funnel-analysis.md) — step-by-step conversion rates

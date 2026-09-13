@@ -197,6 +197,75 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.table_lineage` and `system.access.column_lineage` are built-in
+    Unity Catalog system tables that capture real upstream/downstream
+    dependencies, so no synthetic sample graph is needed here. An account admin
+    must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>` before these lineage queries will return rows.
+
+### 1 — Multi-hop downstream reachability from a source table
+
+```sql
+-- [Databricks] Requires SELECT on system.access.table_lineage
+WITH RECURSIVE edges AS (
+    SELECT DISTINCT
+        source_table_full_name AS src,
+        target_table_full_name AS dst
+    FROM system.access.table_lineage
+    WHERE source_type = 'TABLE'
+      AND target_type = 'TABLE'
+      AND event_time >= DATE_SUB(CURRENT_DATE(), 30)
+),
+downstream AS (
+    SELECT
+        src,
+        dst,
+        1 AS depth,
+        ARRAY(src, dst) AS path
+    FROM edges
+    WHERE src = 'main.bronze.orders_raw'
+
+    UNION ALL
+
+    SELECT
+        d.src,
+        e.dst,
+        d.depth + 1,
+        ARRAY_APPEND(d.path, e.dst) AS path
+    FROM downstream AS d
+    JOIN edges AS e
+        ON d.dst = e.src
+    WHERE NOT ARRAY_CONTAINS(d.path, e.dst)
+      AND d.depth < 10
+)
+SELECT DISTINCT
+    src AS root_table,
+    dst AS downstream_table,
+    depth,
+    path
+FROM downstream
+ORDER BY depth, downstream_table;
+-- Result (illustrative):
+-- root_table              | downstream_table         | depth | path
+-- ------------------------|--------------------------|-------|----------------------------------------------
+-- main.bronze.orders_raw  | main.silver.orders_clean | 1     | [main.bronze.orders_raw, main.silver.orders_clean]
+-- main.bronze.orders_raw  | main.gold.daily_sales    | 2     | [main.bronze.orders_raw, main.silver.orders_clean, main.gold.daily_sales]
+-- main.bronze.orders_raw  | main.ml.sales_features   | 3     | [main.bronze.orders_raw, main.silver.orders_clean, main.gold.daily_sales, main.ml.sales_features]
+```
+
+!!! tip "Same reachability pattern, production lineage"
+
+    The recursive edge walk is the same graph traversal used for friendships or
+    supply chains above — only the vertices change from people to
+    `catalog.schema.table` names. That makes
+    `system.access.table_lineage` a practical production graph for impact
+    analysis, blast-radius checks, and downstream refresh planning.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Hierarchy](hierarchy.md) — tree-structured parent-child traversal

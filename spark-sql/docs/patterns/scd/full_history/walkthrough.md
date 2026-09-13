@@ -294,6 +294,48 @@ FROM dim_customer;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.list_prices` is a built-in Unity Catalog system table that already stores
+    effective-dated Databricks SKU price history — each price change opens a new row and closes
+    the previous one. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. No synthetic sample data setup is required.
+
+### 11 — Full price history for one SKU
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+SELECT
+    sku_name,
+    cloud,
+    currency_code,
+    usage_unit,
+    pricing.default AS list_price,
+    price_start_time,
+    price_end_time,
+    price_end_time IS NULL AS is_current
+FROM system.billing.list_prices
+WHERE sku_name = 'SERVERLESS_SQL_COMPUTE'
+  AND cloud = 'AWS'
+ORDER BY price_start_time;
+-- Result (illustrative):
+-- sku_name               | cloud | currency_code | usage_unit | list_price | price_start_time     | price_end_time       | is_current
+-- -----------------------|-------|---------------|------------|------------|----------------------|----------------------|-----------
+-- SERVERLESS_SQL_COMPUTE | AWS   | USD           | DBU        | 0.65       | 2024-01-01 00:00:00  | 2025-01-01 00:00:00  | false
+-- SERVERLESS_SQL_COMPUTE | AWS   | USD           | DBU        | 0.70       | 2025-01-01 00:00:00  | NULL                 | true
+```
+
+!!! tip
+
+    This is exactly how a real Type 2 dimension is consumed in production: keep every version,
+    sort by the effective start timestamp, and filter on `price_end_time IS NULL` only when you
+    explicitly want the latest row instead of the full timeline.
+
+______________________________________________________________________
+
 ## :material-numeric-10-circle: Delta History and Optimisation
 
 ```sql

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 from pys_excel.reader import ExcelReader
 from pys_excel.writer import ExcelWriter
 

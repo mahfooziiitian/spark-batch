@@ -19,8 +19,8 @@ from pys_excel import (
     set_log_level,
     upsert_table_from_excel,
 )
-from pys_excel._logging import get_logger
 from pys_excel.config import get_spark
+from pys_excel.logs import get_logger
 
 set_log_level("DEBUG")
 logger = get_logger("example.upsert_table_from_excel")

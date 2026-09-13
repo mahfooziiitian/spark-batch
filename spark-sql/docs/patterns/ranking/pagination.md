@@ -187,6 +187,46 @@ LIMIT 4 OFFSET 0;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog table (no sample data setup
+    needed) that logs every workspace API call. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows. Audit logs are naturally append-only and
+    ordered by `event_time`, which makes them a good fit for keyset pagination.
+
+### Keyset pagination through audit events
+
+```sql
+-- [Databricks] First page — most recent 25 events
+SELECT event_time, user_identity.email AS user_email, service_name, action_name
+FROM system.access.audit
+WHERE event_date >= DATE_SUB(CURRENT_DATE(), 1)
+ORDER BY event_time DESC
+LIMIT 25;
+-- cursor -> last row's event_time, e.g. 2024-07-02T09:41:03.000Z
+
+-- [Databricks] Next page — pass the last seen event_time as the cursor
+SELECT event_time, user_identity.email AS user_email, service_name, action_name
+FROM system.access.audit
+WHERE event_date >= DATE_SUB(CURRENT_DATE(), 1)
+  AND event_time < TIMESTAMP '2024-07-02T09:41:03.000Z'
+ORDER BY event_time DESC
+LIMIT 25;
+```
+
+!!! tip "Why keyset, not OFFSET, for audit logs"
+
+    `system.access.audit` can hold millions of rows per day across a large account.
+    `OFFSET` pagination would force Spark to scan and discard every skipped row on
+    each page request. Keyset pagination on the naturally-ordered `event_time`
+    column keeps every page O(1) regardless of how far back you page — the same
+    trade-off described in the Pagination Methods table below.
+
+______________________________________________________________________
+
 ## :material-swap-horizontal: Pagination Methods Compared
 
 | Method              | Consistent order | Scales to page N | Supports random access | Use when                       |

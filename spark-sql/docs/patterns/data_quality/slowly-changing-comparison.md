@@ -608,6 +608,80 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no synthetic
+    sample data setup needed) that records who did what, when, and from where. An
+    account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>` before these queries will return rows.
+
+### 11 — Compare a user's action mix this week vs last week
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH current_week AS (
+    SELECT
+        user_identity.email AS user_email,
+        service_name,
+        action_name,
+        COUNT(*) AS current_count
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+    GROUP BY user_identity.email, service_name, action_name
+),
+previous_week AS (
+    SELECT
+        user_identity.email AS user_email,
+        service_name,
+        action_name,
+        COUNT(*) AS previous_count
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 14)
+      AND event_date < DATE_SUB(CURRENT_DATE(), 7)
+    GROUP BY user_identity.email, service_name, action_name
+)
+SELECT
+    COALESCE(c.user_email, p.user_email) AS user_email,
+    COALESCE(c.service_name, p.service_name) AS service_name,
+    COALESCE(c.action_name, p.action_name) AS action_name,
+    COALESCE(p.previous_count, 0) AS previous_count,
+    COALESCE(c.current_count, 0) AS current_count,
+    COALESCE(c.current_count, 0) - COALESCE(p.previous_count, 0) AS count_delta,
+    CASE
+        WHEN p.user_email IS NULL THEN 'NEW_PATTERN'
+        WHEN c.user_email IS NULL THEN 'DISAPPEARED_PATTERN'
+        WHEN COALESCE(c.current_count, 0) >= COALESCE(p.previous_count, 0) * 2
+            THEN 'SPIKE'
+        WHEN COALESCE(c.current_count, 0) <= COALESCE(p.previous_count, 0) * 0.5
+            THEN 'DROP'
+        ELSE 'SHIFT'
+    END AS drift_status
+FROM current_week AS c
+FULL OUTER JOIN previous_week AS p
+    ON c.user_email = p.user_email
+   AND c.service_name = p.service_name
+   AND c.action_name = p.action_name
+WHERE p.user_email IS NULL
+   OR c.user_email IS NULL
+   OR ABS(COALESCE(c.current_count, 0) - COALESCE(p.previous_count, 0)) >= 10
+ORDER BY user_email, service_name, action_name;
+-- Result (illustrative):
+-- user_email          | service_name | action_name   | previous_count | current_count | count_delta | drift_status
+-- --------------------|--------------|---------------|----------------|---------------|-------------|-------------
+-- analyst@company.com | tokens       | createToken   | 2              | 15            | 13          | SPIKE
+-- analyst@company.com | login        | login         | 0              | 6             | 6           | NEW_PATTERN
+```
+
+!!! tip "Same pattern, production data"
+
+    This is still a snapshot-to-snapshot comparison: aggregate one time window,
+    aggregate a second time window, then `FULL OUTER JOIN` them to classify added,
+    removed, or changed behavior. System audit logs simply make the snapshots rolling
+    windows instead of static dimension extracts.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                                       | Approach                                                  |

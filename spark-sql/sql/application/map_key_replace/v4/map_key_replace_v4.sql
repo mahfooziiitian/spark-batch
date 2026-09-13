@@ -31,7 +31,7 @@ normalized_usage AS (
                     ),
                     (acc, kv) -> if(
                         array_contains(map_keys(u.custom_tags), kv.new_key)
-                            AND kv.original_key != kv.new_key, --noqa: RF01
+                        AND kv.original_key != kv.new_key, --noqa: RF01
                         acc,
                         acc || array(struct(kv.new_key, kv.original_key, kv.value)) --noqa: RF01
                     )
@@ -50,6 +50,6 @@ normalized_usage AS (
     WHERE u.usage_date > current_date() - 10
 )
 
-SELECT
+SELECT --noqa: LT09
     normalized_usage.* --noqa: AM04
 FROM normalized_usage;

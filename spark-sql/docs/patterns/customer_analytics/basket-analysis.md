@@ -229,6 +229,119 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no synthetic
+    sample data is required. Because Unity Catalog does not have a literal customer
+    basket table, this example explicitly reframes each `workspace_id` (or
+    `custom_tags['Tenant']`) as the "customer" and each `(workspace_id, usage_date)`
+    combination as the basket. The products inside that basket are the distinct
+    `sku_name` values used on that day. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries
+    will return rows.
+
+### Product pair generation from daily workspace usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_skus AS (
+    SELECT DISTINCT
+        workspace_id,
+        usage_date,
+        sku_name
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND usage_unit = 'DBU'
+)
+SELECT
+    a.sku_name AS product_a,
+    b.sku_name AS product_b,
+    COUNT(*) AS co_occurrence
+FROM daily_skus a
+JOIN daily_skus b
+    ON a.workspace_id = b.workspace_id
+    AND a.usage_date = b.usage_date
+    AND a.sku_name < b.sku_name
+GROUP BY a.sku_name, b.sku_name
+ORDER BY co_occurrence DESC, product_a, product_b;
+-- Result (illustrative):
+-- product_a             | product_b             | co_occurrence
+-- ----------------------|-----------------------|--------------
+-- ALL_PURPOSE_COMPUTE   | DBSQL_SERVERLESS      | 62
+-- ALL_PURPOSE_COMPUTE   | PREMIUM_JOBS_COMPUTE  | 49
+-- DBSQL_SERVERLESS      | PREMIUM_JOBS_COMPUTE  | 37
+```
+
+### Association metrics for SKU pairs
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_skus AS (
+    SELECT DISTINCT
+        workspace_id,
+        usage_date,
+        CONCAT(CAST(workspace_id AS STRING), '::', CAST(usage_date AS STRING)) AS basket_id,
+        sku_name
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND usage_unit = 'DBU'
+),
+total_baskets AS (
+    SELECT COUNT(DISTINCT basket_id) AS n FROM daily_skus
+),
+product_freq AS (
+    SELECT
+        sku_name,
+        COUNT(DISTINCT basket_id) AS baskets_with
+    FROM daily_skus
+    GROUP BY sku_name
+),
+pair_freq AS (
+    SELECT
+        a.sku_name AS product_a,
+        b.sku_name AS product_b,
+        COUNT(DISTINCT a.basket_id) AS pair_count
+    FROM daily_skus a
+    JOIN daily_skus b
+        ON a.basket_id = b.basket_id
+        AND a.sku_name < b.sku_name
+    GROUP BY a.sku_name, b.sku_name
+)
+SELECT
+    pf.product_a,
+    pf.product_b,
+    pf.pair_count,
+    ROUND(pf.pair_count * 1.0 / tb.n, 3) AS support,
+    ROUND(pf.pair_count * 1.0 / fa.baskets_with, 3) AS confidence_a_to_b,
+    ROUND(
+        (pf.pair_count * 1.0 / tb.n)
+        / ((fa.baskets_with * 1.0 / tb.n) * (fb.baskets_with * 1.0 / tb.n)),
+        3
+    ) AS lift
+FROM pair_freq pf
+CROSS JOIN total_baskets tb
+JOIN product_freq fa
+    ON pf.product_a = fa.sku_name
+JOIN product_freq fb
+    ON pf.product_b = fb.sku_name
+ORDER BY lift DESC, pair_count DESC;
+-- Result (illustrative):
+-- product_a            | product_b            | pair_count | support | confidence_a_to_b | lift
+-- ---------------------|----------------------|------------|---------|-------------------|------
+-- ALL_PURPOSE_COMPUTE  | DBSQL_SERVERLESS     | 62         | 0.184   | 0.611             | 1.420
+-- DBSQL_SERVERLESS     | PREMIUM_JOBS_COMPUTE | 37         | 0.110   | 0.402             | 1.275
+```
+
+!!! tip "Same co-occurrence pattern, real usage baskets"
+
+    The query shape does not change: deduplicate basket contents, self-join within the
+    basket, and aggregate pair frequency or lift. On production system tables, that same
+    pattern surfaces which Databricks SKUs are commonly used together by the same
+    workspace on the same day.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [RFM Segmentation](rfm-segmentation.md) — segment customers by purchase behaviour

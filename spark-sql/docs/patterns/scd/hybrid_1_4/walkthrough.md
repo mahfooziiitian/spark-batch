@@ -390,6 +390,64 @@ ORDER BY valid_from;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.list_prices` is a built-in Unity Catalog system table that already stores
+    effective-dated Databricks SKU price history — each price change opens a new row and closes
+    the previous one. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. No synthetic sample data setup is required.
+
+### 11 — Join each historical row to the current active price row
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+WITH current_price AS (
+    SELECT
+        sku_name,
+        cloud,
+        currency_code,
+        usage_unit,
+        pricing.default AS current_price,
+        price_start_time AS current_price_start_time
+    FROM system.billing.list_prices
+    WHERE price_end_time IS NULL
+      AND sku_name = 'SERVERLESS_SQL_COMPUTE'
+      AND cloud = 'AWS'
+)
+SELECT
+    hist.sku_name,
+    hist.price_start_time,
+    hist.price_end_time,
+    hist.pricing.default AS historical_price,
+    cur.current_price,
+    cur.current_price_start_time
+FROM system.billing.list_prices AS hist
+JOIN current_price AS cur
+    ON  hist.sku_name      = cur.sku_name
+    AND hist.cloud         = cur.cloud
+    AND hist.currency_code = cur.currency_code
+    AND hist.usage_unit    = cur.usage_unit
+WHERE hist.sku_name = 'SERVERLESS_SQL_COMPUTE'
+  AND hist.cloud = 'AWS'
+ORDER BY hist.price_start_time;
+-- Result (illustrative):
+-- sku_name               | price_start_time     | price_end_time       | historical_price | current_price | current_price_start_time
+-- -----------------------|----------------------|----------------------|------------------|---------------|-------------------------
+-- SERVERLESS_SQL_COMPUTE | 2024-01-01 00:00:00  | 2025-01-01 00:00:00  | 0.65             | 0.70          | 2025-01-01 00:00:00
+-- SERVERLESS_SQL_COMPUTE | 2025-01-01 00:00:00  | NULL                 | 0.70             | 0.70          | 2025-01-01 00:00:00
+```
+
+!!! tip
+
+    This mirrors the Type 5 `hist_key` pattern: keep a compact "current row" lookup and join it
+    back to the full history whenever an analysis needs both the active attributes and the
+    historical trail in the same result set.
+
+______________________________________________________________________
+
 ## :material-numeric-9-plus-circle: Optimise and Clean Up
 
 ```sql

@@ -5,6 +5,16 @@ raw time series into a feature matrix suitable for ML models or trend analysis.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Use the prev/next buttons to move the forecast origin and see which earlier observations become lag-1 and lag-7 features for that row. Connector lines make the feature lookup explicit.
+
+<div id="viz-forecast-features" class="ts-viz"></div>
+
+*The highlighted point is the row being scored; the amber and teal points feed its lag-based forecast features.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Feature Engineering Pipeline
 
 ```mermaid
@@ -283,6 +293,66 @@ ______________________________________________________________________
 | Filter warmup period (`WHERE sale_date >= ...`) | First N rows have NULLs from LAG                       |
 | Write features to Parquet with partitioning     | Columnar format + partition pruning for downstream ML  |
 | Use `ROWS` not `RANGE` for fixed-size windows   | `ROWS` is deterministic; `RANGE` depends on value gaps |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no
+    sample data setup needed) with a natural daily time series in
+    `usage_date`. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.billing`, and `SELECT` on
+    `system.billing.usage` before these queries will return rows.
+
+### Forecast features from daily billing usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        sku_name,
+        usage_date,
+        ROUND(SUM(usage_quantity), 2) AS daily_usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 60)
+    GROUP BY sku_name, usage_date
+)
+SELECT
+    sku_name,
+    usage_date,
+    daily_usage_quantity,
+    LAG(daily_usage_quantity, 1) OVER w AS lag_1,
+    LAG(daily_usage_quantity, 7) OVER w AS lag_7,
+    daily_usage_quantity - LAG(daily_usage_quantity, 1) OVER w AS diff_1,
+    ROUND(AVG(daily_usage_quantity) OVER (
+        PARTITION BY sku_name
+        ORDER BY usage_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_avg_7,
+    ROUND(MAX(daily_usage_quantity) OVER (
+        PARTITION BY sku_name
+        ORDER BY usage_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_max_7,
+    DAYOFWEEK(usage_date) AS dow
+FROM daily_usage
+WINDOW w AS (PARTITION BY sku_name ORDER BY usage_date)
+ORDER BY sku_name, usage_date;
+-- Result (illustrative):
+-- sku_name             | usage_date  | daily_usage_quantity | lag_1 | lag_7 | diff_1 | rolling_avg_7 | rolling_max_7 | dow
+-- -------------------- | ----------- | -------------------- | ----- | ----- | ------ | ------------- | ------------- | ---
+-- SERVERLESS_SQL       | 2024-07-02  | 418.25               | 401.8 | 389.4 | 16.45  | 397.62        | 418.25        | 3
+-- PREMIUM_JOBS_COMPUTE | 2024-07-02  | 955.10               | 931.2 | 904.6 | 23.90  | 918.87        | 955.10        | 3
+```
+
+!!! tip "Same feature set, production forecasting"
+
+    Real forecasting datasets usually start as a daily aggregate over an
+    operational table like `system.billing.usage`. Once the series is at a
+    stable grain, the exact same lag, diff, and rolling-window features work
+    unchanged.
 
 ______________________________________________________________________
 

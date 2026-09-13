@@ -594,6 +594,141 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` and `system.access.audit` are built-in Unity Catalog tables
+    (no sample data setup needed) that record real account activity. An account admin
+    must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    (and the equivalent for `system.access`) before these queries will return rows.
+
+### 11 — Top 3 SKUs by usage per workspace (`system.billing.usage`)
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH ranked AS (
+    SELECT
+        workspace_id,
+        sku_name,
+        SUM(usage_quantity) AS total_quantity,
+        ROW_NUMBER() OVER (
+            PARTITION BY workspace_id
+            ORDER BY SUM(usage_quantity) DESC
+        ) AS rn
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, sku_name
+)
+SELECT workspace_id, sku_name, total_quantity, rn
+FROM ranked
+WHERE rn <= 3
+ORDER BY workspace_id, rn;
+-- Result (illustrative — values depend on your account's actual usage):
+-- workspace_id | sku_name                  | total_quantity | rn
+-- -------------|---------------------------|----------------|----
+-- 123456789    | STANDARD_ALL_PURPOSE_...  | 4820.5         | 1
+-- 123456789    | PREMIUM_JOBS_COMPUTE      | 3110.2         | 2
+-- 123456789    | SERVERLESS_SQL            | 1875.0         | 3
+```
+
+### 12 — Top 3 SKUs by usage per tenant/environment tag (`custom_tags`)
+
+`system.billing.usage.custom_tags` is a `MAP<STRING, STRING>` of the cluster/job/SQL
+warehouse tags in effect when the usage was recorded. If your compute is tagged with
+`Tenant` and `Env` (common for multi-tenant cost allocation and chargeback), rank
+usage within those dimensions instead of (or in addition to) `workspace_id`:
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH tagged AS (
+    SELECT
+        custom_tags['Tenant'] AS tenant,
+        custom_tags['Env']    AS env,
+        sku_name,
+        usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND custom_tags['Tenant'] IS NOT NULL
+),
+ranked AS (
+    SELECT
+        tenant,
+        env,
+        sku_name,
+        SUM(usage_quantity) AS total_quantity,
+        ROW_NUMBER() OVER (
+            PARTITION BY tenant, env
+            ORDER BY SUM(usage_quantity) DESC
+        ) AS rn
+    FROM tagged
+    GROUP BY tenant, env, sku_name
+)
+SELECT tenant, env, sku_name, total_quantity, rn
+FROM ranked
+WHERE rn <= 3
+ORDER BY tenant, env, rn;
+-- Result (illustrative):
+-- tenant   | env    | sku_name                 | total_quantity | rn
+-- ---------|--------|--------------------------|----------------|----
+-- acme-co  | prod   | PREMIUM_JOBS_COMPUTE     | 3980.0         | 1
+-- acme-co  | prod   | SERVERLESS_SQL           | 1200.5         | 2
+-- acme-co  | dev    | STANDARD_ALL_PURPOSE_... | 640.2          | 1
+-- globex   | prod   | PREMIUM_JOBS_COMPUTE     | 2750.7         | 1
+```
+
+!!! tip "Tag-based cost allocation"
+
+    Partitioning by `custom_tags['Tenant']`/`custom_tags['Env']` instead of
+    `workspace_id` lets you build per-tenant or per-environment chargeback reports
+    even when many tenants/environments share the same workspace. Any other tag key
+    (e.g., `Team`, `CostCenter`, `Project`) works the same way — just swap the map key.
+
+### 13 — Most frequent action per service per day (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH daily_actions AS (
+    SELECT
+        DATE(event_time) AS event_date,
+        service_name,
+        action_name,
+        COUNT(*) AS action_count
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+    GROUP BY DATE(event_time), service_name, action_name
+),
+ranked AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY event_date, service_name
+            ORDER BY action_count DESC
+        ) AS rn
+    FROM daily_actions
+)
+SELECT event_date, service_name, action_name, action_count
+FROM ranked
+WHERE rn = 1
+ORDER BY event_date, service_name;
+-- Result (illustrative):
+-- event_date | service_name | action_name        | action_count
+-- -----------|--------------|--------------------| ------------
+-- 2024-07-01 | clusters     | changeClusterAcl    | 214
+-- 2024-07-01 | notebook     | runCommand          | 1520
+-- 2024-07-02 | clusters     | create              | 98
+-- 2024-07-02 | notebook     | runCommand          | 1610
+```
+
+!!! tip "Same pattern, production data"
+
+    The `ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...) WHERE rn <= N` shape is
+    identical to the synthetic examples above — only the source table and grouping
+    columns change. This is the same query you'd run against `system.billing.usage`
+    or `system.access.audit` to build a cost or security dashboard.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                                           | Pattern                                                                                                       |

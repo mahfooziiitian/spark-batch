@@ -232,6 +232,69 @@ DESCRIBE HISTORY dim_customer;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.list_prices` is a built-in Unity Catalog system table that already stores
+    effective-dated Databricks SKU price history — each price change opens a new row and closes
+    the previous one. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. No synthetic sample data setup is required.
+
+### 8 — Current-price-only view (Type 1 style)
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+SELECT
+    sku_name,
+    cloud,
+    currency_code,
+    usage_unit,
+    pricing.default AS current_list_price,
+    price_start_time
+FROM system.billing.list_prices
+WHERE price_end_time IS NULL
+ORDER BY sku_name
+LIMIT 5;
+-- Result (illustrative):
+-- sku_name                    | cloud | currency_code | usage_unit | current_list_price | price_start_time
+-- ----------------------------|-------|---------------|------------|--------------------|-------------------------
+-- SERVERLESS_SQL_COMPUTE      | AWS   | USD           | DBU        | 0.70               | 2025-01-01 00:00:00
+-- STANDARD_ALL_PURPOSE_DBU    | AWS   | USD           | DBU        | 0.55               | 2024-10-15 00:00:00
+```
+
+### 9 — Prove the underlying table still keeps every old price
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+SELECT
+    sku_name,
+    cloud,
+    COUNT(*) AS price_versions,
+    MIN(price_start_time) AS first_seen_price,
+    MAX(COALESCE(price_end_time, current_timestamp())) AS latest_interval_end
+FROM system.billing.list_prices
+GROUP BY sku_name, cloud
+HAVING COUNT(*) > 1
+ORDER BY price_versions DESC, sku_name
+LIMIT 5;
+-- Result (illustrative):
+-- sku_name                  | cloud | price_versions | first_seen_price     | latest_interval_end
+-- --------------------------|-------|----------------|----------------------|-------------------------
+-- STANDARD_ALL_PURPOSE_DBU  | AWS   | 4              | 2023-01-01 00:00:00  | 2026-09-12 06:32:08
+-- SERVERLESS_SQL_COMPUTE    | AWS   | 3              | 2024-01-01 00:00:00  | 2026-09-12 06:32:08
+```
+
+!!! tip
+
+    This is the production version of a Type 1 overwrite view: filtering to
+    `price_end_time IS NULL` gives you the latest state only, while the source system table still
+    preserves the historical versions underneath. The same pattern works whenever you want a
+    simple current-state dimension on top of richer Type 2 history.
+
+______________________________________________________________________
+
 ## :material-cog-outline: Optimise After Load
 
 ```sql

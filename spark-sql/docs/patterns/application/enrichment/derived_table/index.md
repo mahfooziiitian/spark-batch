@@ -50,6 +50,55 @@ Year-on-year comparison and multi-level aggregation with joined derived tables.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so the query can
+    run directly against real usage data. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before it will return
+    rows.
+
+### Derived table for daily workspace rollups
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    daily_usage.workspace_id,
+    daily_usage.avg_daily_quantity,
+    daily_usage.peak_daily_quantity
+FROM (
+    SELECT
+        workspace_id,
+        ROUND(AVG(daily_quantity), 2) AS avg_daily_quantity,
+        ROUND(MAX(daily_quantity), 2) AS peak_daily_quantity
+    FROM (
+        SELECT
+            workspace_id,
+            usage_date,
+            SUM(usage_quantity) AS daily_quantity
+        FROM system.billing.usage
+        WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+        GROUP BY workspace_id, usage_date
+    ) AS per_day
+    GROUP BY workspace_id
+) AS daily_usage
+WHERE daily_usage.peak_daily_quantity > daily_usage.avg_daily_quantity * 1.5
+ORDER BY daily_usage.peak_daily_quantity DESC;
+-- Result (illustrative):
+-- workspace_id | avg_daily_quantity | peak_daily_quantity
+-- ------------|--------------------|--------------------
+-- 123456789   | 184.62             | 392.40
+-- 555555555   | 71.80              | 133.10
+```
+
+!!! tip "Inline aggregation layers"
+
+    A derived table is useful when you only need an intermediate aggregate once. The
+    pattern scales directly from toy sales examples to production billing rollups on
+    `system.billing.usage`.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                       | Recommended Approach                |

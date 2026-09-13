@@ -33,7 +33,7 @@ from pys_excel import (
     temp_excel_path,
     upsert_table_from_excel,
 )
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 set_log_level("DEBUG")
 logger = get_logger("example.dedup_before_upsert")

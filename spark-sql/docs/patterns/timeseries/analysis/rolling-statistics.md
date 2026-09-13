@@ -9,6 +9,16 @@ windows — essential for anomaly detection, control charts, and adaptive thresh
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Toggle between short and long rolling windows to see how the mean ± stddev band widens, narrows, and changes which points are flagged as anomalies.
+
+<div id="viz-rolling-stats" class="ts-viz"></div>
+
+*The dashed gray line is the raw metric, purple is the rolling mean, amber is the rolling stddev band, and red markers fall outside the active control range.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Rolling Statistics Pipeline
 
 ```mermaid
@@ -322,6 +332,70 @@ ______________________________________________________________________
 | `PERCENTILE_APPROX` over `PERCENTILE`    | O(n) approximate vs O(n log n) exact          |
 | Filter partitions by date range          | Reduces data scanned before windowing         |
 | Materialise rolling stats for dashboards | Avoid recomputing on every query              |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no
+    sample data setup needed) with a natural daily measure in
+    `usage_quantity`. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.billing`, and `SELECT` on
+    `system.billing.usage` before these queries will return rows.
+
+### Rolling mean and standard deviation of daily usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        ROUND(SUM(usage_quantity), 2) AS daily_usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+)
+SELECT
+    workspace_id,
+    usage_date,
+    daily_usage_quantity,
+    ROUND(AVG(daily_usage_quantity) OVER (
+        PARTITION BY workspace_id
+        ORDER BY usage_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_avg_7,
+    ROUND(STDDEV(daily_usage_quantity) OVER (
+        PARTITION BY workspace_id
+        ORDER BY usage_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_stddev_7,
+    ROUND(
+        daily_usage_quantity
+        - AVG(daily_usage_quantity) OVER (
+            PARTITION BY workspace_id
+            ORDER BY usage_date
+            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+        ),
+        2
+    ) AS deviation_from_mean
+FROM daily_usage
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_usage_quantity | rolling_avg_7 | rolling_stddev_7 | deviation_from_mean
+-- ------------ | ----------- | -------------------- | ------------- | ---------------- | -------------------
+-- 123456789    | 2024-07-02  | 1248.40              | 1187.23       | 76.11            | 61.17
+-- 987654321    | 2024-07-02  | 402.75               | 415.08        | 21.94            | -12.33
+```
+
+!!! tip "Rolling stats become more informative on real usage baselines"
+
+    Production billing series have weekday effects, maintenance cycles, and
+    organic growth. Rolling averages and rolling standard deviation give you
+    the baseline and spread needed to distinguish normal variation from real
+    anomalies.
 
 ______________________________________________________________________
 

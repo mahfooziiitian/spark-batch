@@ -37,6 +37,62 @@ Check whether any key in a MAP column matches a runtime predicate — demonstrat
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` and `system.access.audit` both expose nested data types:
+    `usage_metadata` and `user_identity` are `STRUCT`s, while `custom_tags` and
+    `request_params` are `MAP`s. An account admin must grant `SELECT` on the relevant
+    `system` schema before these queries will return rows.
+
+### Accessing STRUCT and MAP fields directly
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    workspace_id,
+    usage_date,
+    usage_metadata.cluster_id AS cluster_id,
+    usage_metadata.job_id AS job_id,
+    custom_tags['Tenant'] AS tenant,
+    custom_tags['Env'] AS env,
+    usage_quantity
+FROM system.billing.usage
+WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 7)
+  AND custom_tags['Tenant'] IS NOT NULL;
+-- Result (illustrative):
+-- workspace_id | usage_date  | cluster_id | job_id | tenant  | env  | usage_quantity
+-- ------------|-------------|------------|--------|---------|------|---------------
+-- 123456789   | 2024-07-02  | 0312-...   | 998877 | acme-co | prod | 14.25
+```
+
+### Filtering audit records by nested identity fields
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+SELECT
+    event_time,
+    user_identity.email AS user_email,
+    request_params['path'] AS request_path,
+    response.status_code AS status_code
+FROM system.access.audit
+WHERE event_date >= DATE_SUB(CURRENT_DATE(), 1)
+  AND user_identity.email LIKE '%@example.com';
+-- Result (illustrative):
+-- event_time           | user_email           | request_path           | status_code
+-- ---------------------|----------------------|------------------------|------------
+-- 2024-07-02 09:41:03  | analyst@example.com  | /api/2.0/sql/queries   | 200
+```
+
+!!! tip "Nested fields are first-class columns"
+
+    Production system tables are full of maps and structs. Once you know dot notation
+    and map-key lookup syntax, the same technique works for billing tags, audit
+    identities, request parameters, and many other nested operational datasets.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                                   | Recommended Approach            |

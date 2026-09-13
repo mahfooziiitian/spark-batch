@@ -1,13 +1,7 @@
-# Databricks-only SQL that the open-source `sparksql` dialect cannot parse.
-# These files use Databricks-exclusive constructs (OPTIMIZE ... ZORDER BY,
-# WHEN NOT MATCHED BY SOURCE, TABLESAMPLE variants, etc.) and are excluded
-# from sqlfluff linting. They remain valid on Databricks Runtime.
-sql/aggregation/cube/spark-cube.sql
-sql/application/map_key_replace/v4/map_key_replace_v4.sql
-sql/application/numeric/random_sampling.sql
-sql/dml/merge.sql
-sql/scd/type2/scd_type2.sql
-sql/databricks/optimize/optimize_zorder.sql
-sql/databricks/copy_into/copy_into.sql
-sql/databricks/change_data_feed/change_data_feed.sql
-sql/databricks/clone/clone.sql
+# All sql/ files are now linted — sqlfluff's `databricks` dialect (configured in
+# pyproject.toml) parses Databricks/Delta-exclusive syntax (OPTIMIZE ... ZORDER,
+# WHEN NOT MATCHED BY SOURCE, column DEFAULT, etc). The handful of constructs its
+# grammar still can't parse (COPY INTO, CLONE ... VERSION AS OF, TABLESAMPLE ...
+# REPEATABLE(seed), DESCRIBE DETAIL as a subquery source) are suppressed inline
+# with `-- noqa: PRS` at the specific statement so the rest of each file is still
+# linted normally.

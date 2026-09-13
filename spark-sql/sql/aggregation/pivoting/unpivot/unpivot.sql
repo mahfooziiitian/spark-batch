@@ -8,12 +8,10 @@ CREATE TABLE IF NOT EXISTS sales_data (
 );
 -- Insert data into the table
 INSERT INTO sales_data
-VALUES ("A", 100, 200, 300);
-INSERT INTO sales_data
-VALUES ("B", 400, 500, 600);
-INSERT INTO sales_data
-VALUES ("C", 700, 800, 900);
--- unpivoting
+VALUES ("A", 100, 200, 300),
+("B", 400, 500, 600),
+("C", 700, 800, 900);
+-- un-pivoting
 SELECT
     category,
     months,
@@ -26,6 +24,6 @@ FROM sales_data LATERAL VIEW stack(
     feb_sales,
     "Mar",
     mar_sales
-) AS months,
+) as months,
 sales;
 DROP TABLE IF EXISTS sales_data;

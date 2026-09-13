@@ -12,22 +12,22 @@
 DROP TABLE IF EXISTS sales;
 
 CREATE TABLE sales (
-    order_id   BIGINT,
-    region     STRING,
-    product    STRING,
-    amount     DOUBLE,
+    order_id BIGINT,
+    region STRING,
+    product STRING,
+    amount DOUBLE,
     order_date DATE
 );
 
 INSERT INTO sales VALUES
-    (1, 'East',  'Widget',  120.00, DATE '2024-01-15'),
-    (2, 'West',  'Gadget',  340.00, DATE '2024-01-15'),
-    (3, 'East',  'Widget',   80.00, DATE '2024-02-10'),
-    (4, 'North', 'Gadget',  210.00, DATE '2024-02-10'),
-    (5, 'West',  'Widget',  150.00, DATE '2024-03-05'),
-    (6, 'East',  'Gadget',  450.00, DATE '2024-03-05'),
-    (7, 'North', 'Widget',   90.00, DATE '2024-03-20'),
-    (8, 'West',  'Gadget',  270.00, DATE '2024-03-20');
+(1, 'East', 'Widget', 120.00, DATE '2024-01-15'),
+(2, 'West', 'Gadget', 340.00, DATE '2024-01-15'),
+(3, 'East', 'Widget', 80.00, DATE '2024-02-10'),
+(4, 'North', 'Gadget', 210.00, DATE '2024-02-10'),
+(5, 'West', 'Widget', 150.00, DATE '2024-03-05'),
+(6, 'East', 'Gadget', 450.00, DATE '2024-03-05'),
+(7, 'North', 'Widget', 90.00, DATE '2024-03-20'),
+(8, 'West', 'Gadget', 270.00, DATE '2024-03-20');
 
 -- ─── Setup: sales_dt — contains one real NULL region row ─────
 -- Used in NULL-handling examples to demonstrate the difference
@@ -35,20 +35,20 @@ INSERT INTO sales VALUES
 DROP TABLE IF EXISTS sales_dt;
 
 CREATE TABLE sales_dt (
-    sale_date  DATE,
-    region     STRING,
-    product    STRING,
-    amount     DOUBLE
+    sale_date DATE,
+    region STRING,
+    product STRING,
+    amount DOUBLE
 );
 
 INSERT INTO sales_dt VALUES
-    (DATE '2024-07-01', 'East', 'ProductA', 1000.50),
-    (DATE '2024-07-01', 'West', 'ProductB', 1500.75),
-    (DATE '2024-07-02', 'East', 'ProductA', 1200.25),
-    (DATE '2024-07-02', 'West', 'ProductB', 1800.30),
-    (DATE '2024-07-03', 'East', 'ProductA',  900.75),
-    (DATE '2024-07-03', 'West', 'ProductB', 1600.20),
-    (DATE '2024-07-03', NULL,   'ProductB', 1600.20);  -- real NULL region
+(DATE '2024-07-01', 'East', 'ProductA', 1000.50),
+(DATE '2024-07-01', 'West', 'ProductB', 1500.75),
+(DATE '2024-07-02', 'East', 'ProductA', 1200.25),
+(DATE '2024-07-02', 'West', 'ProductB', 1800.30),
+(DATE '2024-07-03', 'East', 'ProductA', 900.75),
+(DATE '2024-07-03', 'West', 'ProductB', 1600.20),
+(DATE '2024-07-03', NULL, 'ProductB', 1600.20);  -- real NULL region
 
 -- ============================================================
 -- 1. Basic CUBE on two columns
@@ -84,8 +84,8 @@ ORDER BY region NULLS LAST, product NULLS LAST;
 SELECT
     region,
     product,
-    SUM(amount)       AS total_sales,
-    GROUPING(region)  AS is_region_subtotal,
+    SUM(amount) AS total_sales,
+    GROUPING(region) AS is_region_subtotal,
     GROUPING(product) AS is_product_subtotal
 FROM sales
 GROUP BY CUBE (region, product)
@@ -99,7 +99,7 @@ ORDER BY GROUPING(region), GROUPING(product), region NULLS LAST, product NULLS L
 -- 3. Readable labels with GROUPING()
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
     SUM(amount) AS total_sales
 FROM sales
@@ -116,8 +116,8 @@ ORDER BY region_label, product_label;
 -- Unsafe: COALESCE conflates real NULLs with subtotal markers
 SELECT
     COALESCE(CAST(sale_date AS STRING), 'All') AS sale_date,
-    COALESCE(region,                    'All') AS region,
-    COALESCE(product,                   'All') AS product,
+    COALESCE(region, 'All') AS region,
+    COALESCE(product, 'All') AS product,
     SUM(amount) AS total_sales
 FROM sales_dt
 GROUP BY CUBE (sale_date, region, product)
@@ -126,23 +126,32 @@ ORDER BY sale_date, region, product;
 -- Safe: GROUPING() identifies only synthetic subtotal NULLs
 SELECT
     CASE WHEN GROUPING(sale_date) = 1 THEN 'All' ELSE CAST(sale_date AS STRING) END AS sale_date,
-    CASE WHEN GROUPING(region)    = 1 THEN 'All' ELSE region                    END AS region,
-    CASE WHEN GROUPING(product)   = 1 THEN 'All' ELSE product                   END AS product,
-    SUM(amount)         AS total_sales,
+    CASE WHEN GROUPING(region) = 1 THEN 'All' ELSE region END AS region,
+    CASE WHEN GROUPING(product) = 1 THEN 'All' ELSE product END AS product,
+    SUM(amount) AS total_sales,
     GROUPING(sale_date) AS is_date_subtotal,
-    GROUPING(region)    AS is_region_subtotal,
-    GROUPING(product)   AS is_product_subtotal
+    GROUPING(region) AS is_region_subtotal,
+    GROUPING(product) AS is_product_subtotal
 FROM sales_dt
 GROUP BY CUBE (sale_date, region, product)
 ORDER BY sale_date, region, product;
 
 -- ============================================================
 -- 5. Filter to grand total only
+--    HAVING cannot call GROUPING() directly unless the underlying
+--    column is also projected; expose it as a column in a subquery
+--    and filter on that column in an outer WHERE instead.
 -- ============================================================
-SELECT SUM(amount) AS grand_total
-FROM sales
-GROUP BY CUBE (region, product)
-HAVING GROUPING(region) = 1 AND GROUPING(product) = 1;
+SELECT grand_total
+FROM (
+    SELECT
+        SUM(amount) AS grand_total,
+        GROUPING(region) AS is_region_subtotal,
+        GROUPING(product) AS is_product_subtotal
+    FROM sales
+    GROUP BY CUBE (region, product)
+) AS totals
+WHERE is_region_subtotal = 1 AND is_product_subtotal = 1;
 
 -- ============================================================
 -- 6. Three-column CUBE — 2³ = 8 grouping combinations
@@ -150,11 +159,11 @@ HAVING GROUPING(region) = 1 AND GROUPING(product) = 1;
 --    (region,product), (year), (region), (product), ()
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(YEAR(order_date)) = 1 THEN 'All Years'    ELSE CAST(YEAR(order_date) AS STRING) END AS yr,
-    CASE WHEN GROUPING(region)           = 1 THEN 'All Regions'  ELSE region                              END AS rgn,
-    CASE WHEN GROUPING(product)          = 1 THEN 'All Products' ELSE product                             END AS prd,
-    SUM(amount)  AS total_sales,
-    COUNT(*)     AS order_count
+    CASE WHEN GROUPING(YEAR(order_date)) = 1 THEN 'All Years' ELSE CAST(YEAR(order_date) AS STRING) END AS yr,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS rgn,
+    CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS prd,
+    SUM(amount) AS total_sales,
+    COUNT(*) AS order_count
 FROM sales
 GROUP BY CUBE (YEAR(order_date), region, product)
 ORDER BY yr, rgn, prd;
@@ -170,7 +179,7 @@ ORDER BY yr, rgn, prd;
 SELECT
     region,
     product,
-    SUM(amount)                  AS total_sales,
+    SUM(amount) AS total_sales,
     GROUPING_ID(region, product) AS grp_id,
     CASE GROUPING_ID(region, product)
         WHEN 0 THEN 'Detail'
@@ -186,12 +195,12 @@ ORDER BY grp_id, region NULLS LAST, product NULLS LAST;
 -- 8. Multiple aggregates in one scan
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
-    ROUND(SUM(amount), 2)  AS total_revenue,
-    COUNT(*)               AS order_count,
-    ROUND(AVG(amount), 2)  AS avg_order_value,
-    MAX(amount)            AS max_order_value
+    ROUND(SUM(amount), 2) AS total_revenue,
+    COUNT(*) AS order_count,
+    ROUND(AVG(amount), 2) AS avg_order_value,
+    MAX(amount) AS max_order_value
 FROM sales
 GROUP BY CUBE (region, product)
 ORDER BY GROUPING_ID(region, product), region_label, product_label;
@@ -204,9 +213,9 @@ WITH cube_base AS (
     SELECT
         region,
         product,
-        YEAR(order_date)                               AS sale_year,
-        SUM(amount)                                    AS total_revenue,
-        COUNT(*)                                       AS order_count,
+        YEAR(order_date) AS sale_year,
+        SUM(amount) AS total_revenue,
+        COUNT(*) AS order_count,
         GROUPING_ID(region, product, YEAR(order_date)) AS grp_id
     FROM sales
     GROUP BY CUBE (region, product, YEAR(order_date))
@@ -217,10 +226,10 @@ labelled AS (
         total_revenue,
         order_count,
         grp_id,
-        COALESCE(region,                    'All Regions')  AS region_label,
-        COALESCE(product,                   'All Products') AS product_label,
-        COALESCE(CAST(sale_year AS STRING), 'All Years')    AS year_label,
-        ROUND(total_revenue / NULLIF(order_count, 0), 2)   AS avg_order_value
+        COALESCE(region, 'All Regions') AS region_label,
+        COALESCE(product, 'All Products') AS product_label,
+        COALESCE(CAST(sale_year AS STRING), 'All Years') AS year_label,
+        ROUND(total_revenue / NULLIF(order_count, 0), 2) AS avg_order_value
     FROM cube_base
 )
 
@@ -250,13 +259,13 @@ GROUP BY region, product
 UNION ALL
 SELECT
     region,
-    NULL    AS product,
+    NULL AS product,
     SUM(amount) AS revenue
 FROM sales
 GROUP BY region
 UNION ALL
 SELECT
-    NULL    AS region,
+    NULL AS region,
     product,
     SUM(amount) AS revenue
 FROM sales
@@ -280,31 +289,37 @@ ORDER BY GROUPING_ID(region, product), region NULLS LAST, product NULLS LAST;
 -- ============================================================
 -- 11. HAVING threshold — keep all subtotals, prune low-value
 --     detail rows
+--     Filter on the grp_id alias, not a fresh GROUPING_ID() call —
+--     HAVING cannot resolve GROUPING_ID() directly unless it also
+--     appears as a projected output column.
 -- ============================================================
 SELECT
-    CASE WHEN GROUPING(region)  = 1 THEN 'All Regions'  ELSE region  END AS region_label,
+    CASE WHEN GROUPING(region) = 1 THEN 'All Regions' ELSE region END AS region_label,
     CASE WHEN GROUPING(product) = 1 THEN 'All Products' ELSE product END AS product_label,
-    ROUND(SUM(amount), 2)        AS total_revenue,
+    ROUND(SUM(amount), 2) AS total_revenue,
     GROUPING_ID(region, product) AS grp_id
 FROM sales
 GROUP BY CUBE (region, product)
 HAVING
-    GROUPING_ID(region, product) > 0  -- always keep subtotals and grand total
-    OR SUM(amount) > 200              -- detail: only high-revenue combinations
+    grp_id > 0            -- always keep subtotals and grand total
+    OR SUM(amount) > 200  -- detail: only high-revenue combinations
 ORDER BY grp_id, region_label, product_label;
 -- East|Widget (200.0) is excluded; all subtotal rows are retained.
 
 -- ============================================================
 -- 12. Filter to subtotals only — exclude all detail rows
+--     Same rule as example 11: HAVING/ORDER BY reference the
+--     grp_id alias rather than calling GROUPING_ID() again.
 -- ============================================================
 SELECT
-    COALESCE(region,  'All Regions')  AS region_label,
+    COALESCE(region, 'All Regions') AS region_label,
     COALESCE(product, 'All Products') AS product_label,
-    SUM(amount) AS total_revenue
+    SUM(amount) AS total_revenue,
+    GROUPING_ID(region, product) AS grp_id
 FROM sales
 GROUP BY CUBE (region, product)
-HAVING GROUPING_ID(region, product) > 0
-ORDER BY GROUPING_ID(region, product) DESC, region_label ASC, product_label ASC;
+HAVING grp_id > 0
+ORDER BY grp_id DESC, region_label ASC, product_label ASC;
 
 -- ============================================================
 -- 13. CUBE + window function — rank within each grouping level
@@ -316,7 +331,7 @@ WITH cubed AS (
     SELECT
         region,
         product,
-        ROUND(SUM(amount), 2)        AS total_revenue,
+        ROUND(SUM(amount), 2) AS total_revenue,
         GROUPING_ID(region, product) AS grp_id
     FROM sales
     GROUP BY CUBE (region, product)
@@ -325,7 +340,7 @@ WITH cubed AS (
 SELECT
     total_revenue,
     grp_id,
-    COALESCE(region,  'All Regions')  AS region_label,
+    COALESCE(region, 'All Regions') AS region_label,
     COALESCE(product, 'All Products') AS product_label,
     RANK() OVER (
         PARTITION BY grp_id
@@ -344,31 +359,31 @@ ORDER BY grp_id, revenue_rank_within_level;
 DROP TABLE IF EXISTS marketing_spend;
 
 CREATE TABLE marketing_spend (
-    campaign    STRING,
-    channel     STRING,
-    quarter     STRING,
-    spend       DOUBLE,
+    campaign STRING,
+    channel STRING,
+    quarter STRING,
+    spend DOUBLE,
     conversions BIGINT
 );
 
 INSERT INTO marketing_spend VALUES
-    ('Summer Sale',  'Email',   'Q1', 12000.0, 340),
-    ('Summer Sale',  'Social',  'Q1',  8500.0, 210),
-    ('Black Friday', 'Email',   'Q2', 15000.0, 520),
-    ('Black Friday', 'Social',  'Q2', 22000.0, 890),
-    ('Summer Sale',  'Email',   'Q2',  9500.0, 280),
-    ('Black Friday', 'Display', 'Q2',  6000.0, 120),
-    ('New Year',     'Social',  'Q3', 18000.0, 640),
-    ('New Year',     'Email',   'Q3', 11000.0, 390);
+('Summer Sale', 'Email', 'Q1', 12000.0, 340),
+('Summer Sale', 'Social', 'Q1', 8500.0, 210),
+('Black Friday', 'Email', 'Q2', 15000.0, 520),
+('Black Friday', 'Social', 'Q2', 22000.0, 890),
+('Summer Sale', 'Email', 'Q2', 9500.0, 280),
+('Black Friday', 'Display', 'Q2', 6000.0, 120),
+('New Year', 'Social', 'Q3', 18000.0, 640),
+('New Year', 'Email', 'Q3', 11000.0, 390);
 
 SELECT
     CASE WHEN GROUPING(campaign) = 1 THEN 'All Campaigns' ELSE campaign END AS campaign_label,
-    CASE WHEN GROUPING(channel)  = 1 THEN 'All Channels'  ELSE channel  END AS channel_label,
-    CASE WHEN GROUPING(quarter)  = 1 THEN 'All Quarters'  ELSE quarter  END AS quarter_label,
-    ROUND(SUM(spend), 2)                                AS total_spend,
-    SUM(conversions)                                    AS total_conversions,
+    CASE WHEN GROUPING(channel) = 1 THEN 'All Channels' ELSE channel END AS channel_label,
+    CASE WHEN GROUPING(quarter) = 1 THEN 'All Quarters' ELSE quarter END AS quarter_label,
+    ROUND(SUM(spend), 2) AS total_spend,
+    SUM(conversions) AS total_conversions,
     ROUND(SUM(spend) / NULLIF(SUM(conversions), 0), 2) AS cost_per_conversion,
-    GROUPING_ID(campaign, channel, quarter)             AS grp_id
+    GROUPING_ID(campaign, channel, quarter) AS grp_id
 FROM marketing_spend
 GROUP BY CUBE (campaign, channel, quarter)
 ORDER BY grp_id, campaign_label, channel_label, quarter_label;
@@ -380,31 +395,31 @@ ORDER BY grp_id, campaign_label, channel_label, quarter_label;
 DROP TABLE IF EXISTS inventory;
 
 CREATE TABLE inventory (
-    warehouse   STRING,
-    category    STRING,
-    supplier    STRING,
+    warehouse STRING,
+    category STRING,
+    supplier STRING,
     qty_on_hand BIGINT,
-    unit_cost   DOUBLE
+    unit_cost DOUBLE
 );
 
 INSERT INTO inventory VALUES
-    ('London',    'Electronics', 'TechCorp',    1200, 85.0),
-    ('London',    'Electronics', 'MegaSupply',   800, 92.0),
-    ('London',    'Clothing',    'FashionCo',   3500,  8.5),
-    ('Frankfurt', 'Electronics', 'TechCorp',     950, 85.0),
-    ('Frankfurt', 'Clothing',    'FashionCo',   2200,  8.5),
-    ('Frankfurt', 'Home',        'HomePro',     1800, 22.0),
-    ('Singapore', 'Electronics', 'MegaSupply',  1500, 90.0),
-    ('Singapore', 'Home',        'HomePro',     2100, 20.0),
-    ('Singapore', 'Clothing',    'FashionCo',   4000,  7.5);
+('London', 'Electronics', 'TechCorp', 1200, 85.0),
+('London', 'Electronics', 'MegaSupply', 800, 92.0),
+('London', 'Clothing', 'FashionCo', 3500, 8.5),
+('Frankfurt', 'Electronics', 'TechCorp', 950, 85.0),
+('Frankfurt', 'Clothing', 'FashionCo', 2200, 8.5),
+('Frankfurt', 'Home', 'HomePro', 1800, 22.0),
+('Singapore', 'Electronics', 'MegaSupply', 1500, 90.0),
+('Singapore', 'Home', 'HomePro', 2100, 20.0),
+('Singapore', 'Clothing', 'FashionCo', 4000, 7.5);
 
 SELECT
     CASE WHEN GROUPING(warehouse) = 1 THEN 'All Warehouses' ELSE warehouse END AS warehouse_label,
-    CASE WHEN GROUPING(category)  = 1 THEN 'All Categories' ELSE category  END AS category_label,
-    CASE WHEN GROUPING(supplier)  = 1 THEN 'All Suppliers'  ELSE supplier  END AS supplier_label,
-    SUM(qty_on_hand)                           AS total_units,
-    ROUND(SUM(qty_on_hand * unit_cost), 2)     AS total_inventory_value,
-    ROUND(AVG(unit_cost), 2)                   AS avg_unit_cost,
+    CASE WHEN GROUPING(category) = 1 THEN 'All Categories' ELSE category END AS category_label,
+    CASE WHEN GROUPING(supplier) = 1 THEN 'All Suppliers' ELSE supplier END AS supplier_label,
+    SUM(qty_on_hand) AS total_units,
+    ROUND(SUM(qty_on_hand * unit_cost), 2) AS total_inventory_value,
+    ROUND(AVG(unit_cost), 2) AS avg_unit_cost,
     GROUPING_ID(warehouse, category, supplier) AS grp_id
 FROM inventory
 GROUP BY CUBE (warehouse, category, supplier)
@@ -420,12 +435,12 @@ USING DELTA
 COMMENT 'Pre-aggregated CUBE over region × product — refreshed nightly'
 AS
 SELECT
-    COALESCE(region,  'All Regions')  AS region_label,
+    COALESCE(region, 'All Regions') AS region_label,
     COALESCE(product, 'All Products') AS product_label,
-    ROUND(SUM(amount), 2)             AS total_revenue,
-    COUNT(*)                          AS order_count,
-    ROUND(AVG(amount), 2)             AS avg_order_value,
-    GROUPING_ID(region, product)      AS grp_id
+    ROUND(SUM(amount), 2) AS total_revenue,
+    COUNT(*) AS order_count,
+    ROUND(AVG(amount), 2) AS avg_order_value,
+    GROUPING_ID(region, product) AS grp_id
 FROM sales
 GROUP BY CUBE (region, product);
 
@@ -439,11 +454,11 @@ OPTIMIZE sales_cube_summary ZORDER BY (grp_id);
 -- ============================================================
 WITH new_data AS (
     SELECT
-        COALESCE(region,  'All Regions')  AS region_label,
+        COALESCE(region, 'All Regions') AS region_label,
         COALESCE(product, 'All Products') AS product_label,
-        ROUND(SUM(amount), 2)             AS total_revenue,
-        COUNT(*)                          AS order_count,
-        GROUPING_ID(region, product)      AS grp_id
+        ROUND(SUM(amount), 2) AS total_revenue,
+        COUNT(*) AS order_count,
+        GROUPING_ID(region, product) AS grp_id
     FROM sales
     WHERE order_date = CURRENT_DATE()
     GROUP BY CUBE (region, product)
@@ -451,16 +466,18 @@ WITH new_data AS (
 
 MERGE INTO sales_cube_summary AS tgt
 USING new_data AS src
-    ON tgt.region_label  = src.region_label
-   AND tgt.product_label = src.product_label
-   AND tgt.grp_id        = src.grp_id
+    ON
+        tgt.region_label = src.region_label
+        AND tgt.product_label = src.product_label
+        AND tgt.grp_id = src.grp_id
 WHEN MATCHED THEN
     UPDATE SET
-        total_revenue   = tgt.total_revenue + src.total_revenue,
-        order_count     = tgt.order_count   + src.order_count,
+        total_revenue = tgt.total_revenue + src.total_revenue,
+        order_count = tgt.order_count + src.order_count,
         avg_order_value = ROUND(
             (tgt.total_revenue + src.total_revenue)
-            / NULLIF(tgt.order_count + src.order_count, 0), 2)
+            / NULLIF(tgt.order_count + src.order_count, 0), 2
+        )
 WHEN NOT MATCHED THEN
     INSERT (region_label, product_label, total_revenue, order_count, avg_order_value, grp_id)
     VALUES (

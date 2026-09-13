@@ -247,6 +247,72 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table whose
+    `record_id` should be unique, so duplicate detection is most realistic on a
+    landing or staging table copied from that feed (for example,
+    `finance.staging.billing_usage_raw`). An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before you can compare the staging copy back to the source feed.
+
+### 7 — Find duplicate `record_id` values in a staging copy of billing usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    record_id,
+    COUNT(*) AS duplicate_count
+FROM finance.staging.billing_usage_raw
+GROUP BY record_id
+HAVING COUNT(*) > 1
+ORDER BY duplicate_count DESC, record_id;
+-- Result (illustrative):
+-- record_id                            | duplicate_count
+-- -------------------------------------|----------------
+-- 01f2c8de-4f7d-4b14-8e53-3b6d...      | 2
+-- 9237aa45-40b0-4ef2-9e9e-8ef1...      | 3
+```
+
+### 8 — Return the full duplicated billing rows for investigation
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH duplicated_record_ids AS (
+    SELECT record_id
+    FROM finance.staging.billing_usage_raw
+    GROUP BY record_id
+    HAVING COUNT(*) > 1
+)
+SELECT
+    s.record_id,
+    s.workspace_id,
+    s.sku_name,
+    s.usage_date,
+    s.usage_quantity,
+    s.ingested_at
+FROM finance.staging.billing_usage_raw AS s
+INNER JOIN duplicated_record_ids AS d
+    ON s.record_id = d.record_id
+ORDER BY s.record_id, s.ingested_at;
+-- Result (illustrative):
+-- record_id                       | workspace_id | sku_name              | usage_date  | usage_quantity | ingested_at
+-- --------------------------------|--------------|-----------------------|-------------|----------------|---------------------
+-- 01f2c8de-4f7d-4b14-8e53-3b6d... | 123456789    | PREMIUM_JOBS_COMPUTE  | 2024-07-18  | 14.5           | 2024-07-19 00:03:11
+-- 01f2c8de-4f7d-4b14-8e53-3b6d... | 123456789    | PREMIUM_JOBS_COMPUTE  | 2024-07-18  | 14.5           | 2024-07-19 00:17:42
+```
+
+!!! tip "Same pattern, production data"
+
+    The duplicate-finding shape is unchanged: first identify repeated business keys
+    with `GROUP BY ... HAVING COUNT(*) > 1`, then join back when you need the full
+    rows. System-table-derived staging feeds simply give you a realistic business
+    key (`record_id`) instead of an invented sample key.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                             | Recommended Approach             |

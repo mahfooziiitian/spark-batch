@@ -11,10 +11,14 @@ Two data source formats are supported:
 
 - ``com.crealytics.spark.excel`` — the community `spark-excel` connector.
   Works on any Spark 3.x/4.x cluster (OSS Spark, EMR, Databricks) once the
-  Maven package is on the classpath. **Databricks Runtime 15.x (Spark 3.5)**
-  is fully supported: attach ``com.crealytics:spark-excel_2.12:3.5.1_0.20.4``
-  as a cluster Maven library, or pass it via ``spark.jars.packages`` for
-  local/OSS clusters.
+  Maven package is on the classpath. The Scala build must match the running
+  Spark's Scala version — PySpark 3.x ships Scala 2.12
+  (``com.crealytics:spark-excel_2.12:3.5.1_0.20.4``, e.g. Databricks Runtime
+  13.3 LTS-16.x) while PySpark 4.x ships Scala 2.13
+  (``com.crealytics:spark-excel_2.13:3.5.1_0.20.4``). Mixing the two raises a
+  cryptic ``NoSuchMethodError`` (e.g. ``CanBuildFrom``) at read time.
+  :func:`get_spark_with_excel_package` auto-selects the matching coordinate
+  based on the installed PySpark version.
 - ``excel`` — Databricks' **built-in** Excel data source (no library install
   required), available on **Databricks Runtime 17.1+**. Prefer this format
   when running on a sufficiently new Databricks Runtime.
@@ -28,16 +32,21 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Any
 
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 if TYPE_CHECKING:
     from pyspark.sql import DataFrame, SparkSession
+    from pyspark.sql.types import StructType
 
 logger = get_logger("spark_excel")
 
 #: Maven coordinate for the community spark-excel connector, matching Spark 3.5.x
-#: (Databricks Runtime 13.3 LTS - 16.x) with Scala 2.12.
+#: (Databricks Runtime 13.3 LTS - 16.x) with Scala 2.12 (PySpark 3.x).
 SPARK_EXCEL_PACKAGE_SCALA_2_12 = "com.crealytics:spark-excel_2.12:3.5.1_0.20.4"
+
+#: Maven coordinate for the community spark-excel connector with Scala 2.13
+#: (PySpark 4.x, which dropped Scala 2.12 support).
+SPARK_EXCEL_PACKAGE_SCALA_2_13 = "com.crealytics:spark-excel_2.13:3.5.1_0.20.4"
 
 #: Data source format string for the community connector.
 CREALYTICS_EXCEL_FORMAT = "com.crealytics.spark.excel"
@@ -53,10 +62,29 @@ NATIVE_EXCEL_MIN_DBR = (17, 1)
 CREALYTICS_MIN_DBR_MAJOR = 15
 
 
+def resolve_spark_excel_package() -> str:
+    """Pick the spark-excel Maven coordinate matching the installed PySpark's Scala build.
+
+    PySpark 4.x only ships a Scala 2.13 runtime (Scala 2.12 support was
+    dropped), while PySpark 3.x ships Scala 2.12. Loading the wrong Scala
+    build raises a cryptic ``NoSuchMethodError`` at read time (e.g.
+    ``scala.collection.generic.CanBuildFrom``), so this resolves the
+    coordinate that matches the running PySpark instead of hardcoding one.
+
+    Returns:
+        :data:`SPARK_EXCEL_PACKAGE_SCALA_2_13` for PySpark 4.x, otherwise
+        :data:`SPARK_EXCEL_PACKAGE_SCALA_2_12`.
+    """
+    import pyspark
+
+    major = int(pyspark.__version__.split(".")[0])
+    return SPARK_EXCEL_PACKAGE_SCALA_2_13 if major >= 4 else SPARK_EXCEL_PACKAGE_SCALA_2_12
+
+
 def get_spark_with_excel_package(
     app_name: str = "pys-excel-spark-excel",
     master: str | None = None,
-    package: str = SPARK_EXCEL_PACKAGE_SCALA_2_12,
+    package: str | None = None,
     log_level: str = "WARN",
 ) -> SparkSession:
     """Create a local SparkSession with the spark-excel Maven package preloaded.
@@ -68,7 +96,10 @@ def get_spark_with_excel_package(
     Args:
         app_name: Application name for Spark UI.
         master: Spark master URL. Defaults to SPARK_MASTER env var or local[*].
-        package: Maven coordinate to load via ``spark.jars.packages``.
+        package: Maven coordinate to load via ``spark.jars.packages``. Defaults
+            to :func:`resolve_spark_excel_package` (the Scala build matching
+            the installed PySpark version), so the right artifact is loaded
+            automatically on both PySpark 3.x and 4.x.
         log_level: Log level for SparkContext.
 
     Returns:
@@ -76,12 +107,13 @@ def get_spark_with_excel_package(
     """
     from pyspark.sql import SparkSession
 
+    resolved_package = package or resolve_spark_excel_package()
     resolved_master = master or os.environ.get("SPARK_MASTER", "local[*]")
-    logger.info("Creating SparkSession with spark-excel package=%s", package)
+    logger.info("Creating SparkSession with spark-excel package=%s", resolved_package)
     spark = (
         SparkSession.builder.appName(app_name)
         .master(resolved_master)
-        .config("spark.jars.packages", package)
+        .config("spark.jars.packages", resolved_package)
         .config("spark.sql.adaptive.enabled", "true")
         .getOrCreate()
     )
@@ -134,6 +166,7 @@ def read_spark_excel(
     data_address: str = "'Sheet1'!A1",
     header: bool = True,
     infer_schema: bool = True,
+    schema: StructType | None = None,
     excel_format: str | None = None,
     options: dict[str, Any] | None = None,
 ) -> DataFrame:
@@ -146,9 +179,13 @@ def read_spark_excel(
             ``"'Sheet1'!A1:F100"``. Use ``"'Sheet1'"`` to read the whole sheet.
         header: Whether the first row of the range is a header row.
         infer_schema: Infer column types by sampling data (slower, more accurate).
+            Ignored when ``schema`` is provided.
+        schema: Explicit Spark schema to enforce instead of inferring one —
+            skips sampling entirely (fastest, and guarantees stable types
+            across runs/files). Takes precedence over ``infer_schema``.
         excel_format: Force a specific format; defaults to :func:`resolve_excel_format`.
         options: Additional ``.option()`` key-value pairs (e.g. ``maxRowsInMemory``,
-            ``workbookPassword``, ``timestampFormat``).
+            ``workbookPassword``, ``timestampFormat``, ``excerptSize``).
 
     Returns:
         DataFrame with the parsed Excel data, read in a distributed fashion.
@@ -162,7 +199,8 @@ def read_spark_excel(
 
     reader = spark.read.format(fmt).option("header", str(header).lower())
     if fmt == CREALYTICS_EXCEL_FORMAT:
-        reader = reader.option("dataAddress", data_address).option("inferSchema", str(infer_schema).lower())
+        infer = infer_schema and schema is None
+        reader = reader.option("dataAddress", data_address).option("inferSchema", str(infer).lower())
     else:
         # Native Databricks format uses headerRows / dataAddress option names.
         reader = reader.option("headerRows", "1" if header else "0").option("dataAddress", data_address)
@@ -170,6 +208,9 @@ def read_spark_excel(
     if options:
         for key, value in options.items():
             reader = reader.option(key, value)
+
+    if schema is not None:
+        reader = reader.schema(schema)
 
     return reader.load(path)
 

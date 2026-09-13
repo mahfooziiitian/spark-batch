@@ -361,14 +361,14 @@ ORDER BY warehouse_count DESC;
     replaced with each category's share of the active fleet so no cost/scale
     information leaks — only the *shape* of the distribution is illustrative.
 
-    | `warehouse_type` | `warehouse_size` | share of active warehouses |
-    | ---------------- | ---------------- | --------------------------- |
-    | SERVERLESS        | MEDIUM            | ~25%                        |
-    | SERVERLESS        | SMALL             | ~25%                        |
-    | PRO                | SMALL             | ~15%                        |
-    | SERVERLESS        | 2X_SMALL          | ~8%                         |
-    | PRO                | X_SMALL           | ~7%                         |
-    | *(remaining sizes)*| —                 | ~20%                        |
+    | `warehouse_type`    | `warehouse_size` | share of active warehouses |
+    | ------------------- | ---------------- | -------------------------- |
+    | SERVERLESS          | MEDIUM           | ~25%                       |
+    | SERVERLESS          | SMALL            | ~25%                       |
+    | PRO                 | SMALL            | ~15%                       |
+    | SERVERLESS          | 2X_SMALL         | ~8%                        |
+    | PRO                 | X_SMALL          | ~7%                        |
+    | *(remaining sizes)* | —                | ~20%                       |
 
 ### Job inventory — `system.lakeflow.jobs`
 
@@ -384,13 +384,13 @@ ORDER BY job_count DESC;
 
 !!! example "Anonymized live snapshot (share of active jobs, rounded)"
 
-    | `trigger_type`   | `paused` | share of active jobs |
-    | ---------------- | -------- | --------------------- |
-    | API / legacy      | false    | ~50%                   |
-    | API / legacy      | *(n/a)*  | ~34%                   |
-    | CRON               | false    | ~6%                    |
-    | CRON               | true     | ~4%                    |
-    | *(other triggers)* | —        | ~6%                    |
+    | `trigger_type`     | `paused` | share of active jobs |
+    | ------------------ | -------- | -------------------- |
+    | API / legacy       | false    | ~50%                 |
+    | API / legacy       | *(n/a)*  | ~34%                 |
+    | CRON               | false    | ~6%                  |
+    | CRON               | true     | ~4%                  |
+    | *(other triggers)* | —        | ~6%                  |
 
 ### Model serving — `system.serving.endpoint_usage`
 
@@ -408,11 +408,11 @@ ORDER BY request_count DESC;
 !!! example "Anonymized live snapshot (share of requests, last 7 days, rounded)"
 
     | `status_code`      | share of requests |
-    | ------------------ | ------------------ |
-    | 200 (success)       | ~84%                |
-    | 429 (rate limited)  | ~15%                |
-    | 400 (bad request)   | ~2%                 |
-    | 5xx (server error)  | <1%                 |
+    | ------------------ | ----------------- |
+    | 200 (success)      | ~84%              |
+    | 429 (rate limited) | ~15%              |
+    | 400 (bad request)  | ~2%               |
+    | 5xx (server error) | \<1%              |
 
     `requester` is a principal name/email — always wrap it in
     `SHA2(requester, 256)` before grouping by caller (see

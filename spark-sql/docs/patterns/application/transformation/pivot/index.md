@@ -583,6 +583,57 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no demo rows
+    need to be created first. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return
+    rows.
+
+### 12 — [Databricks] PIVOT billed usage by SKU for each workspace-day
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT *
+FROM (
+    SELECT
+        workspace_id,
+        usage_date,
+        sku_name,
+        usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND sku_name IN (
+          'PREMIUM_JOBS_COMPUTE',
+          'STANDARD_ALL_PURPOSE_COMPUTE',
+          'SERVERLESS_SQL'
+      )
+) src
+PIVOT (
+    SUM(usage_quantity)
+    FOR sku_name IN (
+        'PREMIUM_JOBS_COMPUTE' AS premium_jobs_compute,
+        'STANDARD_ALL_PURPOSE_COMPUTE' AS standard_all_purpose_compute,
+        'SERVERLESS_SQL' AS serverless_sql
+    )
+) p
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | premium_jobs_compute | standard_all_purpose_compute | serverless_sql
+-- ------------|-------------|----------------------|------------------------------|---------------
+-- 123456789   | 2024-07-01  | 42.50                | 18.20                        | 9.75
+-- 123456789   | 2024-07-02  | 37.10                | NULL                         | 12.40
+```
+
+!!! tip "From crosstab demos to chargeback views"
+
+    The pivot shape is identical to the synthetic monthly-sales examples: choose row
+    dimensions, pick a known value list, and aggregate. On `system.billing.usage`, the
+    resulting wide table is immediately useful for cost dashboards and exports.
+
+______________________________________________________________________
+
 ## :material-flask-outline: Runnable Examples
 
 Tested, self-contained scripts you can run as-is.

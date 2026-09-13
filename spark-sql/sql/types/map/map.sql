@@ -117,14 +117,14 @@ SELECT
     metric_key,
     metric_value
 FROM sessions
-    LATERAL VIEW EXPLODE(metrics) AS metric_key, metric_value;
+    LATERAL VIEW EXPLODE(metrics) as metric_key, metric_value;
 
 -- Aggregate: total clicks across all sessions
 SELECT
     metric_key,
     SUM(metric_value) AS total
 FROM sessions
-    LATERAL VIEW EXPLODE(metrics) AS metric_key, metric_value
+    LATERAL VIEW EXPLODE(metrics) as metric_key, metric_value
 GROUP BY metric_key;
 
 ---

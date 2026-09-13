@@ -194,6 +194,71 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.table_lineage` and `system.access.column_lineage` form a real
+    dependency network between Unity Catalog assets, so no synthetic edge list is
+    required here. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>` before these lineage queries will return rows.
+
+### 1 — Fan-in / fan-out degree for lineage hubs
+
+```sql
+-- [Databricks] Requires SELECT on system.access.table_lineage
+WITH edges AS (
+    SELECT DISTINCT
+        source_table_full_name AS src,
+        target_table_full_name AS dst
+    FROM system.access.table_lineage
+    WHERE source_type = 'TABLE'
+      AND target_type = 'TABLE'
+      AND event_time >= DATE_SUB(CURRENT_DATE(), 30)
+),
+degree_inputs AS (
+    SELECT
+        src AS table_name,
+        COUNT(*) AS fan_out,
+        0 AS fan_in
+    FROM edges
+    GROUP BY src
+
+    UNION ALL
+
+    SELECT
+        dst AS table_name,
+        0 AS fan_out,
+        COUNT(*) AS fan_in
+    FROM edges
+    GROUP BY dst
+)
+SELECT
+    table_name,
+    SUM(fan_in) AS upstream_edges,
+    SUM(fan_out) AS downstream_edges,
+    SUM(fan_in) + SUM(fan_out) AS total_degree
+FROM degree_inputs
+GROUP BY table_name
+ORDER BY total_degree DESC, table_name
+LIMIT 20;
+-- Result (illustrative):
+-- table_name                 | upstream_edges | downstream_edges | total_degree
+-- ---------------------------|----------------|------------------|-------------
+-- main.silver.orders_clean   | 4              | 9                | 13
+-- main.gold.customer_360     | 7              | 5                | 12
+-- main.shared.dim_calendar   | 1              | 10               | 11
+```
+
+!!! tip "Same network metric, production lineage"
+
+    Counting incoming and outgoing edges is the same degree-analysis pattern used
+    for shared devices, shared IPs, or user-to-user graphs above. On
+    `system.access.table_lineage`, it surfaces hub tables that many pipelines
+    depend on, which is useful for dependency risk reviews and change planning.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Graph Analytics](graph-analytics.md) — general graph traversal and components

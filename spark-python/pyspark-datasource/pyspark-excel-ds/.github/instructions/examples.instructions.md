@@ -10,19 +10,47 @@ Examples are organized in numbered directories by topic:
 
 ```
 examples/
-├── 01_data_source/        # Basic read/write, all-sheets, distributed spark-excel I/O
+├── 01_data_source/        # Read/write basics + distributed spark-excel I/O
+│   ├── pandas/             # ExcelReader/ExcelWriter (driver-collected, no JVM package)
+│   ├── crealytics_local/   # com.crealytics.spark.excel, run locally (get_spark_with_excel_package)
+│   ├── databricks/         # Databricks built-in "excel" format only (DBR 17.1+)
+│   ├── crealytics_databricks/  # com.crealytics.spark.excel on Databricks (cluster-attached library)
+│   └── 09_read_any_file_generic_options.py  # CLI tool spanning both pandas/distributed modes
 ├── 02_table_integration/   # excel_to_table, table_to_excel, Delta MERGE upsert
 ├── 03_properties/          # Header/skiprows, sheet selection, NA/dtypes, formatting
 ├── 04_schema/               # Explicit schema vs. inference
 └── 05_error_handling/       # Missing file, malformed rows
 ```
 
+`01_data_source/` is split into subfolders by execution approach because the
+same read/write concepts (basic read, multi-sheet, schema, formatting) are
+demonstrated differently depending on which engine loads the workbook:
+
+- `pandas/` — driver-collected via `ExcelReader`/`ExcelWriter`, zero JVM
+  dependency, works everywhere.
+- `crealytics_local/` — distributed via `com.crealytics.spark.excel`, running
+  locally with the Maven package loaded through
+  `get_spark_with_excel_package()`.
+- `databricks/` — Databricks' **built-in** `excel` format (DBR 17.1+ only, no
+  library install). Must check `is_databricks_runtime()` and skip gracefully
+  elsewhere.
+- `crealytics_databricks/` — `com.crealytics.spark.excel` running on a
+  Databricks cluster with the connector **attached as a cluster Maven
+  library** (no `get_spark_with_excel_package()` call needed/possible — the
+  library is already on the classpath). Must also skip gracefully off-cluster.
+
+A hybrid example that lets the caller pick the mode at runtime (e.g. via a
+`--mode` CLI flag) stays at the `01_data_source/` root rather than being
+force-fit into one subfolder.
+
+Each subfolder has its own independent `01_`, `02_`, ... numbering.
+
 ## File Naming
 
 - Use numbered prefixes within categories: `01_`, `02_`, etc.
 - Names should be descriptive and concise (no `excel_` prefix, no `spark_` prefix
   except when specifically about the spark-excel connector, e.g.
-  `06_spark_excel_distributed_io.py`).
+  `crealytics_local/01_spark_excel_distributed_io.py`).
 - Use snake_case.
 
 ## Required Boilerplate
@@ -46,18 +74,17 @@ Key concepts:
 """
 
 from pys_excel import get_spark, print_header, print_dataframe, set_log_level
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 set_log_level("DEBUG")
 logger = get_logger("example.name")
 
-
 if __name__ == "__main__":
-    spark = get_spark("example-name")
+  spark = get_spark("example-name")
 
-    # ... example code ...
+  # ... example code ...
 
-    spark.stop()
+  spark.stop()
 ```
 
 ## Output Conventions

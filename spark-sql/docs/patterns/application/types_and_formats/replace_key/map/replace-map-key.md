@@ -66,6 +66,68 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage.custom_tags` is a real `MAP<STRING, STRING>` column, so it is
+    a natural production example for key remapping. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these
+    queries will return rows.
+
+### Normalising billing tag keys in `custom_tags`
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH rename_rules AS (
+    SELECT MAP(
+        'Tenant', 'tenant_id',
+        'Env', 'environment',
+        'Cost Center', 'cost_center'
+    ) AS key_map
+),
+sample_usage AS (
+    SELECT
+        record_id,
+        custom_tags
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND custom_tags IS NOT NULL
+)
+SELECT
+    record_id,
+    custom_tags AS original_tags,
+    MAP_FROM_ENTRIES(
+        AGGREGATE(
+            TRANSFORM(
+                MAP_ENTRIES(custom_tags),
+                kv -> NAMED_STRUCT(
+                    'key', COALESCE(key_map[kv.key], kv.key),
+                    'value', kv.value
+                )
+            ),
+            ARRAY(),
+            (acc, kv) -> CASE
+                WHEN EXISTS(acc, x -> x.key = kv.key) THEN acc
+                ELSE CONCAT(acc, ARRAY(kv))
+            END
+        )
+    ) AS normalized_tags
+FROM sample_usage
+CROSS JOIN rename_rules;
+-- Result (illustrative):
+-- record_id | original_tags                                      | normalized_tags
+-- ----------|----------------------------------------------------|-----------------------------------------------
+-- abcd-1234 | {Tenant:acme, Env:prod, Cost Center:finance}       | {tenant_id:acme, environment:prod, cost_center:finance}
+```
+
+!!! tip "A real MAP column, not just a toy example"
+
+    Many production datasets carry ad-hoc tag maps. The same remapping pattern lets you
+    standardise billing tags, audit attributes, or integration metadata without writing
+    a UDF or exploding the map into a separate table first.
+
+______________________________________________________________________
+
 ## :material-brain: Tips and Variations
 
 | Need                               | Approach                                               |

@@ -11,7 +11,7 @@ SELECT transform(
         named_struct('name', 'Alice', 'age', 25),
         named_struct('name', 'Bob', 'age', 30)
     ),
-    s -> named_struct('name', s.name, 'age', s.age + 1)
+    s -> named_struct('name', s.name, 'age', s.age + 1) -- noqa: RF01
 ) AS transformed_structs;
 
 -- transform(array, (element, index) -> expression) format

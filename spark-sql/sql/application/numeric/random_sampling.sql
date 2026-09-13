@@ -36,7 +36,7 @@ SELECT
     makename,
     saleprice,
     saledate
-FROM allsales TABLESAMPLE (10 PERCENT) REPEATABLE (42) -- noqa: AL01, AL05, CP02
+FROM allsales TABLESAMPLE (10 PERCENT) REPEATABLE (42) -- noqa: PRS, AL01, AL05, CP02
 ORDER BY saledate;
 
 -- =============================================================================

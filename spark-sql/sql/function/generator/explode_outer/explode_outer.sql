@@ -15,7 +15,7 @@ SELECT
     id,
     val
 FROM sample
-    LATERAL VIEW EXPLODE(arr) AS val;
+    LATERAL VIEW EXPLODE(arr) as val;
 
 --  Using EXPLODE_OUTER()
 
@@ -33,7 +33,7 @@ SELECT
     id,
     val
 FROM sample
-    LATERAL VIEW EXPLODE_OUTER(arr) AS val;
+    LATERAL VIEW EXPLODE_OUTER(arr) as val;
 
 
 -- Exploding Array of Structs Safely
@@ -52,7 +52,7 @@ SELECT
     item.product,
     item.qty
 FROM orders
-    LATERAL VIEW EXPLODE_OUTER(items) AS item;
+    LATERAL VIEW EXPLODE_OUTER(items) as item;
 
 -- Exploding a Map with EXPLODE_OUTER
 
@@ -70,7 +70,7 @@ SELECT
     fruit,
     quantity
 FROM inventory
-    LATERAL VIEW EXPLODE_OUTER(stock) AS fruit, quantity;
+    LATERAL VIEW EXPLODE_OUTER(stock) as fruit, quantity;
 
 -- 4. Exploding with SEQUENCE() and Fallback
 
@@ -87,7 +87,7 @@ SELECT
     id,
     num
 FROM ranges
-    LATERAL VIEW EXPLODE_OUTER(numbers) AS num;
+    LATERAL VIEW EXPLODE_OUTER(numbers) as num;
 
 -- Bonus Tip: Use with IF, COALESCE
 
@@ -104,4 +104,4 @@ SELECT
     id,
     COALESCE(val, 'no data') AS safe_val
 FROM sample
-    LATERAL VIEW EXPLODE_OUTER(arr) AS val;
+    LATERAL VIEW EXPLODE_OUTER(arr) as val;

@@ -1,6 +1,6 @@
 -- Sum aggregation
 -- Create tenmporary view
-CREATE OR REPLACE TEMPORARY VIEW states_population USING CSV OPTIONS (
+CREATE OR REPLACE TEMPORARY VIEW states_population USING CSV OPTIONS ( -- noqa: PRS
     path 'file:/mnt/d/Data/FileData/Csv/statesPopulation.csv',
     header 'true',
     inferschema 'true',

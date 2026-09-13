@@ -665,6 +665,74 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.lakeflow.job_run_timeline` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real job-run time windows. An account
+    admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.lakeflow TO <principal>` before these queries will return rows.
+
+### 11 — Merge overlapping job-run windows per job (`system.lakeflow.job_run_timeline`)
+
+```sql
+-- [Databricks] Requires SELECT on system.lakeflow.job_run_timeline
+WITH ordered AS (
+    SELECT
+        job_id,
+        run_id,
+        period_start_time,
+        COALESCE(period_end_time, CURRENT_TIMESTAMP()) AS period_end_time,
+        MAX(COALESCE(period_end_time, CURRENT_TIMESTAMP())) OVER (
+            PARTITION BY job_id
+            ORDER BY period_start_time, run_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+        ) AS max_end_before
+    FROM system.lakeflow.job_run_timeline
+    WHERE period_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+),
+flagged AS (
+    SELECT *,
+        CASE
+            WHEN max_end_before IS NULL OR period_start_time > max_end_before
+                THEN 1 ELSE 0
+        END AS new_group
+    FROM ordered
+),
+grouped AS (
+    SELECT *,
+        SUM(new_group) OVER (
+            PARTITION BY job_id
+            ORDER BY period_start_time, run_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS group_id
+    FROM flagged
+)
+SELECT
+    job_id,
+    MIN(period_start_time) AS merged_start,
+    MAX(period_end_time) AS merged_end,
+    COUNT(*) AS timeline_rows_merged,
+    ROUND((BIGINT(MAX(period_end_time)) - BIGINT(MIN(period_start_time))) / 60.0, 1) AS merged_minutes
+FROM grouped
+GROUP BY job_id, group_id
+ORDER BY job_id, merged_start;
+-- Result (illustrative):
+-- job_id | merged_start        | merged_end          | timeline_rows_merged | merged_minutes
+-- -------|---------------------|---------------------|----------------------|---------------
+-- 1042   | 2024-07-02 09:00:00 | 2024-07-02 09:47:00 | 3                    | 47.0
+-- 1042   | 2024-07-02 10:15:00 | 2024-07-02 10:32:00 | 1                    | 17.0
+-- 2048   | 2024-07-02 11:00:00 | 2024-07-02 12:05:00 | 2                    | 65.0
+```
+
+!!! tip
+
+    The running-`MAX(end)` merge pattern generalizes cleanly from meeting bookings to
+    production job timelines. Any system table with `start` / `end` timestamps — job
+    runs, billing intervals, or compute uptime — can use the same overlap collapse.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                             | Pattern                                                          |

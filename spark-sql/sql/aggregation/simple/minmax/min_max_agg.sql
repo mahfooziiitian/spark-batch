@@ -1,5 +1,5 @@
 -- creating table
-CREATE OR REPLACE TEMPORARY VIEW flight_summary USING CSV OPTIONS (
+CREATE OR REPLACE TEMPORARY VIEW flight_summary USING CSV OPTIONS ( -- noqa: PRS
     path 'file:/mnt/d/Data/FileData/Csv/Flights/flight-summary.csv',
     header 'true',
     inferschema 'true'

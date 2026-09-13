@@ -12,7 +12,7 @@ SELECT
     id,
     name
 FROM people
-    LATERAL VIEW EXPLODE(names) AS name;
+    LATERAL VIEW EXPLODE(names) as name;
 
 -- 2. Exploding a Map
 
@@ -29,7 +29,7 @@ SELECT
     fruit,
     quantity
 FROM sales
-    LATERAL VIEW EXPLODE(items) AS fruit, quantity;
+    LATERAL VIEW EXPLODE(items) as fruit, quantity;
 
 -- 3. Exploding an Array of Structs
 
@@ -52,7 +52,7 @@ SELECT
     item.product,
     item.qty AS quantity
 FROM orders
-    LATERAL VIEW EXPLODE(products) AS item;
+    LATERAL VIEW EXPLODE(products) as item;
 
 -- 4. Explode with SEQUENCE() to Create Date Ranges
 

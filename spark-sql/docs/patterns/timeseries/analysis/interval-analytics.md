@@ -6,6 +6,16 @@ and attribute costs to time windows.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover each interval to inspect its start/end times, overlaps, and clean handoffs between adjacent ranges.
+
+<div id="viz-interval" class="ts-viz"></div>
+
+*Stacked bars show interval spans. Hatched overlays mark time shared by overlapping intervals.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Analysis Flow
 
 ```mermaid
@@ -1403,6 +1413,64 @@ ______________________________________________________________________
 | Prebuilt time dimension            | :material-star: Excellent      | One-time cost, reusable           |
 | Window function (LEAD/LAG)         | :material-star: Excellent      | O(N log N) vs O(N²) self-join     |
 | Broadcast temporal dimension       | :material-check-all: Very Good | Eliminates shuffle for small dims |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` and `system.billing.list_prices` are built-in
+    Unity Catalog system tables (no sample data setup needed) that expose
+    real usage intervals and price-effective intervals. An account admin must
+    grant `USE CATALOG` on `system`, `USE SCHEMA` on `system.billing`, and
+    `SELECT` on both tables before these queries will return rows.
+
+### Price-interval overlap for real usage records
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage and system.billing.list_prices
+SELECT
+    u.workspace_id,
+    u.sku_name,
+    u.usage_start_time,
+    u.usage_end_time,
+    p.price_start_time,
+    p.price_end_time,
+    ROUND(
+        (
+            UNIX_TIMESTAMP(LEAST(
+                u.usage_end_time,
+                COALESCE(p.price_end_time, TIMESTAMP '9999-12-31 00:00:00')
+            ))
+            - UNIX_TIMESTAMP(GREATEST(u.usage_start_time, p.price_start_time))
+        ) / 3600.0,
+        2
+    ) AS overlap_hours
+FROM system.billing.usage AS u
+JOIN system.billing.list_prices AS p
+    ON u.sku_name = p.sku_name
+    AND u.usage_start_time < COALESCE(
+        p.price_end_time,
+        TIMESTAMP '9999-12-31 00:00:00'
+    )
+    AND p.price_start_time < u.usage_end_time
+WHERE u.usage_start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+  AND u.usage_end_time IS NOT NULL
+ORDER BY overlap_hours DESC, u.usage_start_time;
+-- Result (illustrative):
+-- workspace_id | sku_name             | usage_start_time    | usage_end_time      | price_start_time    | price_end_time      | overlap_hours
+-- ------------ | -------------------- | ------------------- | ------------------- | ------------------- | ------------------- | -------------
+-- 123456789    | PREMIUM_JOBS_COMPUTE | 2024-07-02 08:00:00 | 2024-07-02 11:30:00 | 2024-07-01 00:00:00 | 2024-07-15 00:00:00 | 3.50
+-- 123456789    | SERVERLESS_SQL       | 2024-07-02 13:15:00 | 2024-07-02 15:00:00 | 2024-07-01 00:00:00 | NULL                | 1.75
+```
+
+!!! tip "Production pricing is just interval overlap"
+
+    Cost allocation against effective price ranges is the same overlap logic
+    as bookings, SLAs, or coverage windows. The only difference is that the
+    intervals now come from real billing telemetry instead of synthetic test
+    tables.
 
 ______________________________________________________________________
 

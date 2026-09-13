@@ -8,8 +8,10 @@ from pys_excel.spark_excel import (
     CREALYTICS_EXCEL_FORMAT,
     NATIVE_EXCEL_FORMAT,
     SPARK_EXCEL_PACKAGE_SCALA_2_12,
+    SPARK_EXCEL_PACKAGE_SCALA_2_13,
     is_databricks_runtime,
     resolve_excel_format,
+    resolve_spark_excel_package,
 )
 
 
@@ -44,6 +46,18 @@ def test_resolve_format_uses_native_on_dbr_17_plus(monkeypatch):
 
 def test_maven_package_coordinate_targets_spark_35():
     assert SPARK_EXCEL_PACKAGE_SCALA_2_12.startswith("com.crealytics:spark-excel_2.12:3.5")
+    assert SPARK_EXCEL_PACKAGE_SCALA_2_13.startswith("com.crealytics:spark-excel_2.13:3.5")
+
+
+def test_resolve_spark_excel_package_matches_installed_pyspark_scala_build():
+    import pyspark
+
+    expected = (
+        SPARK_EXCEL_PACKAGE_SCALA_2_13
+        if int(pyspark.__version__.split(".")[0]) >= 4
+        else SPARK_EXCEL_PACKAGE_SCALA_2_12
+    )
+    assert resolve_spark_excel_package() == expected
 
 
 def test_env_untouched_after_tests():

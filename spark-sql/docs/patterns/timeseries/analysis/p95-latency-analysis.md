@@ -10,6 +10,16 @@ ignoring rare, extreme outliers.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Explore how a right-skewed latency distribution produces very different P50, P95, and P99 tail markers.
+
+<div id="viz-p95-latency" class="ts-viz"></div>
+
+*Bars show binned request latencies. Hover percentile markers to inspect the exact cutoff value.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Analysis Flow
 
 ```mermaid
@@ -360,6 +370,53 @@ ______________________________________________________________________
 | Pre-aggregate to hourly/daily buckets before trending | Reduces rows before rolling window computation                                           |
 | Compute multiple percentiles in one call              | `PERCENTILE_APPROX(col, array(0.5, 0.95, 0.99))` avoids re-scanning the data three times |
 | Partition by endpoint/service before grouping         | Enables parallel per-group sketch computation                                            |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.query.history` is a built-in Unity Catalog system table (no
+    sample data setup needed) that stores real Databricks SQL execution
+    durations. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.query`, and `SELECT` on `system.query.history`
+    before these queries will return rows.
+
+### Daily P95 query latency per warehouse
+
+```sql
+-- [Databricks] Requires SELECT on system.query.history
+SELECT
+    compute.warehouse_id AS warehouse_id,
+    DATE(start_time) AS query_date,
+    COUNT(*) AS query_count,
+    ROUND(PERCENTILE_APPROX(total_duration_ms, 0.95), 1) AS p95_total_duration_ms,
+    ROUND(
+        PERCENTILE_APPROX(
+            waiting_for_compute_duration_ms + waiting_at_capacity_duration_ms,
+            0.95
+        ),
+        1
+    ) AS p95_queue_ms
+FROM system.query.history
+WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+  AND compute.warehouse_id IS NOT NULL
+GROUP BY compute.warehouse_id, DATE(start_time)
+ORDER BY query_date DESC, p95_total_duration_ms DESC;
+-- Result (illustrative):
+-- warehouse_id | query_date  | query_count | p95_total_duration_ms | p95_queue_ms
+-- ------------ | ----------- | ----------- | --------------------- | ------------
+-- 6f91a...     | 2024-07-02  | 842         | 9132.0                | 1870.0
+-- 8b22c...     | 2024-07-02  | 311         | 2840.0                | 120.0
+```
+
+!!! tip "P95 becomes more valuable on real user traffic"
+
+    Query-history latency is exactly the kind of long-tailed production data
+    where averages hide problems. The same percentile pattern surfaces real
+    warehouse slowdowns, then lets you compare total latency versus queueing
+    latency side by side.
 
 ______________________________________________________________________
 

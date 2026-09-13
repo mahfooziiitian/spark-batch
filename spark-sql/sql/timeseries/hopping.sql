@@ -77,7 +77,7 @@ FROM clickstream_epoch
             FLOOR(epoch / 900) * 900,
             900                              -- step = hop_size
         )
-    ) AS window_start_epoch
+    ) as window_start_epoch
 -- Keep only windows where the event actually falls within [start, start + window_size)
 WHERE
     epoch >= window_start_epoch
@@ -102,7 +102,7 @@ WITH windows AS (
                 FLOOR(epoch / 900) * 900,
                 900
             )
-        ) AS window_start_epoch
+        ) as window_start_epoch
     WHERE
         epoch >= window_start_epoch
         AND epoch < window_start_epoch + 3600
@@ -146,7 +146,7 @@ WITH windows AS (
                 FLOOR(epoch / 900) * 900,
                 900
             )
-        ) AS window_start_epoch
+        ) as window_start_epoch
     WHERE
         epoch >= window_start_epoch
         AND epoch < window_start_epoch + 3600
@@ -199,7 +199,7 @@ WITH windows AS (
                 FLOOR(epoch / 900) * 900,
                 900
             )
-        ) AS window_start_epoch
+        ) as window_start_epoch
     WHERE
         epoch >= window_start_epoch
         AND epoch < window_start_epoch + 3600
@@ -280,7 +280,7 @@ FROM clickstream_epoch
             FLOOR(epoch / 600) * 600,
             600
         )
-    ) AS window_start_epoch
+    ) as window_start_epoch
 WHERE
     epoch >= window_start_epoch
     AND epoch < window_start_epoch + 1800
@@ -305,7 +305,7 @@ WITH windows AS (
                 FLOOR(epoch / 900) * 900,
                 900
             )
-        ) AS window_start_epoch
+        ) as window_start_epoch
     WHERE
         epoch >= window_start_epoch
         AND epoch < window_start_epoch + 3600

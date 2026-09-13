@@ -13,25 +13,25 @@ FROM
     VALUES
     (
         'Alice',
-        STRUCT('NY' AS city, 'USA' AS country),
+        STRUCT('NY' as city, 'USA' as country),
         ARRAY('gift', 'priority'),
         MAP('product', 'A', 'price', '100')
     ),
     (
         'Bob',
-        STRUCT('LA' AS city, 'USA' AS country),
+        STRUCT('LA' as city, 'USA' as country),
         ARRAY('discount'),
         MAP('product', 'B', 'price', '200')
     ),
     (
         'Charlie',
-        STRUCT('Toronto' AS city, 'Canada' AS country),
+        STRUCT('Toronto' as city, 'Canada' as country),
         ARRAY('gift', 'exclusive'),
         MAP('product', 'C', 'price', '300')
     ),
     (
         'Dana',
-        STRUCT('Vancouver' AS city, 'Canada' AS country),
+        STRUCT('Vancouver' as city, 'Canada' as country),
         ARRAY('promo'),
         MAP('product', 'A', 'price', '250')
     )

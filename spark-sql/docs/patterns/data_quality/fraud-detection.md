@@ -232,6 +232,114 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no synthetic
+    sample data setup needed) that records workspace access events, actors, status
+    codes, and source IP addresses. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>` before these queries
+    will return rows.
+
+### 6 — Users with a spike in failed login or token actions
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH daily_failures AS (
+    SELECT
+        event_date,
+        user_identity.email AS user_email,
+        COUNT(*) AS failed_action_count
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 14)
+      AND source_ip_address IS NOT NULL
+      AND (
+          LOWER(action_name) LIKE '%login%'
+          OR LOWER(action_name) LIKE '%token%'
+      )
+      AND response.status_code <> '200'
+    GROUP BY event_date, user_identity.email
+),
+scored AS (
+    SELECT
+        event_date,
+        user_email,
+        failed_action_count,
+        AVG(failed_action_count) OVER (PARTITION BY user_email) AS avg_failures,
+        STDDEV(failed_action_count) OVER (PARTITION BY user_email) AS stddev_failures
+    FROM daily_failures
+)
+SELECT
+    event_date,
+    user_email,
+    failed_action_count,
+    ROUND(avg_failures, 2) AS avg_failures,
+    ROUND(stddev_failures, 2) AS stddev_failures,
+    ROUND(
+        (failed_action_count - avg_failures) / NULLIF(stddev_failures, 0),
+        2
+    ) AS z_score
+FROM scored
+WHERE failed_action_count >= 5
+  AND ABS((failed_action_count - avg_failures) / NULLIF(stddev_failures, 0)) >= 2
+ORDER BY event_date DESC, failed_action_count DESC;
+-- Result (illustrative):
+-- event_date  | user_email         | failed_action_count | avg_failures | stddev_failures | z_score
+-- ------------|--------------------|---------------------|--------------|-----------------|--------
+-- 2024-07-19  | analyst@company.com| 14                  | 2.10         | 3.88            | 3.07
+```
+
+### 7 — Token activity from a new or rare source IP address
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH recent_token_events AS (
+    SELECT
+        event_time,
+        user_identity.email AS user_email,
+        source_ip_address,
+        action_name
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND LOWER(action_name) LIKE '%token%'
+      AND source_ip_address IS NOT NULL
+),
+known_ips AS (
+    SELECT DISTINCT
+        user_identity.email AS user_email,
+        source_ip_address
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 37)
+      AND event_date < DATE_SUB(CURRENT_DATE(), 7)
+      AND source_ip_address IS NOT NULL
+)
+SELECT
+    r.event_time,
+    r.user_email,
+    r.source_ip_address,
+    r.action_name,
+    'NEW_IP_FOR_TOKEN_ACTIVITY' AS risk_flag
+FROM recent_token_events AS r
+LEFT ANTI JOIN known_ips AS k
+    ON r.user_email = k.user_email
+   AND r.source_ip_address = k.source_ip_address
+ORDER BY r.event_time DESC;
+-- Result (illustrative):
+-- event_time           | user_email          | source_ip_address | action_name     | risk_flag
+-- ---------------------|---------------------|-------------------|-----------------|---------------------------
+-- 2024-07-19 08:44:11  | analyst@company.com | 198.51.100.44     | createToken     | NEW_IP_FOR_TOKEN_ACTIVITY
+```
+
+!!! tip "Same pattern, production data"
+
+    These are the same fraud-detection ideas as the sample transactions above:
+    count suspicious events over time, compare them to a baseline, and flag unusual
+    network identity changes. Audit logs simply replace cards and devices with real
+    access-control signals such as `action_name`, `response.status_code`, and
+    `source_ip_address`.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Network Analysis](../structural/network-analysis.md) — IP/device/user graph mapping

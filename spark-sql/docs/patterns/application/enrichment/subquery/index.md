@@ -70,6 +70,58 @@ Scalar subqueries in the SELECT list for ratio and percentage calculations.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no sample data
+    creation step is required. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return
+    rows.
+
+### Workspace totals filtered against the account-wide average
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+SELECT
+    workspace_id,
+    SUM(usage_quantity) AS total_quantity,
+    ROUND(
+        SUM(usage_quantity) * 100.0 /
+        (SELECT SUM(usage_quantity)
+         FROM system.billing.usage
+         WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)),
+        2
+    ) AS pct_of_account_usage
+FROM system.billing.usage
+WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+GROUP BY workspace_id
+HAVING SUM(usage_quantity) > (
+    SELECT AVG(workspace_total)
+    FROM (
+        SELECT
+            workspace_id,
+            SUM(usage_quantity) AS workspace_total
+        FROM system.billing.usage
+        WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+        GROUP BY workspace_id
+    ) AS workspace_totals
+)
+ORDER BY total_quantity DESC;
+-- Result (illustrative):
+-- workspace_id | total_quantity | pct_of_account_usage
+-- ------------|----------------|---------------------
+-- 123456789   | 5538.60        | 24.18
+-- 987654321   | 4210.35        | 18.39
+```
+
+!!! tip "Scalar subqueries scale too"
+
+    The same subquery-in-`HAVING` and subquery-in-`SELECT` patterns used on toy data
+    are useful for real chargeback analysis when you need workspace metrics compared
+    with an account-level baseline.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                              | Recommended Approach    |

@@ -341,6 +341,44 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample
+    data setup needed) with real event timestamps in `event_time`. An account
+    admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.access`, and `SELECT` on `system.access.audit` before these
+    queries will return rows.
+
+### Hopping windows over audit volume
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+SELECT
+    window(event_time, '1 hour', '15 minutes').start AS window_start,
+    window(event_time, '1 hour', '15 minutes').end AS window_end,
+    service_name,
+    COUNT(*) AS event_count
+FROM system.access.audit
+WHERE event_time >= CURRENT_TIMESTAMP() - INTERVAL 1 DAY
+GROUP BY window(event_time, '1 hour', '15 minutes'), service_name
+ORDER BY window_start, service_name;
+-- Result (illustrative):
+-- window_start        | window_end          | service_name | event_count
+-- ------------------- | ------------------- | ------------ | -----------
+-- 2024-07-02 09:00:00 | 2024-07-02 10:00:00 | notebooks    | 812
+-- 2024-07-02 09:15:00 | 2024-07-02 10:15:00 | notebooks    | 845
+-- 2024-07-02 09:30:00 | 2024-07-02 10:30:00 | clusters     | 119
+```
+
+!!! tip "Overlapping windows are natural for operational event streams"
+
+    Audit traffic rises and falls continuously, so overlapping windows help
+    smooth the signal without hiding bursts. The same `window(ts, size, slide)` pattern works for security, usage, and reliability events.
+
+______________________________________________________________________
+
 ## :material-magnify: Behavior Notes
 
 1. Each event belongs to `CEIL(window_size / slide_interval)` windows. A 1-hour window with a 30-min slide → up to 2 windows per event.

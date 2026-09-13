@@ -193,6 +193,115 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample data
+    setup needed) that captures real ordered actions per user. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 1 — Top action trigrams per user (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH sequenced AS (
+    SELECT
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        action_name AS action_1,
+        LEAD(action_name, 1) OVER w AS action_2,
+        LEAD(action_name, 2) OVER w AS action_3
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND user_identity.email IS NOT NULL
+    WINDOW w AS (
+        PARTITION BY COALESCE(user_identity.email, 'unknown')
+        ORDER BY event_time
+    )
+),
+counts AS (
+    SELECT
+        user_email,
+        CONCAT(action_1, ' → ', action_2, ' → ', action_3) AS sequence,
+        COUNT(*) AS frequency
+    FROM sequenced
+    WHERE action_2 IS NOT NULL
+      AND action_3 IS NOT NULL
+    GROUP BY user_email, CONCAT(action_1, ' → ', action_2, ' → ', action_3)
+),
+ranked AS (
+    SELECT *,
+        ROW_NUMBER() OVER (PARTITION BY user_email ORDER BY frequency DESC, sequence) AS rn
+    FROM counts
+)
+SELECT user_email, sequence, frequency
+FROM ranked
+WHERE rn <= 3
+ORDER BY user_email, rn;
+-- Result (illustrative):
+-- user_email         | sequence                        | frequency
+-- -------------------|---------------------------------|----------
+-- analyst@dataco.io  | login → create → runCommand     | 6
+-- analyst@dataco.io  | create → runCommand → edit      | 4
+-- ops@dataco.io      | login → runNow → getRun         | 9
+```
+
+### 2 — Transition support and confidence for cluster actions (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH transitions AS (
+    SELECT
+        action_name AS from_action,
+        LEAD(action_name, 1) OVER (
+            PARTITION BY COALESCE(user_identity.email, 'unknown')
+            ORDER BY event_time
+        ) AS to_action
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND service_name = 'clusters'
+),
+counts AS (
+    SELECT
+        from_action,
+        to_action,
+        COUNT(*) AS pair_count
+    FROM transitions
+    WHERE to_action IS NOT NULL
+    GROUP BY from_action, to_action
+),
+from_totals AS (
+    SELECT from_action, SUM(pair_count) AS total_pairs
+    FROM counts
+    GROUP BY from_action
+)
+SELECT
+    c.from_action,
+    c.to_action,
+    c.pair_count,
+    ROUND(c.pair_count * 1.0 / (SELECT SUM(pair_count) FROM counts), 3) AS support,
+    ROUND(c.pair_count * 1.0 / ft.total_pairs, 3) AS confidence
+FROM counts c
+JOIN from_totals ft
+    ON c.from_action = ft.from_action
+ORDER BY confidence DESC, support DESC;
+-- Result (illustrative):
+-- from_action | to_action | pair_count | support | confidence
+-- ------------|-----------|------------|---------|-----------
+-- create      | edit      | 38         | 0.192   | 0.613
+-- edit        | resize    | 21         | 0.106   | 0.429
+-- resize      | delete    | 19         | 0.096   | 0.704
+```
+
+!!! tip
+
+    The mining pattern is identical on production audit logs: order events within an
+    entity, build n-grams or transitions with `LEAD`, then aggregate frequency,
+    support, or confidence. System tables simply give you real sequences to mine.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [State Machine Analysis](state-machine.md) — validate transitions against expected rules

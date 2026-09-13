@@ -642,6 +642,115 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample data
+    setup needed) that captures real user activity. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 8 — Consecutive audit-activity streaks per user (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH active_days AS (
+    SELECT DISTINCT
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        event_date
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND user_identity.email IS NOT NULL
+),
+ranked AS (
+    SELECT
+        user_email,
+        event_date,
+        DATE_SUB(
+            event_date,
+            ROW_NUMBER() OVER (PARTITION BY user_email ORDER BY event_date)
+        ) AS island_anchor
+    FROM active_days
+)
+SELECT
+    user_email,
+    MIN(event_date) AS active_from,
+    MAX(event_date) AS active_to,
+    DATEDIFF(MAX(event_date), MIN(event_date)) + 1 AS active_days_in_streak
+FROM ranked
+GROUP BY user_email, island_anchor
+ORDER BY user_email, active_from;
+-- Result (illustrative):
+-- user_email         | active_from | active_to   | active_days_in_streak
+-- -------------------|-------------|-------------|----------------------
+-- analyst@dataco.io  | 2024-07-01  | 2024-07-04  | 4
+-- analyst@dataco.io  | 2024-07-06  | 2024-07-08  | 3
+-- ops@dataco.io      | 2024-07-02  | 2024-07-02  | 1
+```
+
+### 9 — Inactivity gaps between audit streaks (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH active_days AS (
+    SELECT DISTINCT
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        event_date
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND user_identity.email IS NOT NULL
+),
+ranked AS (
+    SELECT
+        user_email,
+        event_date,
+        DATE_SUB(
+            event_date,
+            ROW_NUMBER() OVER (PARTITION BY user_email ORDER BY event_date)
+        ) AS island_anchor
+    FROM active_days
+),
+islands AS (
+    SELECT
+        user_email,
+        MIN(event_date) AS active_from,
+        MAX(event_date) AS active_to
+    FROM ranked
+    GROUP BY user_email, island_anchor
+),
+with_next AS (
+    SELECT
+        user_email,
+        active_from,
+        active_to,
+        LEAD(active_from) OVER (PARTITION BY user_email ORDER BY active_from) AS next_active_from
+    FROM islands
+)
+SELECT
+    user_email,
+    active_to AS gap_start,
+    next_active_from AS gap_end,
+    DATEDIFF(next_active_from, active_to) - 1 AS inactive_days
+FROM with_next
+WHERE next_active_from IS NOT NULL
+  AND DATEDIFF(next_active_from, active_to) > 1
+ORDER BY user_email, gap_start;
+-- Result (illustrative):
+-- user_email         | gap_start   | gap_end     | inactive_days
+-- -------------------|-------------|-------------|--------------
+-- analyst@dataco.io  | 2024-07-04  | 2024-07-06  | 1
+-- finance@dataco.io  | 2024-07-10  | 2024-07-15  | 4
+```
+
+!!! tip
+
+    The `date - ROW_NUMBER()` island key does not care whether the source rows came
+    from toy attendance data or real audit logs. Any production table with one row
+    per active day can use the same streak and gap pattern directly.
+
+______________________________________________________________________
+
 ## :material-magnify: Behavior Notes
 
 1. The **date − ROW_NUMBER** trick works only for strictly consecutive values (dates, integers). For irregular timestamps, use the **LAG + threshold** approach.

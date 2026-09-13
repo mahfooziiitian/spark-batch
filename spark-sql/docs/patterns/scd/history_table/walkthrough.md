@@ -310,6 +310,92 @@ ORDER BY customer_id, valid_from;
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.list_prices` is a built-in Unity Catalog system table that already stores
+    effective-dated Databricks SKU price history — each price change opens a new row and closes
+    the previous one. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows. No synthetic sample data setup is required.
+
+### 11 — Price as of a point in time from the built-in history table
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+SELECT
+    sku_name,
+    cloud,
+    currency_code,
+    usage_unit,
+    pricing.default AS list_price,
+    price_start_time AS valid_from,
+    price_end_time AS valid_to
+FROM system.billing.list_prices
+WHERE sku_name = 'SERVERLESS_SQL_COMPUTE'
+  AND cloud = 'AWS'
+  AND price_start_time <= TIMESTAMP '2025-01-15 00:00:00'
+  AND (price_end_time > TIMESTAMP '2025-01-15 00:00:00' OR price_end_time IS NULL)
+ORDER BY price_start_time DESC
+LIMIT 1;
+-- Result (illustrative):
+-- sku_name               | cloud | currency_code | usage_unit | list_price | valid_from           | valid_to
+-- -----------------------|-------|---------------|------------|------------|----------------------|-------------------------
+-- SERVERLESS_SQL_COMPUTE | AWS   | USD           | DBU        | 0.70       | 2025-01-01 00:00:00  | NULL
+```
+
+### 12 — Split the same source into current and archived rows
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.list_prices
+WITH current_prices AS (
+    SELECT sku_name, cloud, pricing.default AS list_price, price_start_time
+    FROM system.billing.list_prices
+    WHERE price_end_time IS NULL
+),
+archived_prices AS (
+    SELECT sku_name, cloud, pricing.default AS list_price, price_start_time, price_end_time
+    FROM system.billing.list_prices
+    WHERE price_end_time IS NOT NULL
+)
+SELECT
+    'history' AS source_table,
+    sku_name,
+    cloud,
+    list_price,
+    price_start_time,
+    price_end_time
+FROM archived_prices
+WHERE sku_name = 'SERVERLESS_SQL_COMPUTE' AND cloud = 'AWS'
+
+UNION ALL
+
+SELECT
+    'current' AS source_table,
+    sku_name,
+    cloud,
+    list_price,
+    price_start_time,
+    NULL AS price_end_time
+FROM current_prices
+WHERE sku_name = 'SERVERLESS_SQL_COMPUTE' AND cloud = 'AWS'
+ORDER BY price_start_time;
+-- Result (illustrative):
+-- source_table | sku_name               | cloud | list_price | price_start_time     | price_end_time
+-- -------------|------------------------|-------|------------|----------------------|-------------------------
+-- history      | SERVERLESS_SQL_COMPUTE | AWS   | 0.65       | 2024-01-01 00:00:00  | 2025-01-01 00:00:00
+-- current      | SERVERLESS_SQL_COMPUTE | AWS   | 0.70       | 2025-01-01 00:00:00  | NULL
+```
+
+!!! tip
+
+    Type 4 designs usually maintain separate current and history tables, but the read pattern is
+    the same on production system tables: query the effective-dated rows for as-of analysis, or
+    split them into current vs archived subsets when downstream consumers want both views.
+
+______________________________________________________________________
+
 ## :material-numeric-9-plus-circle: Optimise and Clean Up
 
 ```sql

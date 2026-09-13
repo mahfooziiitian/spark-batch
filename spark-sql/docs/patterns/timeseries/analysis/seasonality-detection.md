@@ -5,6 +5,16 @@ periods to identify recurring patterns, seasonal peaks, and cyclical trends.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover either weekly line to compare the aligned day-of-week values and the delta versus the matching point from the other period.
+
+<div id="viz-seasonality" class="ts-viz"></div>
+
+*Overlaying this week and last week on the same weekday axis makes the repeated seasonal shape immediately visible while preserving point-by-point differences.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Detection Flow
 
 ```mermaid
@@ -299,6 +309,53 @@ ______________________________________________________________________
 | Self-join for YoY is clearer than `LAG(12)` | Works correctly even with missing months   |
 | Named `WINDOW` for multiple LAG offsets     | Single sort pass shared across features    |
 | Filter to relevant years only               | Avoids computing over full history         |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no
+    sample data setup needed) that captures timestamped workspace events.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.access`, and `SELECT` on `system.access.audit` before these
+    queries will return rows.
+
+### Weekday-hour seasonal profile of audit volume
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH hourly_events AS (
+    SELECT
+        service_name,
+        DATE_TRUNC('hour', event_time) AS hour_bucket,
+        COUNT(*) AS event_count
+    FROM system.access.audit
+    WHERE event_time >= CURRENT_TIMESTAMP() - INTERVAL 28 DAYS
+    GROUP BY service_name, DATE_TRUNC('hour', event_time)
+)
+SELECT
+    service_name,
+    DAYOFWEEK(hour_bucket) AS day_of_week,
+    HOUR(hour_bucket) AS hour_of_day,
+    ROUND(AVG(event_count), 1) AS avg_events,
+    MAX(event_count) AS peak_events
+FROM hourly_events
+GROUP BY service_name, DAYOFWEEK(hour_bucket), HOUR(hour_bucket)
+ORDER BY service_name, avg_events DESC, peak_events DESC;
+-- Result (illustrative):
+-- service_name | day_of_week | hour_of_day | avg_events | peak_events
+-- ------------ | ----------- | ----------- | ---------- | -----------
+-- notebooks    | 3           | 9           | 914.6      | 1208
+-- clusters     | 2           | 10          | 143.2      | 201
+```
+
+!!! tip "Seasonality often appears as repeated calendar-position strength"
+
+    Grouping by weekday and hour is a simple but effective production
+    seasonality profile. The same idea generalizes to week-of-month, month,
+    fiscal period, or any other calendar dimension carried by system events.
 
 ______________________________________________________________________
 

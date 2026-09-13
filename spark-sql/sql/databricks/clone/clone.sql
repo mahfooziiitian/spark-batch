@@ -17,19 +17,20 @@ DROP TABLE IF EXISTS dim_product;
 
 CREATE TABLE dim_product (
     product_id INT,
-    name       STRING,
-    category   STRING,
-    price      DOUBLE
+    name STRING,
+    category STRING,
+    price DOUBLE
 ) USING DELTA;
 
 INSERT INTO dim_product VALUES
-    (1, 'Widget A', 'Tools',       9.99),
-    (2, 'Widget B', 'Tools',      19.99),
-    (3, 'Gadget X', 'Electronics', 49.99);
+(1, 'Widget A', 'Tools', 9.99),
+(2, 'Widget B', 'Tools', 19.99),
+(3, 'Gadget X', 'Electronics', 49.99);
 
 -- Version 0 established above; later versions created below to demonstrate
 -- version-pinned clones.
-UPDATE dim_product SET price = 12.99 WHERE product_id = 1;
+UPDATE dim_product SET price = 12.99
+WHERE product_id = 1;
 INSERT INTO dim_product VALUES (4, 'Gadget Y', 'Electronics', 89.99);
 
 ---------------------------------------------------------------------------------------------------
@@ -50,11 +51,20 @@ SHALLOW CLONE dim_product;
 
 -- The dev clone starts identical to the source's current version, and can be modified
 -- independently for testing without touching production data:
-UPDATE dim_product_dev SET price = 999.99 WHERE product_id = 1;
+UPDATE dim_product_dev SET price = 999.99
+WHERE product_id = 1;
 
-SELECT product_id, price FROM dim_product_dev WHERE product_id = 1;
+SELECT
+    product_id,
+    price
+FROM dim_product_dev
+WHERE product_id = 1;
 -- Result: 999.99 (dev clone only)
-SELECT product_id, price FROM dim_product WHERE product_id = 1;
+SELECT
+    product_id,
+    price
+FROM dim_product
+WHERE product_id = 1;
 -- Result: 12.99 (source untouched)
 
 ---------------------------------------------------------------------------------------------------
@@ -81,7 +91,7 @@ DROP TABLE IF EXISTS dim_product_asof_v0;
 
 -- [Databricks] Requires Delta Lake
 CREATE TABLE dim_product_asof_v0
-DEEP CLONE dim_product VERSION AS OF 0;
+DEEP CLONE dim_product VERSION AS OF 0; -- noqa: PRS
 
 -- Result: dim_product_asof_v0 has the original 3 rows with product 1 still priced at
 -- 9.99 — the price update and product 4 insert (versions 1-2) are not included.

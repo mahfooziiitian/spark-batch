@@ -665,6 +665,102 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no synthetic
+    sample data is needed. For this churn use case, treat each `workspace_id` or
+    `custom_tags['Tenant']` as the "customer" and billing activity as the
+    "purchase"/engagement signal. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows.
+
+### 11 — Workspaces churned after prior billing activity
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_days AS (
+    SELECT
+        workspace_id,
+        usage_date
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 365)
+    GROUP BY workspace_id, usage_date
+),
+last_two_days AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        LAG(usage_date) OVER (
+            PARTITION BY workspace_id
+            ORDER BY usage_date
+        ) AS previous_usage_date,
+        ROW_NUMBER() OVER (
+            PARTITION BY workspace_id
+            ORDER BY usage_date DESC
+        ) AS rn
+    FROM workspace_days
+)
+SELECT
+    workspace_id,
+    previous_usage_date,
+    usage_date AS last_usage_date,
+    DATEDIFF(CURRENT_DATE(), usage_date) AS days_since_last_usage,
+    'churned' AS churn_status
+FROM last_two_days
+WHERE rn = 1
+  AND previous_usage_date IS NOT NULL
+  AND DATEDIFF(CURRENT_DATE(), usage_date) > 30
+ORDER BY days_since_last_usage DESC, workspace_id;
+-- Result (illustrative):
+-- workspace_id | previous_usage_date | last_usage_date | days_since_last_usage | churn_status
+-- -------------|---------------------|-----------------|-----------------------|-------------
+-- 123456789    | 2024-07-10          | 2024-08-02      | 41                    | churned
+-- 987654321    | 2024-06-21          | 2024-07-01      | 73                    | churned
+```
+
+### 12 — Tenant churn status from last usage date
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH tenant_last_usage AS (
+    SELECT
+        custom_tags['Tenant'] AS tenant,
+        MAX(usage_date) AS last_usage_date
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 365)
+      AND custom_tags['Tenant'] IS NOT NULL
+    GROUP BY custom_tags['Tenant']
+)
+SELECT
+    tenant,
+    last_usage_date,
+    DATEDIFF(CURRENT_DATE(), last_usage_date) AS days_since_last_usage,
+    CASE
+        WHEN DATEDIFF(CURRENT_DATE(), last_usage_date) <= 30 THEN 'active'
+        WHEN DATEDIFF(CURRENT_DATE(), last_usage_date) <= 60 THEN 'at-risk'
+        ELSE 'churned'
+    END AS churn_status
+FROM tenant_last_usage
+ORDER BY days_since_last_usage DESC, tenant;
+-- Result (illustrative):
+-- tenant  | last_usage_date | days_since_last_usage | churn_status
+-- --------|-----------------|-----------------------|-------------
+-- acme-co | 2024-08-18      | 25                    | active
+-- globex  | 2024-07-29      | 45                    | at-risk
+-- initech | 2024-06-12      | 92                    | churned
+```
+
+!!! tip "The same churn logic works on production billing data"
+
+    These queries use the same `MAX(...)`, `LAG(...)`, and `DATEDIFF(...)`
+    pattern as the synthetic customer examples above. Only the entity you group by
+    changes: `workspace_id` for per-workspace churn, or `custom_tags['Tenant']`
+    for multi-tenant cost and activity monitoring.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                            | Approach                                                                                  |

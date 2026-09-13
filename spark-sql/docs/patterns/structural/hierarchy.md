@@ -686,6 +686,115 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.information_schema.tables` is a built-in Unity Catalog metadata table
+    that already exposes a real three-level hierarchy:
+    `catalog -> schema -> table`. No synthetic sample tree is needed. An account
+    admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.information_schema TO <principal>` before these metadata queries will return rows.
+
+### Pattern 8 — Catalog > schema > table tree from `system.information_schema.tables`
+
+```sql
+-- [Databricks] Requires SELECT on system.information_schema.tables
+WITH nodes AS (
+    SELECT DISTINCT
+        table_catalog AS node_name,
+        CAST(NULL AS STRING) AS parent_name,
+        'catalog' AS node_type
+    FROM system.information_schema.tables
+
+    UNION ALL
+
+    SELECT DISTINCT
+        CONCAT(table_catalog, '.', table_schema) AS node_name,
+        table_catalog AS parent_name,
+        'schema' AS node_type
+    FROM system.information_schema.tables
+
+    UNION ALL
+
+    SELECT
+        CONCAT(table_catalog, '.', table_schema, '.', table_name) AS node_name,
+        CONCAT(table_catalog, '.', table_schema) AS parent_name,
+        'table' AS node_type
+    FROM system.information_schema.tables
+),
+catalog_tree AS (
+    SELECT
+        node_name,
+        parent_name,
+        node_type,
+        0 AS depth,
+        CAST(node_name AS STRING) AS path
+    FROM nodes
+    WHERE node_name = 'main'
+
+    UNION ALL
+
+    SELECT
+        n.node_name,
+        n.parent_name,
+        n.node_type,
+        ct.depth + 1,
+        ct.path || ' > ' || n.node_name AS path
+    FROM nodes AS n
+    JOIN catalog_tree AS ct
+        ON n.parent_name = ct.node_name
+)
+SELECT
+    REPEAT('  ', depth) || node_name AS hierarchy_node,
+    node_type,
+    depth,
+    path
+FROM catalog_tree
+ORDER BY path
+LIMIT 20;
+-- Result (illustrative):
+-- hierarchy_node                    | node_type | depth | path
+-- ----------------------------------|-----------|-------|--------------------------------------------------------------
+-- main                              | catalog   | 0     | main
+--   main.analytics                  | schema    | 1     | main > main.analytics
+--     main.analytics.customer_360   | table     | 2     | main > main.analytics > main.analytics.customer_360
+--     main.analytics.daily_sales    | table     | 2     | main > main.analytics > main.analytics.daily_sales
+--   main.finance                    | schema    | 1     | main > main.finance
+```
+
+### Pattern 9 — Table counts rolled up by catalog and schema
+
+```sql
+-- [Databricks] Requires SELECT on system.information_schema.tables
+SELECT
+    table_catalog,
+    table_schema,
+    COUNT(*) AS table_count
+FROM system.information_schema.tables
+WHERE table_type IN ('BASE TABLE', 'VIEW')
+GROUP BY ROLLUP (table_catalog, table_schema)
+ORDER BY table_catalog NULLS LAST, table_schema NULLS LAST;
+-- Result (illustrative):
+-- table_catalog | table_schema | table_count
+-- --------------|--------------|------------
+-- main          | analytics    | 42
+-- main          | finance      | 18
+-- main          | NULL         | 60
+-- samples       | nyctaxi      | 12
+-- samples       | NULL         | 12
+-- NULL          | NULL         | 72
+```
+
+!!! tip "Same tree traversal, production metadata"
+
+    The same parent-child and rollup patterns used for org charts, category
+    trees, and BOMs apply directly to Unity Catalog metadata. Replacing sample
+    nodes with real `catalog.schema.table` objects turns hierarchy queries into
+    practical inventory, governance, and impact-analysis reports.
+
+______________________________________________________________________
+
 ## :material-magnify: Behavior Notes
 
 1. Recursive CTEs have an **anchor** (base case) and a **recursive step** — always filter the anchor to root nodes (`WHERE parent_id IS NULL`) or a specific target node.

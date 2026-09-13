@@ -6,7 +6,7 @@ Run once before working through the examples/ directory:
 """
 
 from pys_excel import data_path, generate_sample_workbook
-from pys_excel._logging import get_logger, print_path, print_success
+from pys_excel.logs import get_logger, print_path, print_success
 
 logger = get_logger("scripts.generate_sample_data")
 

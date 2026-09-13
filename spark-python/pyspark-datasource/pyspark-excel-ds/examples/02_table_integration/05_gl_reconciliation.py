@@ -35,7 +35,7 @@ from pys_excel import (
     set_log_level,
     temp_excel_path,
 )
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 set_log_level("DEBUG")
 logger = get_logger("example.gl_reconciliation")

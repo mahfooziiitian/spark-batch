@@ -559,6 +559,56 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog table (no sample data setup
+    needed) that records real billable usage over time. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows.
+
+### 11 — Month-to-date usage per workspace
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_usage
+    FROM system.billing.usage
+    WHERE usage_date >= ADD_MONTHS(DATE_TRUNC('month', CURRENT_DATE()), -2)
+    GROUP BY workspace_id, usage_date
+)
+SELECT
+    workspace_id,
+    usage_date,
+    daily_usage,
+    SUM(daily_usage) OVER (
+        PARTITION BY workspace_id, DATE_TRUNC('month', usage_date)
+        ORDER BY usage_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS mtd_usage
+FROM daily_usage
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_usage | mtd_usage
+-- -------------|-------------|-------------|----------
+-- 123456789    | 2024-07-01  | 812.4       | 812.4
+-- 123456789    | 2024-07-02  | 845.7       | 1658.1
+-- 123456789    | 2024-08-01  | 790.2       | 790.2
+```
+
+!!! tip "Same growing frame, different reset boundary"
+
+    Partitioning by `DATE_TRUNC('month', usage_date)` makes the cumulative total reset
+    every month. Swap that partition expression to quarter, year, workspace, or a tag
+    dimension and the same growing-window pattern becomes MTD, QTD, YTD, or per-team
+    usage pacing on live system-table data.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                               | Pattern                                                                  |

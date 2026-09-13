@@ -159,6 +159,60 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample
+    data setup needed) with dense timestamped events that suit rolling-window
+    analysis. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.access`, and `SELECT` on `system.access.audit`
+    before these queries will return rows.
+
+### Rolling 24-hour audit volume per service
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH hourly_events AS (
+    SELECT
+        service_name,
+        DATE_TRUNC('hour', event_time) AS hour_bucket,
+        COUNT(*) AS event_count
+    FROM system.access.audit
+    WHERE event_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+    GROUP BY service_name, DATE_TRUNC('hour', event_time)
+)
+SELECT
+    service_name,
+    hour_bucket,
+    event_count,
+    ROUND(AVG(event_count) OVER (
+        PARTITION BY service_name
+        ORDER BY hour_bucket
+        ROWS BETWEEN 23 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_avg_24h,
+    SUM(event_count) OVER (
+        PARTITION BY service_name
+        ORDER BY hour_bucket
+        ROWS BETWEEN 23 PRECEDING AND CURRENT ROW
+    ) AS rolling_total_24h
+FROM hourly_events
+ORDER BY service_name, hour_bucket;
+-- Result (illustrative):
+-- service_name | hour_bucket         | event_count | rolling_avg_24h | rolling_total_24h
+-- ------------ | ------------------- | ----------- | --------------- | -----------------
+-- notebooks    | 2024-07-02 09:00:00 | 942         | 854.75          | 20514
+-- clusters     | 2024-07-02 09:00:00 | 128         | 111.46          | 2675
+```
+
+!!! tip "Sliding windows work best after light pre-aggregation"
+
+    Real audit streams can be extremely dense. Pre-aggregate to hourly or
+    daily buckets first, then apply the same rolling `OVER (...)` frame to
+    get production-ready moving baselines.
+
+______________________________________________________________________
+
 ## :material-play-circle: Interactive Demo
 
 The chart below shows 10 days of daily revenue (blue bars) and a **3-day rolling average** (orange line).

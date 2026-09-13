@@ -155,7 +155,7 @@ pyspark-excel-ds/
 │   ├── table/                  # excel_to_table / table_to_excel / upsert_table_from_excel
 │   └── spark_excel.py          # Distributed I/O via spark-excel / Databricks native format
 ├── examples/
-│   ├── 01_data_source/         # Read/write basics + distributed spark-excel I/O
+│   ├── 01_data_source/         # pandas/, crealytics_local/, databricks/, crealytics_databricks/
 │   ├── 02_table_integration/   # Excel <-> Spark table workflows
 │   ├── 03_properties/          # Header/skiprows, sheets, NA values, formatting
 │   ├── 04_schema/              # Explicit schema, inference

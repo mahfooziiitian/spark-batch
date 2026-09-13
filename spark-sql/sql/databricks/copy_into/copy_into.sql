@@ -15,10 +15,10 @@
 DROP TABLE IF EXISTS raw_orders;
 
 CREATE TABLE raw_orders (
-    order_id    INT,
+    order_id INT,
     customer_id INT,
-    amount      DOUBLE,
-    order_date  DATE
+    amount DOUBLE,
+    order_date DATE
 ) USING DELTA;
 
 ---------------------------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ CREATE TABLE raw_orders (
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake target + cloud storage source
-COPY INTO raw_orders
+COPY INTO raw_orders -- noqa: PRS
 FROM '/mnt/landing/orders/'
 FILEFORMAT = PARQUET;
 
@@ -45,7 +45,7 @@ FILEFORMAT = PARQUET;
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake
-COPY INTO raw_orders
+COPY INTO raw_orders -- noqa: PRS
 FROM '/mnt/landing/orders/'
 FILEFORMAT = PARQUET
 COPY_OPTIONS ('mergeSchema' = 'true');
@@ -57,7 +57,7 @@ COPY_OPTIONS ('mergeSchema' = 'true');
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake
-COPY INTO raw_orders
+COPY INTO raw_orders -- noqa: PRS
 FROM '/mnt/landing/orders_csv/'
 FILEFORMAT = CSV
 FORMAT_OPTIONS (
@@ -75,7 +75,7 @@ COPY_OPTIONS ('mergeSchema' = 'true');
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake
-COPY INTO raw_orders
+COPY INTO raw_orders -- noqa: PRS
 FROM (
     SELECT
         order_id,
@@ -94,7 +94,7 @@ PATTERN = '2024-06-*.parquet';
 ---------------------------------------------------------------------------------------------------
 
 -- [Databricks] Requires Delta Lake
-COPY INTO raw_orders
+COPY INTO raw_orders -- noqa: PRS
 FROM '/mnt/landing/orders/'
 FILEFORMAT = PARQUET
 COPY_OPTIONS ('force' = 'true');

@@ -5,6 +5,16 @@ the proportion spent in each state for operational reporting and SLA tracking.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover each segment to inspect the exact hours and share of time spent in each operational state.
+
+<div id="viz-time-allocation" class="ts-viz"></div>
+
+*The single normalized bar shows a full 24-hour day split across Running, Idle, Error, and Maintenance states.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Allocation Flow
 
 ```mermaid
@@ -140,6 +150,61 @@ ______________________________________________________________________
 | Cost allocation        | Charge departments by running time used     |
 | Efficiency analysis    | High idle% = over-provisioned               |
 | Maintenance scheduling | Find optimal windows (already idle periods) |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.lakeflow.job_run_timeline` is a built-in Unity Catalog system
+    table (no sample data setup needed) that records real execution intervals.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.lakeflow`, and `SELECT` on
+    `system.lakeflow.job_run_timeline` before these queries will return rows.
+
+### Daily runtime allocation by job and trigger type
+
+```sql
+-- [Databricks] Requires SELECT on system.lakeflow.job_run_timeline
+WITH durations AS (
+    SELECT
+        job_id,
+        trigger_type,
+        DATE(period_start_time) AS run_date,
+        ROUND(
+            (UNIX_TIMESTAMP(period_end_time) - UNIX_TIMESTAMP(period_start_time)) / 3600.0,
+            2
+        ) AS run_hours
+    FROM system.lakeflow.job_run_timeline
+    WHERE period_start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+      AND period_end_time IS NOT NULL
+)
+SELECT
+    run_date,
+    job_id,
+    trigger_type,
+    ROUND(SUM(run_hours), 2) AS total_run_hours,
+    ROUND(
+        SUM(run_hours) * 100.0
+        / SUM(SUM(run_hours)) OVER (PARTITION BY run_date),
+        1
+    ) AS daily_allocation_pct
+FROM durations
+GROUP BY run_date, job_id, trigger_type
+ORDER BY run_date DESC, total_run_hours DESC;
+-- Result (illustrative):
+-- run_date   | job_id | trigger_type | total_run_hours | daily_allocation_pct
+-- ---------- | ------ | ------------ | --------------- | --------------------
+-- 2024-07-02 | 4512   | SCHEDULED    | 6.75            | 41.8
+-- 2024-07-02 | 9921   | MANUAL       | 3.10            | 19.2
+```
+
+!!! tip "Allocated runtime is just duration grouped by a business dimension"
+
+    Once each run has a start and end time, the same duration-splitting logic
+    works for teams, trigger types, environments, or any other grouping key
+    you attach to operational jobs.
 
 ______________________________________________________________________
 

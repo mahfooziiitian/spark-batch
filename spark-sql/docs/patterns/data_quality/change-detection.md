@@ -740,6 +740,70 @@ diagnostic for this failure mode.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no synthetic
+    sample data setup needed) that records real DBU usage by workspace, SKU, and
+    time window. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 11 — Day-over-day usage jump detection per workspace
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+),
+changes AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        daily_usage_quantity,
+        LAG(daily_usage_quantity) OVER (
+            PARTITION BY workspace_id
+            ORDER BY usage_date
+        ) AS prev_daily_usage_quantity
+    FROM daily_usage
+)
+SELECT
+    workspace_id,
+    usage_date,
+    prev_daily_usage_quantity,
+    daily_usage_quantity,
+    ROUND(daily_usage_quantity - prev_daily_usage_quantity, 2) AS usage_delta,
+    ROUND(
+        (daily_usage_quantity - prev_daily_usage_quantity)
+        * 100.0
+        / NULLIF(prev_daily_usage_quantity, 0),
+        1
+    ) AS pct_change
+FROM changes
+WHERE prev_daily_usage_quantity IS NOT NULL
+  AND ABS(daily_usage_quantity - prev_daily_usage_quantity) >= 500
+ORDER BY ABS(daily_usage_quantity - prev_daily_usage_quantity) DESC, workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | prev_daily_usage_quantity | daily_usage_quantity | usage_delta | pct_change
+-- -------------|-------------|---------------------------|----------------------|-------------|-----------
+-- 123456789    | 2024-07-18  | 820.0                     | 1545.5               | 725.5       | 88.5
+-- 123456789    | 2024-07-25  | 1510.0                    | 760.0                | -750.0      | -49.7
+```
+
+!!! tip "Same pattern, production data"
+
+    This is the same `LAG(...) OVER (PARTITION BY ... ORDER BY ...)` pattern used
+    for employee transfers or price changes above — only the entity key becomes
+    `workspace_id` and the tracked value becomes a daily aggregate from a production
+    system table.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                             | Pattern                                                                   |

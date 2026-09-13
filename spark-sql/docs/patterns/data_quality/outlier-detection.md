@@ -659,6 +659,125 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no synthetic
+    sample data setup needed) that records workspace usage quantities by day and
+    SKU. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 11 — Z-score outlier detection on daily usage per workspace
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+),
+scored AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        daily_usage_quantity,
+        ROUND(AVG(daily_usage_quantity) OVER w, 2) AS workspace_avg,
+        ROUND(STDDEV(daily_usage_quantity) OVER w, 2) AS workspace_stddev,
+        ROUND(
+            (daily_usage_quantity - AVG(daily_usage_quantity) OVER w)
+            / NULLIF(STDDEV(daily_usage_quantity) OVER w, 0),
+            2
+        ) AS z_score,
+        CASE
+            WHEN ABS(
+                (daily_usage_quantity - AVG(daily_usage_quantity) OVER w)
+                / NULLIF(STDDEV(daily_usage_quantity) OVER w, 0)
+            ) >= 3 THEN 'EXTREME'
+            WHEN ABS(
+                (daily_usage_quantity - AVG(daily_usage_quantity) OVER w)
+                / NULLIF(STDDEV(daily_usage_quantity) OVER w, 0)
+            ) >= 2 THEN 'SUSPICIOUS'
+            ELSE 'NORMAL'
+        END AS flag
+    FROM daily_usage
+    WINDOW w AS (PARTITION BY workspace_id)
+)
+SELECT
+    workspace_id,
+    usage_date,
+    daily_usage_quantity,
+    workspace_avg,
+    workspace_stddev,
+    z_score,
+    flag
+FROM scored
+WHERE flag <> 'NORMAL';
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_usage_quantity | workspace_avg | workspace_stddev | z_score | flag
+-- -------------|-------------|----------------------|---------------|------------------|---------|-----------
+-- 123456789    | 2024-07-18  | 1545.5               | 812.4         | 241.3            | 3.04    | EXTREME
+```
+
+### 12 — IQR fence detection for unusually high or low daily usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+),
+stats AS (
+    SELECT
+        workspace_id,
+        PERCENTILE(daily_usage_quantity, 0.25) AS q1,
+        PERCENTILE(daily_usage_quantity, 0.75) AS q3
+    FROM daily_usage
+    GROUP BY workspace_id
+)
+SELECT
+    d.workspace_id,
+    d.usage_date,
+    d.daily_usage_quantity,
+    ROUND(s.q1, 2) AS q1,
+    ROUND(s.q3, 2) AS q3,
+    ROUND(s.q1 - 1.5 * (s.q3 - s.q1), 2) AS lower_fence,
+    ROUND(s.q3 + 1.5 * (s.q3 - s.q1), 2) AS upper_fence,
+    CASE
+        WHEN d.daily_usage_quantity < s.q1 - 1.5 * (s.q3 - s.q1) THEN 'LOW_OUTLIER'
+        WHEN d.daily_usage_quantity > s.q3 + 1.5 * (s.q3 - s.q1) THEN 'HIGH_OUTLIER'
+        ELSE 'NORMAL'
+    END AS flag
+FROM daily_usage AS d
+JOIN stats AS s
+    ON d.workspace_id = s.workspace_id
+WHERE d.daily_usage_quantity < s.q1 - 1.5 * (s.q3 - s.q1)
+   OR d.daily_usage_quantity > s.q3 + 1.5 * (s.q3 - s.q1)
+ORDER BY d.workspace_id, d.usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_usage_quantity | q1    | q3    | lower_fence | upper_fence | flag
+-- -------------|-------------|----------------------|-------|-------|-------------|-------------|-------------
+-- 123456789    | 2024-07-18  | 1545.5               | 690.0 | 905.0 | 367.5       | 1227.5      | HIGH_OUTLIER
+-- 123456789    | 2024-07-25  | 210.0                | 690.0 | 905.0 | 367.5       | 1227.5      | LOW_OUTLIER
+```
+
+!!! tip "Same pattern, production data"
+
+    Outlier detection still starts by defining a peer group and a metric. Here the
+    peer group is `workspace_id` and the metric is daily aggregated
+    `usage_quantity`, but the z-score and IQR formulas are identical to the sample
+    transaction and expense examples above.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                        | Pattern                                                  |

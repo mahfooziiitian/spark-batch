@@ -49,6 +49,65 @@ partition — useful for "top X%" thresholds and percentile banding.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table containing real
+    account consumption records. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return
+    rows.
+
+### Rolling 7-day average of billed usage per workspace
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+)
+SELECT
+    workspace_id,
+    usage_date,
+    daily_quantity,
+    ROUND(
+        AVG(daily_quantity) OVER (
+            PARTITION BY workspace_id
+            ORDER BY usage_date
+            ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+        ),
+        2
+    ) AS rolling_7d_avg,
+    ROUND(
+        SUM(daily_quantity) OVER (
+            PARTITION BY workspace_id
+            ORDER BY usage_date
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ),
+        2
+    ) AS cumulative_quantity
+FROM daily_usage
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_quantity | rolling_7d_avg | cumulative_quantity
+-- ------------|-------------|----------------|----------------|--------------------
+-- 123456789   | 2024-07-01  | 168.40         | 168.40         | 168.40
+-- 123456789   | 2024-07-02  | 171.10         | 169.75         | 339.50
+-- 123456789   | 2024-07-07  | 190.80         | 178.96         | 1249.60
+```
+
+!!! tip "Same window frame, real billing data"
+
+    Once you aggregate to one row per day, rolling windows on `system.billing.usage`
+    behave exactly like the teaching examples. The only difference is that the source
+    rows now represent real workspace consumption instead of synthetic measurements.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                       | Recommended Approach                                       |

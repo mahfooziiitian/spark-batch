@@ -90,6 +90,10 @@ extra_css:
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js
   - assets/js/timeseries-viz.js
+  - assets/js/timeseries-analysis-viz-1.js
+  - assets/js/timeseries-analysis-viz-2.js
+  - assets/js/timeseries-analysis-viz-3.js
+  - assets/js/timeseries-analysis-viz-4.js
   - assets/js/scd-viz.js
   - assets/js/patterns-viz.js
   - assets/js/window-frame-viz.js

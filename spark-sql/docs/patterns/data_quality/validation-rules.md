@@ -258,6 +258,86 @@ multi-method consensus pattern and a ready-to-use quarantine-table example.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` and `system.information_schema.columns` are built-in Unity
+    Catalog system tables (no synthetic sample data setup needed) that let you run
+    validation checks against real platform activity and real table metadata. An
+    account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>` and the equivalent access for `system.information_schema` before
+    these queries will return rows.
+
+### 10 — Audit-log response validation rules
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+SELECT
+    event_time,
+    user_identity.email AS user_email,
+    action_name,
+    response.status_code,
+    response.error_message
+FROM system.access.audit
+WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+  AND (
+      response.status_code NOT IN ('200', '201', '400', '401', '403', '404', '429', '500')
+      OR (response.status_code IN ('200', '201') AND response.error_message IS NOT NULL)
+      OR (response.status_code NOT IN ('200', '201') AND response.error_message IS NULL)
+  )
+ORDER BY event_time DESC;
+-- Result (illustrative):
+-- event_time           | user_email          | action_name  | status_code | error_message
+-- ---------------------|---------------------|--------------|-------------|-------------------------
+-- 2024-07-19 09:14:22  | analyst@company.com | createToken  | 200         | Permission denied
+-- 2024-07-19 09:21:10  | svc@datacorp.com    | login        | 599         | Upstream timeout
+```
+
+### 11 — Schema-conformance check for required columns and types
+
+```sql
+-- [Databricks] Requires SELECT on system.information_schema.columns
+WITH expected_columns AS (
+    SELECT * FROM VALUES
+        ('customer_id', 'bigint'),
+        ('email', 'string'),
+        ('created_at', 'timestamp')
+    AS t(column_name, expected_type)
+)
+SELECT
+    e.column_name,
+    e.expected_type,
+    c.data_type AS actual_type,
+    CASE
+        WHEN c.column_name IS NULL THEN 'MISSING'
+        WHEN LOWER(c.data_type) <> e.expected_type THEN 'TYPE_MISMATCH'
+        ELSE 'VALID'
+    END AS validation_status
+FROM expected_columns AS e
+LEFT JOIN system.information_schema.columns AS c
+    ON c.table_catalog = 'main'
+   AND c.table_schema = 'gold'
+   AND c.table_name = 'customers'
+   AND LOWER(c.column_name) = e.column_name
+WHERE c.column_name IS NULL
+   OR LOWER(c.data_type) <> e.expected_type
+ORDER BY e.column_name;
+-- Result (illustrative):
+-- column_name | expected_type | actual_type | validation_status
+-- ------------|---------------|-------------|------------------
+-- created_at  | timestamp     | string      | TYPE_MISMATCH
+-- email       | string        | NULL        | MISSING
+```
+
+!!! tip "Same pattern, production data"
+
+    Validation rules remain just `SELECT` statements that return violations. The
+    only difference is that production system tables give you authoritative
+    operational data and metadata — so the same rule-checking pattern can validate
+    audit events, schemas, and governance standards without any sample setup.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Check                               | Technique                                              | Page                                                                   |

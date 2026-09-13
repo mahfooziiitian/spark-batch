@@ -51,9 +51,9 @@ WITH cfg AS (
 flat AS (
     SELECT
         t.id,
-        e.k AS old_key,
-        e.v AS value,
-        coalesce(element_at(cfg.rename_map, e.k), e.k) AS new_key
+        e.k AS old_key, -- noqa: RF01
+        e.v AS value, -- noqa: RF01
+        coalesce(element_at(cfg.rename_map, e.k), e.k) AS new_key -- noqa: RF01
     FROM my_table AS t
     CROSS JOIN cfg
         LATERAL VIEW inline(map_entries(t.my_map)) e AS k, v
@@ -95,8 +95,8 @@ WITH cfg AS (
 flat AS (
     SELECT
         t.id,
-        e.v AS value,
-        coalesce(element_at(cfg.rename_map, e.k), e.k) AS new_key
+        e.v AS value, -- noqa: RF01
+        coalesce(element_at(cfg.rename_map, e.k), e.k) AS new_key -- noqa: RF01
     FROM my_table AS t
     CROSS JOIN cfg
         LATERAL VIEW inline(map_entries(t.my_map)) e AS k, v

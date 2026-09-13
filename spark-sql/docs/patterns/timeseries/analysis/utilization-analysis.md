@@ -5,6 +5,16 @@ for warehouse operations, equipment monitoring, and resource planning.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Move across the chart to inspect hourly utilization and see where the series sits above or below the target threshold.
+
+<div id="viz-utilization" class="ts-viz"></div>
+
+*Purple shading shows overall utilization, while amber highlights the portion of the day that exceeds the 70% target.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Analysis Flow
 
 ```mermaid
@@ -320,6 +330,59 @@ ______________________________________________________________________
 | Use `COALESCE` for final event boundary     | Prevents NULL duration from skewing aggregates     |
 | Pre-compute state durations as a view/table | Reuse across utilization, heatmap, and gap queries |
 | Index on `(resource_id, state_start)`       | Speeds up ordered partition scans                  |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.compute.node_timeline` is a built-in Unity Catalog system table
+    (no sample data setup needed) that stores real node-level utilization
+    metrics. An account admin must grant `USE CATALOG` on `system`,
+    `USE SCHEMA` on `system.compute`, and `SELECT` on
+    `system.compute.node_timeline` before these queries will return rows.
+
+### Daily cluster utilization bands from node telemetry
+
+```sql
+-- [Databricks] Requires SELECT on system.compute.node_timeline
+WITH daily_util AS (
+    SELECT
+        cluster_id,
+        DATE(start_time) AS metric_date,
+        ROUND(AVG(cpu_user_percent + cpu_system_percent), 1) AS avg_cpu_pct,
+        ROUND(MAX(cpu_user_percent + cpu_system_percent), 1) AS peak_cpu_pct,
+        ROUND(AVG(mem_used_percent), 1) AS avg_mem_pct
+    FROM system.compute.node_timeline
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 14 DAYS
+    GROUP BY cluster_id, DATE(start_time)
+)
+SELECT
+    cluster_id,
+    metric_date,
+    avg_cpu_pct,
+    peak_cpu_pct,
+    avg_mem_pct,
+    CASE
+        WHEN avg_cpu_pct >= 80 OR avg_mem_pct >= 85 THEN 'HOT'
+        WHEN avg_cpu_pct <= 30 AND avg_mem_pct <= 40 THEN 'UNDERUSED'
+        ELSE 'HEALTHY'
+    END AS utilization_band
+FROM daily_util
+ORDER BY metric_date DESC, avg_cpu_pct DESC;
+-- Result (illustrative):
+-- cluster_id        | metric_date | avg_cpu_pct | peak_cpu_pct | avg_mem_pct | utilization_band
+-- ----------------- | ----------- | ----------- | ------------ | ----------- | ----------------
+-- 0315-1015-abcd123 | 2024-07-02  | 82.4        | 96.3         | 78.5        | HOT
+-- 0315-2045-efgh456 | 2024-07-02  | 24.1        | 41.8         | 33.2        | UNDERUSED
+```
+
+!!! tip "Real utilization analysis is usually a daily aggregate first"
+
+    Raw telemetry is noisy, but once you roll it up to a day or hour the same
+    state-band logic from the tutorial becomes immediately useful for
+    right-sizing, alerting, and capacity review.
 
 ______________________________________________________________________
 

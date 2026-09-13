@@ -209,6 +209,56 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog table (no sample data setup
+    needed) that records real workspace actions over time. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 3 — Users who performed every required cluster action
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH required_actions AS (
+    SELECT * FROM VALUES
+        ('createCluster'),
+        ('startCluster'),
+        ('terminateCluster')
+    AS t(action_name)
+),
+matched_actions AS (
+    SELECT
+        user_identity.email AS user_email,
+        action_name
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND service_name = 'clusters'
+      AND user_identity.email IS NOT NULL
+      AND action_name IN (SELECT action_name FROM required_actions)
+)
+SELECT user_email
+FROM matched_actions
+GROUP BY user_email
+HAVING COUNT(DISTINCT action_name) = (SELECT COUNT(*) FROM required_actions)
+ORDER BY user_email;
+-- Result (illustrative):
+-- user_email          
+-- --------------------
+-- alice@datacorp.com  
+-- carol@datacorp.com
+```
+
+!!! tip "A natural production use of division"
+
+    Replace the three hard-coded cluster actions with any required action set — grant,
+    revoke, create, delete, run, or approve steps — and the same relational-division
+    pattern answers "who completed every required action?" against live audit logs.
+
+______________________________________________________________________
+
 ## :material-alert-outline: Common Pitfalls
 
 | Pitfall                                                                 | Why it's wrong                                                                                                                                                                                                                                                                                        |

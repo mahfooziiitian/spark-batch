@@ -77,13 +77,13 @@ ORDER BY total_quantity DESC;
 
 -- Top jobs by DBU consumption over the last 7 days
 SELECT
-    u.usage_metadata.job_id,
+    u.usage_metadata.job_id, -- noqa: RF01
     SUM(u.usage_quantity) AS dbu_usage
 FROM system.billing.usage AS u
 WHERE
-    u.usage_metadata.job_id IS NOT NULL
+    u.usage_metadata.job_id IS NOT NULL -- noqa: RF01
     AND u.usage_date >= CURRENT_DATE() - INTERVAL 7 DAYS
-GROUP BY u.usage_metadata.job_id
+GROUP BY u.usage_metadata.job_id -- noqa: RF01
 ORDER BY dbu_usage DESC
 LIMIT 10;
 
@@ -102,10 +102,10 @@ SELECT
     u.usage_date,
     u.sku_name,
     u.usage_quantity,
-    tag_entry.key AS tag_key,
-    tag_entry.value AS tag_value
+    tag_entry.key AS tag_key, -- noqa: RF01
+    tag_entry.value AS tag_value -- noqa: RF01
 FROM system.billing.usage AS u
-    LATERAL VIEW EXPLODE(MAP_ENTRIES(u.custom_tags)) AS tag_entry
+    LATERAL VIEW EXPLODE(MAP_ENTRIES(u.custom_tags)) as tag_entry
 WHERE u.usage_date >= CURRENT_DATE() - INTERVAL 1 DAYS;
 
 ---------------------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ SELECT
     a.event_time,
     a.action_name,
     a.request_params,
-    SHA2(a.user_identity.email, 256) AS actor_hash
+    SHA2(a.user_identity.email, 256) AS actor_hash  -- noqa: RF01
 FROM system.access.audit AS a
 WHERE
     a.service_name = 'unityCatalog'
@@ -129,13 +129,13 @@ ORDER BY a.event_time DESC;
 -- Failed login attempts by source IP (potential brute-force indicator)
 SELECT
     a.source_ip_address,
-    SHA2(a.user_identity.email, 256) AS actor_hash,
+    SHA2(a.user_identity.email, 256) AS actor_hash,  -- noqa: RF01
     COUNT(*) AS attempts
 FROM system.access.audit AS a
 WHERE
     a.action_name = 'databricksAccountLogin'
-    AND a.response.status_code != 200
-GROUP BY a.source_ip_address, SHA2(a.user_identity.email, 256)
+    AND a.response.status_code != 200 -- noqa: RF01
+GROUP BY a.source_ip_address, SHA2(a.user_identity.email, 256)  -- noqa: RF01
 ORDER BY attempts DESC;
 
 -- All grant/revoke activity on a catalog, most recent first
@@ -143,7 +143,7 @@ SELECT
     a.event_time,
     a.action_name,
     a.request_params,
-    SHA2(a.user_identity.email, 256) AS actor_hash
+    SHA2(a.user_identity.email, 256) AS actor_hash  -- noqa: RF01
 FROM system.access.audit AS a
 WHERE
     a.action_name IN ('updatePermissions', 'createGrant', 'deleteGrant')
@@ -193,7 +193,7 @@ SELECT
     SHA2(h.executed_by, 256) AS executed_by_hash
 FROM system.query.history AS h
 WHERE
-    h.compute.warehouse_id = '0123456789abcdef'
+    h.compute.warehouse_id = '0123456789abcdef'  -- noqa: RF01
     AND h.start_time >= CURRENT_TIMESTAMP() - INTERVAL 1 DAYS
 ORDER BY h.total_duration_ms DESC
 LIMIT 20;

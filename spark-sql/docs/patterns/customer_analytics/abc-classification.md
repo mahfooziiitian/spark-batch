@@ -806,6 +806,144 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no synthetic
+    sample data is required here. In this adaptation, the real `sku_name` values are
+    the items being classified and `usage_quantity` is the contribution metric. An
+    account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows. For a like-for-like ABC
+    comparison, the examples below filter to a single `usage_unit` (`DBU`).
+
+### 11 — ABC classify Databricks SKUs by cumulative DBU contribution
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH thresholds AS (
+    SELECT
+        80.0 AS a_cutoff_pct,
+        95.0 AS b_cutoff_pct
+),
+sku_totals AS (
+    SELECT
+        sku_name,
+        SUM(usage_quantity) AS total_dbu
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND usage_unit = 'DBU'
+    GROUP BY sku_name
+),
+ranked AS (
+    SELECT
+        sku_name,
+        total_dbu,
+        SUM(total_dbu) OVER () AS grand_total_dbu,
+        SUM(total_dbu) OVER (
+            ORDER BY total_dbu DESC, sku_name
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_dbu
+    FROM sku_totals
+),
+classified AS (
+    SELECT
+        r.sku_name,
+        r.total_dbu,
+        ROUND(r.cumulative_dbu * 100.0 / r.grand_total_dbu, 2) AS cumulative_pct,
+        CASE
+            WHEN r.cumulative_dbu * 100.0 / r.grand_total_dbu <= t.a_cutoff_pct THEN 'A'
+            WHEN r.cumulative_dbu * 100.0 / r.grand_total_dbu <= t.b_cutoff_pct THEN 'B'
+            ELSE 'C'
+        END AS abc_class
+    FROM ranked r
+    CROSS JOIN thresholds t
+)
+SELECT
+    sku_name,
+    total_dbu,
+    cumulative_pct,
+    abc_class
+FROM classified
+ORDER BY total_dbu DESC, sku_name;
+-- Result (illustrative):
+-- sku_name                 | total_dbu | cumulative_pct | abc_class
+-- -------------------------|-----------|----------------|----------
+-- PREMIUM_JOBS_COMPUTE     | 4820.50   | 43.80          | A
+-- SERVERLESS_SQL           | 3110.20   | 72.07          | A
+-- ALL_PURPOSE_COMPUTE      | 1560.00   | 86.25          | B
+-- MODEL_SERVING            | 890.40    | 94.34          | B
+-- VECTOR_SEARCH            | 622.10    | 100.00         | C
+```
+
+### 12 — ABC summary by class for the billing period
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH thresholds AS (
+    SELECT
+        80.0 AS a_cutoff_pct,
+        95.0 AS b_cutoff_pct
+),
+sku_totals AS (
+    SELECT
+        sku_name,
+        SUM(usage_quantity) AS total_dbu
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+      AND usage_unit = 'DBU'
+    GROUP BY sku_name
+),
+ranked AS (
+    SELECT
+        sku_name,
+        total_dbu,
+        SUM(total_dbu) OVER () AS grand_total_dbu,
+        SUM(total_dbu) OVER (
+            ORDER BY total_dbu DESC, sku_name
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_dbu
+    FROM sku_totals
+),
+classified AS (
+    SELECT
+        r.sku_name,
+        r.total_dbu,
+        CASE
+            WHEN r.cumulative_dbu * 100.0 / r.grand_total_dbu <= t.a_cutoff_pct THEN 'A'
+            WHEN r.cumulative_dbu * 100.0 / r.grand_total_dbu <= t.b_cutoff_pct THEN 'B'
+            ELSE 'C'
+        END AS abc_class
+    FROM ranked r
+    CROSS JOIN thresholds t
+)
+SELECT
+    abc_class,
+    COUNT(*) AS sku_count,
+    ROUND(SUM(total_dbu), 2) AS class_dbu
+FROM classified
+GROUP BY abc_class
+ORDER BY CASE abc_class
+    WHEN 'A' THEN 1
+    WHEN 'B' THEN 2
+    ELSE 3
+END;
+-- Result (illustrative):
+-- abc_class | sku_count | class_dbu
+-- ----------|-----------|----------
+-- A         | 2         | 7930.70
+-- B         | 2         | 2450.40
+-- C         | 1         | 622.10
+```
+
+!!! tip "Same ABC curve, production billing data"
+
+    The pattern is unchanged from classic inventory ABC analysis: aggregate a metric,
+    sort descending, compute the running cumulative percentage, then assign classes.
+    On `system.billing.usage`, that same logic highlights the small set of SKUs driving
+    most real Databricks spend or DBU consumption.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                                      | Approach                                                                                                           |

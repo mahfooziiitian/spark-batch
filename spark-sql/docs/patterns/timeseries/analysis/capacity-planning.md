@@ -5,6 +5,16 @@ hit capacity limits and plan infrastructure scaling decisions.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Hover each weekly point to compare observed utilization with the projected trend and capacity threshold. The dashed line shows when current growth would exhaust headroom.
+
+<div id="viz-capacity" class="ts-viz"></div>
+
+*Purple = observed usage. Amber dashed = projected trend. Red marks the capacity limit and projected breach point.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Planning Flow
 
 ```mermaid
@@ -345,6 +355,89 @@ ______________________________________________________________________
 | Use `MONTHS_BETWEEN` for growth rate         | Handles irregular month lengths correctly         |
 | Materialise growth stats as a daily job      | Avoid recomputing over full history               |
 | Filter to recent 12-24 months for projection | Older data may not reflect current growth pattern |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.compute.node_timeline` is a built-in Unity Catalog system table
+    (no sample data setup needed) that captures real cluster node CPU and
+    memory telemetry over time. An account admin must grant `USE CATALOG`
+    on `system`, `USE SCHEMA` on `system.compute`, and `SELECT` on
+    `system.compute.node_timeline` before these queries will return rows.
+
+### Capacity headroom forecast from node telemetry
+
+```sql
+-- [Databricks] Requires SELECT on system.compute.node_timeline
+WITH daily_usage AS (
+    SELECT
+        cluster_id,
+        DATE(start_time) AS usage_date,
+        ROUND(AVG(cpu_user_percent + cpu_system_percent), 1) AS avg_cpu_pct,
+        ROUND(MAX(mem_used_percent), 1) AS peak_mem_pct
+    FROM system.compute.node_timeline
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 30 DAYS
+    GROUP BY cluster_id, DATE(start_time)
+),
+growth_stats AS (
+    SELECT
+        cluster_id,
+        MAX(usage_date) AS latest_date,
+        ROUND(
+            (MAX(avg_cpu_pct) - MIN(avg_cpu_pct))
+            / NULLIF(DATEDIFF(MAX(usage_date), MIN(usage_date)), 0),
+            2
+        ) AS avg_daily_cpu_growth
+    FROM daily_usage
+    GROUP BY cluster_id
+),
+current_state AS (
+    SELECT
+        cluster_id,
+        usage_date,
+        avg_cpu_pct,
+        peak_mem_pct,
+        ROW_NUMBER() OVER (
+            PARTITION BY cluster_id
+            ORDER BY usage_date DESC
+        ) AS rn
+    FROM daily_usage
+)
+SELECT
+    c.cluster_id,
+    c.usage_date AS latest_date,
+    c.avg_cpu_pct,
+    c.peak_mem_pct,
+    g.avg_daily_cpu_growth,
+    ROUND(85 - c.avg_cpu_pct, 1) AS cpu_headroom_pct_points,
+    CASE
+        WHEN g.avg_daily_cpu_growth > 0 AND c.avg_cpu_pct < 85
+            THEN DATE_ADD(
+                c.usage_date,
+                CAST(CEIL((85 - c.avg_cpu_pct) / g.avg_daily_cpu_growth) AS INT)
+            )
+    END AS projected_85_pct_date
+FROM current_state AS c
+JOIN growth_stats AS g
+    ON c.cluster_id = g.cluster_id
+WHERE c.rn = 1
+ORDER BY projected_85_pct_date, c.cluster_id;
+-- Result (illustrative):
+-- cluster_id | latest_date | avg_cpu_pct | peak_mem_pct | avg_daily_cpu_growth | cpu_headroom_pct_points | projected_85_pct_date
+-- ---------- | ----------- | ----------- | ------------ | -------------------- | ----------------------- | ---------------------
+-- 0315-1015-abcd123 | 2024-07-02 | 73.4 | 88.1 | 0.42 | 11.6 | 2024-07-30
+-- 0315-2045-efgh456 | 2024-07-02 | 81.7 | 91.5 | 0.18 | 3.3  | 2024-07-21
+```
+
+!!! tip "Same planning pattern, real operational telemetry"
+
+    The same peak/average/growth workflow from the synthetic examples works
+    directly on `system.compute.node_timeline`: aggregate to daily buckets,
+    estimate growth, then project when real clusters will run out of safe
+    headroom.
 
 ______________________________________________________________________
 

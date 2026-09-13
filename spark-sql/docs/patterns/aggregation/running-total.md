@@ -554,6 +554,56 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog table (no sample data setup
+    needed) that records real billable usage by workspace, SKU, and time. An account
+    admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 11 — Cumulative daily usage per workspace
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        SUM(usage_quantity) AS daily_usage
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+)
+SELECT
+    workspace_id,
+    usage_date,
+    daily_usage,
+    SUM(daily_usage) OVER (
+        PARTITION BY workspace_id
+        ORDER BY usage_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS cumulative_usage
+FROM daily_usage
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_usage | cumulative_usage
+-- -------------|-------------|-------------|-----------------
+-- 123456789    | 2024-07-01  | 812.4       | 812.4
+-- 123456789    | 2024-07-02  | 845.7       | 1658.1
+-- 123456789    | 2024-07-03  | 790.2       | 2448.3
+-- 987654321    | 2024-07-01  | 214.3       | 214.3
+```
+
+!!! tip "From running usage to running spend"
+
+    The frame is the important part: aggregate to one row per day, then apply
+    `SUM(...) OVER (PARTITION BY workspace_id ORDER BY usage_date ...)`. The same shape
+    powers cumulative usage, cumulative spend after price enrichment, or any other
+    day-by-day system-table burn-up metric.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                            | Pattern                                                                   |

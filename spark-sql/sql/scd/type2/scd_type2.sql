@@ -11,34 +11,38 @@
 DROP TABLE IF EXISTS dim_customer;
 
 CREATE TABLE dim_customer (
-    surrogate_key  BIGINT,
-    customer_id    INT,
-    name           STRING,
-    email          STRING,
-    city           STRING,
+    surrogate_key BIGINT,
+    customer_id INT,
+    name STRING,
+    email STRING,
+    city STRING,
     effective_from DATE,
-    effective_to   DATE,       -- NULL means the row is still current (open-ended)
-    is_current     BOOLEAN
+    effective_to DATE,       -- NULL means the row is still current (open-ended)
+    is_current BOOLEAN
 ) USING DELTA;
 
 -- Seed with initial customer versions (all current, no end date)
 INSERT INTO dim_customer (customer_id, name, email, city, effective_from, effective_to, is_current)
 VALUES
-    (1, 'Alice', 'alice@example.com', 'New York', DATE '2023-01-01', NULL, TRUE),
-    (2, 'Bob',   'bob@example.com',   'Chicago',  DATE '2023-01-01', NULL, TRUE),
-    (3, 'Carol', 'carol@example.com', 'Austin',   DATE '2023-01-01', NULL, TRUE);
+(1, 'Alice', 'alice@example.com', 'New York', DATE '2023-01-01', NULL, TRUE),
+(2, 'Bob', 'bob@example.com', 'Chicago', DATE '2023-01-01', NULL, TRUE),
+(3, 'Carol', 'carol@example.com', 'Austin', DATE '2023-01-01', NULL, TRUE);
 
 ---------------------------------------------------------------------------------------------------
 -- Setup: staging (incoming) data
 ---------------------------------------------------------------------------------------------------
 
 CREATE OR REPLACE TEMP VIEW staging_customer AS
-SELECT customer_id, name, email, city
+SELECT
+    customer_id,
+    name,
+    email,
+    city
 FROM
     VALUES
     (1, 'Alice', 'alice@newemail.com', 'Boston'),   -- email + city changed
-    (2, 'Bob',   'bob@example.com',    'Chicago'),  -- no change
-    (4, 'Dave',  'dave@example.com',   'Seattle')   -- brand-new customer
+    (2, 'Bob', 'bob@example.com', 'Chicago'),  -- no change
+    (4, 'Dave', 'dave@example.com', 'Seattle')   -- brand-new customer
         AS t (customer_id, name, email, city);
 
 ---------------------------------------------------------------------------------------------------
@@ -52,29 +56,38 @@ FROM
 -- Step 1: close changed rows
 MERGE INTO dim_customer AS t
 USING staging_customer AS s
-    ON t.customer_id = s.customer_id
-   AND t.is_current  = TRUE
+    ON
+        t.customer_id = s.customer_id
+        AND t.is_current = TRUE
 WHEN MATCHED AND (
-    t.name  <> s.name  OR
-    t.email <> s.email OR
-    t.city  <> s.city
+    t.name <> s.name
+    OR t.email <> s.email
+    OR t.city <> s.city
 ) THEN
     UPDATE SET
-        t.is_current   = FALSE,
+        t.is_current = FALSE,
         t.effective_to = CURRENT_DATE();
 
 -- Step 2: open new current rows for changed + new customers
 INSERT INTO dim_customer (customer_id, name, email, city, effective_from, effective_to, is_current)
-SELECT s.customer_id, s.name, s.email, s.city, CURRENT_DATE(), NULL, TRUE
+SELECT
+    s.customer_id,
+    s.name,
+    s.email,
+    s.city,
+    CURRENT_DATE() AS effective_from,
+    NULL AS effective_to,
+    TRUE AS is_current
 FROM staging_customer AS s
 LEFT JOIN dim_customer AS t
-    ON s.customer_id = t.customer_id
-   AND t.is_current  = TRUE
+    ON
+        s.customer_id = t.customer_id
+        AND t.is_current = TRUE
 WHERE
     t.customer_id IS NULL                       -- brand-new customer
-    OR t.name  <> s.name                        -- any attribute changed
+    OR t.name <> s.name                        -- any attribute changed
     OR t.email <> s.email
-    OR t.city  <> s.city;
+    OR t.city <> s.city;
 
 -- Result: Alice has two rows (old closed, new open); Bob unchanged; Dave inserted;
 --         Carol (not in staging) remains current and is untouched.
@@ -90,40 +103,54 @@ WHERE
 -- Close rows that are no longer present in the source at all
 MERGE INTO dim_customer AS t
 USING staging_customer AS s
-    ON t.customer_id = s.customer_id
-   AND t.is_current  = TRUE
+    ON
+        t.customer_id = s.customer_id
+        AND t.is_current = TRUE
 WHEN MATCHED AND (
-    t.name  <> s.name  OR
-    t.email <> s.email OR
-    t.city  <> s.city
+    t.name <> s.name
+    OR t.email <> s.email
+    OR t.city <> s.city
 ) THEN
     UPDATE SET
-        t.is_current   = FALSE,
+        t.is_current = FALSE,
         t.effective_to = CURRENT_DATE()
 WHEN NOT MATCHED BY SOURCE AND t.is_current = TRUE THEN
     UPDATE SET
-        t.is_current   = FALSE,
+        t.is_current = FALSE,
         t.effective_to = CURRENT_DATE();
 
 -- Then open new current rows (same INSERT as Step 2 above)
 INSERT INTO dim_customer (customer_id, name, email, city, effective_from, effective_to, is_current)
-SELECT s.customer_id, s.name, s.email, s.city, CURRENT_DATE(), NULL, TRUE
+SELECT
+    s.customer_id,
+    s.name,
+    s.email,
+    s.city,
+    CURRENT_DATE() AS effective_from,
+    NULL AS effective_to,
+    TRUE AS is_current
 FROM staging_customer AS s
 LEFT JOIN dim_customer AS t
-    ON s.customer_id = t.customer_id
-   AND t.is_current  = TRUE
+    ON
+        s.customer_id = t.customer_id
+        AND t.is_current = TRUE
 WHERE
     t.customer_id IS NULL
-    OR t.name  <> s.name
+    OR t.name <> s.name
     OR t.email <> s.email
-    OR t.city  <> s.city;
+    OR t.city <> s.city;
 
 ---------------------------------------------------------------------------------------------------
 -- 3. Current snapshot query
 --    Returns the single active row per customer.
 ---------------------------------------------------------------------------------------------------
 
-SELECT customer_id, name, email, city, effective_from
+SELECT
+    customer_id,
+    name,
+    email,
+    city,
+    effective_from
 FROM dim_customer
 WHERE is_current = TRUE
 ORDER BY customer_id;
@@ -135,7 +162,13 @@ ORDER BY customer_id;
 --    Returns the dimension values that were active on a specific date.
 ---------------------------------------------------------------------------------------------------
 
-SELECT customer_id, name, email, city, effective_from, effective_to
+SELECT
+    customer_id,
+    name,
+    email,
+    city,
+    effective_from,
+    effective_to
 FROM dim_customer
 WHERE
     effective_from <= DATE '2024-06-01'

@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 if TYPE_CHECKING:
     import pandas as pd

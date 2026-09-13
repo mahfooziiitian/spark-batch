@@ -1,5 +1,5 @@
 ---
-applyTo: "{examples/**/*.py,src/pys_excel/_logging.py}"
+applyTo: "{examples/**/*.py,src/pys_excel/logs.py}"
 ---
 
 # Logging & Rich Output Instructions
@@ -13,7 +13,7 @@ The library provides a centralized logging system powered by **Rich**.
 All loggers live under the `pys_excel.*` namespace:
 
 ```python
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 logger = get_logger("example.my_script")  # -> pys_excel.example.my_script
 ```
@@ -115,11 +115,10 @@ from pys_excel import (
     print_success,
     set_log_level,
 )
-from pys_excel._logging import get_logger
+from pys_excel.logs import get_logger
 
 set_log_level("DEBUG")
 logger = get_logger("example.my_example")
-
 
 if __name__ == "__main__":
     spark = get_spark("my-example")

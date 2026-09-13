@@ -80,6 +80,46 @@ Apply regular expression patterns with RLIKE for advanced text filtering.
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table that stores real
+    audit events. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>` before these queries will return rows.
+
+### Filter failed audit actions
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+SELECT
+    event_time,
+    workspace_id,
+    user_identity.email AS user_email,
+    service_name,
+    action_name,
+    response.status_code AS status_code,
+    response.error_message AS error_message
+FROM system.access.audit
+WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+  AND response.status_code >= 400
+  AND service_name IN ('clusters', 'sql', 'jobs')
+  AND action_name RLIKE 'create|update|delete'
+ORDER BY event_time DESC;
+-- Result (illustrative):
+-- event_time           | workspace_id | user_email         | service_name | action_name | status_code | error_message
+-- ---------------------|--------------|--------------------|--------------|-------------|-------------|--------------
+-- 2024-07-02 09:41:03  | 123456789    | analyst@example.com| sql          | createQuery | 403         | PERMISSION_DENIED
+-- 2024-07-02 08:14:10  | 123456789    | ops@example.com    | clusters     | delete      | 409         | CLUSTER_BUSY
+```
+
+!!! tip "Real predicates, same WHERE clause"
+
+    Audit tables are ideal for demonstrating mixed predicates because they combine
+    dates, nested fields, `IN` lists, and regex-friendly action names in one real
+    production dataset.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                | Recommended Approach      |

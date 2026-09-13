@@ -5,14 +5,24 @@ comparisons, consecutive increase/decrease counting, and linear regression slope
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Click the control to cycle through **upward**, **downward**, and **flat** examples while the regression slope reclassifies the series.
+
+<div id="viz-trend-detection" class="ts-viz"></div>
+
+*The solid line is the observed series; the dashed overlay is the least-squares trend line used for the classification label.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Detection Flow
 
 ```mermaid
 flowchart LR
-    RAW[Time Series Data] --> DIFF[Period Differences\nvalue - LAG(value)]
+    RAW[Time Series Data] --> DIFF["Period Differences\nvalue - LAG(value)"]
     DIFF --> DIR[Direction Flags\n+1 / 0 / -1]
     DIR --> STREAK[Consecutive Streaks\nGaps & Islands]
-    STREAK --> TREND[Trend Classification\nUp · Down · Flat · Reversal]
+    STREAK --> TREND[Trend Classification\nUp \n Down \n Flat \n Reversal]
 
     style RAW fill:#e3f2fd,stroke:#1e88e5
     style DIFF fill:#e8f5e9,stroke:#43a047
@@ -331,6 +341,62 @@ ______________________________________________________________________
 | Filter recent date range                   | Limits window computation scope                  |
 | Use `SIGN()` instead of CASE for direction | Simpler and optimiser-friendly                   |
 | Materialise direction flags                | Reuse across streak, reversal, and slope queries |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no
+    sample data setup needed) with a natural daily signal in `usage_date`.
+    An account admin must grant `USE CATALOG` on `system`, `USE SCHEMA` on
+    `system.billing`, and `SELECT` on `system.billing.usage` before these
+    queries will return rows.
+
+### Daily usage direction and short-term trend
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH daily_usage AS (
+    SELECT
+        workspace_id,
+        usage_date,
+        ROUND(SUM(usage_quantity), 2) AS daily_usage_quantity
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 30)
+    GROUP BY workspace_id, usage_date
+)
+SELECT
+    workspace_id,
+    usage_date,
+    daily_usage_quantity,
+    LAG(daily_usage_quantity, 1) OVER w AS prev_day_usage,
+    CASE
+        WHEN daily_usage_quantity > LAG(daily_usage_quantity, 1) OVER w THEN 'UP'
+        WHEN daily_usage_quantity < LAG(daily_usage_quantity, 1) OVER w THEN 'DOWN'
+        ELSE 'FLAT'
+    END AS direction,
+    ROUND(AVG(daily_usage_quantity) OVER (
+        PARTITION BY workspace_id
+        ORDER BY usage_date
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ), 2) AS rolling_avg_7
+FROM daily_usage
+WINDOW w AS (PARTITION BY workspace_id ORDER BY usage_date)
+ORDER BY workspace_id, usage_date;
+-- Result (illustrative):
+-- workspace_id | usage_date  | daily_usage_quantity | prev_day_usage | direction | rolling_avg_7
+-- ------------ | ----------- | -------------------- | -------------- | --------- | -------------
+-- 123456789    | 2024-07-02  | 1248.40              | 1191.25        | UP        | 1187.23
+-- 987654321    | 2024-07-02  | 402.75               | 418.10         | DOWN      | 415.08
+```
+
+!!! tip "Trend detection starts with ordered comparisons"
+
+    Production trend analysis is usually just an ordered aggregate followed by
+    `LAG`, rolling averages, or both. The same pattern works for spend,
+    throughput, failures, or any other system-table metric.
 
 ______________________________________________________________________
 

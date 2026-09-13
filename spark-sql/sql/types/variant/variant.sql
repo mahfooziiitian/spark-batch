@@ -119,7 +119,7 @@ SELECT
     event_id,
     item
 FROM events
-    LATERAL VIEW EXPLODE((payload:items)::ARRAY<STRING>) AS item
+    LATERAL VIEW EXPLODE((payload:items)::ARRAY<STRING>) as item
 ORDER BY event_id ASC, item ASC;
 -- event_id | item
 -- 2         | sku-1

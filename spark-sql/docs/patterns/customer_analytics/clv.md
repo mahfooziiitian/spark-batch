@@ -234,6 +234,118 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no synthetic
+    sample data is needed. For a CLV-style analysis, treat each `workspace_id` or
+    `custom_tags['Tenant']` as the "customer" and recurring billing usage as the
+    value signal. The examples below use `usage_quantity` with `usage_unit = 'DBU'`
+    as a simple spend proxy. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>`
+    before these queries will return rows.
+
+### 1 — Historical and projected value per workspace
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_value AS (
+    SELECT
+        workspace_id,
+        MIN(usage_date) AS first_usage_date,
+        MAX(usage_date) AS last_usage_date,
+        ROUND(SUM(usage_quantity), 2) AS historical_usage_value,
+        ROUND(
+            GREATEST(DATEDIFF(MAX(usage_date), MIN(usage_date)) / 30.0, 1.0),
+            1
+        ) AS lifespan_months
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 365)
+      AND usage_unit = 'DBU'
+    GROUP BY workspace_id
+),
+workspace_metrics AS (
+    SELECT
+        workspace_id,
+        first_usage_date,
+        last_usage_date,
+        historical_usage_value,
+        lifespan_months,
+        ROUND(historical_usage_value / lifespan_months, 2) AS usage_value_per_month
+    FROM workspace_value
+)
+SELECT
+    workspace_id,
+    first_usage_date,
+    last_usage_date,
+    historical_usage_value,
+    lifespan_months,
+    usage_value_per_month,
+    ROUND(historical_usage_value + usage_value_per_month * 3, 2) AS projected_clv_90d
+FROM workspace_metrics
+ORDER BY projected_clv_90d DESC;
+-- Result (illustrative):
+-- workspace_id | historical_usage_value | lifespan_months | usage_value_per_month | projected_clv_90d
+-- -------------|------------------------|-----------------|-----------------------|------------------
+-- 123456789    | 18420.50               | 11.8            | 1561.06               | 23103.68
+-- 987654321    | 7420.00                | 6.0             | 1236.67               | 11130.01
+```
+
+### 2 — Tenant value tiers with projected CLV
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH tenant_value AS (
+    SELECT
+        custom_tags['Tenant'] AS tenant,
+        ROUND(SUM(usage_quantity), 2) AS historical_usage_value,
+        ROUND(
+            GREATEST(DATEDIFF(MAX(usage_date), MIN(usage_date)) / 30.0, 1.0),
+            1
+        ) AS lifespan_months
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 365)
+      AND usage_unit = 'DBU'
+      AND custom_tags['Tenant'] IS NOT NULL
+    GROUP BY custom_tags['Tenant']
+),
+tenant_clv AS (
+    SELECT
+        tenant,
+        historical_usage_value,
+        ROUND(historical_usage_value / lifespan_months, 2) AS usage_value_per_month,
+        ROUND(
+            historical_usage_value + (historical_usage_value / lifespan_months) * 6,
+            2
+        ) AS projected_clv_180d
+    FROM tenant_value
+)
+SELECT
+    tenant,
+    historical_usage_value,
+    usage_value_per_month,
+    projected_clv_180d,
+    NTILE(5) OVER (ORDER BY projected_clv_180d DESC) AS value_tier
+FROM tenant_clv
+ORDER BY projected_clv_180d DESC;
+-- Result (illustrative):
+-- tenant   | historical_usage_value | usage_value_per_month | projected_clv_180d | value_tier
+-- ---------|------------------------|-----------------------|--------------------|-----------
+-- acme-co  | 22110.00               | 1842.50               | 33165.00           | 1
+-- globex   | 14640.00               | 1220.00               | 21960.00           | 2
+-- initech  | 3180.00                | 530.00                | 6360.00            | 5
+```
+
+!!! tip "The same CLV pattern generalises to real billing entities"
+
+    Historical value, monthly value rate, projected value, and `NTILE` segmentation
+    all stay the same when you move from synthetic orders to system tables. The only
+    change is the business entity: a Databricks workspace or tenant becomes the
+    "customer" whose long-term usage value you measure.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Retention Analysis](retention.md) — cohort-based return rates

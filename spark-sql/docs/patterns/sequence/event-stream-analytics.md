@@ -449,6 +449,74 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.access.audit` is a built-in Unity Catalog system table (no sample data
+    setup needed) that records real workspace activity. An account admin must
+    `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.access TO <principal>`
+    before these queries will return rows.
+
+### 1 — Cluster action funnel per user per day (`system.access.audit`)
+
+```sql
+-- [Databricks] Requires SELECT on system.access.audit
+WITH cluster_actions AS (
+    SELECT
+        event_date,
+        COALESCE(user_identity.email, 'unknown') AS user_email,
+        event_time,
+        action_name
+    FROM system.access.audit
+    WHERE event_date >= DATE_SUB(CURRENT_DATE(), 7)
+      AND service_name = 'clusters'
+      AND action_name IN ('create', 'edit', 'resize', 'delete')
+),
+per_user_day AS (
+    SELECT
+        event_date,
+        user_email,
+        MIN(CASE WHEN action_name = 'create' THEN event_time END) AS create_time,
+        MIN(CASE WHEN action_name IN ('edit', 'resize') THEN event_time END) AS manage_time,
+        MIN(CASE WHEN action_name = 'delete' THEN event_time END) AS delete_time
+    FROM cluster_actions
+    GROUP BY event_date, user_email
+)
+SELECT
+    event_date,
+    COUNT(*) FILTER (WHERE create_time IS NOT NULL) AS users_reaching_create,
+    COUNT(*) FILTER (
+        WHERE create_time IS NOT NULL
+          AND manage_time IS NOT NULL
+          AND manage_time > create_time
+    ) AS users_reaching_manage_after_create,
+    COUNT(*) FILTER (
+        WHERE create_time IS NOT NULL
+          AND manage_time IS NOT NULL
+          AND delete_time IS NOT NULL
+          AND manage_time > create_time
+          AND delete_time > manage_time
+    ) AS users_reaching_delete_after_manage
+FROM per_user_day
+GROUP BY event_date
+ORDER BY event_date;
+-- Result (illustrative):
+-- event_date | users_reaching_create | users_reaching_manage_after_create | users_reaching_delete_after_manage
+-- -----------|-----------------------|------------------------------------|-----------------------------------
+-- 2024-07-01 | 18                    | 12                                 | 5
+-- 2024-07-02 | 22                    | 16                                 | 7
+```
+
+!!! tip
+
+    The same `MIN(CASE WHEN ...)` funnel shape works on production audit data just
+    as well as on synthetic clickstreams. Swap `service_name`, `action_name`, or
+    the grouping grain (`user`, `workspace`, `day`) to measure real operational
+    drop-off inside Unity Catalog system tables.
+
+______________________________________________________________________
+
 ## :material-arrow-right: Related
 
 - [Gaps & Islands](../sequence/gaps-islands.md) — generalised consecutive sequence detection

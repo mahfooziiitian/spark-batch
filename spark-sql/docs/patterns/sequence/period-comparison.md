@@ -432,6 +432,64 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table (no sample data
+    setup needed) that records real usage intervals and quantities. An account admin
+    must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 9 — This month vs last month usage per workspace (`system.billing.usage`)
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH monthly_usage AS (
+    SELECT
+        workspace_id,
+        DATE_TRUNC('month', usage_start_time) AS usage_month,
+        SUM(usage_quantity) AS total_usage
+    FROM system.billing.usage
+    WHERE usage_start_time >= ADD_MONTHS(DATE_TRUNC('month', CURRENT_DATE()), -2)
+    GROUP BY workspace_id, DATE_TRUNC('month', usage_start_time)
+),
+compared AS (
+    SELECT
+        workspace_id,
+        usage_month,
+        total_usage,
+        LAG(total_usage) OVER (
+            PARTITION BY workspace_id ORDER BY usage_month
+        ) AS prev_month_usage
+    FROM monthly_usage
+)
+SELECT
+    workspace_id,
+    usage_month,
+    total_usage,
+    prev_month_usage,
+    ROUND(
+        (total_usage - prev_month_usage) / NULLIF(prev_month_usage, 0) * 100,
+        1
+    ) AS mom_usage_pct
+FROM compared
+WHERE prev_month_usage IS NOT NULL
+ORDER BY workspace_id, usage_month;
+-- Result (illustrative):
+-- workspace_id | usage_month         | total_usage | prev_month_usage | mom_usage_pct
+-- -------------|---------------------|-------------|------------------|--------------
+-- 123456789    | 2024-07-01 00:00:00 | 18452.7     | 17108.4          | 7.9
+-- 987654321    | 2024-07-01 00:00:00 | 9231.5      | 10402.0          | -11.3
+```
+
+!!! tip
+
+    Period comparison queries do not change when you move from classroom revenue data
+    to production billing tables. Once you have a period grain and a measure, the same
+    `GROUP BY period` plus `LAG()` pattern answers real cost and operations questions.
+
+______________________________________________________________________
+
 ## :material-magnify: Behavior Notes
 
 1. `LAG(n)` requires **dense, contiguous data** — if months are missing, the offset won't match the intended prior period. Use self-joins for sparse data.

@@ -5,6 +5,16 @@ peaks in time series data for capacity planning, alerting, and trend analysis.
 
 ______________________________________________________________________
 
+## :material-animation-play: Interactive Demo
+
+Toggle between all local peaks and the global maximum to see how noisy series can contain multiple meaningful highs.
+
+<div id="viz-peak-detection" class="ts-viz"></div>
+
+*Amber labels mark local highs; the red marker isolates the single highest point in the series.*
+
+______________________________________________________________________
+
 ## :material-sitemap: Detection Flow
 
 ```mermaid
@@ -460,6 +470,65 @@ ______________________________________________________________________
 | Use `QUALIFY` for Top-N                 | Avoids extra subquery wrapping            |
 | Pre-aggregate to target granularity     | Hourly peaks don't need minute-level data |
 | Materialise rolling baselines           | Reuse across multiple detection rules     |
+
+______________________________________________________________________
+
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.query.history` is a built-in Unity Catalog system table (no
+    sample data setup needed) that records real warehouse activity with a
+    natural event timestamp in `start_time`. An account admin must grant
+    `USE CATALOG` on `system`, `USE SCHEMA` on `system.query`, and `SELECT`
+    on `system.query.history` before these queries will return rows.
+
+### Local peak hours in query volume
+
+```sql
+-- [Databricks] Requires SELECT on system.query.history
+WITH hourly_queries AS (
+    SELECT
+        compute.warehouse_id AS warehouse_id,
+        DATE_TRUNC('hour', start_time) AS hour_bucket,
+        COUNT(*) AS query_count
+    FROM system.query.history
+    WHERE start_time >= CURRENT_TIMESTAMP() - INTERVAL 7 DAYS
+      AND compute.warehouse_id IS NOT NULL
+    GROUP BY compute.warehouse_id, DATE_TRUNC('hour', start_time)
+),
+neighbours AS (
+    SELECT
+        warehouse_id,
+        hour_bucket,
+        query_count,
+        LAG(query_count, 1) OVER w AS prev_count,
+        LEAD(query_count, 1) OVER w AS next_count
+    FROM hourly_queries
+    WINDOW w AS (PARTITION BY warehouse_id ORDER BY hour_bucket)
+)
+SELECT
+    warehouse_id,
+    hour_bucket AS peak_hour,
+    query_count,
+    prev_count,
+    next_count
+FROM neighbours
+WHERE query_count > COALESCE(prev_count, -1)
+  AND query_count > COALESCE(next_count, -1)
+ORDER BY query_count DESC, peak_hour DESC;
+-- Result (illustrative):
+-- warehouse_id | peak_hour            | query_count | prev_count | next_count
+-- ------------ | -------------------- | ----------- | ---------- | ----------
+-- 6f91a...     | 2024-07-02 10:00:00  | 214         | 171        | 188
+-- 8b22c...     | 2024-07-02 14:00:00  | 96          | 74         | 81
+```
+
+!!! tip "Real peak detection usually starts with a bucketed count"
+
+    Production event streams rarely arrive at perfectly regular intervals, so
+    the practical first step is to aggregate into hourly or minute buckets.
+    After that, the same `LAG`/`LEAD` local-peak logic applies unchanged.
 
 ______________________________________________________________________
 

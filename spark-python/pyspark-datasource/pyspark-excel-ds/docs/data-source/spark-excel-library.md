@@ -11,7 +11,7 @@ driver.
 
 | Format string | Connector | Runtime |
 |----------------|-----------|---------|
-| `com.crealytics.spark.excel` | Community **spark-excel** (crealytics) | Any Spark 3.x/4.x cluster, OSS or Databricks. **Databricks Runtime 15.x–16.x**: attach as a cluster Maven library. |
+| `com.crealytics.spark.excel` | Community **spark-excel** (crealytics) | Any Spark 3.x/4.x cluster, OSS or Databricks. **Databricks Runtime 15.x–16.x**: attach as a cluster Maven library (Scala 2.12). Local **PySpark 4.x** needs the Scala 2.13 build instead — `get_spark_with_excel_package()` auto-selects it. |
 | `excel` | Databricks **built-in** Excel connector | **Databricks Runtime 17.1+** only — no library install needed. |
 
 `resolve_excel_format()` picks the right one automatically based on the
@@ -56,14 +56,27 @@ write_spark_excel(df, "/Volumes/catalog/schema/volume/report.xlsx", sheet_name="
 
 ## Running locally (OSS Spark)
 
-The connector's JAR must be on the classpath. Use
-`get_spark_with_excel_package()` to preload it via `spark.jars.packages`
-(requires network access the first time, to resolve from Maven Central):
+The connector's JAR must be on the classpath, and its **Scala build must
+match the running PySpark's Scala version**: PySpark 3.x ships Scala 2.12,
+PySpark 4.x ships Scala 2.13. Loading the wrong Scala build raises a cryptic
+`NoSuchMethodError` (e.g. `scala.collection.generic.CanBuildFrom`) at read
+time. Use `get_spark_with_excel_package()` to preload the matching package via
+`spark.jars.packages` (requires network access the first time, to resolve
+from Maven Central) — it auto-selects the coordinate via
+`resolve_spark_excel_package()`, so you don't have to track the Scala version
+yourself:
 
 ```python
 from pys_excel.spark_excel import get_spark_with_excel_package
 
-spark = get_spark_with_excel_package()  # loads com.crealytics:spark-excel_2.12:3.5.1_0.20.4
+spark = get_spark_with_excel_package()  # auto-picks spark-excel_2.12 or _2.13 to match PySpark
+```
+
+To force a specific coordinate (e.g. matching a cluster's Databricks Runtime),
+pass it explicitly:
+
+```python
+spark = get_spark_with_excel_package(package="com.crealytics:spark-excel_2.12:3.5.1_0.20.4")
 ```
 
 ## Running on Databricks Runtime 15.x / 16.x

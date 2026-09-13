@@ -670,6 +670,131 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no
+    synthetic sample data is needed. Reframe each `workspace_id` (or
+    `custom_tags['Tenant']`) as the "customer" and treat monthly billable usage
+    as the repeat-purchase signal. An account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these
+    queries will return rows.
+
+### 11 — Monthly retention for workspace cohorts
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_months AS (
+    SELECT DISTINCT
+        workspace_id,
+        DATE_TRUNC('month', usage_date) AS usage_month
+    FROM system.billing.usage
+    WHERE usage_date >= ADD_MONTHS(DATE_TRUNC('month', CURRENT_DATE()), -12)
+),
+cohorts AS (
+    SELECT
+        workspace_id,
+        MIN(usage_month) AS cohort_month
+    FROM workspace_months
+    GROUP BY workspace_id
+),
+periods AS (
+    SELECT
+        c.cohort_month,
+        c.workspace_id,
+        CAST(MONTHS_BETWEEN(w.usage_month, c.cohort_month) AS INT) AS month_offset
+    FROM cohorts c
+    JOIN workspace_months w
+        ON c.workspace_id = w.workspace_id
+),
+counts AS (
+    SELECT
+        cohort_month,
+        COUNT(DISTINCT CASE WHEN month_offset = 0 THEN workspace_id END) AS cohort_size,
+        COUNT(DISTINCT CASE WHEN month_offset = 1 THEN workspace_id END) AS m1_retained,
+        COUNT(DISTINCT CASE WHEN month_offset = 2 THEN workspace_id END) AS m2_retained
+    FROM periods
+    GROUP BY cohort_month
+)
+SELECT
+    cohort_month,
+    cohort_size,
+    ROUND(m1_retained * 100.0 / cohort_size, 1) AS m1_retention_pct,
+    ROUND(m2_retained * 100.0 / cohort_size, 1) AS m2_retention_pct
+FROM counts
+ORDER BY cohort_month;
+-- Result (illustrative):
+-- cohort_month | cohort_size | m1_retention_pct | m2_retention_pct
+-- -------------|-------------|------------------|-----------------
+-- 2024-04-01   | 18          | 83.3             | 72.2
+-- 2024-05-01   | 24          | 79.2             | 58.3
+-- 2024-06-01   | 21          | 66.7             | 47.6
+```
+
+### 12 — Tenant-tag retention in unpivoted form
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH tenant_months AS (
+    SELECT DISTINCT
+        custom_tags['Tenant'] AS tenant,
+        DATE_TRUNC('month', usage_date) AS usage_month
+    FROM system.billing.usage
+    WHERE usage_date >= ADD_MONTHS(DATE_TRUNC('month', CURRENT_DATE()), -12)
+      AND custom_tags['Tenant'] IS NOT NULL
+),
+cohorts AS (
+    SELECT
+        tenant,
+        MIN(usage_month) AS cohort_month
+    FROM tenant_months
+    GROUP BY tenant
+),
+periods AS (
+    SELECT
+        c.cohort_month,
+        c.tenant,
+        CAST(MONTHS_BETWEEN(t.usage_month, c.cohort_month) AS INT) AS month_offset
+    FROM cohorts c
+    JOIN tenant_months t
+        ON c.tenant = t.tenant
+),
+cohort_sizes AS (
+    SELECT
+        cohort_month,
+        COUNT(DISTINCT tenant) AS cohort_size
+    FROM cohorts
+    GROUP BY cohort_month
+)
+SELECT
+    p.cohort_month,
+    s.cohort_size,
+    p.month_offset,
+    COUNT(DISTINCT p.tenant) AS retained_tenants,
+    ROUND(COUNT(DISTINCT p.tenant) * 100.0 / s.cohort_size, 1) AS retention_pct
+FROM periods p
+JOIN cohort_sizes s
+    ON p.cohort_month = s.cohort_month
+WHERE p.month_offset BETWEEN 0 AND 2
+GROUP BY p.cohort_month, s.cohort_size, p.month_offset
+ORDER BY p.cohort_month, p.month_offset;
+-- Result (illustrative):
+-- cohort_month | cohort_size | month_offset | retained_tenants | retention_pct
+-- -------------|-------------|--------------|------------------|--------------
+-- 2024-04-01   | 6           | 0            | 6                | 100.0
+-- 2024-04-01   | 6           | 1            | 5                | 83.3
+-- 2024-04-01   | 6           | 2            | 4                | 66.7
+```
+
+!!! tip "Why this works on system tables"
+
+    Cohort retention only needs a first-seen date plus later activity. Billing
+    system tables naturally provide both, so the same cohort/month-offset logic
+    generalises directly from app users or subscribers to workspaces and tagged
+    tenants.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                          | Pattern                                              |

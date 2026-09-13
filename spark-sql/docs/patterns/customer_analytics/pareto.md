@@ -776,6 +776,124 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
+## :material-database-search: [Databricks] Real-World Example — System Tables
+
+!!! note "[Databricks] Unity Catalog system tables"
+
+    `system.billing.usage` is a built-in Unity Catalog system table, so no
+    synthetic sample data is needed. Reframe each `workspace_id` (or
+    `custom_tags['Tenant']`) as the "customer" and treat billable usage
+    (`usage_quantity`) as the purchase/spend behaviour being analysed. An
+    account admin must `GRANT USE CATALOG, USE SCHEMA, SELECT ON SCHEMA system.billing TO <principal>` before these queries will return rows.
+
+### 11 — 80/20 cutoff by workspace usage
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH workspace_usage AS (
+    SELECT
+        workspace_id,
+        SUM(usage_quantity) AS total_usage
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 90)
+    GROUP BY workspace_id
+),
+ranked AS (
+    SELECT
+        workspace_id,
+        total_usage,
+        ROW_NUMBER() OVER (
+            ORDER BY total_usage DESC, workspace_id
+        ) AS usage_rank,
+        COUNT(*) OVER () AS total_workspaces,
+        SUM(total_usage) OVER () AS grand_total_usage,
+        SUM(total_usage) OVER (
+            ORDER BY total_usage DESC, workspace_id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_usage
+    FROM workspace_usage
+),
+classified AS (
+    SELECT
+        workspace_id,
+        total_usage,
+        usage_rank,
+        total_workspaces,
+        grand_total_usage,
+        cumulative_usage,
+        LAG(cumulative_usage, 1, 0) OVER (ORDER BY usage_rank) AS previous_cumulative_usage
+    FROM ranked
+)
+SELECT
+    total_workspaces,
+    usage_rank AS workspaces_to_reach_80_pct,
+    ROUND(usage_rank * 100.0 / total_workspaces, 1) AS pct_of_workspaces,
+    ROUND(cumulative_usage * 100.0 / grand_total_usage, 1) AS cumulative_usage_pct
+FROM classified
+WHERE previous_cumulative_usage < grand_total_usage * 0.8
+  AND cumulative_usage >= grand_total_usage * 0.8;
+-- Result (illustrative):
+-- total_workspaces | workspaces_to_reach_80_pct | pct_of_workspaces | cumulative_usage_pct
+-- -----------------|----------------------------|-------------------|---------------------
+-- 42               | 9                          | 21.4              | 82.7
+```
+
+### 12 — Vital-few tenants by cumulative usage share
+
+```sql
+-- [Databricks] Requires SELECT on system.billing.usage
+WITH tenant_usage AS (
+    SELECT
+        custom_tags['Tenant'] AS tenant,
+        SUM(usage_quantity) AS total_usage
+    FROM system.billing.usage
+    WHERE usage_date >= DATE_SUB(CURRENT_DATE(), 90)
+      AND custom_tags['Tenant'] IS NOT NULL
+    GROUP BY custom_tags['Tenant']
+),
+ranked AS (
+    SELECT
+        tenant,
+        total_usage,
+        ROW_NUMBER() OVER (
+            ORDER BY total_usage DESC, tenant
+        ) AS usage_rank,
+        SUM(total_usage) OVER () AS grand_total_usage,
+        SUM(total_usage) OVER (
+            ORDER BY total_usage DESC, tenant
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_usage
+    FROM tenant_usage
+)
+SELECT
+    tenant,
+    total_usage,
+    ROUND(cumulative_usage * 100.0 / grand_total_usage, 1) AS cumulative_usage_pct,
+    CASE
+        WHEN LAG(cumulative_usage, 1, 0) OVER (ORDER BY usage_rank) < grand_total_usage * 0.8
+            THEN 'vital_few'
+        ELSE 'useful_many'
+    END AS pareto_band
+FROM ranked
+ORDER BY usage_rank;
+-- Result (illustrative):
+-- tenant   | total_usage | cumulative_usage_pct | pareto_band
+-- ---------|-------------|----------------------|------------
+-- acme     | 18420.5     | 36.8                 | vital_few
+-- globex   | 12110.0     | 61.0                 | vital_few
+-- initech  | 9840.4      | 80.6                 | vital_few
+-- umbrella | 4210.2      | 89.0                 | useful_many
+```
+
+!!! tip "Why this works on system tables"
+
+    The same cumulative-sum window pattern works on production billing data just
+    as it does on synthetic product revenue: aggregate to the customer grain,
+    sort highest-to-lowest, then find the row where the cumulative share crosses
+    80%.
+
+______________________________________________________________________
+
 ## :material-brain: When to Use
 
 | Scenario                         | Approach                                                                                                      |
